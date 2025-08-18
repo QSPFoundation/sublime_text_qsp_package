@@ -123,6 +123,7 @@ class QspSplitter():
 				fold, file = self.qproj_data[loc_name]
 			else:
 				fold, file = self.output_folder, loc_name
+			file = self.replace_bad_symbols(file)
 			output_path = os.path.join(fold, file + '.qsps')
 			if not output_path in count: count[output_path] = 0
 			if os.path.isfile(output_path):
