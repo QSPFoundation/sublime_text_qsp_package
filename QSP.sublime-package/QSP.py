@@ -18,6 +18,123 @@ from .qSpy import function as qsp
 from .qSpy import const
 
 
+def _read_grammar_keywords() -> dict:
+	"""Read `qsp_grammar.pest` and extract keywords: statements, functions, markers."""
+	grammar_path = os.path.join(os.path.dirname(__file__), 'qsp_grammar.pest')
+	if not os.path.isfile(grammar_path):
+		return {'statements': set(), 'functions': set(), 'markers': set()}
+	with open(grammar_path, 'r', encoding='utf-8') as fp:
+		text = fp.read()
+	# helpers
+	def _capture_alternatives(rule_name:str) -> List[str]:
+		pattern = rf"\b{rule_name}\s*=\s*(?:[\s\S]*?)\n"  # first line with rule
+		m = re.search(pattern, text)
+		if m is None:
+			return []
+		# get from the match start to the next closing brace or newline group until '}' of grammar? safer: capture quoted list lines following rule header
+		start = m.end()
+		end = text.find('\n\n', start)
+		chunk = text[start:end if end != -1 else None]
+		alts = re.findall(r'"([^"]+)"', chunk)
+		return alts
+	statements = set(_capture_alternatives('statementName'))
+	functions = set(_capture_alternatives('functionName'))
+	markers = set(_capture_alternatives('setMarker'))
+	markers.update(_capture_alternatives('localMarker'))
+	markers.update(_capture_alternatives('actMarker'))
+	markers.update(_capture_alternatives('endActMarker'))
+	markers.update(_capture_alternatives('ifMarker'))
+	markers.update(_capture_alternatives('elseIfNoSpaceMarker'))
+	markers.update(_capture_alternatives('elseMarker'))
+	markers.update(_capture_alternatives('endIfMarker'))
+	markers.update(_capture_alternatives('loopMarker'))
+	markers.update(_capture_alternatives('whileMarker'))
+	markers.update(_capture_alternatives('stepMarker'))
+	markers.update(_capture_alternatives('endLoopMarker'))
+	return {
+		'statements': set(map(str.lower, statements)),
+		'functions': set(map(str.lower, functions)),
+		'markers': set(map(str.lower, markers))
+	}
+
+
+def _mask_strings_and_braces(source:str) -> str:
+	"""Return text with strings and {...} code blocks replaced by spaces (preserving length)."""
+	result = list(source)
+	in_single = False
+	in_double = False
+	brace = 0
+	i = 0
+	length = len(result)
+	while i < length:
+		ch = result[i]
+		# handle entering/exiting strings unless inside braces masking already
+		if brace == 0:
+			if not in_double and ch == "'":
+				in_single = not in_single
+				result[i] = ' '
+				i += 1
+				continue
+			elif not in_single and ch == '"':
+				in_double = not in_double
+				result[i] = ' '
+				i += 1
+				continue
+			# escape pairs inside strings per grammar ('', "")
+			if in_single and ch == "'" and i+1 < length and result[i+1] == "'":
+				result[i] = ' '
+				result[i+1] = ' '
+				i += 2
+				continue
+			if in_double and ch == '"' and i+1 < length and result[i+1] == '"':
+				result[i] = ' '
+				result[i+1] = ' '
+				i += 2
+				continue
+			# start brace block only if not inside string
+			if not in_single and not in_double and ch == '{':
+				brace = 1
+				result[i] = ' '
+				i += 1
+				continue
+		else:
+			# inside brace block; support nesting
+			if ch == '{':
+				brace += 1
+			elif ch == '}':
+				brace -= 1
+			result[i] = ' '
+			i += 1
+			continue
+		# mask string contents
+		if in_single or in_double:
+			result[i] = ' '
+			i += 1
+			continue
+		i += 1
+	return ''.join(result)
+
+
+def _pos_to_line_index_map(text:str) -> List[int]:
+	"""Return list of starting offsets of each line for fast pos->line mapping."""
+	starts = [0]
+	for m in re.finditer(r'\n', text):
+		starts.append(m.end())
+	return starts
+
+
+def _line_number_at(pos:int, line_starts:List[int]) -> int:
+	# binary search
+	lo, hi = 0, len(line_starts)-1
+	while lo <= hi:
+		mid = (lo+hi)//2
+		if line_starts[mid] <= pos:
+			lo = mid + 1
+		else:
+			hi = mid - 1
+	return hi + 1  # 1-based
+
+
 class QspBuildCommand(sublime_plugin.WindowCommand):
 	"""
 		QSP-Game Builder. Build and run QSP-game from sources. Need a qsp-project.json.
@@ -163,7 +280,79 @@ class QspNewGameCommand(sublime_plugin.WindowCommand):
 class QspAnalyzerCommand(sublime_plugin.WindowCommand):
 	""" Analyse of code, and search errors, locations names, varnames etc. """
 	def run(self) -> None:
-		...
+		window = self.window
+		view = window.active_view()
+		if view is None: return None
+		if QspWorkspace.view_syntax_is_wrong(view): return None
+		text = view.substr(sublime.Region(0, view.size()))
+		masked = _mask_strings_and_braces(text)
+		g = _read_grammar_keywords()
+		print(g)
+		# Extract locations and labels (by convention and grammar respectively)
+		loc_names = []
+		for m in re.finditer(r'(?mi)^\#\s*([^\r\n]+?)\s*$', text):
+			loc_names.append(m.group(1))
+		labels = []
+		for m in re.finditer(r'(?mi)^\:\s*([^\r\n&]+?)\s*$', masked):
+			labels.append(m.group(1))
+		# User calls
+		user_statements = re.findall(r'(?mi)@@([A-Za-z_][A-Za-z0-9_]*)', masked)
+		user_functions = re.findall(r'(?mi)(?<!@)@([A-Za-z_][A-Za-z0-9_]*)', masked)
+		# Statements and functions
+		stmts = {}
+		if len(g['statements']) > 0:
+			stmts_alt = '|'.join(sorted(map(re.escape, g['statements']), key=len, reverse=True))
+			pattern_stmt = re.compile(rf'(?mi)(?<![\w])(?:{stmts_alt})(?=(?:\s|[&\'\"\(\)\[\]=!<>+\-\/*:,\{{\}}]|$))')
+			for m in pattern_stmt.finditer(masked):
+				name = m.group(0).lower()
+				stmts[name] = stmts.get(name, 0) + 1
+		funcs = {}
+		if len(g['functions']) > 0:
+			funcs_alt = '|'.join(sorted(map(re.escape, g['functions']), key=len, reverse=True))
+			pattern_func = re.compile(rf'(?mi)(?<![\w])[#\$%]?((?:{funcs_alt}))\b')
+			for m in pattern_func.finditer(masked):
+				name = m.group(1).lower()
+				funcs[name] = funcs.get(name, 0) + 1
+		# Variables (rough extraction: identifiers not in keywords)
+		keywords = set().union(g['functions'], g['statements'], g['markers'])
+		vars_found = set()
+		for m in re.finditer(r'(?mi)(?<![\w])[#\$%]?[A-Za-z_][\w\.]*', masked):
+			name = m.group(0)
+			root = name.lstrip('#$%').split('.')[0].lower()
+			if root not in keywords and not root.startswith('_'):
+				vars_found.add(name)
+		# Blocks: if/act/loop ... end (approximate)
+		line_starts = _pos_to_line_index_map(text)
+		blocks = []
+		stack = []
+		for m in re.finditer(r'(?mi)(?<![\w])(if|act|loop|end)\b', masked):
+			tok = m.group(1).lower()
+			ln = _line_number_at(m.start(), line_starts)
+			if tok in ('if', 'act', 'loop'):
+				stack.append((tok, ln))
+			elif tok == 'end' and len(stack) > 0:
+				start_tok, start_ln = stack.pop()
+				blocks.append({'type': start_tok, 'start_line': start_ln, 'end_line': ln})
+		# Prepare output
+		data = {
+			'file': (view.file_name() or f'untitled:{view.id()}'),
+			'locations': sorted(loc_names),
+			'labels': sorted(labels),
+			'user_calls': {
+				'statements': sorted(user_statements),
+				'functions': sorted(user_functions)
+			},
+			'counts': {
+				'statements': stmts,
+				'functions': funcs
+			},
+			'variables': sorted(vars_found),
+			'blocks': blocks
+		}
+		panel = window.create_output_panel('qsp_analyzer')
+		panel.set_syntax_file('Packages/JavaScript/JSON.sublime-syntax')
+		panel.run_command('append', {'characters': json.dumps(data, indent=2, ensure_ascii=False)})
+		window.run_command('show_panel', {'panel': 'output.qsp_analyzer'})
 
 class QspReplicStructCommand(sublime_plugin.WindowCommand):
 	""" Generate folder with md-files as links structure """
