@@ -26,6 +26,7 @@ _LOOP_OPEN = re.compile(r'\bLOOP\b', re.IGNORECASE)
 
 _WS = re.compile(r'[ \t]+')
 _MWS = re.compile(r'[ \t\n\r]+')
+_NEW_LINE = re.compile(r'(\n|\r\n)')
 
 @dataclass
 class QspScope:
@@ -43,10 +44,12 @@ class QspToken:
 
 @dataclass
 class QspScopeCommand:
-	cmd: Literal['find-end', 'ignore', 'new-scope', 'close-scope']
-		# close - close the scope
+	cmd: Literal['find-end', 'ignore', 'new-scope', 'close-scope', 'extract-keyword']
+		# close-scope - close the parsed scope
 		# ignore - move peek after token
 		# new-scope - open daughter-scope
+		# find-end - tokens not found
+		# extract-keyword - add keyword scope at tree and move peek
 	token: QspToken
 	peek_offset: int
 
@@ -58,8 +61,8 @@ class BaseAnalyser:
 		self.base_region:Tuple[int, int] = (0, len(base_qsps)-1)
 		self.peek:int = self.base_region[0]
 
-	def analyse(self) -> None:
-		""" Анализирует базовое описание и действия, представленные в виде QSPS-кода. """
+	def get_tree(self) -> None:
+		""" Получает примитивное дерево разбора базового поля, представленного в виде QSPS-кода. """
 		current_scope = QspScope('base', self.base_region, None, [])
 		while self.peek < len(self.base_qsps):
 			finded = self._parse(current_scope)
@@ -74,6 +77,15 @@ class BaseAnalyser:
 				# Это игнорируемый набор символов. Т.е. его не включаем в дерево разбора
 				# просто перемещаем пик
 				self.peek = finded.peek_offset
+			elif finded.cmd == 'extract-keyword':
+				self.peek = finded.peek_offset
+				token = finded.token
+				scope_name = token.name
+				start = token.match.start(0) + token.region_offset
+				end = token.match.end(0) - 1 + token.region_offset
+				scope_region = (start, end)
+				new_scope = QspScope(scope_name, scope_region, current_scope, [])
+				current_scope.daughters.append(new_scope)
 			elif finded.cmd == 'new-scope':
 				# Открываем новый скоуп
 				token = finded.token
@@ -92,6 +104,8 @@ class BaseAnalyser:
 		_parse = None
 		if scope.name == 'base':
 			_parse = self._parse_base
+		elif scope.name == 'star-pl-statement':
+			_parse = self._parse_pl_statement
 		if _parse is not None:
 			return _parse()
 		return None
@@ -117,8 +131,7 @@ class BaseAnalyser:
 			'unknown-statement': _NON_SPACE # unknown
 		}
 		# поиск токена
-		region = (self.peek, self.base_region[1])
-		token = self._token_search(tokens, region)
+		token = self._token_search(tokens)
 		if token is None:
 			# Если токен не найден, для base это означает, что оно кончилось
 			# в этом случае вместо
@@ -129,9 +142,44 @@ class BaseAnalyser:
 		else:
 			# все токены операторов открывают новый скоуп
 			return QspScopeCommand('new-scope', token, token.match.start(0) + token.region_offset)
+
+	def _parse_pl_statement(self) -> QspScopeCommand:
+		""" Парсинг оператора *pl """
+		# список токенов для поиска:
+		tokens = {
+			# extract keyword tokens
+			'star-pl-keyword': _STAR_PL, # *pl
+
+			# ignored scopes tokens
+			'spaces': _WS, # spaces
+
+			# new scopes tokens
+			'quote-string': _QUOTE, # "
+			'apostroph-string': _APOSTROPH, # '
+			'brace-string': _BRACE_OPEN, # {
+			'unknown-statement': _NON_SPACE, # unknown
+
+			# end pl operator
+			'end-scope': _NEW_LINE
+		}
+		# поиск токена
+		token = self._token_search(tokens)
+		if token is None:
+			# Если токен не найден значит оператор кончился, закрываем скоуп
+			return QspScopeCommand('close', None, self.base_region[1]+1)
+		elif token.name == 'star-pl-keyword':
+			# ключевое слово становится отдельным скоупом, не подвергаясь дальнейшему разбору
+			return QspScopeCommand('extract-keyword', token.match.end(0) + token.region_offset)
+		elif token.name == 'spaces':
+			# игнорируем пробелы
+			return QspScopeCommand('ignore', token, token.match.end(0) + token.region_offset)
+		else:
+			# все токены операторов открывают новый скоуп
+			return QspScopeCommand('new-scope', token, token.match.start(0) + token.region_offset)
 	
-	def _token_search(self, tokens:Dict[str, re.Pattern], region:Tuple[int, int]) -> None:
+	def _token_search(self, tokens:Dict[str, re.Pattern]) -> None:
 		""" Поиск токена по региону. """
+		region = (self.peek, self.base_region[1])
 		string = self._cut_region(region)
 		rc = region[0]
 		minimal = len(string)+1
