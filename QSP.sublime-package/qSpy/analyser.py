@@ -17,12 +17,12 @@ _BRACE_OPEN = re.compile(r'\{')
 _BRACE_CLOSE = re.compile(r'\}')
 
 # statements
-_STAR_P = re.compile(r'\*P\b', re.IGNORECASE)
-_STAR_PL = re.compile(r'\*PL\b', re.IGNORECASE)
-_STAR_NL = re.compile(r'\*NL\b', re.IGNORECASE)
-_ACT_OPEN = re.compile(r'\bACT\b', re.IGNORECASE)
-_IF_OPEN = re.compile(r'\bIF\b', re.IGNORECASE)
-_LOOP_OPEN = re.compile(r'\bLOOP\b', re.IGNORECASE)
+_STAR_P = re.compile(r'\*P\b')
+_STAR_PL = re.compile(r'\*PL\b')
+_STAR_NL = re.compile(r'\*NL\b')
+_ACT_OPEN = re.compile(r'\bACT\b')
+_IF_OPEN = re.compile(r'\bIF\b')
+_LOOP_OPEN = re.compile(r'\bLOOP\b')
 
 _WS = re.compile(r'[ \t]+')
 _MWS = re.compile(r'[ \t\n\r]+')
@@ -57,7 +57,7 @@ class QspScopeCommand:
 class BaseAnalyser:
 	""" анализатор Базовых действий и описания. """
 	def __init__(self, base_qsps:str) -> None:
-		self.base_qsps:str = base_qsps
+		self.base_qsps:str = base_qsps.upper() # ignore case for all text
 		self.base_region:Tuple[int, int] = (0, len(base_qsps)-1)
 		self.peek:int = self.base_region[0]
 
