@@ -15,6 +15,7 @@ class QspInt:
     """ Сканирует QSP-код. Я так думаю, но посмотрим. """
     def __init__(self, args:list[str]) -> None:
         self.scanner = None
+        self.had_error = False
 
         if len(args) > 1:
             print("Usage: QSP [script]")
@@ -29,6 +30,7 @@ class QspInt:
         with open(path, 'r', encoding='utf-8') as fp:
             string = fp.read()
         self.run(string)
+        if self.had_error: sys.exit(65)
 
 
     def run_prompt(self) -> None:
@@ -53,13 +55,23 @@ class QspInt:
         for token in tokens:
             print(token)
 
+    def error(self, line:int, message:str) -> None:
+        self.report(line, "", message)
+
+    def report(self, line:int, where:str, message:str) -> None:
+        print(
+            "[line " + line + "] Error" + where + ": " + message,
+            file=sys.stderr
+        )
+        self.had_error = True
+
 
 
 
 def main() -> None:
-	interpretator = QspInt(sys.argv[1:])
+    interpretator = QspInt(sys.argv[1:])
 
 if __name__ == "__main__":
-	main()
+    main()
 
 
