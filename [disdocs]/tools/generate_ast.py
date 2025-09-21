@@ -25,13 +25,16 @@ class GenerateAst:
                 'from abc import ABC, abstractmethod',
                 'from dataclasses import dataclass',
                 'from typing import Generic, TypeVar, Any',
+                '',
                 'R = TypeVar("R")',
+                '',
                 
                 f'class {base_name}(ABC, Generic[R]):',
                 f'    """Класс поддержки выражений. Используется в т.ч. для указания типов."""',
                 f'    @abstractmethod',
                 f'    def accept(self, visitor: "Visitor[R]") -> R:',
-                f'        ...'
+                f'        ...',
+                f''
             ]
 
             self.define_visitor(lines, base_name, types)
@@ -74,12 +77,13 @@ class GenerateAst:
         # visitor pattern
         lines.extend([
             f'    def accept(self, visitor: Visitor[R]) -> R:',
-            f'        return visitor.visit_{c}_{b}(self)\n'
+            f'        return visitor.visit_{c}_{b}(self)',
+            f''
         ])
 
 
 def main():
-    gen = GenerateAst('.')
+    gen = GenerateAst(['..\\analyser\\'])
 
 if __name__ == "__main__":
     main()
