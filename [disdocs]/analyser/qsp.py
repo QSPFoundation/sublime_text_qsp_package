@@ -4,6 +4,8 @@ from typing import (List, Literal, Tuple, Dict, Match, Optional, Callable)
 from token_ import QspToken
 from error import QspErr
 from scanner import QspScanner
+from parser import QspParser
+from ast_printer import AstPrinter
 
 class QspInt:
     """ Сканирует QSP-код. Я так думаю, но посмотрим. """
@@ -45,8 +47,12 @@ class QspInt:
         """Обработать исходный текст `source` (лексинг/парсинг/исполнение)."""
         self.scanner = QspScanner(source)
         tokens:List[QspToken] = self.scanner.scan_tokens()
-        for token in tokens:
-            print(token)
+       
+        parser = QspParser(tokens)
+        expr = parser.parse()
+
+        if QspErr.had_error: return
+        print(AstPrinter().print(expr))
 
 def main() -> None:
     interpretator = QspInt(sys.argv[1:])
