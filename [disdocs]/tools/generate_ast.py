@@ -26,6 +26,8 @@ class GenerateAst:
                 'from dataclasses import dataclass',
                 'from typing import Generic, TypeVar, Any',
                 '',
+                'from token_ import QspToken',
+                '',
                 'R = TypeVar("R")',
                 '',
                 
@@ -62,8 +64,8 @@ class GenerateAst:
         c = class_name[3:].lower()
         b = base_name[3:].lower()
         lines.extend([
-            '\n@dataclass',
-            f'class {class_name}({base_name}):',
+            '@dataclass',
+            f'class {class_name}({base_name}[R]):',
            
         ])
         # constructor and 
