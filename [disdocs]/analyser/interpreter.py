@@ -1,15 +1,17 @@
-from typing import Any
+import sys
+from typing import Any, List
 
 import qspexpr
+import qspstmt
 from error import ParseError, QspErr
 from token_ import QspToken, QspTokenType as tt
 
-class QspInterpreter(qspexpr.Visitor):
+class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
 
-    def interpret(self, expr:qspexpr.QspExpr) -> None:
+    def interpret(self, statements:List[qspstmt.QspStmt]) -> None:
         try:
-            value = self._evaluate(expr)
-            print(value)
+            for stmt in statements:
+                self._execute(stmt)
         except ParseError as e:
             QspErr.runtime_error(e)
     
@@ -60,6 +62,14 @@ class QspInterpreter(qspexpr.Visitor):
         # недостижимо!
         return None
 
+    def visit_expression_stmt(self, expr:qspstmt.QspExpression) -> None:
+        # expr is stmt
+        self._evaluate(expr.expression)
+        # in QSP is as print_line
+
+    def visit_print_stmt(self, expr:qspstmt.QspPrint) -> None:
+        value = self._evaluate(expr.expression)
+        print(str(value), file=sys.stdout)
 
 
     def _evaluate(self, expr:qspexpr.QspExpr) -> Any:
@@ -80,6 +90,9 @@ class QspInterpreter(qspexpr.Visitor):
         if isinstance(operand, float): return
         raise ParseError(operator, "Operand must be a number.")
 
-    def _check_number_operand(self, operator:QspToken, left:Any, right:Any) -> None:
+    def _check_number_operands(self, operator:QspToken, left:Any, right:Any) -> None:
         if isinstance(left, float) and isinstance(right, float): return
         raise ParseError(operator, "Operands must be numbers.")
+
+    def _execute(self, stmt:qspstmt.QspStmt) -> None:
+        stmt.accept(self)

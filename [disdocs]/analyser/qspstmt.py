@@ -4,6 +4,8 @@ from typing import Generic, TypeVar, Any
 
 from token_ import QspToken
 
+from qspexpr import QspExpr
+
 R = TypeVar("R")
 
 class QspStmt(ABC, Generic[R]):
@@ -15,21 +17,32 @@ class QspStmt(ABC, Generic[R]):
 class Visitor(ABC, Generic[R]):
     """interface of visitor for Expression"""
     @abstractmethod
-    def visit_ression_stmt(self, expr:R) -> R:
+    def visit_expression_stmt(self, expr:R) -> R:
         ...
 
     @abstractmethod
-    def visit_nt_stmt(self, expr:R) -> R:
+    def visit_print_stmt(self, expr:R) -> R:
+        ...
+
+    @abstractmethod
+    def visit_var_stmt(self, expr:R) -> R:
         ...
 
 @dataclass
-class Expression(QspStmt[R]):
+class QspExpression(QspStmt[R]):
     expression: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
-        return visitor.visit_ression_stmt(self)
+        return visitor.visit_expression_stmt(self)
 
 @dataclass
-class Print(QspStmt[R]):
+class QspPrint(QspStmt[R]):
     expression: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
-        return visitor.visit_nt_stmt(self)
+        return visitor.visit_print_stmt(self)
+
+@dataclass
+class QspVar(QspStmt[R]):
+    name: QspToken
+    initializer: QspExpr
+    def accept(self, visitor: Visitor[R]) -> R:
+        return visitor.visit_var_stmt(self)

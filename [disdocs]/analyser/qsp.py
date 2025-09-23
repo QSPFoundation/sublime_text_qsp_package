@@ -2,7 +2,7 @@ import sys
 
 from typing import (List, Literal, Tuple, Dict, Match, Optional, Callable)
 from token_ import QspToken
-from error import QspErr
+from error import QspErr, ParseError
 from scanner import QspScanner
 from parser import QspParser
 # from ast_printer import AstPrinter
@@ -48,15 +48,20 @@ class QspInt:
 
     def run(self, source: str) -> None:
         """Обработать исходный текст `source` (лексинг/парсинг/исполнение)."""
+        QspErr.had_error = False
+        QspErr.had_runtime_error = False
         self.scanner = QspScanner(source)
         tokens:List[QspToken] = self.scanner.scan_tokens()
        
         parser = QspParser(tokens)
-        expr = parser.parse()
+        try:
+            statements = parser.parse()
+        except ParseError:
+            return
 
         if QspErr.had_error: return
         # print(AstPrinter().print(expr))
-        self.interpreter.interpret(expr)
+        self.interpreter.interpret(statements)
 
 def main() -> None:
     interpretator = QspInt(sys.argv[1:])

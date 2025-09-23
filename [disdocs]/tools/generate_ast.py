@@ -17,8 +17,9 @@ class GenerateAst:
         }
 
         arr_stmt = {
-            "Expression" : "expression:QspExpr",
-            "Print"      : "expression:QspExpr"
+            "QspExpression" : "expression:QspExpr",
+            "QspPrint"      : "expression:QspExpr",
+            "QspVar"        : "name:QspToken, initializer:QspExpr"
         }
 
         self.define_ast("QspExpr", arr_expr)
@@ -33,7 +34,12 @@ class GenerateAst:
                 'from typing import Generic, TypeVar, Any',
                 '',
                 'from token_ import QspToken',
-                '',
+                ''
+            ]
+            if base_name == 'QspStmt':
+                lines.extend([
+                    'from qspexpr import QspExpr',''])
+            lines.extend([
                 'R = TypeVar("R")',
                 '',
                 
@@ -43,7 +49,7 @@ class GenerateAst:
                 f'    def accept(self, visitor: "Visitor[R]") -> R:',
                 f'        ...',
                 f''
-            ]
+            ])
 
             self.define_visitor(lines, base_name, types)
 

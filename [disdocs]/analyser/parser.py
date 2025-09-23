@@ -1,6 +1,7 @@
 from typing import List
 from token_ import QspTokenType as tt, QspToken
 from qspexpr import QspExpr, QspBinary, QspUnary, QspLiteral, QspGrouping
+from qspstmt import QspExpression, QspStmt, QspPrint
 from error import QspErr, ParseError
 
 class QspParser:
@@ -10,11 +11,26 @@ class QspParser:
 
         self.current:int = 0
 
-    def parse(self) -> QspExpr:
-        try:
-            return self.expression()
-        except ParseError:
-            return None
+    def parse(self) -> List[QspStmt]:
+        statements:List[QspStmt] = []
+        while not self._is_at_end():
+            statements.append(self.statement())
+        return statements
+
+    def statement(self) -> QspStmt:
+        if self._match(tt.PRINT): return self.print_statement()
+
+        return self.expression_statement()
+
+    def print_statement(self) -> QspStmt:
+        value = self.expression()
+        self._consume(tt.SEMICOLON, "Expect ';' avter value.")
+        return QspPrint(value)
+
+    def expression_statement(self) -> QspStmt:
+        expr = self.expression()
+        self._consume(tt.SEMICOLON, "Expect ';' after expression.")
+        return QspExpression(expr)
 
     def expression(self) -> QspExpr:
         return self.equality()
@@ -93,7 +109,7 @@ class QspParser:
     def error(self, token:QspToken, message:str) -> ParseError:
         QspErr.parse_error(token, message)
 
-        return ParseError()
+        raise ParseError(token, message)
 
     def synchronize(self) -> None:
         self._advance()
@@ -103,7 +119,7 @@ class QspParser:
 
             if self._peek().ttype in (
                 tt.CLASS, tt.FUN, tt.VAR, tt.FOR, tt.IF,
-                tt.WHILE, tt.PRINT, tt. RETURN
+                tt.WHILE, tt.PRINT, tt.RETURN
             ): return
 
             self._advance()
@@ -131,7 +147,7 @@ class QspParser:
         return self._previous()
 
     def _is_at_end(self) -> bool:
-        return self._peek() == tt.EOF
+        return self._peek().ttype == tt.EOF
 
     def _peek(self) -> QspToken:
         return self.tokens[self.current]
