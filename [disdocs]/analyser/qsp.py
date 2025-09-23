@@ -5,12 +5,14 @@ from token_ import QspToken
 from error import QspErr
 from scanner import QspScanner
 from parser import QspParser
-from ast_printer import AstPrinter
+# from ast_printer import AstPrinter
+from interpreter import QspInterpreter
 
 class QspInt:
     """ Сканирует QSP-код. Я так думаю, но посмотрим. """
     def __init__(self, args:list[str]) -> None:
         self.scanner = None
+        self.interpreter = QspInterpreter()
 
         if len(args) > 1:
             print("Usage: QSP [script]")
@@ -26,6 +28,7 @@ class QspInt:
             string = fp.read()
         self.run(string)
         if QspErr.had_error: sys.exit(65)
+        if QspErr.had_runtime_error: sys.exit(70)
 
 
     def run_prompt(self) -> None:
@@ -52,7 +55,8 @@ class QspInt:
         expr = parser.parse()
 
         if QspErr.had_error: return
-        print(AstPrinter().print(expr))
+        # print(AstPrinter().print(expr))
+        self.interpreter.interpret(expr)
 
 def main() -> None:
     interpretator = QspInt(sys.argv[1:])

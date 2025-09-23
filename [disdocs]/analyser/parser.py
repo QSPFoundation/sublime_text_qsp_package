@@ -1,5 +1,3 @@
-from ast import Expression
-import operator
 from typing import List
 from token_ import QspTokenType as tt, QspToken
 from qspexpr import QspExpr, QspBinary, QspUnary, QspLiteral, QspGrouping
@@ -81,6 +79,14 @@ class QspParser:
             expr = self.expression()
             self._consume(tt.RIGHT_PAREN, "Expect ')' after expression.")
             return QspGrouping(expr)
+
+        # Специальная диагностика: бинарный оператор в начале выражения
+        if self._check(tt.PLUS) or self._check(tt.STAR) or self._check(tt.SLASH) \
+            or self._check(tt.EQUAL_EQUAL) or self._check(tt.BANG_EQUAL) \
+            or self._check(tt.GREATER) or self._check(tt.GREATER_EQUAL) \
+            or self._check(tt.LESS) or self._check(tt.LESS_EQUAL):
+            tok = self._peek()
+            self.error(tok, f"Ожидалось выражение, а найден бинарный оператор '{tok.lexeme}'.")
 
         self.error(self._peek(), "Expect expression.")
 
