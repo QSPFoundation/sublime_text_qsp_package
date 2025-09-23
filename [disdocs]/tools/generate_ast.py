@@ -21,7 +21,8 @@ class GenerateAst:
         arr_stmt = {
             "QspExpression" : "expression:QspExpr",
             "QspPrint"      : "expression:QspExpr",
-            "QspVar"        : "name:QspToken, initializer:QspExpr"
+            "QspVar"        : "name:QspToken, initializer:QspExpr",
+            "QspBlock"      : "statements:List[QspStmt]",
         }
 
         self.define_ast("QspExpr", arr_expr)
@@ -33,7 +34,7 @@ class GenerateAst:
             lines:List[str] = [
                 'from abc import ABC, abstractmethod',
                 'from dataclasses import dataclass',
-                'from typing import Generic, TypeVar, Any',
+                'from typing import Generic, TypeVar, Any, List',
                 '',
                 'from token_ import QspToken',
                 ''

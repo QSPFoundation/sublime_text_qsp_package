@@ -28,6 +28,7 @@ class QspParser:
 
     def statement(self) -> qs.QspStmt:
         if self._match(tt.PRINT): return self.print_statement()
+        if self._match(tt.LEFT_BRACE): return qs.QspBlock(self.block())
 
         return self.expression_statement()
 
@@ -51,8 +52,32 @@ class QspParser:
         self._consume(tt.SEMICOLON, "Expect ';' after expression.")
         return qs.QspExpression(expr)
 
+    def block(self) -> List[qs.QspStmt]:
+        statements:List[qs.QspStmt] = []
+
+        while not self._check(tt.RIGHT_BRACE) and not self._is_at_end():
+            statements.append(self.declaration())
+
+        self._consume(tt.RIGHT_BRACE, "Expect '}' after block.")
+        return statements
+
     def expression(self) -> qe.QspExpr:
-        return self.equality()
+        return self.assignment()
+
+    def assignment(self) -> qe.QspExpr:
+        expr:qe.QspExpr = self.equality()
+
+        if self._match(tt.EQUAL):
+            equals:QspToken = self._previous()
+            value:qe.QspExpr = self.assignment()
+
+            if isinstance(expr, qe.QspVariable):
+                name:QspToken = expr.name
+                return qe.QspAssign(name, value)
+            
+            self.error(equals, "Invalid assignment target.")
+
+        return expr
 
     def equality(self) -> qe.QspExpr:
         expr = self.comparison()

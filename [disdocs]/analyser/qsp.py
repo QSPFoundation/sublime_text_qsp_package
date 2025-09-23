@@ -23,7 +23,7 @@ class QspInt:
             self.run_prompt()
 
     def run_file(self, path: str) -> None:
-        """Заглушка: выполнить скрипт из файла по пути `path`."""
+        """выполнить скрипт из файла по пути `path`."""
         with open(path, 'r', encoding='utf-8') as fp:
             string = fp.read()
         self.run(string)
@@ -65,6 +65,7 @@ class QspInt:
 
 def main() -> None:
     interpretator = QspInt(sys.argv[1:])
+    # interpretator = QspInt(['lox.lox'])
 
 if __name__ == "__main__":
     main()

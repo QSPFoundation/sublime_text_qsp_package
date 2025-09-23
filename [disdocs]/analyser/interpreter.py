@@ -11,8 +11,10 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
 
     def __init__(self) -> None:
         self.environment = QspEnvironment()
+        self.line_count = 0
 
     def interpret(self, statements:List[qspstmt.QspStmt]) -> None:
+        self.line_count = len(statements)
         try:
             for stmt in statements:
                 self._execute(stmt)
@@ -34,14 +36,14 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
         return None
 
     def visit_variable_expr(self, expr: qspexpr.QspVariable) -> Any:
-        print('visit_variable_expr', expr, expr.name)
+        # print('visit_variable_expr', expr, expr.name)
         return self.environment.get(expr.name)
 
     def visit_grouping_expr(self, expr: qspexpr.QspGrouping) -> Any:
         return self._evaluate(expr.expression)
 
     def visit_binary_expr(self, expr: qspexpr.QspBinary) -> Any:
-        print('visit_binary_expr', str(expr.left), expr.right)
+        # print('visit_binary_expr', str(expr.left), expr.right)
         left = self._evaluate(expr.left)
         right = self._evaluate(expr.right)
 
@@ -73,23 +75,31 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
 
     def visit_expression_stmt(self, expr:qspstmt.QspExpression) -> None:
         # expr is stmt
-        self._evaluate(expr.expression)
+        value = self._evaluate(expr.expression)
         # in QSP is as print_line
+        if self.line_count == 1: print(str(value))
 
     def visit_print_stmt(self, expr:qspstmt.QspPrint) -> None:
         value = self._evaluate(expr.expression)
-        print(str(value), file=sys.stdout)
+        print(str(value))
 
     def visit_var_stmt(self, stmt:qspstmt.QspVar) -> None:
         value = None
         if stmt.initializer != None:
             value = self._evaluate(stmt.initializer)
-        print('visit_var_stmt.value:', value)
+        # print('visit_var_stmt.value:', value)
         self.environment.define(stmt.name.lexeme, value)
 
+    def visit_assign_expr(self, expr: qspexpr.QspAssign) -> Any:
+        value = self._evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+
+    def visit_block_stmt(self, stmt: qspstmt.QspBlock) -> None:
+        self._execute_block(stmt.statements,
+                            QspEnvironment(self.environment))
 
     def _evaluate(self, expr:qspexpr.QspExpr) -> Any:
-        print('evaluate', expr)
+        # print('evaluate', expr)
         return expr.accept(self)
 
     def _is_truthy(self, object:Any) -> bool:
@@ -112,5 +122,15 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
         raise ParseError(operator, "Operands must be numbers.")
 
     def _execute(self, stmt:qspstmt.QspStmt) -> None:
-        print('_execute', stmt)
+        # print('_execute', stmt)
         stmt.accept(self)
+
+    def _execute_block(self, statements:List[qspstmt.QspStmt],
+                        environment:QspEnvironment) -> None:
+        previous = self.environment
+        try:
+            self.environment = environment
+            for statement in statements:
+                self._execute(statement)
+        finally:
+            self.environment = previous

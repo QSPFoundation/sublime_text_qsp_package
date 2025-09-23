@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Any
+from typing import Generic, TypeVar, Any, List
 
 from token_ import QspToken
 
@@ -28,6 +28,10 @@ class Visitor(ABC, Generic[R]):
     def visit_var_stmt(self, expr:R) -> R:
         ...
 
+    @abstractmethod
+    def visit_block_stmt(self, expr:R) -> R:
+        ...
+
 @dataclass
 class QspExpression(QspStmt[R]):
     expression: QspExpr
@@ -46,3 +50,9 @@ class QspVar(QspStmt[R]):
     initializer: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_var_stmt(self)
+
+@dataclass
+class QspBlock(QspStmt[R]):
+    statements: List[QspStmt]
+    def accept(self, visitor: Visitor[R]) -> R:
+        return visitor.visit_block_stmt(self)

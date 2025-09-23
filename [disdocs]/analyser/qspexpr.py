@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Any
+from typing import Generic, TypeVar, Any, List
 
 from token_ import QspToken
 
@@ -14,6 +14,10 @@ class QspExpr(ABC, Generic[R]):
 
 class Visitor(ABC, Generic[R]):
     """interface of visitor for Expression"""
+    @abstractmethod
+    def visit_assign_expr(self, expr:R) -> R:
+        ...
+
     @abstractmethod
     def visit_binary_expr(self, expr:R) -> R:
         ...
@@ -33,6 +37,13 @@ class Visitor(ABC, Generic[R]):
     @abstractmethod
     def visit_variable_expr(self, expr:R) -> R:
         ...
+
+@dataclass
+class QspAssign(QspExpr[R]):
+    name: QspToken
+    value: QspExpr
+    def accept(self, visitor: Visitor[R]) -> R:
+        return visitor.visit_assign_expr(self)
 
 @dataclass
 class QspBinary(QspExpr[R]):
