@@ -9,14 +9,20 @@ class GenerateAst:
             sys.exit(64)
         self.output_folder:str = args[0]
 
-        arr = {
+        arr_expr = {
             "QspBinary"   : "left:QspExpr, operator:QspToken, right:QspExpr",
             "QspGrouping" : "expression:QspExpr",
             "QspLiteral"  : "value:Any",
             "QspUnary"    : "operator:QspToken, right:QspToken"
         }
 
-        self.define_ast("QspExpr", arr)
+        arr_stmt = {
+            "Expression" : "expression:QspExpr",
+            "Print"      : "expression:QspExpr"
+        }
+
+        self.define_ast("QspExpr", arr_expr)
+        self.define_ast("QspStmt", arr_stmt)
 
     def define_ast(self, base_name:str, types:Dict[str, str]) -> None:
         path = os.path.join(self.output_folder, f'{base_name.lower()}.py')
