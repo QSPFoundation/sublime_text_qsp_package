@@ -30,6 +30,10 @@ class Visitor(ABC, Generic[R]):
     def visit_unary_expr(self, expr:R) -> R:
         ...
 
+    @abstractmethod
+    def visit_variable_expr(self, expr:R) -> R:
+        ...
+
 @dataclass
 class QspBinary(QspExpr[R]):
     left: QspExpr
@@ -53,6 +57,12 @@ class QspLiteral(QspExpr[R]):
 @dataclass
 class QspUnary(QspExpr[R]):
     operator: QspToken
-    right: QspToken
+    right: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_unary_expr(self)
+
+@dataclass
+class QspVariable(QspExpr[R]):
+    name: QspToken
+    def accept(self, visitor: Visitor[R]) -> R:
+        return visitor.visit_variable_expr(self)

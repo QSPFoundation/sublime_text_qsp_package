@@ -1,7 +1,8 @@
 from typing import List
 from token_ import QspTokenType as tt, QspToken
-from qspexpr import QspExpr, QspBinary, QspUnary, QspLiteral, QspGrouping
-from qspstmt import QspExpression, QspStmt, QspPrint
+import qspexpr as qe
+# from qspexpr import QspExpr, QspBinary, QspUnary, QspLiteral, QspGrouping
+import qspstmt as qs
 from error import QspErr, ParseError
 
 class QspParser:
@@ -11,90 +12,111 @@ class QspParser:
 
         self.current:int = 0
 
-    def parse(self) -> List[QspStmt]:
-        statements:List[QspStmt] = []
+    def parse(self) -> List[qs.QspStmt]:
+        statements:List[qs.QspStmt] = []
         while not self._is_at_end():
-            statements.append(self.statement())
+            statements.append(self.declaration())
         return statements
 
-    def statement(self) -> QspStmt:
+    def declaration(self) -> qs.QspStmt:
+        try:
+            if self._match(tt.VAR): return self.var_declaration()
+            return self.statement()
+        except ParseError:
+            self.synchronize()
+            return
+
+    def statement(self) -> qs.QspStmt:
         if self._match(tt.PRINT): return self.print_statement()
 
         return self.expression_statement()
 
-    def print_statement(self) -> QspStmt:
+    def var_declaration(self) -> qs.QspStmt:
+        name:QspToken = self._consume(tt.IDENTIFIER, "Expect variable name.")
+
+        initializer:qe.QspExpr = None
+        if self._match(tt.EQUAL):
+            initializer = self.expression()
+
+        self._consume(tt.SEMICOLON, "Expect ';' avter value.")
+        return qs.QspVar(name, initializer)
+
+    def print_statement(self) -> qs.QspStmt:
         value = self.expression()
         self._consume(tt.SEMICOLON, "Expect ';' avter value.")
-        return QspPrint(value)
+        return qs.QspPrint(value)
 
-    def expression_statement(self) -> QspStmt:
+    def expression_statement(self) -> qs.QspStmt:
         expr = self.expression()
         self._consume(tt.SEMICOLON, "Expect ';' after expression.")
-        return QspExpression(expr)
+        return qs.QspExpression(expr)
 
-    def expression(self) -> QspExpr:
+    def expression(self) -> qe.QspExpr:
         return self.equality()
 
-    def equality(self) -> QspExpr:
+    def equality(self) -> qe.QspExpr:
         expr = self.comparison()
 
         while self._match(tt.BANG_EQUAL, tt.EQUAL_EQUAL):
             operator:QspToken = self._previous()
-            right:QspExpr = self.comparison()
-            expr = QspBinary(expr, operator, right)
+            right:qe.QspExpr = self.comparison()
+            expr = qe.QspBinary(expr, operator, right)
 
         return expr
 
-    def comparison(self) -> QspExpr:
+    def comparison(self) -> qe.QspExpr:
         expr = self.term()
 
         while self._match(tt.GREATER, tt.GREATER_EQUAL, tt.LESS, tt.LESS_EQUAL):
             operator = self._previous()
             right = self.term()
-            expr = QspBinary(expr, operator, right)
+            expr = qe.QspBinary(expr, operator, right)
 
         return expr
 
-    def term(self) -> QspExpr:
+    def term(self) -> qe.QspExpr:
         expr = self.factor()
 
         while self._match(tt.MINUS, tt.PLUS):
             operator = self._previous()
             right = self.factor()
-            expr = QspBinary(expr, operator, right)
+            expr = qe.QspBinary(expr, operator, right)
 
         return expr
 
-    def factor(self) -> QspExpr:
+    def factor(self) -> qe.QspExpr:
         expr = self.unary()
 
         while self._match(tt.SLASH, tt.STAR):
             operator = self._previous()
             right = self.unary()
-            expr = QspBinary(expr, operator, right)
+            expr = qe.QspBinary(expr, operator, right)
 
         return expr
 
-    def unary(self) -> QspExpr:
+    def unary(self) -> qe.QspExpr:
         if self._match(tt.BANG, tt.MINUS):
             operator = self._previous()
             right = self.unary()
-            return QspUnary(operator, right)
+            return qe.QspUnary(operator, right)
         
         return self.primary()
 
-    def primary(self) -> QspExpr:
-        if self._match(tt.FALSE): return QspLiteral(False)
-        if self._match(tt.TRUE): return QspLiteral(True)
-        if self._match(tt.NIL): return QspLiteral(None)
+    def primary(self) -> qe.QspExpr:
+        if self._match(tt.FALSE): return qe.QspLiteral(False)
+        if self._match(tt.TRUE): return qe.QspLiteral(True)
+        if self._match(tt.NIL): return qe.QspLiteral(None)
 
         if self._match(tt.NUMBER, tt.STRING):
-            return QspLiteral(self._previous().literal)
+            return qe.QspLiteral(self._previous().literal)
+
+        if self._match(tt.IDENTIFIER):
+            return qe.QspVariable(self._previous())
 
         if self._match(tt.LEFT_PAREN):
             expr = self.expression()
             self._consume(tt.RIGHT_PAREN, "Expect ')' after expression.")
-            return QspGrouping(expr)
+            return qe.QspGrouping(expr)
 
         # Специальная диагностика: бинарный оператор в начале выражения
         if self._check(tt.PLUS) or self._check(tt.STAR) or self._check(tt.SLASH) \

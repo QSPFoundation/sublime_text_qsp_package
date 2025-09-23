@@ -5,8 +5,12 @@ import qspexpr
 import qspstmt
 from error import ParseError, QspErr
 from token_ import QspToken, QspTokenType as tt
+from environment import QspEnvironment
 
 class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
+
+    def __init__(self) -> None:
+        self.environment = QspEnvironment()
 
     def interpret(self, statements:List[qspstmt.QspStmt]) -> None:
         try:
@@ -29,10 +33,15 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
 
         return None
 
+    def visit_variable_expr(self, expr: qspexpr.QspVariable) -> Any:
+        print('visit_variable_expr', expr, expr.name)
+        return self.environment.get(expr.name)
+
     def visit_grouping_expr(self, expr: qspexpr.QspGrouping) -> Any:
         return self._evaluate(expr.expression)
 
     def visit_binary_expr(self, expr: qspexpr.QspBinary) -> Any:
+        print('visit_binary_expr', str(expr.left), expr.right)
         left = self._evaluate(expr.left)
         right = self._evaluate(expr.right)
 
@@ -71,8 +80,16 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
         value = self._evaluate(expr.expression)
         print(str(value), file=sys.stdout)
 
+    def visit_var_stmt(self, stmt:qspstmt.QspVar) -> None:
+        value = None
+        if stmt.initializer != None:
+            value = self._evaluate(stmt.initializer)
+        print('visit_var_stmt.value:', value)
+        self.environment.define(stmt.name.lexeme, value)
+
 
     def _evaluate(self, expr:qspexpr.QspExpr) -> Any:
+        print('evaluate', expr)
         return expr.accept(self)
 
     def _is_truthy(self, object:Any) -> bool:
@@ -95,4 +112,5 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
         raise ParseError(operator, "Operands must be numbers.")
 
     def _execute(self, stmt:qspstmt.QspStmt) -> None:
+        print('_execute', stmt)
         stmt.accept(self)

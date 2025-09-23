@@ -10,10 +10,12 @@ class GenerateAst:
         self.output_folder:str = args[0]
 
         arr_expr = {
+            "QspAssign"   : "name:QspToken, value:QspExpr",
             "QspBinary"   : "left:QspExpr, operator:QspToken, right:QspExpr",
             "QspGrouping" : "expression:QspExpr",
             "QspLiteral"  : "value:Any",
-            "QspUnary"    : "operator:QspToken, right:QspToken"
+            "QspUnary"    : "operator:QspToken, right:QspExpr",
+            "QspVariable" : "name:QspToken"
         }
 
         arr_stmt = {
