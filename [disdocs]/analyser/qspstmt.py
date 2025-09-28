@@ -21,6 +21,10 @@ class Visitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
+    def visit_if_stmt(self, expr:R) -> R:
+        ...
+
+    @abstractmethod
     def visit_print_stmt(self, expr:R) -> R:
         ...
 
@@ -37,6 +41,14 @@ class QspExpression(QspStmt[R]):
     expression: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_expression_stmt(self)
+
+@dataclass
+class QspIf(QspStmt[R]):
+    condition: QspExpr
+    then_branch: QspStmt
+    else_branch: QspStmt
+    def accept(self, visitor: Visitor[R]) -> R:
+        return visitor.visit_if_stmt(self)
 
 @dataclass
 class QspPrint(QspStmt[R]):

@@ -1,3 +1,4 @@
+import operator
 from typing import List
 from token_ import QspTokenType as tt, QspToken
 import qspexpr as qe
@@ -27,6 +28,7 @@ class QspParser:
             return
 
     def statement(self) -> qs.QspStmt:
+        if self._match(tt.IF): return self.if_statement()
         if self._match(tt.PRINT): return self.print_statement()
         if self._match(tt.LEFT_BRACE): return qs.QspBlock(self.block())
 
@@ -41,6 +43,18 @@ class QspParser:
 
         self._consume(tt.SEMICOLON, "Expect ';' avter value.")
         return qs.QspVar(name, initializer)
+
+    def if_statement(self) -> qs.QspStmt:
+        self._consume(tt.LEFT_PAREN, "Expect '(' after 'if'.")
+        condition:qs.QspExpr = self.expression()
+        self._consume(tt.RIGHT_PAREN, "Expect ')' after 'if' condition.")
+
+        then_branch = self.statement()
+        else_branch = None
+        if self._match(tt.ELSE):
+            else_branch = self.statement()
+
+        return qs.QspIf(condition, then_branch, else_branch)
 
     def print_statement(self) -> qs.QspStmt:
         value = self.expression()
@@ -64,8 +78,28 @@ class QspParser:
     def expression(self) -> qe.QspExpr:
         return self.assignment()
 
-    def assignment(self) -> qe.QspExpr:
+    def or_(self) -> qe.QspExpr:
+        expr:qe.QspExpr = self.and_()
+
+        while self._match(tt.OR):
+            operator:QspToken = self._previous()
+            right:qe.QspExpr = self.and_()
+            expr = qe.QspLogical(expr, operator, right)
+
+        return expr
+
+    def and_(self) -> qe.QspExpr:
         expr:qe.QspExpr = self.equality()
+
+        while self._match(tt.AND):
+            operator:QspToken = self._previous()
+            right:qe.QspExpr = self.equality()
+            expr = qe.QspLogical(expr, operator, right)
+
+        return expr
+
+    def assignment(self) -> qe.QspExpr:
+        expr:qe.QspExpr = self.or_()
 
         if self._match(tt.EQUAL):
             equals:QspToken = self._previous()

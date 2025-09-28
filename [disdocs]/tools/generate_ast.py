@@ -14,12 +14,15 @@ class GenerateAst:
             "QspBinary"   : "left:QspExpr, operator:QspToken, right:QspExpr",
             "QspGrouping" : "expression:QspExpr",
             "QspLiteral"  : "value:Any",
+            "QspLogical"  : "left:QspExpr, operator:QspToken, right:QspExpr",
             "QspUnary"    : "operator:QspToken, right:QspExpr",
             "QspVariable" : "name:QspToken"
         }
 
         arr_stmt = {
             "QspExpression" : "expression:QspExpr",
+            "QspIf"         : "condition:QspExpr, then_branch:QspStmt, " +
+                              "else_branch:QspStmt",
             "QspPrint"      : "expression:QspExpr",
             "QspVar"        : "name:QspToken, initializer:QspExpr",
             "QspBlock"      : "statements:List[QspStmt]",

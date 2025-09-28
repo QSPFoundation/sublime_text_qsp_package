@@ -11,7 +11,8 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
 
     def __init__(self) -> None:
         self.environment = QspEnvironment()
-        self.line_count = 0
+        self.line_count = 0 # по этой метке пока что отслеживаем, можем ли мы неявно вызывать принт
+                            # на выражениях, но это решение неверное.
 
     def interpret(self, statements:List[qspstmt.QspStmt]) -> None:
         self.line_count = len(statements)
@@ -23,6 +24,16 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
     
     def visit_literal_expr(self, expr: qspexpr.QspLiteral) -> Any:
         return expr.value
+
+    def visit_logical_expr(self, expr: qspexpr.QspLogical) -> Any:
+        left = self._evaluate(expr.left)
+
+        if (expr.operator.ttype == tt.OR):
+            if self._is_truthy(left): return left
+        else:
+            if not self._is_truthy(left): return left
+
+        return self._evaluate(expr.right)
 
     def visit_unary_expr(self, expr: qspexpr.QspUnary) -> Any:
         right = self._evaluate(expr.right)
@@ -97,6 +108,12 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
     def visit_block_stmt(self, stmt: qspstmt.QspBlock) -> None:
         self._execute_block(stmt.statements,
                             QspEnvironment(self.environment))
+
+    def visit_if_stmt(self, stmt: qspstmt.QspIf) -> None:
+        if self._is_truthy(self._evaluate(stmt.condition)):
+            self._execute(stmt.then_branch)
+        elif not stmt.else_branch is None:
+            self._execute(stmt.else_branch)
 
     def _evaluate(self, expr:qspexpr.QspExpr) -> Any:
         # print('evaluate', expr)
