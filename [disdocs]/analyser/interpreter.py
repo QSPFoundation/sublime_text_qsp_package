@@ -115,6 +115,10 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
         elif not stmt.else_branch is None:
             self._execute(stmt.else_branch)
 
+    def visit_while_stmt(self, stmt:qspstmt.QspWhile) -> None:
+        while self._is_truthy(self._evaluate(stmt.condition)):
+            self._execute(stmt.body)
+
     def _evaluate(self, expr:qspexpr.QspExpr) -> Any:
         # print('evaluate', expr)
         return expr.accept(self)

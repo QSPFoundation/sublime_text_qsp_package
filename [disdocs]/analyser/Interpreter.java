@@ -105,8 +105,6 @@ class Interpreter implements Expr.Visitor<Object>,
       return null;
     }
 
-
-
     private Object evaluate(Expr expr) {
         return expr.accept(this);
     }
@@ -154,6 +152,14 @@ class Interpreter implements Expr.Visitor<Object>,
         execute(stmt.thenBranch);
       } else if (stmt.elseBranch != null) {
         execute(stmt.elseBranch);
+      }
+      return null;
+    }
+
+    @Override
+    public Void visitWhileStmt(Stmt.While stmt) {
+      while (isTruthy(evaluate(stmt.condition))) {
+        execute(stmt.body);
       }
       return null;
     }

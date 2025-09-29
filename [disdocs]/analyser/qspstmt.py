@@ -33,6 +33,10 @@ class Visitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
+    def visit_while_stmt(self, expr:R) -> R:
+        ...
+
+    @abstractmethod
     def visit_block_stmt(self, expr:R) -> R:
         ...
 
@@ -62,6 +66,13 @@ class QspVar(QspStmt[R]):
     initializer: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_var_stmt(self)
+
+@dataclass
+class QspWhile(QspStmt[R]):
+    condition: QspExpr
+    body: QspStmt
+    def accept(self, visitor: Visitor[R]) -> R:
+        return visitor.visit_while_stmt(self)
 
 @dataclass
 class QspBlock(QspStmt[R]):

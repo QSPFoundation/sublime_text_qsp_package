@@ -30,6 +30,7 @@ class QspParser:
     def statement(self) -> qs.QspStmt:
         if self._match(tt.IF): return self.if_statement()
         if self._match(tt.PRINT): return self.print_statement()
+        if self._match(tt.WHILE): return self.while_statement()
         if self._match(tt.LEFT_BRACE): return qs.QspBlock(self.block())
 
         return self.expression_statement()
@@ -55,6 +56,15 @@ class QspParser:
             else_branch = self.statement()
 
         return qs.QspIf(condition, then_branch, else_branch)
+
+    def while_statement(self) -> qs.QspStmt:
+        self._consume(tt.LEFT_PAREN, "Expect '(' after 'while'.")
+        condition:qs.QspExpr = self.expression()
+        self._consume(tt.RIGHT_PAREN, "Expect ')' after 'while' condition.")
+
+        body:qs.QspStmt = self.statement()
+
+        return qs.QspWhile(condition, body)
 
     def print_statement(self) -> qs.QspStmt:
         value = self.expression()

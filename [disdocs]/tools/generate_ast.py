@@ -25,6 +25,7 @@ class GenerateAst:
                               "else_branch:QspStmt",
             "QspPrint"      : "expression:QspExpr",
             "QspVar"        : "name:QspToken, initializer:QspExpr",
+            "QspWhile"      : "condition:QspExpr, body:QspStmt",
             "QspBlock"      : "statements:List[QspStmt]",
         }
 
