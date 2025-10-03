@@ -12,6 +12,7 @@ class GenerateAst:
         arr_expr = {
             "QspAssign"   : "name:QspToken, value:QspExpr",
             "QspBinary"   : "left:QspExpr, operator:QspToken, right:QspExpr",
+            "QspCall"     : "callee:QspExpr, paren:QspToken, arguments:List[QspExpr]",
             "QspGrouping" : "expression:QspExpr",
             "QspLiteral"  : "value:Any",
             "QspLogical"  : "left:QspExpr, operator:QspToken, right:QspExpr",

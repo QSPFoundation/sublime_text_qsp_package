@@ -207,7 +207,31 @@ class QspParser:
             right = self.unary()
             return qe.QspUnary(operator, right)
         
-        return self.primary()
+        return self.call()
+
+    def finish_call(self, expr:qe.QspExpr) -> qe.QspExpr:
+        arguments:List[qe.QspExpr] = []
+        if not self._check(tt.RIGHT_PAREN):
+            while True:
+                if len(arguments) >= 255:
+                    self.error(self._peek(), "Can't have more than 255 arguments.")
+                arguments.append(self.expression())
+                if not self._match(tt.COMMA):
+                    break
+        
+        paren = self._consume(tt.RIGHT_PAREN, "Expect ')' after arguments.")
+        return qe.QspCall(expr, paren, arguments)
+
+    def call(self) -> qe.QspExpr:
+        expr = self.primary()
+
+        while True:
+            if self._match(tt.LEFT_PAREN):
+                expr = self.finish_call(expr)
+            else:
+                break
+        
+        return expr
 
     def primary(self) -> qe.QspExpr:
         if self._match(tt.FALSE): return qe.QspLiteral(False)

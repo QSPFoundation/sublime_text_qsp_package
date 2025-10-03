@@ -23,6 +23,10 @@ class Visitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
+    def visit_call_expr(self, expr:R) -> R:
+        ...
+
+    @abstractmethod
     def visit_grouping_expr(self, expr:R) -> R:
         ...
 
@@ -56,6 +60,14 @@ class QspBinary(QspExpr[R]):
     right: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_binary_expr(self)
+
+@dataclass
+class QspCall(QspExpr[R]):
+    callee: QspExpr
+    paren: QspToken
+    arguments: List[QspExpr]
+    def accept(self, visitor: Visitor[R]) -> R:
+        return visitor.visit_call_expr(self)
 
 @dataclass
 class QspGrouping(QspExpr[R]):

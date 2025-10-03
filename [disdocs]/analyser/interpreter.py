@@ -6,6 +6,7 @@ import qspstmt
 from error import ParseError, QspErr
 from token_ import QspToken, QspTokenType as tt
 from environment import QspEnvironment
+from qsp_callable import QspCallable
 
 class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
 
@@ -83,6 +84,12 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
                 return str(left) + str(right)
         # недостижимо!
         return None
+
+    def visit_call_expr(self, expr: qspexpr.QspCall) -> Any:
+        callee = self._evaluate(expr.callee)
+        arguments = [self._evaluate(arg) for arg in expr.arguments]
+        function:QspCallable = callee
+        return function.call(self, arguments)
 
     def visit_expression_stmt(self, expr:qspstmt.QspExpression) -> None:
         # expr is stmt
