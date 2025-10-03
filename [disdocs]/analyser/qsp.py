@@ -64,8 +64,8 @@ class QspInt:
         self.interpreter.interpret(statements)
 
 def main() -> None:
-    interpretator = QspInt(sys.argv[1:])
-    # interpretator = QspInt(['lox.lox'])
+    # interpretator = QspInt(sys.argv[1:])
+    interpretator = QspInt(['lox.lox'])
 
 if __name__ == "__main__":
     main()

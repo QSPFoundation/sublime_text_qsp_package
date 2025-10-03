@@ -1,5 +1,5 @@
 import operator
-from typing import List
+from typing import List, Optional
 from token_ import QspTokenType as tt, QspToken
 import qspexpr as qe
 # from qspexpr import QspExpr, QspBinary, QspUnary, QspLiteral, QspGrouping
@@ -28,6 +28,7 @@ class QspParser:
             return
 
     def statement(self) -> qs.QspStmt:
+        if self._match(tt.FOR): return self.for_statement()
         if self._match(tt.IF): return self.if_statement()
         if self._match(tt.PRINT): return self.print_statement()
         if self._match(tt.WHILE): return self.while_statement()
@@ -44,6 +45,43 @@ class QspParser:
 
         self._consume(tt.SEMICOLON, "Expect ';' avter value.")
         return qs.QspVar(name, initializer)
+
+    def for_statement(self) -> qs.QspStmt:
+        self._consume(tt.LEFT_PAREN, "Expect '(' after 'for'.")
+
+        initializer:qs.QspStmt = None
+        if self._match(tt.SEMICOLON):
+            initializer = None
+        elif self._match(tt.VAR):
+            initializer = self.var_declaration()
+        else:
+            initializer = self.expression_statement()
+
+        condition:Optional[qe.QspExpr] = None
+        if not self._check(tt.SEMICOLON):
+            condition = self.expression()
+        self._consume(tt.SEMICOLON, "Expect ';' after loop condition.")
+
+        increment:qe.QspExpr = None
+        if not self._check(tt.RIGHT_PAREN):
+            increment = self.expression()
+        self._consume(tt.RIGHT_PAREN, "Expect ')' after for clauses.")
+
+        body:qs.QspStmt = self.statement()
+
+        if increment is not None:
+            body = qs.QspBlock([
+                body,
+                qs.QspExpression(increment)
+            ])
+
+        if condition is None: condition = qe.QspLiteral(True)
+        body = qs.QspWhile(condition, body)
+
+        if initializer is not None:
+            body = qs.QspBlock([initializer, body])
+
+        return body
 
     def if_statement(self) -> qs.QspStmt:
         self._consume(tt.LEFT_PAREN, "Expect '(' after 'if'.")
