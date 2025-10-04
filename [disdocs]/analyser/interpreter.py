@@ -8,6 +8,7 @@ from error import ParseError, QspErr
 from token_ import QspToken, QspTokenType as tt
 from environment import QspEnvironment
 from qsp_callable import QspCallable
+from qsp_functions import QspCallableFunction
 
 class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
 
@@ -24,7 +25,9 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
                 return time.time()
             def to_string() -> str:
                 return "<native fn>"
-            return type('ClockFunction', (QspCallable), {
+            return type('ClockFunction',
+                (QspCallable,), # запятая после QspCallable обязательна
+            {
                 'arity': arity,
                 'call': call,
                 '__str__': to_string
@@ -123,6 +126,10 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
         value = self._evaluate(expr.expression)
         # in QSP is as print_line
         if self.line_count == 1: print(str(value))
+
+    def visit_function_stmt(self, stmt:qspstmt.QspFunction) -> None:
+        function = QspCallableFunction(stmt)
+        self.environment.define(stmt.name.lexeme, function)
 
     def visit_print_stmt(self, expr:qspstmt.QspPrint) -> None:
         value = self._evaluate(expr.expression)
