@@ -1,5 +1,6 @@
 import sys
 from typing import Any, List
+import time
 
 import qspexpr
 import qspstmt
@@ -11,7 +12,26 @@ from qsp_callable import QspCallable
 class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
 
     def __init__(self) -> None:
-        self.environment = QspEnvironment()
+        self.globals = QspEnvironment()
+        self.environment = self.globals
+
+        def _create_clock_function() -> QspCallable:
+            """Создаёт экземпляр анонимного класса, методы которого 
+            переопределены согласно интерфейсу QspCallable"""
+            def arity() -> int:
+                return 0
+            def call(interpreter:QspInterpreter, arguments:List[Any]) -> Any:
+                return time.time()
+            def to_string() -> str:
+                return "<native fn>"
+            return type('ClockFunction', (QspCallable), {
+                'arity': arity,
+                'call': call,
+                '__str__': to_string
+            })() # () - создаёт экземпляр класса ClockFunction (QspCallable)
+
+            
+        self.globals.define("clock", _create_clock_function())
         self.line_count = 0 # по этой метке пока что отслеживаем, можем ли мы неявно вызывать принт
                             # на выражениях, но это решение неверное.
 
@@ -88,7 +108,14 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
     def visit_call_expr(self, expr: qspexpr.QspCall) -> Any:
         callee = self._evaluate(expr.callee)
         arguments = [self._evaluate(arg) for arg in expr.arguments]
+        if not isinstance(callee, QspCallable):
+            raise ParseError(expr.paren,
+                "Can only call functions and classes.")
         function:QspCallable = callee
+        if len(arguments) != function.arity():
+            raise ParseError(expr.paren, "Expected " +
+                function.arity() + " arguments but got " +
+                len(arguments) + ".")
         return function.call(self, arguments)
 
     def visit_expression_stmt(self, expr:qspstmt.QspExpression) -> None:

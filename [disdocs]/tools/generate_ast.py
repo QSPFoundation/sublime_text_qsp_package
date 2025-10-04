@@ -22,6 +22,7 @@ class GenerateAst:
 
         arr_stmt = {
             "QspExpression" : "expression:QspExpr",
+            "QspFunction"   : "name:QspToken, params:List[QspToken], body:List[QspStmt]",
             "QspIf"         : "condition:QspExpr, then_branch:QspStmt, " +
                               "else_branch:QspStmt",
             "QspPrint"      : "expression:QspExpr",

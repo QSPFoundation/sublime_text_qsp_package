@@ -21,6 +21,10 @@ class Visitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
+    def visit_function_stmt(self, expr:R) -> R:
+        ...
+
+    @abstractmethod
     def visit_if_stmt(self, expr:R) -> R:
         ...
 
@@ -45,6 +49,14 @@ class QspExpression(QspStmt[R]):
     expression: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_expression_stmt(self)
+
+@dataclass
+class QspFunction(QspStmt[R]):
+    name: QspToken
+    params: List[QspToken]
+    body: List[QspStmt]
+    def accept(self, visitor: Visitor[R]) -> R:
+        return visitor.visit_function_stmt(self)
 
 @dataclass
 class QspIf(QspStmt[R]):

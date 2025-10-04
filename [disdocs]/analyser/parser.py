@@ -21,11 +21,29 @@ class QspParser:
 
     def declaration(self) -> qs.QspStmt:
         try:
+            if self._match(tt.FUN): return self.function("function")
             if self._match(tt.VAR): return self.var_declaration()
             return self.statement()
         except ParseError:
             self.synchronize()
             return
+
+    def function(self, kind:str) -> qs.QspFunction:
+        name:QspToken = self._consume(tt.IDENTIFIER, f"Expect {kind} name.")
+        self._consume(tt.LEFT_PAREN, f"Expect '(' after {kind} name.")
+        parameters:List[QspToken] = []
+        if not self._check(tt.RIGHT_PAREN):
+            while True:
+                if len(parameters) >= 255:
+                    self.error(self._peek(), "Can't have more than 255 parameters.")
+                parameters.append(self._consume(tt.IDENTIFIER, "Expect parameter name."))
+                if not self._match(tt.COMMA):
+                    break
+        self._consume(tt.RIGHT_PAREN, f"Expect ')' after parameters.")
+
+        self._consume(tt.LEFT_BRACE, f"Expect '{{' before {kind} body.")
+        body:List[qs.QspStmt] = self.block()
+        return qs.QspFunction(name, parameters, body)
 
     def statement(self) -> qs.QspStmt:
         if self._match(tt.FOR): return self.for_statement()
