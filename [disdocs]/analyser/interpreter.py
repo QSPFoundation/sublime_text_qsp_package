@@ -128,7 +128,7 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
         if self.line_count == 1: print(str(value))
 
     def visit_function_stmt(self, stmt:qspstmt.QspFunction) -> None:
-        function = QspCallableFunction(stmt)
+        function = QspCallableFunction(stmt, self.environment)
         self.environment.define(stmt.name.lexeme, function)
 
     def visit_print_stmt(self, expr:qspstmt.QspPrint) -> None:

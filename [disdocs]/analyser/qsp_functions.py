@@ -9,11 +9,12 @@ if TYPE_CHECKING:
     from interpreter import QspInterpreter
 
 class QspCallableFunction(QspCallable):
-    def __init__(self, declaration:QspFunction) -> None:
+    def __init__(self, declaration:QspFunction, closure:QspEnvironment) -> None:
         self.declaration = declaration
+        self.closure = closure
 
     def call(self, interpreter: 'QspInterpreter', arguments: List[Any]) -> Any:
-        environment = QspEnvironment(interpreter.globals)
+        environment = QspEnvironment(self.closure)
         for i, param in enumerate(self.declaration.params):
             environment.define(param.lexeme, arguments[i])
         try:
@@ -26,4 +27,5 @@ class QspCallableFunction(QspCallable):
 
     def __str__(self) -> str:
         return f"<fn {self.declaration.name.lexeme}>"
+
 
