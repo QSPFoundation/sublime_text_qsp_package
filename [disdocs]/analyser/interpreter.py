@@ -4,7 +4,7 @@ import time
 
 import qspexpr
 import qspstmt
-from error import ParseError, QspErr
+from error import ParseError, QspErr, ReturnErr
 from token_ import QspToken, QspTokenType as tt
 from environment import QspEnvironment
 from qsp_callable import QspCallable
@@ -134,6 +134,13 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
     def visit_print_stmt(self, expr:qspstmt.QspPrint) -> None:
         value = self._evaluate(expr.expression)
         print(str(value))
+
+    def visit_return_stmt(self, stmt:qspstmt.QspReturn) -> None:
+        value = None
+        if stmt.value != None:
+            value = self._evaluate(stmt.value)
+        raise ReturnErr(value)
+        
 
     def visit_var_stmt(self, stmt:qspstmt.QspVar) -> None:
         value = None

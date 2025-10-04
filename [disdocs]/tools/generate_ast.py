@@ -25,6 +25,7 @@ class GenerateAst:
             "QspFunction"   : "name:QspToken, params:List[QspToken], body:List[QspStmt]",
             "QspIf"         : "condition:QspExpr, then_branch:QspStmt, " +
                               "else_branch:QspStmt",
+            "QspReturn"     : "keyword:QspToken, value:QspExpr",
             "QspPrint"      : "expression:QspExpr",
             "QspVar"        : "name:QspToken, initializer:QspExpr",
             "QspWhile"      : "condition:QspExpr, body:QspStmt",

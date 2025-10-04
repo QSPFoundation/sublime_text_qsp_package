@@ -1,5 +1,6 @@
 import sys
 from token_ import QspToken, QspTokenType as tt
+from typing import Any
 
 class QspErr:
     had_error = False
@@ -35,4 +36,7 @@ class ParseError(RuntimeError):
         self.message = message
         self.token = token
 
-    
+class ReturnErr(RuntimeError):
+    def __init__(self, value:Any) -> None:
+        super().__init__(value)
+        self.value = value

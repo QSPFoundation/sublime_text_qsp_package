@@ -49,6 +49,7 @@ class QspParser:
         if self._match(tt.FOR): return self.for_statement()
         if self._match(tt.IF): return self.if_statement()
         if self._match(tt.PRINT): return self.print_statement()
+        if self._match(tt.RETURN): return self.return_statement()
         if self._match(tt.WHILE): return self.while_statement()
         if self._match(tt.LEFT_BRACE): return qs.QspBlock(self.block())
 
@@ -126,6 +127,14 @@ class QspParser:
         value = self.expression()
         self._consume(tt.SEMICOLON, "Expect ';' avter value.")
         return qs.QspPrint(value)
+
+    def return_statement(self) -> qs.QspStmt:
+        keyword:QspToken = self._previous()
+        value:Optional[qe.QspExpr] = None
+        if not self._check(tt.SEMICOLON):
+            value = self.expression()
+        self._consume(tt.SEMICOLON, "Expect ';' after return value.")
+        return qs.QspReturn(keyword, value)
 
     def expression_statement(self) -> qs.QspStmt:
         expr = self.expression()
