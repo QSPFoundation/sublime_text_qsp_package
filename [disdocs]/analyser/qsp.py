@@ -7,6 +7,7 @@ from scanner import QspScanner
 from parser import QspParser
 # from ast_printer import AstPrinter
 from interpreter import QspInterpreter
+from resolver import QspResolver
 
 class QspInt:
     """ Сканирует QSP-код. Я так думаю, но посмотрим. """
@@ -61,6 +62,12 @@ class QspInt:
 
         if QspErr.had_error: return
         # print(AstPrinter().print(expr))
+
+        resolver = QspResolver(self.interpreter)
+        resolver.resolve(statements)
+
+        if QspErr.had_error: return
+
         self.interpreter.interpret(statements)
 
 def main() -> None:

@@ -18,6 +18,16 @@ class QspEnvironment:
         raise ParseError(name,
             f"Undefined variable '{name.lexeme}'.")
 
+    def get_at(self, distance:int, name:str) -> Any:
+        return self.ancestor(distance).values.get(name)
+
+    def ancestor(self, distance:int) -> 'QspEnvironment':
+        environment = self
+        for i in range(distance):
+            environment = environment.enclosing
+
+        return environment
+
     def define(self, name:str, value:Any) -> None:
         self.values[name] = value
 
@@ -32,3 +42,6 @@ class QspEnvironment:
 
         raise ParseError(name,
             f"Undefined variable '{name.lexeme}'.")
+
+    def assign_at(self, distance:int, name:t.QspToken, value:Any) -> None:
+        self.ancestor(distance).values[name.lexeme] = value

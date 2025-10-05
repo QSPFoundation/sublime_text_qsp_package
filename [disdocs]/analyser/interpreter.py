@@ -1,5 +1,5 @@
 import sys
-from typing import Any, List
+from typing import Any, List, Dict, Optional
 import time
 
 import qspexpr
@@ -15,6 +15,7 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
     def __init__(self) -> None:
         self.globals = QspEnvironment()
         self.environment = self.globals
+        self.locals:Dict[qspexpr.QspExpr, int] = {}
 
         def _create_clock_function() -> QspCallable:
             """Создаёт экземпляр анонимного класса, методы которого 
@@ -151,7 +152,11 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
 
     def visit_assign_expr(self, expr: qspexpr.QspAssign) -> Any:
         value = self._evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+        distance = self.locals.get(expr, None)
+        if distance is not None:
+            self.environment.assign_at(distance, expr.name, value)
+        else:
+            self.globals.assign(expr.name, value)
 
     def visit_block_stmt(self, stmt: qspstmt.QspBlock) -> None:
         self._execute_block(stmt.statements,
@@ -166,6 +171,18 @@ class QspInterpreter(qspexpr.Visitor, qspstmt.Visitor):
     def visit_while_stmt(self, stmt:qspstmt.QspWhile) -> None:
         while self._is_truthy(self._evaluate(stmt.condition)):
             self._execute(stmt.body)
+
+
+    def _look_up_variable(self, name:QspToken, expr:qspexpr.QspExpr) -> Any:
+        distance:Optional[int] = self.locals.get(expr, None)
+
+        if distance is not None:
+            return self.environment.get_at(distance, name.lexeme)
+        else:
+            return self.globals.get(name)
+
+    def resolve(self, expr:qspexpr.QspExpr, depth:int) -> None:
+        self.locals[expr] = depth
 
     def _evaluate(self, expr:qspexpr.QspExpr) -> Any:
         # print('evaluate', expr)
