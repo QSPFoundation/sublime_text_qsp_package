@@ -46,14 +46,14 @@ class Visitor(ABC, Generic[R]):
     def visit_variable_expr(self, expr:R) -> R:
         ...
 
-@dataclass
+@dataclass(eq=False)
 class QspAssign(QspExpr[R]):
     name: QspToken
     value: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_assign_expr(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspBinary(QspExpr[R]):
     left: QspExpr
     operator: QspToken
@@ -61,7 +61,7 @@ class QspBinary(QspExpr[R]):
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_binary_expr(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspCall(QspExpr[R]):
     callee: QspExpr
     paren: QspToken
@@ -69,19 +69,19 @@ class QspCall(QspExpr[R]):
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_call_expr(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspGrouping(QspExpr[R]):
     expression: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_grouping_expr(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspLiteral(QspExpr[R]):
     value: Any
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_literal_expr(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspLogical(QspExpr[R]):
     left: QspExpr
     operator: QspToken
@@ -89,14 +89,14 @@ class QspLogical(QspExpr[R]):
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_logical_expr(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspUnary(QspExpr[R]):
     operator: QspToken
     right: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_unary_expr(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspVariable(QspExpr[R]):
     name: QspToken
     def accept(self, visitor: Visitor[R]) -> R:

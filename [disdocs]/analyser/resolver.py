@@ -41,7 +41,7 @@ class QspResolver(qe.Visitor, qs.Visitor):
         self._declare(stmt.name)
         self._define(stmt.name)
 
-        self._resolve_function(stmt)
+        self._resolve_function(stmt, QspFunctionType.FUNCTION)
 
     def visit_expression_stmt(self, stmt:qs.QspExpression) -> None:
         self._resolve(stmt.expression)

@@ -48,13 +48,13 @@ class Visitor(ABC, Generic[R]):
     def visit_block_stmt(self, expr:R) -> R:
         ...
 
-@dataclass
+@dataclass(eq=False)
 class QspExpression(QspStmt[R]):
     expression: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_expression_stmt(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspFunction(QspStmt[R]):
     name: QspToken
     params: List[QspToken]
@@ -62,7 +62,7 @@ class QspFunction(QspStmt[R]):
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_function_stmt(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspIf(QspStmt[R]):
     condition: QspExpr
     then_branch: QspStmt
@@ -70,34 +70,34 @@ class QspIf(QspStmt[R]):
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_if_stmt(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspReturn(QspStmt[R]):
     keyword: QspToken
     value: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_return_stmt(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspPrint(QspStmt[R]):
     expression: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_print_stmt(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspVar(QspStmt[R]):
     name: QspToken
     initializer: QspExpr
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_var_stmt(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspWhile(QspStmt[R]):
     condition: QspExpr
     body: QspStmt
     def accept(self, visitor: Visitor[R]) -> R:
         return visitor.visit_while_stmt(self)
 
-@dataclass
+@dataclass(eq=False)
 class QspBlock(QspStmt[R]):
     statements: List[QspStmt]
     def accept(self, visitor: Visitor[R]) -> R:

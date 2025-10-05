@@ -86,7 +86,7 @@ class GenerateAst:
         c = class_name[3:].lower()
         b = base_name[3:].lower()
         lines.extend([
-            '@dataclass',
+            '@dataclass(eq=False)',
             f'class {class_name}({base_name}[R]):',
            
         ])
