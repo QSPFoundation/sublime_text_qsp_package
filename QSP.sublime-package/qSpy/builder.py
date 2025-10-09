@@ -28,6 +28,7 @@ class BuildQSP():
 		self.modules_paths = []			# Output files' paths (QSP-files, modules)
 		self.start_module_path = ''		# File, that start in player.
 		self.work_dir = None			# workdir - is dir of qsp-project.json
+		self.start_qsploc_file = ''		# start location path
 
 		# self.start_time = time.time()
 
@@ -99,6 +100,9 @@ class BuildQSP():
 		# Save temp-files Mode:
 		if ('save_temp_files' in self.root):
 			self.save_temp_files = self.root['save_temp_files']
+
+		if ('start_qsploc_file' in self.root):
+				self.start_qsploc_file = self.root['start_qsploc_file']
 
 		# Preprocessor's mode init.
 		if not 'preprocessor' in self.root:
@@ -243,12 +247,17 @@ class BuildQSP():
 	def qsps_build(self, instruction:dict, pp_markers:dict, project:dict) -> None:
 		qsp_module = ModuleQSP()
 		qsp_module.set_converter(self.converter, self.converter_param)
+		if self.start_qsploc_file != '':
+			if os.path.isfile(self.start_qsploc_file):
+				qsp_module.extend_by_file(os.path.abspath(self.start_qsploc_file))
+			else:
+				qsp.write_error_log(f'[203] File don\'t exist. Prove path {self.start_qsploc_file}.')
 		if 'files' in instruction:
 			for file in instruction['files']:
-				qsp_module.extend_by_file(os.path.abspath(file['path']))
+				qsp_module.extend_by_file(os.path.abspath(file['path']), os.path.abspath(self.start_qsploc_file))
 		if 'folders' in instruction:
 			for path in instruction['folders']:
-				qsp_module.extend_by_folder(os.path.abspath(path['path']))
+				qsp_module.extend_by_folder(os.path.abspath(path['path']), os.path.abspath(self.start_qsploc_file))
 		if ('files' not in instruction) and ('folders' not in instruction):
 			qsp_module.extend_by_folder(self.work_dir) # if not pathes, scan all current folder
 		if self.scan_the_files:
@@ -277,17 +286,16 @@ class BuildQSP():
 		root_folder_qgc = os.path.split(folder_to_conv)[0]
 		plugin_path = os.path.join(root_folder_qgc, 'plugins', 'a_txt2gam.dll')
 		# cc_path = os.path.join(root_folder_qgc, 'plugins', 'a_remove_comments.dll')
-		start_qsploc_file = None
 		if 'files' in instruction:
 			for file in instruction['files']:
 				i.append(os.path.abspath(file['path']))
-		if i: start_qsploc_file = i[0]
+		if i and self.start_qsploc_file == '': self.start_qsploc_file = i[0]
 		if 'folders' in instruction:
 			for path in instruction['folders']:
 				i.append(os.path.abspath(path['path']))
 		if ('files' not in instruction) and ('folders' not in instruction):
 			i.append(self.work_dir) # if not pathes, scan all current folder
-		if start_qsploc_file is None: start_qsploc_file = qsp.get_files_list(i[0])[0]
+		if self.start_qsploc_file == '': self.start_qsploc_file = qsp.get_files_list(i[0])[0]
 
 		if self.scan_the_files:
 			scan_files_path = os.path.join(folder_to_conv, 'prv_file.qsps')
@@ -305,8 +313,7 @@ class BuildQSP():
 		params = '"' +self.modes['qgc_path']+ '"'
 		params += f' -m a -r -p "{plugin_path}" -o "{module_path}" -qp4st'
 		params += ' -e "qsps" -i ' + ' '.join([f'"{i_}"' for i_ in i])
-		if start_qsploc_file is not None: params += f' -im "{start_qsploc_file}"'		
-
+		if self.start_qsploc_file != '': params += f' -im "{os.path.abspath(self.start_qsploc_file)}"'
 		# Build TXT2GAM-file
 		proc = subprocess.run(params, stdout=subprocess.PIPE, shell=True)
 		if proc.returncode != 0:

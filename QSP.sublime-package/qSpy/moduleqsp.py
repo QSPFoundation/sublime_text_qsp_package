@@ -27,23 +27,24 @@ class ModuleQSP():
 		self.converter = converter
 		self.converter_param = args
 
-	def extend_by_file(self, file_path:str) -> None: # file_path:abs_path of file
+	def extend_by_file(self, file_path:str, start_qsploc_file:str='') -> None: # file_path:abs_path of file
 		""" Add NewQspsFile by file-path """
-		if os.path.isfile(file_path):
-			src = NewQspsFile()
-			src.read_from_file(file_path)
-			self.src_qsps_file.append(src)
-		else:
-			qsp.write_error_log(f'[203] File don\'t exist. Prove path {file_path}.')
+		if file_path != start_qsploc_file:
+			if os.path.isfile(file_path):
+				src = NewQspsFile()
+				src.read_from_file(file_path)
+				self.src_qsps_file.append(src)
+			else:
+				qsp.write_error_log(f'[203] File don\'t exist. Prove path {file_path}.')
 
-	def extend_by_folder(self, folder_path:str) -> None:
+	def extend_by_folder(self, folder_path:str, start_qsploc_file:str='') -> None:
 		""" Add SrcQspsFile-objs by folder-path """
 		if not os.path.isdir(folder_path):
 			qsp.write_error_log(f'[204] Folder don\'t exist. Prove path {folder_path}.')
 			return None
 		for el in qsp.get_files_list(folder_path):
 			file_path = os.path.abspath(el) # TODO: if el is abspath - del absing path of el
-			self.extend_by_file(file_path)
+			self.extend_by_file(file_path, start_qsploc_file)
 
 	def extend_by_src(self, qsps_lines:List[str]) -> None:
 		""" Add NewQspsFile by qsps-src-code strings """
