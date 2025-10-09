@@ -1,6 +1,6 @@
 import os
 import subprocess
-from typing import (List)
+from typing import (List, Literal, Dict)
 
 from . import function as qsp
 from .qsps_to_qsp import NewQspsFile
@@ -65,7 +65,8 @@ class ModuleQSP():
 		return ('utf-8' if self.converter == 'qsps_to_qsp' else 'utf-16-le')
 
 
-	def preprocess_qsps(self, pponoff:str, pp_markers:dict) -> None:
+	def preprocess_qsps(self, pponoff:Literal['Hard-off', 'Off', 'On'],
+						pp_markers:Dict[str, bool]) -> None:
 		""" 
 			На данном этапе у нас есть объекты класса NewQspsFile, которые включают в себя список
 			строк для каждого файла, т.е. цикл чтения уже завершён. Теперь мы можем обработать эти
@@ -80,7 +81,7 @@ class ModuleQSP():
 			(f == 'Off' and  "!@pp:on\n" in s) or (f == 'On' and not "!@pp:off\n" in s))
 		for src in self.src_qsps_file:
 			if _met_condition(pponoff, (src.get_qsps_line(0), src.get_qsps_line(1))):
-				arguments = {"include":True, "pp":True, "savecomm": False}
+				arguments:Dict[str, bool] = {"include":True, "pp":True, "savecomm": False}
 				src.preprocess(arguments, pp_markers)
 
 	def src_to_text(self) -> str:

@@ -1,5 +1,5 @@
 import re
-from typing import (List, Literal, Tuple, Dict, Match, Optional, Callable)
+from typing import (List, Literal, Tuple, Dict, Match, Optional, Callable, Union)
 
 # regular expressions constants
 _DUMMY_MATCH = re.compile(r'^\s*$').match('')
@@ -106,16 +106,6 @@ def close_condition(args:dict) -> None:
 	args["include"] = prev_args["include"]
 	args["pp"] = prev_args["pp"]
 	args["savecomm"] = prev_args["savecomm"]
-
-# функция переназначающая локальные для текущего файла режимы из глобальных
-def replace_args(arguments:dict, args:dict) -> None:
-	""" Resetting of local-modes from global-modes """
-	if "include" in args:
-		arguments["include"] = args["include"]
-	if "pp" in args:
-		arguments["pp"] = args["pp"]
-	if "savecomm" in args:
-		arguments["savecomm"] = args["savecomm"]
 	
 
 def find_speccom_scope(string_line:str) -> Tuple[Optional[str], str, Match[str], str]:
@@ -231,12 +221,12 @@ def pp_this_file(file_path:str, args:dict, variables:dict = None) -> str:
 	result_lines = pp_this_lines(file_lines, args, variables)
 	return ''.join(result_lines)
 
-def pp_this_lines(file_lines:List[str], args:dict, variables:dict = None) -> List[str]:
+def pp_this_lines(file_lines:List[str], args:Dict[str, bool], variables:Dict[str, bool] = None) -> List[str]:
 	""" List of lines Preprocessing. Return list of lines after preprocesing. """
 	# стандартные значения, если не указаны:
-	if variables is None: variables = { "Initial": True, "True": True, "False": False }
+	if not variables: variables = { "Initial": True, "True": True, "False": False }
 	result_text:List[str] = [] # результат обработки: список строк
-	arguments:dict = {
+	arguments:Dict[str, Union[bool, Dict[str, bool]]] = {
 		# словарь режимов (текущих аргументов):
 		"include": True, # пока включен этот режим, строки добавляются в результат
 		"pp": True, # пока включен этот режим, строки обрабатываются парсером
@@ -246,7 +236,7 @@ def pp_this_lines(file_lines:List[str], args:dict, variables:dict = None) -> Lis
 		"quote": "", # тип открытых кавычек
 		"if": { "include": True, "pp": True, "savecomm": False } # список инструкций до выполнения блока условий
 	}
-	replace_args(arguments, args) # если переданы глобальные аргументы, подменяем текущие на глобальные
+	arguments.update(args)
 	for line in file_lines:
 		if _PP_DIRECTIVE_START.match(line): # проверяем является ли строка командой
 			comm_list = line.split(':')# распарсим команду

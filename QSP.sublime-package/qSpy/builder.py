@@ -2,7 +2,7 @@ import os
 import shutil 
 import subprocess
 import json
-from typing import Dict
+from typing import Dict, Union, List, Optional
 
 # Importing my modules.
 from . import function as qsp
@@ -18,25 +18,25 @@ class BuildQSP():
 	"""
 	def __init__(self, modes:dict) -> None:
 		# Init main fields:
-		self.modes = modes 											# Arguments from sys. Modes of build.
-		self.converter = ('qgc' if modes.get('qgc_path') else 'qsps_to_qsp') # Converter application path (exe in win).
-		self.converter_param = ''									# Converter's parameters (key etc.)
-		self.player = 'C:\\Program Files\\QSP Classic 5.9.2\\bin\\qspgui.exe'	# Player application path (exe in win)
+		self.modes:Dict[str, Union[str, bool]] = modes 						 	 # Arguments from sys. Modes of build.
+		self.converter:str = ('qgc' if modes.get('qgc_path') else 'qsps_to_qsp') # Converter application path (exe in win).
+		self.converter_param:str = ''											 # Converter's parameters (key etc.)
+		self.player:str = 'C:\\Program Files\\QSP Classic 5.9.2\\bin\\qspgui.exe'# Player application path (exe in win)
 
 		# Default inits.
-		self.root:Dict = {}					# qsp-project.json dict
-		self.save_temp_files = False	# save temporary qsps-files or not
-		self.modules_paths = []			# Output files' paths (QSP-files, modules)
-		self.start_module_path = ''		# File, that start in player.
-		self.work_dir = None			# workdir - is dir of qsp-project.json
+		self.root:Dict[str, Union[str, list, dict]] = {}					# qsp-project.json dict
+		self.save_temp_files:bool = False	# save temporary qsps-files or not
+		self.modules_paths:List[str] = []	# Output files' paths (QSP-files, modules)
+		self.start_module_path:str = ''		# File, that start in player.
+		self.work_dir:str = None			# workdir - is dir of qsp-project.json
 
 		# self.start_time = time.time()
 
-		self.assets = None
+		self.assets:List[Dict[str, Union[str, list]]] = None
 		# Scanned files proves location
-		self.scan_the_files = False		# Marker of scanning files
-		self.scan_files_locname = None	# location name
-		self.scan_files_locbody = []	# location body
+		self.scan_the_files:bool = False		# Marker of scanning files
+		self.scan_files_locname:str = None	# location name
+		self.scan_files_locbody:list[str] = []	# location body
 		self.SCANFILES_LOCNAME = 'prv_file' # constanta of standart locname
 
 		# Init work dir.
@@ -52,8 +52,8 @@ class BuildQSP():
 			workdir sets at dir of point file.
 		"""
 		# start_time = time.time()
-		point_file = self.modes['point_file']
-		project_folder = qsp.search_project_folder(point_file)
+		point_file:str = self.modes['point_file']
+		project_folder:str = qsp.search_project_folder(point_file)
 
 		if self.project_file_is_need(project_folder, point_file, self.player):
 			# If project_folder is not found, but other
@@ -159,7 +159,6 @@ class BuildQSP():
 		for resource in self.assets:
 			self.copy_res(resource)
 		
-
 	def copy_res(self, resource):
 		if not 'output' in resource:
 			return
@@ -228,19 +227,21 @@ class BuildQSP():
 
 	def build_qsp_files(self):
 		# start_time = time.time()
-		pp_markers = {'Initial':True, 'True':True, 'False':False} # Preproc markers, variables.
-		project = self.root['project']
+		pp_markers:Dict[str, bool] = {'Initial':True, 'True':True, 'False':False} # Preproc markers, variables.
+		project:List[Dict[str, Union[str, list]]] = self.root['project']
 		# Get instructions list from 'project'.
+		_CONV:str = self.converter
+		_PPMODE:str = self.root['preprocessor']
 		for instruction in project:
-			if self.converter == 'qgc' and self.root['preprocessor'] == 'Hard-off':
-				self.qgc_build(instruction, pp_markers, project)
-			elif self.converter == 'qgc':
+			if _CONV == 'qgc' and _PPMODE == 'Hard-off':
+				self.qgc_build(instruction, project)
+			elif _CONV == 'qgc':
 				self.converter = 'qsps_to_qsp'
 				self.qsps_build(instruction, pp_markers, project)
 			else:
 				self.qsps_build(instruction, pp_markers, project)
 
-	def qsps_build(self, instruction:dict, pp_markers:dict, project:dict) -> None:
+	def qsps_build(self, instruction:dict, pp_markers:Dict[str, bool], project:dict) -> None:
 		qsp_module = ModuleQSP()
 		qsp_module.set_converter(self.converter, self.converter_param)
 		if 'files' in instruction:
@@ -270,7 +271,7 @@ class BuildQSP():
 		if os.path.isfile(qsp_module.output_qsp):
 			self.modules_paths.append(qsp_module.output_qsp)		
 
-	def qgc_build(self, instruction:dict, pp_markers:dict, project:dict) -> None:
+	def qgc_build(self, instruction:dict, project:dict) -> None:
 		# prepare parameters
 		i = [] # pathes to source files and folders
 		folder_to_conv = os.path.split(self.modes['qgc_path'])[0]

@@ -4,6 +4,7 @@
 import os
 import re
 import concurrent.futures
+from typing import List, Dict
 
 if __name__ == "__main__":
 	from function import (del_first_pref)
@@ -325,16 +326,16 @@ class NewQspsFile():
 	def __init__(self) -> None:
 		"""	initialise """
 		# main fields:
-		self.locations = []				# list[NewQspLocation]
-		self.src_strings = []			# all strings of file
+		self.locations:List[NewQspLocation] = []	# list[NewQspLocation]
+		self.src_strings:List[str] = []				# all strings of file
 		self.line_offsets = []
-		self.converted_strings:list = []	# output converted strings
+		self.converted_strings:list[str] = []		# output converted strings
 
 		# files fields
-		self.input_file = ''	# abspath of qsps-file
-		self.output_folder = ''	# output folder name
-		self.file_name = ''		# file name without extension
-		self.output_file = ''	# output gamefile path
+		self.input_file:str = ''	# abspath of qsps-file
+		self.output_folder:str = ''	# output folder name
+		self.file_name:str = ''		# file name without extension
+		self.output_file:str = ''	# output gamefile path
 
 		# cache fields
 		self.char_cache = {}
@@ -348,13 +349,14 @@ class NewQspsFile():
 		
 	def set_file_source(self, file_strings:list=None) -> None:
 		""" Set source strings of file """
-		if file_strings:
-			self.src_strings = file_strings[:]
-			self.line_offsets = []
-			offset = 0
-			for line in self.src_strings:
-				self.line_offsets.append(offset)
-				offset += len(line)
+		if not file_strings: return
+
+		self.src_strings = file_strings[:]
+		self.line_offsets = []
+		offset = 0
+		for line in self.src_strings:
+			self.line_offsets.append(offset)
+			offset += len(line)
 
 	def get_source(self) -> list:
 		""" Return sources qsps-lines """
@@ -364,13 +366,17 @@ class NewQspsFile():
 		""" Return one line from source qsps-line """
 		return self.src_strings[qsps_line_number]
 
+	def get_qsps_lines(self, qsps_line_start:int, qsps_line_end:int) -> List[str]:
+		return self.src_strings[qsps_line_start:qsps_line_end]
+
 	def convert_file(self, input_file:str) -> None:
 		""" Convert qsps-file to qsp-file """
-		if os.path.isfile(input_file):
-			self.read_from_file(input_file)
-			self.split_to_locations()
-			self.to_qsp()
-			self.save_to_file()
+		if not os.path.isfile(input_file): return
+		
+		self.read_from_file(input_file)
+		self.split_to_locations()
+		self.to_qsp()
+		self.save_to_file()
 		
 	def read_from_file(self, input_file:str=None) -> None:
 		""" Read qsps-file and set source strings """
@@ -397,9 +403,9 @@ class NewQspsFile():
 		""" Return converted QSP-strings """
 		return self.converted_strings
 	
-	def preprocess(self, args:dict, pp_variables:dict) -> None:
+	def preprocess(self, args:Dict[str, bool], pp_variables:Dict[str, bool]) -> None:
 		""" Preprocessor of qsps-sources. Run only before splitting! """
-		if self.locations: return None
+		if self.locations: return None # локации уже существуют, файл обработан
 		self.src_strings = pp_this_lines(self.src_strings, args, pp_variables)
 
 	def split_to_locations(self) -> None:
