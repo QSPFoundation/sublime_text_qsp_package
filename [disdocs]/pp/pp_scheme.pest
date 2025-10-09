@@ -1,0 +1,13 @@
+QSPSPP {
+    ppDirectiveLine = "!@pp:" (directive | anyString)
+    directive = (onDirective
+              | offDirective
+              | savecommDirective
+              | nosavecommDirective
+              | defineVarDirective
+              | noppDirective
+              | ifDirective
+              | endifDirective) endLine
+
+    EOF = end // end - buildin instruction End Of File
+}
