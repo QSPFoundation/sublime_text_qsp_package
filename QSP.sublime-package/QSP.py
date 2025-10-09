@@ -149,10 +149,7 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 		if sublime.platform() == 'windows':
 			qgc_path = os.path.join(
 				sublime.packages_path(),
-				'QSP',
-				'qgc',
-				'app',
-				'QGC.exe')
+				'QSP', 'qgc', 'app', 'QGC.exe')
 			if os.path.isfile(qgc_path):
 				args['qgc_path'] = qgc_path
 
@@ -168,8 +165,8 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 			project_file = 'project.json'
 			project_folder = qsp.search_project_folder(
 				args['point_file'],
-				print_error=False,
-				project_file=project_file)
+				print_error = False,
+				project_file = project_file)
 			if project_folder is not None:
 				project_file_path = os.path.join(project_folder, project_file)
 				with open(project_file_path, 'r', encoding='utf-8') as fp:
@@ -184,6 +181,7 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 				with open(os.path.join(project_folder, 'qsp-project.json'), 'w', encoding='utf-8') as fp:
 					json.dump(root, fp, indent=4, ensure_ascii=False)
 				os.remove(project_file_path)
+				
 		# old_time = time.time()
 		# Initialise of Builder:
 		builder = BuildQSP(args)

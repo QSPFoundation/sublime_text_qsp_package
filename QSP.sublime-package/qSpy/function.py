@@ -1,6 +1,8 @@
 import sys
 import os
 
+from typing import Dict, Union, List
+
 # standart funcs for
 
 def safe_mk_fold(new_path:str) -> None:
@@ -11,7 +13,7 @@ def write_error_log(error_text:str) -> None:
 	""" Write message in console. """
 	print(error_text)
 
-def get_files_list(folder:str, filters:list=None) -> list:
+def get_files_list(folder:str, filters:list=None) -> List[str]:
 	""" Create list of files in folder and includes folders. """
 	if filters is None: filters = ['.qsps', '.qsp-txt', '.txt-qsp']
 	build_files = []
@@ -31,27 +33,29 @@ def compare_paths(path1:str, path2:str) -> tuple:
 	path2 = os.path.relpath(path2, start)
 	return path1, path2
 
-def search_project_folder(path:str, print_error:bool=True, project_file:str='qsp-project.json') -> str:
+def search_project_folder(path:str, print_error:bool=True,
+						project_file_name:str='qsp-project.json') -> str:
 	"""
 		Find project-file and return folder path whith project.
 		In other return None.
 	"""
 	project_folder = (os.path.split(path)[0] if os.path.isfile(path) else path)
-	while not os.path.isfile(os.path.join(project_folder, project_file)):
+	while not os.path.isfile(os.path.join(project_folder, project_file_name)):
 		if os.path.ismount(project_folder):
 			if print_error:
-				write_error_log(f"[202] not found 'qsp-project.json' file for this project. Prove path {path}.")
+				write_error_log(f"[202] not found '{project_file_name}' "+
+					f"file for this project. Prove path {path}.")
 			return None
 		project_folder = os.path.split(project_folder)[0]
 	else:
 		return project_folder
 
 # функция возвращает словарь команд, в зависимости от полученных от системы аргументов
-def parse_args(qsp_mode:str, point_file:str) -> dict:
+def parse_args(qsp_mode:str, point_file:str) -> Dict[str, Union[bool, str]]:
 	"""
 		Returns modes dictionary, based on systems arguments.
 	"""
-	args = {}
+	args:Dict[str, Union[bool, str]] = {}
 
 	args['build'] = (qsp_mode in ('--br', '--build'))
 	args['run'] = (qsp_mode in ('--br', '--run'))	
@@ -61,10 +65,13 @@ def parse_args(qsp_mode:str, point_file:str) -> dict:
 	else:
 		args['point_file'] = os.path.join(os.getcwd(), sys.argv[0])
 
+	args['qgc_path'] = None
+
 	return args
 
 def clear_locname(loc_name:str) -> str:
 	""" Clear qsp-location name of extra charges """
+	# TODO: переименовать в locaname_to_regexp
 	return (loc_name.replace('\\', '\\\\')
 		.replace('[', r'\[')
 		.replace(']', r'\]')

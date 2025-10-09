@@ -2,6 +2,7 @@ import os
 import shutil 
 import subprocess
 import json
+from typing import Dict
 
 # Importing my modules.
 from . import function as qsp
@@ -18,12 +19,12 @@ class BuildQSP():
 	def __init__(self, modes:dict) -> None:
 		# Init main fields:
 		self.modes = modes 											# Arguments from sys. Modes of build.
-		self.converter = ('qgc' if 'qgc_path' in modes else 'qsps_to_qsp') # Converter application path (exe in win).
+		self.converter = ('qgc' if modes.get('qgc_path') else 'qsps_to_qsp') # Converter application path (exe in win).
 		self.converter_param = ''									# Converter's parameters (key etc.)
-		self.player = 'C:\\Program Files\\QSP\\qsp580\\qspgui.exe'	# Player application path (exe in win)
+		self.player = 'C:\\Program Files\\QSP Classic 5.9.2\\bin\\qspgui.exe'	# Player application path (exe in win)
 
 		# Default inits.
-		self.root = {}					# qsp-project.json
+		self.root:Dict = {}					# qsp-project.json dict
 		self.save_temp_files = False	# save temporary qsps-files or not
 		self.modules_paths = []			# Output files' paths (QSP-files, modules)
 		self.start_module_path = ''		# File, that start in player.
@@ -101,8 +102,7 @@ class BuildQSP():
 			self.save_temp_files = self.root['save_temp_files']
 
 		# Preprocessor's mode init.
-		if not 'preprocessor' in self.root:
-			self.root['preprocessor'] = 'Off'
+		self.root['preprocessor'] = self.root.get('preprocessor', 'Off')
 
 		if ('assets' in self.root):
 			self.assets = self.root['assets']
@@ -387,7 +387,8 @@ class BuildQSP():
 		return all((
 			project_folder is None,
 			os.path.splitext(point_file)[1] == '.qsps',
-			os.path.isfile(player_path)))
+			os.path.isfile(player_path))) # TODO: Зачем проверять корректность плеера???
+			# его можно проверить в момент запуска. Игра может быть собрана, но не запущена
 
 	@staticmethod
 	def get_point_project(point_file:str, player:str) -> dict:

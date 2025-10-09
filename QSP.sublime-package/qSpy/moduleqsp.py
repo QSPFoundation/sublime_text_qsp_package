@@ -34,12 +34,12 @@ class ModuleQSP():
 			src.read_from_file(file_path)
 			self.src_qsps_file.append(src)
 		else:
-			qsp.write_error_log(f'[203] File don\'t exist. Prove path {file_path}.')
+			qsp.write_error_log(f'[ModuleQSP:001] File don\'t exist. Prove path {file_path}.')
 
 	def extend_by_folder(self, folder_path:str) -> None:
 		""" Add SrcQspsFile-objs by folder-path """
 		if not os.path.isdir(folder_path):
-			qsp.write_error_log(f'[204] Folder don\'t exist. Prove path {folder_path}.')
+			qsp.write_error_log(f'[ModuleQSP:002] Folder don\'t exist. Prove path {folder_path}.')
 			return None
 		for el in qsp.get_files_list(folder_path):
 			file_path = os.path.abspath(el) # TODO: if el is abspath - del absing path of el
