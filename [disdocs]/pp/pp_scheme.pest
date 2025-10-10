@@ -1,13 +1,78 @@
-QSPSPP {
-    ppDirectiveLine = "!@pp:" (directive | anyString)
-    directive = (onDirective
-              | offDirective
-              | savecommDirective
-              | nosavecommDirective
-              | defineVarDirective
-              | noppDirective
-              | ifDirective
-              | endifDirective) endLine
+QspsPP {
+  space := " " | "\t"    // не пропускаем \n/\r\n автоматически
 
-    EOF = end // end - buildin instruction End Of File
+  Lines  = Line* fileEnd
+
+  Line = DirectiveLine | AnyLine | EmptyLine
+
+  AnyLine        = (~lineEnd any)+ (&lineEnd | &fileEnd)
+  DirectiveLine  = openDirectiveStmt (Directive | anyLine) (&lineEnd | &fileEnd)
+  EmptyLine      = lineEnd
+
+  Directive = (onStmt
+              | offStmt
+              | savecommStmt
+              | noSavecommStmt
+              | DefineVarDirective
+              | noppStmt
+              | IfDirective
+              | endifStmt)
+      
+  ConditionResolve = (onStmt
+                    | offStmt
+                    | savecommStmt
+                    | noSavecommStmt
+                    | noppStmt
+                    | includeStmt
+                    | excludeStmt)
+
+  // complex
+  IfDirective = ifStmt leftBrace EqualExpression rightBrace thenStmt ConditionResolve+
+  DefineVarDirective = varStmt leftBrace DefineVarExpression rightBrace
+
+  // define var
+  DefineVarExpression = varName (assignmentOperator varName)?
+
+  // Equal Expression
+  EqualExpression = varName (logicOperator varName)*
+
+  // unions
+  logicOperator = (logicKwOperator | equalEqual | equalNotEqual)
+  logicKwOperator = (andOperator | orOperator | notOperator)
+
+  // Literals
+  varName = ~logicOperator (alnum)+ // buildin instruction any letter
+  anyLine = (~lineEnd any)+ // buildin instruction any symbol
+
+  // Tokens
+  openDirectiveStmt = "!@pp:"
+  // markers of commands
+  ifStmt = "if"
+  thenStmt = ":"
+  varStmt = "var"
+    // commands
+    onStmt = "on"
+    offStmt = "off"
+    savecommStmt = "savecomm"
+    noSavecommStmt = "nosavecomm"
+    noppStmt = "nopp"
+    includeStmt = "include"
+    excludeStmt = "exclude"
+    // signs
+    leftBrace = "("
+    rightBrace = ")"
+    assignmentOperator = "="
+    equalEqual = "=="
+    equalNotEqual = "!="
+    andOperator = "and"
+    orOperator = "or"
+    notOperator = "not"
+
+  endifStmt = "endif"
+
+
+  // endings
+  lineEnd = "\r\n" | "\n" | "\r"
+  fileEnd = end
+  
 }
