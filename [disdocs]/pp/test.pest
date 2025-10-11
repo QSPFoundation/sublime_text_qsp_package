@@ -1,0 +1,17 @@
+/* It is OHMjs Grammar  */
+TestPP {
+	space := " " | "\t"
+	
+    File = (StmtLine newline?)* eof
+    
+    StmtLine = (CommentStmt | OtherStmt)
+	
+	OtherStmt = rawChar+
+    CommentStmt = "!" rawChar*
+    
+    rawChar = ~newline any
+
+	
+    newline = "\r\n" | "\n" | "\r"
+    eof = end
+}

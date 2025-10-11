@@ -1,0 +1,64 @@
+QspsPP {
+    space := " " | "\t"    // не пропускаем \n/\r\n автоматически
+    
+    L = Comment* fileEnd
+    
+    Comment = commentStmt CommentBody
+    
+    commentStmt = "!"
+    
+    CommentBody = (rawCodeBlock | rawStringLiteral | commentChar)* (&lineEnd | &fileEnd)
+    
+    commentChar = ~lineEnd any
+    rawStringLiteral = rawSingleQuotedString | rawDoubleQuotedString
+
+    rawSingleQuotedString        = "'" (apostropheEscape | rawSingleQuotedChar)* "'"
+    rawDoubleQuotedString        = "\"" (quoteEscape | rawDoubleQuotedChar)* "\""
+
+    rawSingleQuotedChar          = ~("'") any
+    rawDoubleQuotedChar          = ~("\"") any
+
+    apostropheEscape             = "''"
+    quoteEscape                  = "\"\""
+    
+    rawCodeBlock               = "{" rawCodeBlockContent* "}"
+    rawCodeBlockContent        = rawCodeBlock
+                               | rawStringLiteral
+                               | rawCodeParentheses
+                               | rawCodeBrackets
+                               | rawCodeBlockChar
+
+    rawCodeParentheses         = "(" rawCodeBlockContent* ")"
+    rawCodeBrackets            = "[" rawCodeBlockContent* "]"
+
+    rawCodeBlockChar = ~("{" | "}" | "'" | "\"" | "(" | ")" | "[" | "]") any
+  
+  
+    Lines  = Line* fileEnd
+  
+    Line = CodeBlock | AnyLinesBlock | EmptyLine
+    
+    AnyLinesBlock = (doubleQuotesString | singleQuotesString | anyLine)+ (&lineEnd | &fileEnd)
+    
+    CodeBlock = leftBrace CodeBlockContent rightBrace
+    CodeBlockContent = AnyLinesBlock | CodeBlock
+      
+    anyLine = (~lineEnd ~quotes ~leftBrace any)+  
+    doubleQuotesString = doubleQuote (~doubleQuote any)* doubleQuote
+    singleQuotesString = singleQuote ( ~singleQuote any)* singleQuote
+    
+  
+    EmptyLine      = lineEnd
+  
+   quotes = doubleQuote | singleQuote
+   
+   doubleQuote = "\""
+   singleQuote = "'"
+   leftBrace = "{"
+   rightBrace = "}"
+  
+    // endings
+    lineEnd = "\r\n" | "\n" | "\r"
+    fileEnd = end
+    
+  }
