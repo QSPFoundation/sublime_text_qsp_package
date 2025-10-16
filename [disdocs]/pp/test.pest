@@ -1,16 +1,32 @@
 /* It is OHMjs Grammar  */
 TestPP {
 	space := " " | "\t"
-	
-    File = (StmtLine newline?)* eof
     
-    StmtLine = (CommentStmt | OtherStmt)
-	
-	OtherStmt = rawChar+
-    CommentStmt = "!" rawChar*
-    
+    // Файл состоит из набора сырых строк и локаций, каждая из которых должна оканчиваться символами
+    // переноса на новые строки. Файл кончается концом файла.
+
+    QspsFile = (QspLocation | RawLinesBlock | EmptyLine)* eof
+
+    // Сырые строки группируются в блоки, не начинающиеся с маркера локации
+    RawLinesBlock = (nonLocRawLine (newline | &eof))+
+    nonLocRawLine = ~locDefKwrd rawLine
+    // сырая строка — это любые символы, кроме символа переноса строки
+    rawLine = rawChar+
     rawChar = ~newline any
 
+    QspLocation = locOpen LocBody locClose newline?
+
+    locOpen = locDefKwrd rawLine? newline
+    // Строки тела локации не должны начинаться с маркера конца локации
+    LocBody = ((~locEndKwrd rawLine)? newline)*
+    locClose = locEndKwrd rawLine?
+
+    // Пустая строка между блоками
+    EmptyLine = newline+
+
+	locDefKwrd = "#"
+    locEndKwrd = "--" "-"*
+	commKwrd = "!"
 	
     newline = "\r\n" | "\n" | "\r"
     eof = end

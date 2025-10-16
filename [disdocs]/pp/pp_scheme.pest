@@ -3,11 +3,16 @@ QspsPP {
 
   File = (Line newline?)* eof
 
-  Line = CommentStmt | OtherStmt (stmtDelimiter (OtherStmt | CommentStmt))* | EmptyLine
+  Line = CommentStmt
+       | StmtsLine
+       | EmptyLines
+
+  EmptyLines = newline+
 
   CommentStmt = (PpDirectiveLine | SpecialComment | SimpleComment) (&newline | &eof)
 
-  PpDirectiveLine  = openDirectiveStmt PpDirective 
+  PpDirectiveLine  = openDirectiveStmt PpDirective
+  PpDirectiveFullLine = PpDirectiveLine (newline | eof)
   SpecialComment = (lessSpecCommKwrd | simpleSpecCommKwrd) CommentBody
   SimpleComment = commentKwrd CommentBody
 
@@ -16,9 +21,9 @@ QspsPP {
 
     commCodeBlock        = leftBrace commCodeBlockContent* rightBrace
 
-    commCodeBlockContent = commCodeBlock
+    commCodeBlockContent = (commCodeBlock
                         | rawStringLiteral
-                        | commCodeBlockChar
+                        | rawCommentChar)+
 
     rawCommentChar = ~("{" | "}" | "'" | "\"") any
     
@@ -32,6 +37,25 @@ QspsPP {
   // Simple Comment Token
   commentKwrd = "!"
 
+  StmtsLine = OtherStmt (stmtDelimiter OtherStmt)* (stmtDelimiter CommentStmt)? (&newline | &eof)
+  OtherStmt = ( rawStringLiteral
+              | BracketBlock
+              | ParenBlock
+              | CodeBlock
+              | rawOtherStmtChar)+
+
+  rawOtherStmtChar = ~(stmtDelimiter | newline) any
+
+  BracketBlock = leftBracket OtherStmt* rightBracket
+  ParenBlock = leftParen OtherStmt* rightParen
+  CodeBlock = leftBrace CodeBlockContent* rightBrace
+
+  CodeBlockContent = ( CodeBlock
+                     | PpDirectiveFullLine
+                     | rawCodeBlockChar)+
+
+  rawCodeBlockChar = ~(leftBrace | rightBrace) any
+
   // --------------------------------- PreProcessors Directives --------------------------------- //
     PpDirective = (DefineVarDirective
                 | IfDirective
@@ -40,7 +64,8 @@ QspsPP {
                 | onStmt
                 | offStmt
                 | noppStmt
-                | endifStmt)
+                | endifStmt
+                | anyLine)
         
     ConditionResolve = (onStmt
                       | offStmt
@@ -109,6 +134,8 @@ QspsPP {
   // ------------------------------------ Raw Strings ------------------------------------ //
 
     // Tokens
+    stmtDelimiter = "&"
+
     leftParen = "("
     rightParen = ")"
     leftBrace = "{"
