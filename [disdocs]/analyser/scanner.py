@@ -99,11 +99,14 @@ class QspScanner:
         return (self._current >= len(self.source))
 
     def advance(self) -> str: # one char
+        """ получаем текущий символ и передвигаем указатель на следующий."""
         c = self.source[self._current]
         self._current += 1
         return c
 
     def match(self, expected:str) -> bool:
+        """ проверяем, совпадает ли текущий символ с ожидаемым.
+        Если да, то передвигаем указатель на следующий."""
         if self.is_at_end(): return False
         if self.source[self._current] != expected: return False
 
