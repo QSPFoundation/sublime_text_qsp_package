@@ -1,9 +1,19 @@
 QspsPP {
   space := " " | "\t"    // не пропускаем \n/\r\n автоматически
 
-  File = (Line newline?)* eof
+  // File = (Line newline?)* eof
+  QspsFile = (QspLocation | RawLinesBlock | EmptyLines)* eof
 
-  Line = CommentStmt
+  QspLocation = locOpen LocBody locClose newline?
+  locOpen = locDefKwrd rawLine? newline
+  // Строки тела локации не должны начинаться с маркера конца локации
+  LocBody = ((~locEndKwrd LocationLine)? newline)*
+  locClose = locEndKwrd rawLine?
+
+  RawLinesBlock = (nonLocRawLine (newline | &eof))+
+  nonLocRawLine = (PpDirectiveLine | ~locDefKwrd rawLine)
+
+  LocationLine = CommentStmt
        | StmtsLine
        | EmptyLines
 
@@ -22,7 +32,7 @@ QspsPP {
     commCodeBlock        = leftBrace commCodeBlockContent* rightBrace
 
     commCodeBlockContent = (commCodeBlock
-                        | rawStringLiteral
+                        | rawStringLiteral // TODO: возможно нужно убрать обработку строк внутри блоков {}
                         | rawCommentChar)+
 
     rawCommentChar = ~("{" | "}" | "'" | "\"") any
@@ -65,7 +75,7 @@ QspsPP {
                 | offStmt
                 | noppStmt
                 | endifStmt
-                | anyLine)
+                | rawLine)
         
     ConditionResolve = (onStmt
                       | offStmt
@@ -117,6 +127,9 @@ QspsPP {
 
     endifStmt = "endif"
 
+    locDefKwrd = "#"
+    locEndKwrd = "--" "-"*
+
   // --------------------------------- PreProcessors Directives --------------------------------- //
 
 
@@ -148,7 +161,7 @@ QspsPP {
 
   // general rules
   rawChar = ~newline any
-  anyLine = rawChar+
+  rawLine = rawChar+
 
   // endings
   newline = "\r\n" | "\n" | "\r"
