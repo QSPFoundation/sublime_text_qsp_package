@@ -55,12 +55,15 @@ class PpTokenType(IntEnum):
     OR_OPERATOR = auto()
     NOT_OPERATOR = auto()
 
+    LOC_NAME = auto()
+    RAW_LINE = auto()
+
     EOF = auto()
 
 # ---------------------------- Token Class ------------------------------ #
 @dataclass
 class PpToken:
     ttype:PpTokenType
-    lexeme:str
-    literal:Any
-    line:int
+    lexeme:str # вся лексема целиком
+    literal:Any # только значение
+    line:int # строка, в которой токен находится

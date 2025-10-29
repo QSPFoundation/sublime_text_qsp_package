@@ -5,8 +5,9 @@ QspsPP {
   QspsFile = (QspLocation | RawLinesBlock | EmptyLines)* eof
 
   QspLocation = locOpen LocBody locClose newline?
-  locOpen = locDefKwrd rawLine? newline
+  locOpen = locDefKwrd locName? newline
   // Строки тела локации не должны начинаться с маркера конца локации
+  locName = rawLine
   LocBody = ((~locEndKwrd LocationLine)? newline)*
   locClose = locEndKwrd rawLine?
 
