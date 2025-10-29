@@ -30,8 +30,9 @@ class PpTokenType(IntEnum):
 
     # Comments tokens:
     COMMENT_KWRD = auto()
-    SIMPLE_SPEC_COMM_KWRD = auto()
-    LESS_SPEC_COMM_KWRD = auto()
+    SIMPLE_SPEC_COMM = auto()
+    LESS_SPEC_COMM = auto()
+    SIMPLE_COMM = auto()
 
     # PreProcessors Directives tokens:
     OPEN_DIRECTIVE_STMT = auto()
@@ -54,6 +55,8 @@ class PpTokenType(IntEnum):
     AND_OPERATOR = auto()
     OR_OPERATOR = auto()
     NOT_OPERATOR = auto()
+
+    IDENTIFIER = auto() # любая переменная или её значение
 
     LOC_NAME = auto()
     RAW_LINE = auto()

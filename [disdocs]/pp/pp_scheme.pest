@@ -49,7 +49,7 @@ QspsPP {
   commentKwrd = "!"
 
   StmtsLine = OtherStmt (stmtDelimiter OtherStmt)* (stmtDelimiter CommentStmt)? (&newline | &eof)
-  OtherStmt = ( rawStringLiteral
+  OtherStmt = ( rawStringLiteral // внутри строк так же поддерживаются директивы препроцессора, если они записаны отдельной строкой
               | BracketBlock
               | ParenBlock
               | CodeBlock
