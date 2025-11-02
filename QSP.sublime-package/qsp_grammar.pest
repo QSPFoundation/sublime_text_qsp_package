@@ -15,10 +15,10 @@ QSP {
 
    statementGroup     = ws (singleLineBlock | multiLineBlock | newline)
 
-   singleLineBlock    = singleLineGroup ws (&newline | &end)
+   singleLineBlock    = singleLineGroup ws (newline | &end)
    singleLineGroup    = statementUnitSingleLine (ws statementSeparator ws statementUnitSingleLine)*
 
-   multiLineBlock     = statementUnitMultiLine (ws statementSeparator ws singleLineGroup)? ws (&newline | &end)
+   multiLineBlock     = statementUnitMultiLine (ws statementSeparator ws singleLineGroup)? ws (newline | &end)
 
    /* ====================
       STATEMENT UNITS
@@ -324,20 +324,11 @@ QSP {
 
    statementGroupInCodeBlock  = ws (singleLineCodeBlock | multiLineCodeBlock | newline)
 
-   singleLineCodeBlock        = singleLineGroup ws (&newline | &("}"))
-   multiLineCodeBlock         = statementUnitMultiLine (ws statementSeparator ws singleLineGroup)? ws (&newline | &("}"))
+   singleLineCodeBlock        = singleLineGroup ws (newline | &("}"))
+   multiLineCodeBlock         = statementUnitMultiLine (ws statementSeparator ws singleLineGroup)? ws (newline | &("}"))
 
-   rawCodeBlock               = "{" rawCodeBlockContent* "}"
-   rawCodeBlockContent        = rawCodeBlock
-                              | rawStringLiteral
-                              | rawCodeParentheses
-                              | rawCodeBrackets
-                              | rawCodeBlockChar
-
-   rawCodeParentheses         = "(" rawCodeBlockContent* ")"
-   rawCodeBrackets            = "[" rawCodeBlockContent* "]"
-
-   rawCodeBlockChar = ~("{" | "}" | "'" | "\"" | "(" | ")" | "[" | "]") any
+   rawCodeBlock               = "{" (rawCodeBlock | rawCodeBlockChar)* "}"
+   rawCodeBlockChar           = ~("{" | "}") any
 
    /* ====================
       IDENTIFIERS
