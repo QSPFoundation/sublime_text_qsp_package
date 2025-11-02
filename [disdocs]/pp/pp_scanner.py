@@ -72,15 +72,14 @@ class PpScanner:
             # Если это первый символ в строке, ищем начало локации или начало директивы
             if c == "#":
                 # Начало локации, значит это токен начала локации,
-                # просто добавляем токен в список:
-                self._add_token(tt.LOC_DEF_KWRD)
-                self._scan_funcs.append(self._loc_name_expect)
+                # просто добавляем поглощение токена в список:
+                self._scan_funcs.append(self._loc_open_expect)
             elif c == "!" and self._line_len >= 5 and self._line[0:5] == '!@pp:':
                 # Начало директивы препроцессора. Это однозначно, осталось поглотить токен.
                 self._add_expected_chars('@pp:')
                 self._scan_funcs.append(self._pp_directive_stmt_expect)
             else:
-                # Любой другой символ, это сырая строка
+                # Любой другой символ, это начало сырой строки
                 self._scan_funcs.append(self._raw_line_end_expect)
         else:
             # такой вариант невозможен, но предусмотрительно обрабатываем, как сырую строку
@@ -163,10 +162,20 @@ class PpScanner:
             self._error(f"equal_expect: expected '=', got '{c}'")
         self._scan_funcs.pop()
 
+    def _identifier_expect(self, c:str) -> None:
+        """ Сборка идентификатора директивы препроцессора. """
+        # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
+        next_char = self._next_in_line()
+        if not self._is_alnum(next_char):
+            ttype:Optional[tt] = self.keywords.get(self._curlexeme, None)
+            if ttype == None: ttype = tt.IDENTIFIER
+            self._add_token(ttype)
+            self._scan_funcs.pop()
+
     def _raw_line_end_expect(self, c:str, ttype:tt = tt.RAW_LINE) -> None:
-        """Поиск токена конца строки."""
+        """ Поглощение токена сырой строки. """
         # самый надёжный способ это проверить, последний ли это символ
-        if self._current >= self._line_len - 1:
+        if self._current_is_last_in_line():
             # это последний символ, закрываем сырую строку, убираем функцию из стека
             self._add_token(ttype)
             self._scan_funcs.pop()
@@ -179,21 +188,11 @@ class PpScanner:
             self._add_token(tt.RAW_LINE)
             self._scan_funcs.pop()
                 
-    def _loc_name_expect(self, c:str) -> None:
+    def _loc_open_expect(self, c:str) -> None:
         """ Распознавание имени локации """
         # имя локации - это то же самое, что и сырая строка, только с другим типом токена
-        self._raw_line_end_expect(c, tt.LOC_NAME)
-        # и ещё, дальше начинается распознавание тела локации
-        self._scan_funcs.append(self._loc_body_expect)
-
-    def _identifier_expect(self, c:str) -> None:
-        """ Сборка идентификатора """
-        # Если следующий символ не буква,не цифра и не символ подчёркивания, закрываем
-        next_char = self._qsps_lines[self._line][self._current + 1]
-        if not self._is_alnum(next_char):
-            ttype:Optional[tt] = self.keywords.get(self._curlexeme, None)
-            if ttype == None: ttype = tt.IDENTIFIER
-            self._add_token(ttype)
+        if self._current_is_last_in_line:
+            self._add_token(tt.LOC_OPEN)
             self._scan_funcs.pop()
 
     def _loc_body_expect(self, c:str) -> None:
@@ -220,62 +219,7 @@ class PpScanner:
             self._add_token(tt.LEFT_BRACE)
             self._scan_funcs.append(self._code_block_expect)
 
-    def _code_block_expect(self, c:str) -> None:
-        """ Блоки кода. Парсим только команды препроцессора и вложенные блоки. """
-        # TODO: по-хорошему надо парсить блоки кода так же, как и локации, т.е. блок кода
-        # должен распознаваться идентично коду локации, а не как ещё один тип строки.
-        # но про это надо внимательно подумать. Например, ввести директиву для блоков кода,
-        # которая давала бы понять препроцессору и анализатору, что это именно блок кода.
-        cn:int = self._current
-        if cn == 0 and self._qsps_lines[self._line][cn:5] == '!@pp:':
-            self._add_expected_chars('@pp:')
-            self._scan_funcs.append(self._open_pp_directive_stmt_expect)
-        elif c == "}":
-            # закрывающий токен
-            self._add_token(tt.RIGHT_BRACE)
-            self._scan_funcs.pop()
-        elif c == "{":
-            self._add_token(tt.LEFT_BRACE)
-            self._scan_funcs.append(self._code_block_expect)
-        else:
-            self._edge = ("{", "}")
-            self._scan_funcs.append(self._raw_string_lines_expect)
-
-    def _quoted_string_expect(self, c:str) -> None:
-        """ Строка в кавычках. """
-        cn:int = self._current
-        if cn == 0 and self._qsps_lines[self._line][cn:5] == '!@pp:':
-            self._add_expected_chars('@pp:')
-            self._scan_funcs.append(self._open_pp_directive_stmt_expect)
-        elif c == "\"":
-            # закрывающий токен
-            self._add_token(tt.CLOSE_QUOTE)
-            self._scan_funcs.pop()
-        else:
-            self._edge = ("\"", )
-            self._scan_funcs.append(self._raw_string_lines_expect)
-
-    def _apostrophe_string_expect(self, c:str) -> None:
-        """ Строка в кавычках. """
-        cn:int = self._current
-        if cn == 0 and self._qsps_lines[self._line][cn:5] == '!@pp:':
-            self._add_expected_chars('@pp:')
-            self._scan_funcs.append(self._open_pp_directive_stmt_expect)
-        elif c == "'":
-            # закрывающий токен
-            self._add_token(tt.CLOSE_APOSTROPHE)
-            self._scan_funcs.pop()
-        else:
-            self._edge = ("'", )
-            self._scan_funcs.append(self._raw_string_lines_expect)
-
-    def _raw_string_lines_expect(self, c:str) -> None:
-        """ каждая отдельная строка внутри строкового значения становится токеном """
-        if self._current_is_last_in_line or self._peek_next() in self._edge:
-            # закрываем токен сырой строки
-            self._edge = tuple()
-            self._add_token(tt.RAW_QS_LINE)
-            self._scan_funcs.pop()
+    
 
 
     def _comment_stmt_expect(self, c:str) -> None:
