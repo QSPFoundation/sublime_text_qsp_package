@@ -13,7 +13,6 @@ class PpScanner:
 
         self._tokens: List[tkn] = [] # список токенов
 
-        self._offset:int = 0 # смещение относительно начала файла
         self._current:int = 0 # указатель на текущий символ в строке
 
         self._line:str = '' # значение текущей строки
@@ -21,11 +20,11 @@ class PpScanner:
         self._line_num:int = 0 # номер текущей строки
         
         self._lexeme_start:tuple = ( # начало текущей лексемы
-            self._line, # строка
+            self._line_len, # строка
             self._current # символ в строке
         )
 
-        self._scan_funcs:List[Callable[[str], None]] = [self._qsps_file]
+        self._scan_funcs:List[Callable[[str], None]] = [self._qsps_file_expect]
         self._prepend_chars:Stack = [] # ожидаемые символы в обратном порядке
 
         self.keywords:Dict[str, tt] = {
@@ -44,9 +43,8 @@ class PpScanner:
             "endif": tt.ENDIF_STMT
         }
         self._curlexeme:List[str] = []
-        self._pp_directive:str = ''
-        self._expected_token:tt = tt.RAW_LINE
-        self._edge:tuple = tuple()
+
+        self._loc_line_delimiters = ("\"", "'", "{", "}", "[", "]", "(", ")", "&", "!")
 
     def scan_tokens(self) -> None:
         """ Find all tokens in the file. """
@@ -55,7 +53,13 @@ class PpScanner:
             self._line = line
             self._scan_line(line)
             
+        if self._curlexeme and self._scan_funcs:
+            print(self._scan_funcs[-1].__name__)
+
         self._tokens.append(tkn(tt.EOF, "", None, self._line))
+
+    def get_tokens(self) -> None:
+        return self._tokens
 
     def _scan_line(self, line:str) -> None:
         """ Find all tokens in the line. """
@@ -114,7 +118,7 @@ class PpScanner:
         """ Распознаём внутренние токены директивы """
         if c in (" ", "\t", "\r", "\n"):
             # пробелы не учитываются
-            self._curlexeme = [] # очищаем текущую лексему
+            self._curlexeme.clear() # очищаем текущую лексему
         elif c == ":":
             # токен then
             self._add_token(tt.THEN_STMT)
@@ -167,7 +171,7 @@ class PpScanner:
         # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
         next_char = self._next_in_line()
         if not self._is_alnum(next_char):
-            ttype:Optional[tt] = self.keywords.get(self._curlexeme, None)
+            ttype:Optional[tt] = self.keywords.get(''.join(self._curlexeme), None)
             if ttype == None: ttype = tt.IDENTIFIER
             self._add_token(ttype)
             self._scan_funcs.pop()
@@ -194,117 +198,96 @@ class PpScanner:
         if self._current_is_last_in_line:
             self._add_token(tt.LOC_OPEN)
             self._scan_funcs.pop()
+            self._scan_funcs.append(self._loc_body_scan)
 
-    def _loc_body_expect(self, c:str) -> None:
-        """ Сканирование тела локации. """
-        cn:int = self._current
-        # В первую очередб нужно проверить, не является ли очередная строка концом локации
-        if cn == 0 and c in ('-', '!'):
-            if c == '-' and self._peek_next() == '-':
-                # если следующий символ является -, поглощаем строку, как конец локации
-                self._scan_funcs.append(self._loc_end_expect)
-            elif c == '!':
-                # распознавание комментария
-                self._scan_funcs.append(self._comment_stmt_expect)
-        elif c == "\"":
-            # поглощение строки в кавычках
-            # открывающая кавычка является токеном
-            self._add_token(tt.OPEN_QUOTE)
-            self._scan_funcs.append(self._quoted_string_expect)
-        elif c == "'":
-            self._add_token(tt.OPEN_APOSTROPHE)
-            self._scan_funcs.append(self._apostrophe_string_expect)
-        elif c == "{":
-            # блок кода
-            self._add_token(tt.LEFT_BRACE)
-            self._scan_funcs.append(self._code_block_expect)
-
-    
-
-
-    def _comment_stmt_expect(self, c:str) -> None:
-        """ Распознавание специального комментария """
-        pn:int = self._current - 1
-        if c == '@' and pn == 0:
-            # это спецкомментарий. Определяем, что это за спецком
-            if self._qsps_lines[self._line][pn:5] == '!@pp:':
-                # Включаем ожидание команды препроцессора
-                self._add_expected_chars('pp:')
-                self._scan_funcs.append(self._open_pp_directive_stmt_expect)
-            elif self._qsps_lines[self._line][pn:3] == '!@<':
-                # включаем распознавание коммментария к удалению
-                self._expected_token = tt.LESS_SPEC_COMM
-                self._scan_funcs.append(self._comment_body_expect)
-            else:
-                # простой спецкоментарий
-                self._expected_token = tt.SIMPLE_SPEC_COMM
-                self._scan_funcs.append(self._comment_body_expect)
-        else:
-            self._expected_token = tt.SIMPLE_COMM
-            self._scan_funcs.append(self._comment_body_expect)
-        self._scan_funcs.pop()
-
-    def _comment_body_expect(self, c:str) -> None:
-        """Поглощение всего тела комментария."""
-        if c == "{":
-            # включаем поглощение блока
-            self._scan_funcs.append(self._comm_code_block_expect)
-        elif c == "\"":
-            # Включаем поглощение строки в кавычках
-            self._scan_funcs.append(self._comm_quoted_string_expect)
-        elif c == "'":
-            # Включаем поглощение строки в апострофах
-            self._scan_funcs.append(self._comm_apostrophed_string_expect)
-        elif self._current_is_last_in_line():
-            # если любой другой символ и он последний в строке,
-            # закрываем токен комментария
-            self._add_token(self._expected_token)
-            self._scan_funcs.pop()
-        else:
-            # любой непоследний символ в строке просто поглощается
-            pass
-
-    def _comm_code_block_expect(self, c:str) -> None:
-        """ Поглощение блока внутри комментария """
-        if c == "{":
-            # поглощение внутреннего блока
-            self._scan_funcs.append(self._comm_code_block_expect)
-        elif c == "}":
-            # закрываем блок
-            self._scan_funcs.pop()
-        else:
-            # остальные символы, какие бы они ни были, просто поглощаются
-            pass
-
-    def _comm_quoted_string_expect(self, c:str) -> None:
-        """ Поглощение строки внутри комментария """
-        if c == "\"":
-            # закрываем строку
-            self._scan_funcs.pop()
-        else:
-            # остальные символы, какие бы они ни были, просто поглощаются
-            pass
-
-    def _comm_apostrophed_string_expect(self, c:str) -> None:
-        """ Поглощение строки внутри комментария """
-        if c == "'":
-            # закрываем строку
-            self._scan_funcs.pop()
-        else:
-            # остальные символы, какие бы они ни были, просто поглощаются
-            pass
-            
-
-    def _loc_end_expect(self, c:str) -> None:
+    def _loc_close_expect(self, c:str) -> None:
         """ До конца строки все символы поглощаются, как токен конца локации. """
         if self._current_is_last_in_line:
             # с окончанием строки закрываем токен
-            self._add_token(tt.LOC_END_KWRD)
+            self._add_token(tt.LOC_CLOSE)
             self._scan_funcs.pop()
+
+    def _loc_body_scan(self, c:str) -> None:
+        """ Сканирование тела локации. """
+        cn:int = self._current
+        # В первую очередь нужно проверить, не является ли очередная строка концом локации
+        if cn == 0 and c == '-' and self._line[1] == '-':
+            # если следующий символ является -, поглощаем строку, как конец локации
+            self._scan_funcs.pop() # закрываем сканер тела локации
+            self._scan_funcs.append(self._loc_close_expect)
+        elif cn == 0 and c == '!' and self._line[0:5] == '!@pp:':
+           # директива
+            self._add_expected_chars('@pp:')
+            self._scan_funcs.append(self._pp_directive_stmt_expect)
+        elif c == '!' and self._line[0:3] == '!@<':
+            # токен коммента под удаление строки
+            self._add_expected_chars('@<')
+            self._scan_funcs.append(self._less_spec_comm_tkn_expect)
+        elif c == '!' and self._line[0:2] == '!@':
+            self._add_expected_chars('@')
+            self._scan_funcs.append(self._spec_comm_tkn_expect)
+        elif c == '!':
+            # токен простого комментария
+            self._add_token(tt.EXCLAMATION_SIGN)
+        elif c == "\"":
+            # кавычка
+            self._add_token(tt.QUOTE)
+        elif c == "'":
+            self._add_token(tt.APOSTROPHE)
+        elif c == "{":
+            # блок кода
+            self._add_token(tt.LEFT_BRACE)
+        elif c == "}":
+            self._add_token(tt.RIGHT_BRACE)
+        elif c == "[":
+            self._add_token(tt.LEFT_BRACKET)
+        elif c == "]":
+            self._add_token(tt.RIGHT_BRACKET)
+        elif c == "(":
+            self._add_token(tt.LEFT_PAREN)
+        elif c == ")":
+            self._add_token(tt.RIGHT_PAREN)
+        elif c == "&":
+            self._add_token(tt.AMPERSAND)
+        elif not self._next_in_line() in self._loc_line_delimiters:
+            # предусматриваем, что следующий символ не является значимым токеном локации
+            # тогда можно включить выборку сырой строки
+            self._scan_funcs.append(self._raw_line_end_expect)
+        else:
+            # если следующий символ является значимым токеном локации,
+            # закрываем сырую строку на этом же символе
+            self._add_token(tt.RAW_LINE)
+
+
+    def _less_spec_comm_tkn_expect(self, c:str) -> None:
+        """ Поглощение токена спецкомментария с удалением строки """
+        need = self._prepend_chars.pop()
+        if need != c:
+            self._error(f"less_spec_comm_tkn_expect: expected '{need}', got '{c}'")
+            self._scan_funcs.pop()
+            self._scan_funcs.append(self._raw_line_end_expect)
+            return
+
+        if not self._prepend_chars:
+            self._add_token(tt.LESS_SPEC_COMM)
+            self._scan_funcs.pop()
+
+    def _spec_comm_tkn_expect(self, c:str) -> None:
+        """ Поглощение токена обычного спецкомментария """
+        need = self._prepend_chars.pop()
+        if need != c:
+            self._error(f"spec_comm_tkn_expect: expected '{need}', got '{c}'")
+            self._scan_funcs.pop()
+            self._scan_funcs.append(self._raw_line_end_expect)
+            return
+
+        if not self._prepend_chars:
+            self._add_token(tt.SIMPLE_SPEC_COMM)
+            self._scan_funcs.pop()    
 
     # вспомогательные методы
     def _is_alnum(self, s:str) -> bool:
-        """ is \w ? """
+        """ is \\w ? """
         return s.isalnum() or s == '_'
 
     def _current_is_last_in_line(self) -> bool:
@@ -325,11 +308,7 @@ class PpScanner:
 
     def _set_lexeme_start(self) -> None:
         """ Устанавливаем начало лексемы. """
-        self._lexeme_start = (self._line, self._current)
-
-    def _is_line_end(self) -> bool:
-        """ Проверяем, не закончилась ли строка. """
-        return self._current >= len(self._qsps_lines[self._line])
+        self._lexeme_start = (self._line_num, self._current)
 
     def _curline_is_last(self) -> bool:
         """ Текущая строка последняя? """
@@ -349,46 +328,15 @@ class PpScanner:
         else:
             return '\0'
 
-    def _advance(self) -> str:
-        """ Возвращаем текущий символ и перемещаем указатель """
-        c = self._peek()
-        self._to_next_char()
-        return c
-
-    def _to_next_char(self) -> None:
-        """ Перемещает указатель на следующий символ """
-        self._current += 1
-        self._offset += 1
-
-    def _peek(self) -> str:
-        """ Возвращает текущий символ """
-        if self._is_eof(): return '\0'
-        return self._qsps_lines[self._line][self._current]
-
-    def _peek_next(self) -> str:
-        """ Возвращает следующий символ """
-        if self._current_is_last_in_file: return '\0'
-        if self._current_is_last_in_line:
-            return self._qsps_lines[self._line+1][0]
-        else:
-            return self._line[self._current+1]
-
-    def _peek_prev(self) -> str:
-        """ Возвращает предыдущий символ """
-        if self._line == 0 and self._current == 0: return '\0'
-        if self._current == 0:
-            return self._qsps_lines[self._line-1][-1]
-        else:
-            return self._line[self._current-1]
-
     def _add_token(self, ttype:tt, literal:Any = None) -> None:
         self._tokens.append(tkn(
             ttype,
-            self._curlexeme,
+            ''.join(self._curlexeme),
             literal,
-            self._line))
+            self._lexeme_start))
 
-        self._curlexeme = ''
+        self._curlexeme.clear()
+        self._set_lexeme_start()
 
     def _add_expected_chars(self, chars:str) -> None:
         """Правильно добавляет ожидаемую последовательность символов. """
@@ -398,3 +346,15 @@ class PpScanner:
     # обработчик ошибок. Пока просто выводим в консоль.
     def _error(self, message:str) -> None:
         print(f"Err. {message}: ({self._line_num}, {self._current}).")
+
+def _main():
+    path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
+    with open(path, 'r', encoding='utf-8') as fp:
+        lines = fp.readlines()
+
+    scanner = PpScanner(lines)
+    scanner.scan_tokens()
+    print(scanner.get_tokens())
+
+if __name__ == '__main__':
+    _main()

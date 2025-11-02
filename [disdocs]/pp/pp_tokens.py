@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from token import NEWLINE
 from typing import Any
 
 from enum import (IntEnum, auto)
@@ -10,7 +9,7 @@ class PpTokenType(IntEnum):
     NEWLINE = 0
 
     # One char tokens:
-    STMT_DELIMITER = auto()
+    AMPERSAND = auto()
     LEFT_PAREN = auto()
     RIGHT_PAREN = auto()
     LEFT_BRACE = auto()
@@ -20,24 +19,14 @@ class PpTokenType(IntEnum):
     APOSTROPHE = auto()
     QUOTE = auto()
 
-    # string escape tokens:
-    OPEN_QUOTE = auto()
-    CLOSE_QUOTE = auto()
-    RAW_QS_LINE = auto()
-    
-    OPEN_APOSTROPHE = auto()
-    CLOSE_APOSTROPHE = auto()
-    RAW_AS_LINE = auto()
-
     # QSP-location tokens:
-    LOC_DEF_KWRD = auto()
-    LOC_END_KWRD = auto()
+    LOC_OPEN = auto()
+    LOC_CLOSE = auto()
 
     # Comments tokens:
-    COMMENT_KWRD = auto()
     SIMPLE_SPEC_COMM = auto()
     LESS_SPEC_COMM = auto()
-    SIMPLE_COMM = auto()
+    EXCLAMATION_SIGN = auto()
 
     # PreProcessors Directives tokens:
     OPEN_DIRECTIVE_STMT = auto()
@@ -63,7 +52,6 @@ class PpTokenType(IntEnum):
 
     IDENTIFIER = auto() # любая переменная или её значение
 
-    LOC_NAME = auto()
     RAW_LINE = auto()
 
     EOF = auto()
