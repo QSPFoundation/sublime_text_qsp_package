@@ -1,6 +1,9 @@
-from typing import List, Optional
+from typing import List, Callable
 
 from pp_tokens import PpToken as tkn
+from pp_tokens import PpTokenType as tt
+
+Stack = List[Callable[(tkn), None]]
 
 class PpParser:
 
@@ -9,8 +12,15 @@ class PpParser:
 
         self._curtok:int = 0
 
+        self._parse_funcs:Stack = [self._qsps_file_parse]
+
         self._stmts:List = [] #list of statements
 
     def parse(self) -> None:
-        for token in self._tokens:
-            ...
+        """ Публичная функция вызова парсера. """
+        for j, token in enumerate(self._tokens):
+            self._curtok = j
+            self._parse_funcs[-1](token)
+
+    def _qsps_file_parse(self, t:tkn) -> None:
+        ...
