@@ -1,4 +1,3 @@
-import operator
 from typing import List, Optional
 from token_ import QspTokenType as tt, QspToken
 import qspexpr as qe

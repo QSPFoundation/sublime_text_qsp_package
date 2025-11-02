@@ -87,14 +87,18 @@ QspsPP {
                       | excludeStmt)
 
     // complex
-    IfDirective = ifStmt leftParen EqualExpression rightParen thenStmt ConditionResolve+
+    IfDirective = ifStmt leftParen ConditionExpr rightParen thenStmt ConditionResolve+
     DefineVarDirective = varStmt leftParen DefineVarExpression rightParen
 
     // define var
     DefineVarExpression = varName (assignmentOperator varName)?
 
-    // Equal Expression
-    EqualExpression = varName (logicOperator varName)*
+    // Equal Expression /in priority/
+    ConditionExpr = OrExpr
+    OrExpr = AndExpr (orOperator AndExpr)*
+    AndExpr = NotExpr (andOperator NotExpr)*
+    NotExpr = notOperator? EqualExpr
+    EqualExpr = varName ((equalEqual | equalNotEqual) varName)*
 
     // unions
     logicOperator = (logicKwOperator | equalEqual | equalNotEqual)
