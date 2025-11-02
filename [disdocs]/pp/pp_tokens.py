@@ -21,8 +21,13 @@ class PpTokenType(IntEnum):
     QUOTE = auto()
 
     # string escape tokens:
-    QUOTE_ESCAPE = auto()
-    APOSTROPHE_ESCAPE = auto()
+    OPEN_QUOTE = auto()
+    CLOSE_QUOTE = auto()
+    RAW_QS_LINE = auto()
+    
+    OPEN_APOSTROPHE = auto()
+    CLOSE_APOSTROPHE = auto()
+    RAW_AS_LINE = auto()
 
     # QSP-location tokens:
     LOC_DEF_KWRD = auto()

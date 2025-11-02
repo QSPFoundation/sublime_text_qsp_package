@@ -15,8 +15,10 @@ class PpScanner:
 
         self._offset:int = 0 # смещение относительно начала файла
         self._current:int = 0 # указатель на текущий символ в строке
-        self._line:int = 0 # номер текущей строки
+
+        self._line:str = '' # значение текущей строки
         self._line_len:int = 0 # длина текущей строки
+        self._line_num:int = 0 # номер текущей строки
         
         self._lexeme_start:tuple = ( # начало текущей лексемы
             self._line, # строка
@@ -41,16 +43,16 @@ class PpScanner:
             "not": tt.NOT_OPERATOR,
             "endif": tt.ENDIF_STMT
         }
-        self._curlexeme:str = ''
+        self._curlexeme:List[str] = []
         self._pp_directive:str = ''
         self._expected_token:tt = tt.RAW_LINE
         self._edge:tuple = tuple()
 
     def scan_tokens(self) -> None:
         """ Find all tokens in the file. """
-        # to self._tokens
         for j, line in enumerate(self._qsps_lines):
-            self._line = j
+            self._line_num = j
+            self._line = line
             self._scan_line(line)
             
         self._tokens.append(tkn(tt.EOF, "", None, self._line))
@@ -60,31 +62,106 @@ class PpScanner:
         self._line_len = len(line)
         for i, c in enumerate(line):
             self._current = i
-            self._curlexeme += c
+            self._curlexeme.append(c)
             self._scan_funcs[-1](c)
             
     # методы поиска, учитывающие контекст
     def _qsps_file_expect(self, c:str) -> None:
         """ Поиск токенов, из которых состоит qsps-файл """
-        cn:int = self._current
-        if cn == 0:
+        if self._current == 0:
             # Если это первый символ в строке, ищем начало локации или начало директивы
             if c == "#":
                 # Начало локации, значит это токен начала локации,
                 # просто добавляем токен в список:
                 self._add_token(tt.LOC_DEF_KWRD)
                 self._scan_funcs.append(self._loc_name_expect)
-            elif c == "!":
-                # Начало комментария.
-                # Включаем ожидание команды препроцессора
+            elif c == "!" and self._line_len >= 5 and self._line[0:5] == '!@pp:':
+                # Начало директивы препроцессора. Это однозначно, осталось поглотить токен.
                 self._add_expected_chars('@pp:')
-                self._scan_funcs.append(self._open_pp_directive_stmt_expect)
+                self._scan_funcs.append(self._pp_directive_stmt_expect)
             else:
                 # Любой другой символ, это сырая строка
                 self._scan_funcs.append(self._raw_line_end_expect)
         else:
             # такой вариант невозможен, но предусмотрительно обрабатываем, как сырую строку
             self._scan_funcs.append(self._raw_line_end_expect)
+
+    def _pp_directive_stmt_expect(self, c:str) -> None:
+        """ Ожидание токена директивы препроцессора. """
+        # Данный метод вызывается однозначно, это означает, что мы просто убеждаемся,
+        # что поглощаем токен директивы препроцессора. На старте есть список ожидаемых
+        # символов, поэтому проверку, не пуст ли список проводим только в конце метода.
+        need = self._prepend_chars.pop() # какой символ ожидаем
+        if need != c:
+            # ожидаемый символ не совпадает с текущим, значит это:
+            # 1. ошибка работы сканера
+            self._error(f"pp_directive_stmt_expect: expected '{need}', got '{c}'")
+            # 2. сырая строка
+            self._scan_funcs.pop() # убираем функцию из стека
+            self._scan_funcs.append(self._raw_line_end_expect)
+            return
+        
+        # ожидаемый символ совпадает с текущим:
+        if not self._prepend_chars:
+            # директива препроцессора закончена
+            self._add_token(tt.OPEN_DIRECTIVE_STMT)
+            self._scan_funcs.pop() # убираем функцию из стека
+            self._scan_funcs.append(self._scan_pp_dirrective) # добавляем функцию для сканирования директивы
+        else:
+            # директива препроцессора не закончена, просто продолжаем
+            pass
+
+    def _scan_pp_dirrective(self, c:str) -> None:
+        """ Распознаём внутренние токены директивы """
+        if c in (" ", "\t", "\r", "\n"):
+            # пробелы не учитываются
+            self._curlexeme = [] # очищаем текущую лексему
+        elif c == ":":
+            # токен then
+            self._add_token(tt.THEN_STMT)
+        elif c == "(":
+            self._add_token(tt.LEFT_PAREN)
+        elif c == ")":
+            self._add_token(tt.RIGHT_PAREN)
+        elif c == "=":
+            # Либо это assignment либо начало equal
+            next_char = self._next_in_line()
+            if next_char != "=":
+                # assignment
+                self._add_token(tt.ASSIGNMENT_OPERATOR)
+            else:
+                self._scan_funcs.append(self._equal_expect)
+        elif c == "!":
+            next_char = self._next_in_line()
+            if next_char != "=":
+                self._scan_funcs.append(self._raw_text_expect)
+            else:
+                self._scan_funcs.append(self._equal_expect)
+        elif self._is_alnum(c):
+            # если это \w, ожидается, что мы имеем дело с идентификатором
+            # ключевым словом и т.п.
+            self._scan_funcs.append(self._identifier_expect)
+        else:
+            # любой другой символ включает выборку сырого текста до конца строки
+            self._scan_funcs.append(self._raw_text_expect)
+        
+        if self._current_is_last_in_line():
+            # если это последний символ строки, добавляем токен конца строки
+            self._add_token(tt.NEWLINE)
+            # удаляем парсер директив из стека
+            self._scan_funcs.pop()
+    
+    def _equal_expect(self, c:str) -> None:
+        """ Получает токен оператора сравнения """
+        # предыдущий символ уже поглощён, и он ! или =
+        prev_char = self._prev_in_line()
+        if prev_char == '=':
+            self._add_token(tt.EQUAL_EQUAL)
+        elif prev_char == '!':
+            self._add_token(tt.EQUAL_NOT_EQUAL)
+        else:
+            self._error(f"equal_expect: expected '=', got '{c}'")
+        self._scan_funcs.pop()
 
     def _raw_line_end_expect(self, c:str, ttype:tt = tt.RAW_LINE) -> None:
         """Поиск токена конца строки."""
@@ -101,30 +178,6 @@ class PpScanner:
             (self._next_is_last_in_line() and not self._curline_is_last())):
             self._add_token(tt.RAW_LINE)
             self._scan_funcs.pop()
-
-    def _open_pp_directive_stmt_expect(self, c:str) -> None:
-        """ Поиск токена оператора директивы """
-        if self._prepend_chars:
-            # ожидаемые символы ещё есть
-            need = self._prepend_chars.pop() # какой символ ожидаем
-            if need != c:
-                # ожидаемый символ не совпадает с текущим, значит это сырая строка
-                self._scan_funcs.pop()
-                self._scan_funcs.append(self._raw_line_end_expect)
-                return
-            else:
-                # Ожидаемый символ совпал с текущим, он уже извлечён
-                # Если список ожидаемых символов опустел, дальше распознаются
-                # внутренние токены директивы.
-                # Удаляем из стека поиск токена:
-                self._scan_funcs.pop()
-                # Добавляем сканирование директивы на внутренние токены
-                self._scan_funcs.append(self._scan_pp_dirrective)
-                # добавляем токен
-                self._add_token(tt.OPEN_DIRECTIVE_STMT)
-        else:
-            # в данном случае мы имеем дело с ошибкой работы сканера.
-            print(f"Err. open pp dir stmt expect: ({self._line}, {self._current}).")
                 
     def _loc_name_expect(self, c:str) -> None:
         """ Распознавание имени локации """
@@ -132,57 +185,6 @@ class PpScanner:
         self._raw_line_end_expect(c, tt.LOC_NAME)
         # и ещё, дальше начинается распознавание тела локации
         self._scan_funcs.append(self._loc_body_expect)
-
-    def _scan_pp_dirrective(self, c:str) -> None:
-        """ Распознаём внутренние токены директивы """
-        self._pp_directive += c
-        if c in (" ", "\t", "\r", "\n"):
-            # пробелы не учитываются
-            self._curlexeme = ''
-        elif c == ":":
-            # токен then
-            self._add_token(tt.THEN_STMT)
-        elif c == "(":
-            self._add_token(tt.LEFT_PAREN)
-        elif c == ")":
-            self._add_token(tt.RIGHT_PAREN)
-        elif c == "=":
-            # Либо это assignment либо начало equal
-            if self._current + 1 < self._line_len:
-                next_char = self._qsps_lines[self._line][self._current + 1]
-                if next_char != "=":
-                    # assignment
-                    self._add_token(tt.ASSIGNMENT_OPERATOR)
-                else:
-                    self._scan_funcs.append(self._equal_expect)
-            else:
-                self._add_token(tt.ASSIGNMENT_OPERATOR)
-        elif self._is_alnum(c):
-            # если это \w, ожидается, что мы имеем дело с идентификатором
-            # ключевым словом и т.п.
-            self._scan_funcs.append(self._identifier_expect)
-        else:
-            # любой другой символ включает выборку сырого текста до конца строки
-            self._scan_funcs.append(self._raw_text_expect)
-        
-        if self._current >= self._line_len - 1:
-            # если это последний символ строки, добавляем токен конца строки
-            self._add_token(tt.NEWLINE)
-            # удаляем парсер директив из стека
-            self._scan_funcs.pop()
-        ...
-
-    def _equal_expect(self, c:str) -> None:
-        """ Получает токен оператора сравнения """
-        if self._current > 0 and c == '=':
-            prev_char = self._qsps_lines[self._line][self._current - 1]
-            if prev_char == '=':
-                self._add_token(tt.EQUAL_EQUAL)
-            elif prev_char == '!':
-                self._add_token(tt.EQUAL_NOT_EQUAL)
-            self._scan_funcs.pop()
-        else:
-            print(f"Err. equal_expect: ({self._line}, {self._current}).")
 
     def _identifier_expect(self, c:str) -> None:
         """ Сборка идентификатора """
@@ -389,6 +391,20 @@ class PpScanner:
         """ Текущая строка последняя? """
         return self._line == self._qsps_len - 1
 
+    def _next_in_line(self) -> str:
+        """ Возвращает следующий символ в строке """
+        if self._current + 1 < self._line_len:
+            return self._line[self._current + 1]
+        else:
+            return '\0'
+
+    def _prev_in_line(self) -> str:
+        """ Возвращает предыдущий символ в строке """
+        if self._current > 0:
+            return self._line[self._current - 1]
+        else:
+            return '\0'
+
     def _advance(self) -> str:
         """ Возвращаем текущий символ и перемещаем указатель """
         c = self._peek()
@@ -434,3 +450,7 @@ class PpScanner:
         """Правильно добавляет ожидаемую последовательность символов. """
         self._prepend_chars = list(chars)
         self._prepend_chars.reverse()
+
+    # обработчик ошибок. Пока просто выводим в консоль.
+    def _error(self, message:str) -> None:
+        print(f"Err. {message}: ({self._line_num}, {self._current}).")
