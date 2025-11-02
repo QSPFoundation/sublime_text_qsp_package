@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Tuple
 
 from enum import (IntEnum, auto)
 
@@ -53,6 +53,7 @@ class PpTokenType(IntEnum):
     IDENTIFIER = auto() # любая переменная или её значение
 
     RAW_LINE = auto()
+    RAW_LOC_LINE = auto()
 
     EOF = auto()
 
@@ -62,4 +63,4 @@ class PpToken:
     ttype:PpTokenType
     lexeme:str # вся лексема целиком
     literal:Any # только значение
-    line:int # строка, в которой токен находится
+    lexeme_start:Tuple[int, int] # строка и номер символа в которой токен находится

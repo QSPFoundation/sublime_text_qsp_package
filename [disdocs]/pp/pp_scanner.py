@@ -1,3 +1,5 @@
+import os, json
+
 from typing import Any, Callable, List, Dict, Union, Optional
 
 from pp_tokens import PpToken as tkn
@@ -19,10 +21,7 @@ class PpScanner:
         self._line_len:int = 0 # длина текущей строки
         self._line_num:int = 0 # номер текущей строки
         
-        self._lexeme_start:tuple = ( # начало текущей лексемы
-            self._line_len, # строка
-            self._current # символ в строке
-        )
+        self._start_lexeme:tuple = (0, 0) # начало текущей лексемы (строка, позиция)
 
         self._scan_funcs:List[Callable[[str], None]] = [self._qsps_file_expect]
         self._prepend_chars:Stack = [] # ожидаемые символы в обратном порядке
@@ -56,9 +55,9 @@ class PpScanner:
         if self._curlexeme and self._scan_funcs:
             print(self._scan_funcs[-1].__name__)
 
-        self._tokens.append(tkn(tt.EOF, "", None, self._line))
+        self._tokens.append(tkn(tt.EOF, "", None, (-1, -1)))
 
-    def get_tokens(self) -> None:
+    def get_tokens(self) -> List[tkn]:
         return self._tokens
 
     def _scan_line(self, line:str) -> None:
@@ -66,6 +65,9 @@ class PpScanner:
         self._line_len = len(line)
         for i, c in enumerate(line):
             self._current = i
+            if not self._curlexeme:
+                # если лексема пуста (начало новой лексемы), устанавливаем начало
+                self._set_start_lexeme()
             self._curlexeme.append(c)
             self._scan_funcs[-1](c)
             
@@ -119,6 +121,7 @@ class PpScanner:
         if c in (" ", "\t", "\r", "\n"):
             # пробелы не учитываются
             self._curlexeme.clear() # очищаем текущую лексему
+            self._set_start_lexeme() # устанавливаем начало следующей лексемы
         elif c == ":":
             # токен then
             self._add_token(tt.THEN_STMT)
@@ -195,14 +198,14 @@ class PpScanner:
     def _loc_open_expect(self, c:str) -> None:
         """ Распознавание имени локации """
         # имя локации - это то же самое, что и сырая строка, только с другим типом токена
-        if self._current_is_last_in_line:
+        if self._current_is_last_in_line():
             self._add_token(tt.LOC_OPEN)
             self._scan_funcs.pop()
             self._scan_funcs.append(self._loc_body_scan)
 
     def _loc_close_expect(self, c:str) -> None:
         """ До конца строки все символы поглощаются, как токен конца локации. """
-        if self._current_is_last_in_line:
+        if self._current_is_last_in_line():
             # с окончанием строки закрываем токен
             self._add_token(tt.LOC_CLOSE)
             self._scan_funcs.pop()
@@ -219,11 +222,11 @@ class PpScanner:
            # директива
             self._add_expected_chars('@pp:')
             self._scan_funcs.append(self._pp_directive_stmt_expect)
-        elif c == '!' and self._line[0:3] == '!@<':
+        elif c == '!' and cn+2 < self._line_len and self._line[cn:cn+3] == '!@<':
             # токен коммента под удаление строки
             self._add_expected_chars('@<')
             self._scan_funcs.append(self._less_spec_comm_tkn_expect)
-        elif c == '!' and self._line[0:2] == '!@':
+        elif c == '!' and cn+1 < self._line_len and self._line[cn:cn+2] == '!@':
             self._add_expected_chars('@')
             self._scan_funcs.append(self._spec_comm_tkn_expect)
         elif c == '!':
@@ -249,14 +252,15 @@ class PpScanner:
             self._add_token(tt.RIGHT_PAREN)
         elif c == "&":
             self._add_token(tt.AMPERSAND)
-        elif not self._next_in_line() in self._loc_line_delimiters:
+        elif (not self._next_in_line() in self._loc_line_delimiters and
+              not self._current_is_last_in_line()):
             # предусматриваем, что следующий символ не является значимым токеном локации
             # тогда можно включить выборку сырой строки
-            self._scan_funcs.append(self._raw_line_end_expect)
+            self._scan_funcs.append(self._raw_loc_line_expect)
         else:
             # если следующий символ является значимым токеном локации,
             # закрываем сырую строку на этом же символе
-            self._add_token(tt.RAW_LINE)
+            self._add_token(tt.RAW_LOC_LINE)
 
 
     def _less_spec_comm_tkn_expect(self, c:str) -> None:
@@ -265,7 +269,7 @@ class PpScanner:
         if need != c:
             self._error(f"less_spec_comm_tkn_expect: expected '{need}', got '{c}'")
             self._scan_funcs.pop()
-            self._scan_funcs.append(self._raw_line_end_expect)
+            self._scan_funcs.append(self._raw_loc_line_expect)
             return
 
         if not self._prepend_chars:
@@ -278,12 +282,20 @@ class PpScanner:
         if need != c:
             self._error(f"spec_comm_tkn_expect: expected '{need}', got '{c}'")
             self._scan_funcs.pop()
-            self._scan_funcs.append(self._raw_line_end_expect)
+            self._scan_funcs.append(self._raw_loc_line_expect)
             return
 
         if not self._prepend_chars:
             self._add_token(tt.SIMPLE_SPEC_COMM)
-            self._scan_funcs.pop()    
+            self._scan_funcs.pop()
+
+    def _raw_loc_line_expect(self, c:str) -> None:
+        """ Данная строка оканчивается, когда встречает токен, значимый для локации,
+        или конец строки, или конец файла. """
+        if (self._current_is_last_in_line() or
+            self._next_in_line() in self._loc_line_delimiters):
+            self._add_token(tt.RAW_LOC_LINE)
+            self._scan_funcs.pop()
 
     # вспомогательные методы
     def _is_alnum(self, s:str) -> bool:
@@ -306,9 +318,9 @@ class PpScanner:
         """ Является ли следующий символ последним в файле? """
         return self._curline_is_last() and self._next_is_last_in_line()
 
-    def _set_lexeme_start(self) -> None:
+    def _set_start_lexeme(self) -> None:
         """ Устанавливаем начало лексемы. """
-        self._lexeme_start = (self._line_num, self._current)
+        self._start_lexeme = (self._line_num, self._current)
 
     def _curline_is_last(self) -> bool:
         """ Текущая строка последняя? """
@@ -333,10 +345,9 @@ class PpScanner:
             ttype,
             ''.join(self._curlexeme),
             literal,
-            self._lexeme_start))
+            self._start_lexeme))
 
         self._curlexeme.clear()
-        self._set_lexeme_start()
 
     def _add_expected_chars(self, chars:str) -> None:
         """Правильно добавляет ожидаемую последовательность символов. """
@@ -349,12 +360,22 @@ class PpScanner:
 
 def _main():
     path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
+    outp = "..\\..\\[examples]\\example_preprocessor\\ppoutp.json"
     with open(path, 'r', encoding='utf-8') as fp:
         lines = fp.readlines()
 
     scanner = PpScanner(lines)
     scanner.scan_tokens()
-    print(scanner.get_tokens())
+    l = []
+    for t in scanner.get_tokens():
+        l.append({
+            "token-type": t.ttype.name,  # название константы вместо номера
+            'lexeme': t.lexeme,
+            'literal': t.literal,
+            'lexeme_start': list(t.lexeme_start)
+        })
+    with open(outp, 'w', encoding='utf-8') as fp:
+        json.dump(l, fp, indent=4, ensure_ascii=False)
 
 if __name__ == '__main__':
     _main()
