@@ -3209,12 +3209,12 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[disdocs]\\pp\\test.qsps": [
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\pptest.qsps": [
             [
-                "[pp.start]",
+                "[pp.start] [8]",
                 [
-                    518,
-                    528
+                    458,
+                    472
                 ]
             ]
         ]
@@ -3403,7 +3403,6 @@
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\examples_splitter\\basesex.qsps": "4399ce872eaec74f8d469202638a4f47",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\for_autotest.qsps": "775c9128e76b986a22d177069168eb5e",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\pptest.qsps": "495bc68b44cd22173abe9a1617e5350a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\new_grammar test.qsps": "7d390465e9323fab9d6f6cc3770e109c",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[disdocs]\\pp\\test.qsps": "7d390465e9323fab9d6f6cc3770e109c"
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\new_grammar test.qsps": "7d390465e9323fab9d6f6cc3770e109c"
     }
 }
