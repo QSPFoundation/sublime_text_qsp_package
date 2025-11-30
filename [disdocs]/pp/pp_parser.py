@@ -1,3 +1,4 @@
+from tracemalloc import start
 import uuid
 from typing import List, Callable, Dict, Union, Tuple, Optional
 
@@ -6,7 +7,11 @@ from pp_tokens import PpTokenType as tt
 
 import pp_stmts as stm
 
+from pp_state_machine import PpStateMachine as PPSM
+from pp_state_machine import PpSmSignal as sgnl
+
 Stack = List[Callable[(tkn), None]]
+
 
 class PpParser:
 
@@ -16,21 +21,10 @@ class PpParser:
         self._curtok_num:int = 0
         self._curtok:tkn = None
 
-        self._parse_machines:Dict[uuid.UUID, Dict[str, Union[Callable, str, uuid.UUID]]] = {
-            # uuid-of-machine: {
-                # 'machine': Callable,
-                # 'state': str,
-                # 'parent': uuid.UUID,
-                # 'signal': str
-            # }
-        }
-        self._cur_machine:uuid.UUID = uuid.uuid4()
-        self._parse_machines[self._cur_machine] = {
-            'handle': self._qsps_file_parse,
-            'state': 'loc_find',
-            'parent': None,
-            'signal': 'default',
-            'scheme': None
+        start_machine = PPSM(self._qsps_file_parse)
+        self._cur_machine:uuid.UUID = start_machine.id
+        self._parse_machines:Dict[uuid.UUID, PPSM] = {
+            self._cur_machine: start_machine
         }
 
         self._stmts:List[stm.PpStmt] = []
@@ -38,52 +32,124 @@ class PpParser:
     def parse(self) -> None:
         """ Публичная функция вызова парсера. """
         # прежде всего разбиваем файл на директивы и блоки
-        while self._cur_machine:
-            handle = self._parse_machines[self._cur_machine]['handle']
-            state = self._parse_machines[self._cur_machine]['state']
-            signal = self._parse_machines[self._cur_machine]['signal']
-            parent = self._parse_machines[self._cur_machine]['parent']
-            signal = handle(state, signal, self._cur_machine)
-            # Машина возвращает сигнал. Этот сигнал передаётся родителю
-            # Цикл останавливается, если cm становится None
-            ...
+        accept_signal = sgnl.DEFAULT
+        # self._cur_machine выставлен заранее
+        while True:
+            machine:PPSM = self._parse_machines[self._cur_machine]
+            accept_signal = machine.handler(machine, accept_signal)
+            # Машина возвращает сигнал, который передаётся либо ей же, либо предыдущей, либо новой
+            # в любом случае переполучаем id текущей машины, это последняя машина в словаре.
+            if self._parse_machines:
+                self._cur_machine = list(self._parse_machines.keys())[-1]
+            else:
+                break
+        # Здесь возможно нужно разрешение оставшихся сигналов от машин
+        ...
 
-    def _qsps_file_parse(self, state:str, signal:str, mid:uuid.UUID) -> str:
+
+    def _qsps_file_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
         """ Распарсиваем целый файл из токенов. """
         # переключение состояний
-        machine = self._parse_machines[mid]
-        if not machine.get('scheme'):
-            machine['scheme'] = {
-                'loc_find': {
-                    'default': 'loc_find',
-                    'loc_not_found': 'dir_find'
-                },
-                'dir_find': {
-                    'default': 'loc_find',
-                    'dir_not_found': 'raw_find'
-                },
-                'raw_find': {
-                    'default': 'loc_find',
-                    'raw_not_found': 'eof_find'
-                },
-                'eof_find': {
-                    'default': 'eof_find',
-                    'eof_not_found': 'error_eof',
-                    'eof_found': 'close_machine'
-                },
-                'error_eof': {'default': 'error_eof'},
-                'close_machine': {'default': 'close_machine'}
-            }
-        scheme = machine['scheme']
-        state = self._state_handler(scheme, state, signal)
-        if state == 'close_machine':
-            del self._parse_machines[mid] # удаляем машину
-            return 'eof'
-        if state == 'error_eof':
-            del self._parse_machines[mid] # удаляем машину
+        machine.state_handler(signal)
+        # получаем состояние
+        state = machine.state
+        # идентификатор машины
+        mid = machine.id
+        if state == 'close_machine': # найден конец файла
+            del self._parse_machines[mid]
+            return sgnl.EOF_FOUND
+        elif state == 'error_eof': # ошибка поиска конца файла
             self._error('EOF not found.')
-            return state
+            del self._parse_machines[mid]
+            return sgnl.ERROR
+        elif state == 'loc_find':
+            # нужно включить поиск локации, для этого создаём машину
+            new_machine = PPSM(self._loc_parse, mid, self._curtok_num)
+            self._add_machine(new_machine)
+        elif state == 'dir_find':
+            new_machine = PPSM(self._dir_parse, mid, self._curtok_num)
+            self._add_machine(new_machine)
+        elif state == 'raw_find':
+            new_machine = PPSM(self._rawline_parse, mid, self._curtok_num)
+            self._add_machine(new_machine)
+        elif state == 'eof_find':
+            new_machine = PPSM(self._eof_parse, mid, self._curtok_num)
+            self._add_machine(new_machine)
+        return sgnl.DEFAULT
         
+
+
+    def _loc_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
+        ...
+
+    def _dir_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
+        """ Парсинг директивы препроцессора. """
+        machine.state_handler(signal)
+        state = machine.state
+        mid = machine.id
+
+        if state == 'open_dir_stmt_find':
+            # Нужно сопоставить текущий токен, если он не совпал, значит это не директива, а сырая строка
+            if self._curtok.ttype == tt.OPEN_DIRECTIVE_STMT:
+                # TODO: токен превращается в оператор директивы
+                return 'open_dir_stmt_found'
+            else:
+                del self._parse_machines[mid] # удаляем машину
+                return 'dir_not_found'
+        if state == 'directive_parse':
+            # Создаём машину парсинга непосредственной команды
+            new_machine = PPSM(self._directive_parse, mid)
+            self._add_machine(new_machine)
+            return state
+        if state == 'error_parse':
+            del self._parse_machines[mid] # удаляем машину
+            return 'dir_not_found'
+        if state == 'close_machine': # найден конец файла
+            del self._parse_machines[mid] # удаляем машину
+            return 'dir_found'
+        ...
+
+    def _rawline_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
+        """ Распарсиваем цепочку токенов для сырой строки. """
+        machine.state_handler(signal)
+        state = machine.state
+        mid = machine.id
+
+        curtok_type = self._curtok.ttype
+        if curtok_type == tt.EOF:
+            # при наборе токенов для строки, встретить конец файла,
+            # значит напороться на ошибку
+            del self._parse_machines[mid]
+            self._error('Unexpected EOF')
+            return 'raw_not_found'
+        if state == 'raw_find':
+            # поглощаем все токены, кроме eof
+            next_token = self._next_peek()
+            if next_token is None:
+                # это ошибка. Подобный вариант возможен только для токена конца файла, а он обработан
+                del self._parse_machines[mid]
+                self._error('Unexpected end of input')
+                self._cur_machine = None # отрубаем дальнейший парсинг, поскольку он невозможен
+                return 'raw_not_found'
+            if curtok_type == tt.RAW_LINE or curtok_type == tt.NEWLINE or next_token.ttype == tt.EOF:
+                # Если текущий токен - токен сырой строки, или токен новой строки,
+                # или следующий - токен конца файла:
+                # TODO: цепочка токенов становится оператором сырой строки
+                del self._parse_machines[mid]
+                return 'raw_found'
+            # TODO: любой другой токен просто помещается в цепочку
+        ...
+
+    def _eof_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
+        """ Ожидаем, что текущий токен — конец файла. """
+        # машина обрабатывает только один токен, поэтому нам не нужно
+        # как-то альтернативно обрабатывать её состояния или сигналы.
+        mid = machine.id
+        del self._parse_machines[mid]
+        if self._curtok.ttype == tt.EOF:
+            return sgnl.EOF_FOUND
+        else:
+            return sgnl.EOF_NOT_FOUND
 
     # вспомогательные методы
     def _append_stmt(self, stmt:stm.PpStmt) -> None:
@@ -94,13 +160,15 @@ class PpParser:
         # добавляем
         self._qsps_file.append(stmt)
 
-    def _state_handler(self, scheme:Dict[str, Dict[str, str]],
-                       state:str, signal:str) -> str:
-        """ Переключатель состояний. """
-        if signal in scheme[state]:
-            return scheme[state][signal]
-        else:
-            return scheme[state]['default']
+    def _add_machine(self, machine:PPSM) -> None:
+        """ добавляет машину в очередь """
+        self._parse_machines[machine.id] = machine
+        self._cur_machine = machine.id
+
+    def _next_peek(self) -> tkn:
+        """ Возващает следующий токен, если есть; иначе None. """
+        sk = self._curtok_num
+        return self._tokens[sk + 1] if sk + 1 < len(self._tokens) else None    
 
     # обработчик ошибок. Пока просто выводим в консоль.
     def _error(self, message:str) -> None:
