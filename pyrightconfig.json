@@ -1,0 +1,16 @@
+{
+    // режим строгой проверки типов
+    "typeCheckingMode": "strict",
+
+    // версия пайтон для проверки
+    "pythonVersion": "3.8",
+
+    // исключения
+    "exclude": [
+        "**/__pycache__",
+        "**/node_modules",
+        "**/venv",
+        "**/.venv",
+        "**/.obsidian"
+    ]
+}

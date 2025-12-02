@@ -1,8 +1,8 @@
-from tracemalloc import start
+# from tracemalloc import start
 import uuid
-from typing import List, Callable, Dict, Union, Tuple, Optional
+from typing import List, Callable, Dict, Optional, Any #, Union, Tuple
 
-from pp_tokens import PpToken as tkn
+from pp_tokens import PpToken as Tkn
 from pp_tokens import PpTokenType as tt
 
 import pp_stmts as stm
@@ -10,16 +10,17 @@ import pp_stmts as stm
 from pp_state_machine import PpStateMachine as PPSM
 from pp_state_machine import PpSmSignal as sgnl
 
-Stack = List[Callable[(tkn), None]]
+Stack = List[Callable[[Tkn], None]]
+PpStmt = stm.PpStmt[Any]
 
 
 class PpParser:
 
-    def __init__(self, tokens:List[tkn]) -> None:
-        self._tokens:List[tkn] = tokens
+    def __init__(self, tokens:List[Tkn]) -> None:
+        self._tokens:List[Tkn] = tokens
 
         self._curtok_num:int = 0
-        self._curtok:tkn = None
+        self._curtok:Optional[Tkn] = None
 
         start_machine = PPSM(self._qsps_file_parse)
         self._cur_machine:uuid.UUID = start_machine.id
@@ -27,7 +28,7 @@ class PpParser:
             self._cur_machine: start_machine
         }
 
-        self._stmts:List[stm.PpStmt] = []
+        self._stmts:List[PpStmt] = []
 
     def parse(self) -> None:
         """ Публичная функция вызова парсера. """
@@ -152,20 +153,20 @@ class PpParser:
             return sgnl.EOF_NOT_FOUND
 
     # вспомогательные методы
-    def _append_stmt(self, stmt:stm.PpStmt) -> None:
+    def _append_stmt(self, stmt:PpStmt) -> None:
         """ Добавляет стэйтмент в список. """
         # связываем элемент и номер
         l = len(self._stmts)
         stmt.index = l
         # добавляем
-        self._qsps_file.append(stmt)
+        self._stmts.append(stmt)
 
     def _add_machine(self, machine:PPSM) -> None:
         """ добавляет машину в очередь """
         self._parse_machines[machine.id] = machine
         self._cur_machine = machine.id
 
-    def _next_peek(self) -> tkn:
+    def _next_peek(self) -> Optional[Tkn]:
         """ Возващает следующий токен, если есть; иначе None. """
         sk = self._curtok_num
         return self._tokens[sk + 1] if sk + 1 < len(self._tokens) else None    

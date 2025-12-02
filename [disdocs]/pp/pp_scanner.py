@@ -1,6 +1,6 @@
-import os, json
+import json
 
-from typing import Any, Callable, List, Dict, Union, Optional
+from typing import Any, Callable, List, Dict, Optional, Tuple
 
 from pp_tokens import PpToken as tkn
 from pp_tokens import PpTokenType as tt
@@ -21,7 +21,7 @@ class PpScanner:
         self._line_len:int = 0 # длина текущей строки
         self._line_num:int = 0 # номер текущей строки
         
-        self._start_lexeme:tuple = (0, 0) # начало текущей лексемы (строка, позиция)
+        self._start_lexeme:Tuple[int, int] = (0, 0) # начало текущей лексемы (строка, позиция)
 
         self._scan_funcs:List[Callable[[str], None]] = [self._qsps_file_expect]
         self._prepend_chars:Stack = [] # ожидаемые символы в обратном порядке
@@ -324,7 +324,7 @@ class PpScanner:
 
     def _curline_is_last(self) -> bool:
         """ Текущая строка последняя? """
-        return self._line == self._qsps_len - 1
+        return self._line_num == self._qsps_len - 1
 
     def _next_in_line(self) -> str:
         """ Возвращает следующий символ в строке """
@@ -366,7 +366,7 @@ def _main():
 
     scanner = PpScanner(lines)
     scanner.scan_tokens()
-    l = []
+    l: List[Dict[str, Any]] = []
     for t in scanner.get_tokens():
         l.append({
             "token-type": t.ttype.name,  # название константы вместо номера
