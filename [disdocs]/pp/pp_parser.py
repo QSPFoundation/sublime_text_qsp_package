@@ -20,7 +20,7 @@ class PpParser:
         self._tokens:List[Tkn] = tokens
 
         self._curtok_num:int = 0
-        self._curtok:Optional[Tkn] = None
+        self._curtok:Optional[Tkn] = self._tokens[0] if self._tokens else None
 
         start_machine = PPSM(self._qsps_file_parse)
         self._cur_machine:uuid.UUID = start_machine.id
@@ -35,15 +35,16 @@ class PpParser:
         # прежде всего разбиваем файл на директивы и блоки
         accept_signal = sgnl.DEFAULT
         # self._cur_machine выставлен заранее
-        while True:
+        while self._curtok:
             machine:PPSM = self._parse_machines[self._cur_machine]
             accept_signal = machine.handler(machine, accept_signal)
             # Машина возвращает сигнал, который передаётся либо ей же, либо предыдущей, либо новой
             # в любом случае переполучаем id текущей машины, это последняя машина в словаре.
-            if self._parse_machines:
-                self._cur_machine = list(self._parse_machines.keys())[-1]
-            else:
+            if not self._parse_machines:
+                # если машин больше нет, значит парсинг закончен
                 break
+            # получаем id последней машины в словаре
+            self._cur_machine = list(self._parse_machines.keys())[-1]
         # Здесь возможно нужно разрешение оставшихся сигналов от машин
         ...
 
