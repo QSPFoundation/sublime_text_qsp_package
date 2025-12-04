@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Any, List
+from typing import Generic, TypeVar, List
 
 from pp_tokens import PpToken
 
@@ -10,20 +10,30 @@ class PpStmt(ABC, Generic[R]):
     """ Класс поддержки операторов препроцессинга. В т.ч. общий тип, шаблон. """
     index:int = -1
     @abstractmethod # обязательный метод для всех операторов
-    def accept(self, runner:'PpVisitor[R]') -> R:
+    def accept(self, visitor:'PpVisitor[R]') -> R:
         """ Принимает объект, реализующий набор поведений в виде методов.
         См. описание в файле ниже. """
         ...
 
 class PpVisitor(ABC, Generic[R]):
     """ Интерфейс для всех реализаций поведения операторов препроцессинга. """
-    def visit_raw_line_stmt(self, stmt:PpStmt) -> R:
+    @abstractmethod
+    def visit_qsps_file_block(self, stmt:'QspsFileBlock[R]') -> R:
+        ...
+
+    @abstractmethod
+    def visit_raw_line_stmt(self, stmt:'RawLineStmt[R]') -> R:
         ...
 
 @dataclass(eq=False)
+class QspsFileBlock(PpStmt[R]):
+    statements:List[PpStmt[R]]
+    def accept(self, visitor:PpVisitor[R]) -> R:
+        return visitor.visit_qsps_file_block(self)
+
+@dataclass(eq=False)
 class RawLineStmt(PpStmt[R]):
-    value:PpToken
-    index:int = -1
+    value:List[PpToken]
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_raw_line_stmt(self)
 

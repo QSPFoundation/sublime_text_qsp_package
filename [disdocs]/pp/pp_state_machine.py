@@ -34,7 +34,8 @@ _SCHEMES:Dict[str, Dict[str, Dict[_Sgn, str]]] = {
         },
         'raw_find': {
             _Sgn.DEFAULT: 'loc_find',
-            _Sgn.NOT_FOUND: 'eof_find'
+            _Sgn.NOT_FOUND: 'eof_find',
+            _Sgn.ERROR: 'error_eof'
         },
         'eof_find': {
             _Sgn.DEFAULT: 'eof_find',

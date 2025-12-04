@@ -10,6 +10,8 @@ import pp_stmts as stm
 from pp_state_machine import PpStateMachine as PPSM
 from pp_state_machine import PpSmSignal as sgnl
 
+from pp_tree import PpTree
+
 Stack = List[Callable[[Tkn], None]]
 PpStmt = stm.PpStmt[Any]
 
@@ -28,7 +30,7 @@ class PpParser:
             self._cur_machine: start_machine
         }
 
-        self._stmts:List[PpStmt] = []
+        self._code_tree:PpTree = PpTree()
 
     def parse(self) -> None:
         """ Публичная функция вызова парсера. """
@@ -117,30 +119,41 @@ class PpParser:
         state = machine.state
         mid = machine.id
 
+        if self._curtok is None:
+            # исключительный, невозможный случай
+            self._logic_error('Unexpected end of input')
+            return sgnl.ERROR
+        
         curtok_type = self._curtok.ttype
+
         if curtok_type == tt.EOF:
             # при наборе токенов для строки, встретить конец файла,
             # значит напороться на ошибку
             del self._parse_machines[mid]
             self._error('Unexpected EOF')
-            return 'raw_not_found'
+            return sgnl.ERROR
+
         if state == 'raw_find':
             # поглощаем все токены, кроме eof
             next_token = self._next_peek()
             if next_token is None:
                 # это ошибка. Подобный вариант возможен только для токена конца файла, а он обработан
-                del self._parse_machines[mid]
+                del self._parse_machines[mid] # удаляем машину
+                self._eat_token() # поглощаем токен
                 self._error('Unexpected end of input')
-                self._cur_machine = None # отрубаем дальнейший парсинг, поскольку он невозможен
-                return 'raw_not_found'
-            if curtok_type == tt.RAW_LINE or curtok_type == tt.NEWLINE or next_token.ttype == tt.EOF:
+                return sgnl.ERROR
+            if curtok_type in (tt.RAW_LINE, tt.NEWLINE) or next_token.ttype == tt.EOF:
                 # Если текущий токен - токен сырой строки, или токен новой строки,
                 # или следующий - токен конца файла:
-                # TODO: цепочка токенов становится оператором сырой строки
+                tokens_chain:List[Tkn] = self._tokens[machine.start_token:self._curtok_num+1]
+                # создаём оператор сырой строки из цепочки токенов
+                raw_line = stm.RawLineStmt[None](tokens_chain)
+                self._code_tree.handle(raw_line)
                 del self._parse_machines[mid]
-                return 'raw_found'
-            # TODO: любой другой токен просто помещается в цепочку
-        ...
+                self._eat_token() # поглощаем токен
+                return sgnl.FOUND
+            self._eat_token()
+        return sgnl.DEFAULT
 
     def _eof_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
         """ Ожидаем, что текущий токен — конец файла. """
@@ -158,13 +171,13 @@ class PpParser:
         return sgnl.EOF_FOUND
 
     # вспомогательные методы
-    def _append_stmt(self, stmt:PpStmt) -> None:
-        """ Добавляет стэйтмент в список. """
-        # связываем элемент и номер
-        l = len(self._stmts)
-        stmt.index = l
-        # добавляем
-        self._stmts.append(stmt)
+    # def _append_stmt(self, stmt:PpStmt) -> None:
+    #     """ Добавляет стэйтмент в список. """
+    #     # связываем элемент и номер
+    #     l = len(self._stmts)
+    #     stmt.index = l
+    #     # добавляем
+    #     self._stmts.append(stmt)
 
     def _add_machine(self, machine:PPSM) -> None:
         """ добавляет машину в очередь """
@@ -174,7 +187,15 @@ class PpParser:
     def _next_peek(self) -> Optional[Tkn]:
         """ Возващает следующий токен, если есть; иначе None. """
         sk = self._curtok_num
-        return self._tokens[sk + 1] if sk + 1 < len(self._tokens) else None    
+        return self._tokens[sk + 1] if sk + 1 < len(self._tokens) else None 
+
+    def _eat_token(self) -> None:
+        """ Поглощает токен. Т.е. передвигает указатель на следующий. """
+        self._curtok_num += 1
+        if self._curtok_num >= len(self._tokens):
+            self._curtok = None
+        else:
+            self._curtok = self._tokens[self._curtok_num]
 
     # обработчик ошибок. Пока просто выводим в консоль.
     def _error(self, message:str) -> None:
