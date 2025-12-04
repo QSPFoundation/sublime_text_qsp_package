@@ -61,7 +61,7 @@ class PpParser:
             del self._parse_machines[mid]
             return sgnl.EOF_FOUND
         elif state == 'error_eof': # ошибка поиска конца файла
-            self._error('EOF not found.')
+            # об ошибке сообщает машина поиска конца файла
             del self._parse_machines[mid]
             return sgnl.ERROR
         elif state == 'loc_find':
@@ -148,10 +148,14 @@ class PpParser:
         # как-то альтернативно обрабатывать её состояния или сигналы.
         mid = machine.id
         del self._parse_machines[mid]
-        if self._curtok.ttype == tt.EOF:
-            return sgnl.EOF_FOUND
-        else:
+        if self._curtok is None:
+            # исключительный, невозможный случай
+            self._logic_error('Unexpected end of input')
             return sgnl.EOF_NOT_FOUND
+        if self._curtok.ttype != tt.EOF:
+            self._error('Expected EOF, but got something else')
+            return sgnl.EOF_NOT_FOUND
+        return sgnl.EOF_FOUND
 
     # вспомогательные методы
     def _append_stmt(self, stmt:PpStmt) -> None:
@@ -179,3 +183,6 @@ class PpParser:
         else:
             name = 'None'
         print(f"Err. {message}: {name} ({self._curtok_num}).")
+
+    def _logic_error(self, message:str) -> None:
+        print(f"Logic error: {message}. Please, report to the developer.")
