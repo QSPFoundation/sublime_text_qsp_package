@@ -12,13 +12,13 @@ class QspParser:
 
         self.current:int = 0
 
-    def parse(self) -> List[qs.QspStmt]:
-        statements:List[qs.QspStmt] = []
+    def parse(self) -> List[qs.QspStmt[None]]:
+        statements:List[qs.QspStmt[None]] = []
         while not self._is_at_end():
             statements.append(self.declaration())
         return statements
 
-    def declaration(self) -> qs.QspStmt:
+    def declaration(self) -> qs.QspStmt[None]:
         try:
             if self._match(tt.FUN): return self.function("function")
             if self._match(tt.VAR): return self.var_declaration()
@@ -27,7 +27,7 @@ class QspParser:
             self.synchronize()
             return
 
-    def function(self, kind:str) -> qs.QspFunction:
+    def function(self, kind:str) -> qs.QspFunction[None]:
         name:QspToken = self._consume(tt.IDENTIFIER, f"Expect {kind} name.")
         self._consume(tt.LEFT_PAREN, f"Expect '(' after {kind} name.")
         parameters:List[QspToken] = []
@@ -41,10 +41,10 @@ class QspParser:
         self._consume(tt.RIGHT_PAREN, f"Expect ')' after parameters.")
 
         self._consume(tt.LEFT_BRACE, f"Expect '{{' before {kind} body.")
-        body:List[qs.QspStmt] = self.block()
-        return qs.QspFunction(name, parameters, body)
+        body:List[qs.QspStmt[None]] = self.block()
+        return qs.QspFunction[None](name, parameters, body)
 
-    def statement(self) -> qs.QspStmt:
+    def statement(self) -> qs.QspStmt[None]:
         if self._match(tt.FOR): return self.for_statement()
         if self._match(tt.IF): return self.if_statement()
         if self._match(tt.PRINT): return self.print_statement()
@@ -54,7 +54,7 @@ class QspParser:
 
         return self.expression_statement()
 
-    def var_declaration(self) -> qs.QspStmt:
+    def var_declaration(self) -> qs.QspStmt[None]:
         name:QspToken = self._consume(tt.IDENTIFIER, "Expect variable name.")
 
         initializer:qe.QspExpr = None
@@ -64,10 +64,10 @@ class QspParser:
         self._consume(tt.SEMICOLON, "Expect ';' avter value.")
         return qs.QspVar(name, initializer)
 
-    def for_statement(self) -> qs.QspStmt:
+    def for_statement(self) -> qs.QspStmt[None]:
         self._consume(tt.LEFT_PAREN, "Expect '(' after 'for'.")
 
-        initializer:qs.QspStmt = None
+        initializer:qs.QspStmt[None] = None
         if self._match(tt.SEMICOLON):
             initializer = None
         elif self._match(tt.VAR):
@@ -85,7 +85,7 @@ class QspParser:
             increment = self.expression()
         self._consume(tt.RIGHT_PAREN, "Expect ')' after for clauses.")
 
-        body:qs.QspStmt = self.statement()
+        body:qs.QspStmt[None] = self.statement()
 
         if increment is not None:
             body = qs.QspBlock([
@@ -101,7 +101,7 @@ class QspParser:
 
         return body
 
-    def if_statement(self) -> qs.QspStmt:
+    def if_statement(self) -> qs.QspStmt[None]:
         self._consume(tt.LEFT_PAREN, "Expect '(' after 'if'.")
         condition:qs.QspExpr = self.expression()
         self._consume(tt.RIGHT_PAREN, "Expect ')' after 'if' condition.")
@@ -113,21 +113,21 @@ class QspParser:
 
         return qs.QspIf(condition, then_branch, else_branch)
 
-    def while_statement(self) -> qs.QspStmt:
+    def while_statement(self) -> qs.QspStmt[None]:
         self._consume(tt.LEFT_PAREN, "Expect '(' after 'while'.")
         condition:qs.QspExpr = self.expression()
         self._consume(tt.RIGHT_PAREN, "Expect ')' after 'while' condition.")
 
-        body:qs.QspStmt = self.statement()
+        body:qs.QspStmt[None] = self.statement()
 
         return qs.QspWhile(condition, body)
 
-    def print_statement(self) -> qs.QspStmt:
+    def print_statement(self) -> qs.QspStmt[None]:
         value = self.expression()
         self._consume(tt.SEMICOLON, "Expect ';' avter value.")
         return qs.QspPrint(value)
 
-    def return_statement(self) -> qs.QspStmt:
+    def return_statement(self) -> qs.QspStmt[None]:
         keyword:QspToken = self._previous()
         value:Optional[qe.QspExpr] = None
         if not self._check(tt.SEMICOLON):
@@ -135,13 +135,13 @@ class QspParser:
         self._consume(tt.SEMICOLON, "Expect ';' after return value.")
         return qs.QspReturn(keyword, value)
 
-    def expression_statement(self) -> qs.QspStmt:
+    def expression_statement(self) -> qs.QspStmt[None]:
         expr = self.expression()
         self._consume(tt.SEMICOLON, "Expect ';' after expression.")
         return qs.QspExpression(expr)
 
-    def block(self) -> List[qs.QspStmt]:
-        statements:List[qs.QspStmt] = []
+    def block(self) -> List[qs.QspStmt[None]]:
+        statements:List[qs.QspStmt[None]] = []
 
         while not self._check(tt.RIGHT_BRACE) and not self._is_at_end():
             statements.append(self.declaration())

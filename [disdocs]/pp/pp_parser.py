@@ -6,9 +6,7 @@ from pp_tokens import PpToken as Tkn
 from pp_tokens import PpTokenType as tt
 
 import pp_stmts as stm
-
-from pp_state_machine import PpStateMachine as PPSM
-from pp_state_machine import PpSmSignal as sgnl
+import pp_dir as dir
 
 Stack = List[Callable[[Tkn], None]]
 PpStmt = stm.PpStmt[Any]
@@ -19,189 +17,175 @@ class PpParser:
     def __init__(self, tokens:List[Tkn]) -> None:
         self._tokens:List[Tkn] = tokens
 
+        # валидация цепочки токенов
+        
+        if not self._tokens:
+            self._logic_error(f'Init-stage. Tokens-chain is empty')
+            return None
+        if self._tokens and self._tokens[-1].ttype != tt.EOF:
+            self._logic_error(f'There is not EOF in tokens-chain on initial stage')
+            self._tokens.append(Tkn(tt.EOF, '', None, (-1,-1)))        
+
         self._curtok_num:int = 0
-        self._curtok:Optional[Tkn] = self._tokens[0] if self._tokens else None
+        self._curtok:Tkn = self._tokens[0]
 
-        start_machine = PPSM(self._qsps_file_parse)
-        self._cur_machine:uuid.UUID = start_machine.id
-        self._parse_machines:Dict[uuid.UUID, PPSM] = {
-            self._cur_machine: start_machine
-        }
+        self._loc_is_open:bool = False
 
-        self._code_tree = start_machine.node
-        self._current_node:PpStmt = self._code_tree
+        self._qsps_file:List[PpStmt] = []
 
-    def parse(self) -> None:
+    def qsps_file_parse(self) -> None:
         """ Публичная функция вызова парсера. """
         # прежде всего разбиваем файл на директивы и блоки
-        accept_signal = sgnl.DEFAULT
-        # self._cur_machine выставлен заранее
-        while self._curtok:
-            machine:PPSM = self._parse_machines[self._cur_machine]
-            accept_signal = machine.handler(machine, accept_signal)
-            # Машина возвращает сигнал, который передаётся либо ей же, либо предыдущей, либо новой
-            # в любом случае переполучаем id текущей машины, это последняя машина в словаре.
-            if not self._parse_machines:
-                # если машин больше нет, значит парсинг закончен
-                break
-            # получаем id последней машины в словаре
-            self._cur_machine = list(self._parse_machines.keys())[-1]
-        # Здесь возможно нужно разрешение оставшихся сигналов от машин
+        statements = self._qsps_file
+        while not self._is_eof():
+            statements.append(self._declaration())
         ...
 
 
-    def _qsps_file_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
+    def _declaration(self) -> stm.PpStmt[None]:
         """ Распарсиваем целый файл из токенов. """
-        # переключение состояний
-        machine.state_handler(signal)
-        # получаем состояние
-        state = machine.state
-        # идентификатор машины
-        mid = machine.id
-        if state == 'close_machine': # найден конец файла
-            del self._parse_machines[mid]
-            return sgnl.EOF_FOUND
-        elif state == 'error_eof': # ошибка поиска конца файла
-            # об ошибке сообщает машина поиска конца файла
-            del self._parse_machines[mid]
-            return sgnl.ERROR
-        elif state == 'loc_find':
-            # нужно включить поиск локации, для этого создаём машину
-            new_machine = PPSM(self._loc_parse, mid, self._curtok_num)
-            self._add_machine(new_machine)
-        elif state == 'dir_find':
-            new_machine = PPSM(self._dir_parse, mid, self._curtok_num)
-            self._add_machine(new_machine)
-        elif state == 'raw_find':
-            new_machine = PPSM(self._rawline_parse, mid, self._curtok_num)
-            self._add_machine(new_machine)
-        elif state == 'eof_find':
-            new_machine = PPSM(self._eof_parse, mid, self._curtok_num)
-            self._add_machine(new_machine)
-        return sgnl.DEFAULT
-        
-
-
-    def _loc_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
-        ...
-
-    def _dir_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
-        """ Парсинг директивы препроцессора. """
-        machine.state_handler(signal)
-        state = machine.state
-        mid = machine.id
-
-        if state == 'open_dir_stmt_find':
-            # Нужно сопоставить текущий токен, если он не совпал, значит это не директива, а сырая строка
-            if self._curtok.ttype == tt.OPEN_DIRECTIVE_STMT:
-                # TODO: токен превращается в оператор директивы
-                return 'open_dir_stmt_found'
-            else:
-                del self._parse_machines[mid] # удаляем машину
-                return 'dir_not_found'
-        if state == 'directive_parse':
-            # Создаём машину парсинга непосредственной команды
-            new_machine = PPSM(self._directive_parse, mid)
-            self._add_machine(new_machine)
-            return state
-        if state == 'error_parse':
-            del self._parse_machines[mid] # удаляем машину
-            return 'dir_not_found'
-        if state == 'close_machine': # найден конец файла
-            del self._parse_machines[mid] # удаляем машину
-            return 'dir_found'
-        ...
-
-    def _rawline_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
-        """ Распарсиваем цепочку токенов для сырой строки. """
-        # Параметризуем тип: для этого метода machine.node имеет тип RawLineStmt[None]
-        raw_line_node = cast(stm.RawLineStmt[None], machine.node)
-        
-        machine.state_handler(signal)
-        state = machine.state
-        mid = machine.id
-
-        if self._curtok is None:
-            # исключительный, невозможный случай
-            self._logic_error('Unexpected end of input')
-            return sgnl.ERROR
-        
-        curtok_type = self._curtok.ttype
-
-        if curtok_type == tt.EOF:
-            # при наборе токенов для строки, встретить конец файла,
-            # значит напороться на ошибку
-            del self._parse_machines[mid]
-            self._error('Unexpected EOF')
-            return sgnl.ERROR
-
-        if state == 'raw_find':
-            next_token = self._next_peek()
-            self._eat_token() # поглощаем токен self._curtok_num+1
-            if next_token is None:
-                # это ошибка. Подобный вариант возможен только для токена конца файла, а он обработан
-                del self._parse_machines[mid] # удаляем машину
-                self._error('Unexpected end of input')
-                return sgnl.ERROR
-            if curtok_type in (tt.RAW_LINE, tt.NEWLINE) or next_token.ttype == tt.EOF:
-                # Если текущий токен - токен сырой строки, или токен новой строки,
-                # или следующий - токен конца файла:
-                tokens_chain:List[Tkn] = self._tokens[machine.start_token:self._curtok_num]
-                # создаём оператор сырой строки из цепочки токенов
-                raw_line_node.value = tokens_chain
-                self._current_node = machine.node
-                del self._parse_machines[mid]
-                return sgnl.FOUND
-        return sgnl.DEFAULT
-
-    def _eof_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
-        """ Ожидаем, что текущий токен — конец файла. """
-        # машина обрабатывает только один токен, поэтому нам не нужно
-        # как-то альтернативно обрабатывать её состояния или сигналы.
-        mid = machine.id
-        del self._parse_machines[mid]
-        if self._curtok is None:
-            # исключительный, невозможный случай
-            self._logic_error('Unexpected end of input')
-            return sgnl.EOF_NOT_FOUND
-        if self._curtok.ttype != tt.EOF:
-            self._error('Expected EOF, but got something else')
-            return sgnl.EOF_NOT_FOUND
-        return sgnl.EOF_FOUND
-
-    # вспомогательные методы
-    # def _append_stmt(self, stmt:PpStmt) -> None:
-    #     """ Добавляет стэйтмент в список. """
-    #     # связываем элемент и номер
-    #     l = len(self._stmts)
-    #     stmt.index = l
-    #     # добавляем
-    #     self._stmts.append(stmt)
-
-    def _add_machine(self, machine:PPSM) -> None:
-        """ добавляет машину в очередь """
-        self._parse_machines[machine.id] = machine
-        self._cur_machine = machine.id
-
-    def _next_peek(self) -> Optional[Tkn]:
-        """ Возващает следующий токен, если есть; иначе None. """
-        sk = self._curtok_num
-        return self._tokens[sk + 1] if sk + 1 < len(self._tokens) else None 
-
-    def _eat_token(self) -> None:
-        """ Поглощает токен. Т.е. передвигает указатель на следующий. """
-        self._curtok_num += 1
-        if self._curtok_num >= len(self._tokens):
-            self._curtok = None
+        # запоминаем стартовый токен
+        start_declaration:int = self._curtok_num
+        if self._loc_is_open:
+            ...
         else:
-            self._curtok = self._tokens[self._curtok_num]
+            # _open_loc
+            if self._check_type(tt.LOC_OPEN):
+                return self._open_loc()
+            elif self._check_type(tt.RAW_LINE):
+                return self._raw_line()
+            elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
+                validate_directive:Optional[stm.PpDirective[None]] = self._directive()
+                if validate_directive:
+                    return validate_directive
+                else:
+                    self._reset_curtok(start_declaration)
+                    return self._raw_line_eating()
+            else:
+                self._logic_error(f'Expected LOC_OPEN, RAW_LINE or OPEN_DIR_STMT. Get {self._curtok.ttype.name}')
+        ...
+
+    def _directive(self) -> Optional[stm.PpDirective[None]]:
+        """ Получаем директиву препроцессора, если возможно. """
+        self._eat_tokens(1) # пожираем токен объявления директивы
+        start_declaration:int = self._curtok_num
+        next_is_newline = self._next_peek().ttype == tt.NEWLINE
+        if self._curtok.ttype == tt.ENDIF_STMT and next_is_newline:
+            body = dir.EndifDir[None](self._curtok)
+            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
+            return stm.PpDirective(body)
+        if self._curtok.ttype == tt.NOPP_STMT and next_is_newline:
+            body = dir.NoppDir[None](self._curtok)
+            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
+            return stm.PpDirective(body)
+        if self._curtok.ttype == tt.OFF_STMT and next_is_newline:
+            body = dir.OffDir[None](self._curtok)
+            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
+            return stm.PpDirective(body)
+        if self._curtok.ttype == tt.ON_STMT and next_is_newline:
+            body = dir.OnDir[None](self._curtok)
+            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
+            return stm.PpDirective(body)
+        if self._curtok.ttype == tt.NO_SAVECOMM_STMT and next_is_newline:
+            body = dir.NoSaveCommDir[None](self._curtok)
+            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
+            return stm.PpDirective(body)
+        if self._curtok.ttype == tt.SAVECOMM_STMT and next_is_newline:
+            body = dir.SaveCommDir[None](self._curtok)
+            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
+            return stm.PpDirective(body)
+        if self._curtok.ttype == tt.VAR_STMT:
+            assignment_validation:Optional[dir.AssignmentDir[None]] = self._assignment_dir()
+            if assignment_validation is None:
+                return None
+            return stm.PpDirective[None](assignment_validation)
+        ... # if statement
+
+
+    def _assignment_dir(self) -> Optional[dir.AssignmentDir[None]]:
+        """Получаем директиву присваивания"""
+        self._eat_tokens(1) # пожираем токен оператора присваивания
+        # далее должен идти токен скобки
+        if not self._check_type(tt.LEFT_PAREN):
+            self._error(f'Expected LEFT_PAREN')
+            return None
+        self._eat_tokens(1) # поглотили токен скобки
+        # далее идёт идентификатор
+        if not self._check_type(tt.IDENTIFIER):
+            self._error('Expected VARIABLE NAME')
+            return None
+        key = self._curtok
+        self._eat_tokens(1)
+        # далее могут идти три варианта
+        if self._check_type(tt.RIGHT_PAREN) and self._next_peek().ttype == tt.NEWLINE:
+            # правая скобка и newline означают, что объявление завершено
+            assignment = dir.AssignmentDir[None](key, None)
+            self._eat_tokens(2) # пожираем два токена, в т.ч. newline
+            return assignment
+        if self._check_type(tt.ASSIGNMENT_OPERATOR):
+            self._eat_tokens(1)
+            if not self._check_type(tt.IDENTIFIER):
+                self._error('Expected IDENTIFIER (ex. variable name)')
+                return None
+            value = self._curtok
+            self._eat_tokens(1)
+            if not self._check_type(tt.RIGHT_PAREN):
+                self._error(f'Expected RIGHT_PAREN')
+                return None
+            self._eat_tokens(1)
+            if not self._check_type(tt.NEWLINE): # директива должна заканчиваться переносом на новую строку
+                self._error('Expected end of Directive')
+                return None
+            # теперь, когда вся валидация пройдена, поглощаем токен новой строки, и возвращаем присвоение
+            self._eat_tokens(1)
+            return dir.AssignmentDir[None](key, value)
+        # любой другой токен означает, что что-то сломано в комманде
+        self._error('Unexpected token')
+        return None
+
+        
+
+
+    def _open_loc(self) -> stm.PpQspLocOpen[None]:
+        """ Open Loc Statement Create """
+        name = self._curtok
+        self._loc_is_open = True
+        self._eat_tokens(1)
+        return stm.PpQspLocOpen[None](name)   
+    
+    def _raw_line(self) -> stm.RawLineStmt[None]:
+        """ Raw Line Statement Create """
+        value:List[Tkn] = [self._curtok]
+        self._eat_tokens(1)
+        return stm.RawLineStmt[None](value)
+
+    # aux operations
+    def _is_eof(self) -> bool:
+        """ Является ли токен концом файла. """
+        return self._curtok.ttype == tt.EOF
+
+    def _check_type(self, t:tt) -> bool:
+        """ Сравнивает тип текущего токена с переданным. """
+        return self._curtok.ttype == t
+
+
+    def _peek(self) -> Optional[Tkn]:
+        """ Текущий токен. """
+        return self._curtok
+
+    def _next_peek(self) -> Tkn:
+        """ Возващает следующий токен. """
+        sk = self._curtok_num
+        return self._tokens[sk + 1] 
+
+    def _eat_tokens(self, count:int) -> None:
+        """ Поглощает токен. Т.е. передвигает указатель на следующий. """
+        self._curtok_num += count # токены передвигаются лишь до EOF, поэтому выход за пределы невозможен
+        self._curtok = self._tokens[self._curtok_num]
 
     # обработчик ошибок. Пока просто выводим в консоль.
     def _error(self, message:str) -> None:
-        if self._curtok is not None:
-            name = self._curtok.ttype.name
-        else:
-            name = 'None'
+        name = self._curtok.ttype.name
         print(f"Err. {message}: {name} ({self._curtok_num}).")
 
     def _logic_error(self, message:str) -> None:

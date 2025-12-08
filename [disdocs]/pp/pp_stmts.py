@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Generic, TypeVar, List
 
 from pp_tokens import PpToken
+import pp_dir as dir
 
 R = TypeVar("R")
 
@@ -18,33 +19,34 @@ class PpStmt(ABC, Generic[R]):
 class PpVisitor(ABC, Generic[R]):
     """ Интерфейс для всех реализаций поведения операторов препроцессинга. """
     @abstractmethod
-    def visit_qsps_file_block(self, stmt:'QspsFileBlock[R]') -> R:
+    def visit_raw_line_dclrt(self, stmt:'RawLineStmt[R]') -> R:
         ...
 
     @abstractmethod
-    def visit_raw_line_stmt(self, stmt:'RawLineStmt[R]') -> R:
+    def visit_loc_open_dclrt(self, stmt:'PpQspLocOpen[R]') -> R:
         ...
 
     @abstractmethod
-    def visit_placeholder(self, stmt:'PlaceHolder[R]') -> R:
+    def visit_pp_directive(self, stmt:'PpDirective[R]') -> R:
         ...
 
 @dataclass(eq=False)
-class PlaceHolder(PpStmt[R]):
+class PpQspLocOpen(PpStmt[R]):
+    name:PpToken
     def accept(self, visitor: 'PpVisitor[R]') -> R:
-        return visitor.visit_placeholder(self)
-
-@dataclass(eq=False)
-class QspsFileBlock(PpStmt[R]):
-    statements:List[PpStmt[R]]
-    def accept(self, visitor:PpVisitor[R]) -> R:
-        return visitor.visit_qsps_file_block(self)
+        return visitor.visit_loc_open_dclrt(self)
 
 @dataclass(eq=False)
 class RawLineStmt(PpStmt[R]):
     value:List[PpToken]
     def accept(self, visitor:PpVisitor[R]) -> R:
-        return visitor.visit_raw_line_stmt(self)
+        return visitor.visit_raw_line_dclrt(self)
+
+@dataclass
+class PpDirective(PpStmt[R]):
+    body:dir.PpDir[R]
+    def accept(self, visitor:PpVisitor[R]) -> R:
+        return visitor.visit_pp_directive(self)
 
 # Допустим у нас есть объекты класса Животное. От этого класса наследуются:
 # - Собака
