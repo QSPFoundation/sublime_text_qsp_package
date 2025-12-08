@@ -25,6 +25,15 @@ class PpVisitor(ABC, Generic[R]):
     def visit_raw_line_stmt(self, stmt:'RawLineStmt[R]') -> R:
         ...
 
+    @abstractmethod
+    def visit_placeholder(self, stmt:'PlaceHolder[R]') -> R:
+        ...
+
+@dataclass(eq=False)
+class PlaceHolder(PpStmt[R]):
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_placeholder(self)
+
 @dataclass(eq=False)
 class QspsFileBlock(PpStmt[R]):
     statements:List[PpStmt[R]]

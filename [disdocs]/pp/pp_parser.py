@@ -1,6 +1,6 @@
 # from tracemalloc import start
 import uuid
-from typing import List, Callable, Dict, Optional, Any #, Union, Tuple
+from typing import List, Callable, Dict, Optional, Any, cast #, Union, Tuple
 
 from pp_tokens import PpToken as Tkn
 from pp_tokens import PpTokenType as tt
@@ -9,8 +9,6 @@ import pp_stmts as stm
 
 from pp_state_machine import PpStateMachine as PPSM
 from pp_state_machine import PpSmSignal as sgnl
-
-from pp_tree import PpTree
 
 Stack = List[Callable[[Tkn], None]]
 PpStmt = stm.PpStmt[Any]
@@ -30,7 +28,8 @@ class PpParser:
             self._cur_machine: start_machine
         }
 
-        self._code_tree:PpTree = PpTree()
+        self._code_tree = start_machine.node
+        self._current_node:PpStmt = self._code_tree
 
     def parse(self) -> None:
         """ Публичная функция вызова парсера. """
@@ -115,6 +114,9 @@ class PpParser:
 
     def _rawline_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
         """ Распарсиваем цепочку токенов для сырой строки. """
+        # Параметризуем тип: для этого метода machine.node имеет тип RawLineStmt[None]
+        raw_line_node = cast(stm.RawLineStmt[None], machine.node)
+        
         machine.state_handler(signal)
         state = machine.state
         mid = machine.id
@@ -134,25 +136,22 @@ class PpParser:
             return sgnl.ERROR
 
         if state == 'raw_find':
-            # поглощаем все токены, кроме eof
             next_token = self._next_peek()
+            self._eat_token() # поглощаем токен self._curtok_num+1
             if next_token is None:
                 # это ошибка. Подобный вариант возможен только для токена конца файла, а он обработан
                 del self._parse_machines[mid] # удаляем машину
-                self._eat_token() # поглощаем токен
                 self._error('Unexpected end of input')
                 return sgnl.ERROR
             if curtok_type in (tt.RAW_LINE, tt.NEWLINE) or next_token.ttype == tt.EOF:
                 # Если текущий токен - токен сырой строки, или токен новой строки,
                 # или следующий - токен конца файла:
-                tokens_chain:List[Tkn] = self._tokens[machine.start_token:self._curtok_num+1]
+                tokens_chain:List[Tkn] = self._tokens[machine.start_token:self._curtok_num]
                 # создаём оператор сырой строки из цепочки токенов
-                raw_line = stm.RawLineStmt[None](tokens_chain)
-                self._code_tree.handle(raw_line)
+                raw_line_node.value = tokens_chain
+                self._current_node = machine.node
                 del self._parse_machines[mid]
-                self._eat_token() # поглощаем токен
                 return sgnl.FOUND
-            self._eat_token()
         return sgnl.DEFAULT
 
     def _eof_parse(self, machine:PPSM, signal:sgnl) -> sgnl:
