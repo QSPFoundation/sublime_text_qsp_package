@@ -30,4 +30,4 @@ end
 if $mode_ = 'all':
 	if match_ = run_: $result = 'true'
 end
---- prv.onTarget ---------------------------------
+-- prv.onTarget ---------------------------------

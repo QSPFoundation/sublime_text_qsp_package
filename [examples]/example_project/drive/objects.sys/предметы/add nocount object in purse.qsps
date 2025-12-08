@@ -27,4 +27,4 @@ else
 	end
 end
 $infop['last_id.on.prv.obj.pay'] = $last_id_
---- add.obj.nocount ---------------------------------
+-- add.obj.nocount ---------------------------------

@@ -5,4 +5,4 @@ QSP-Game
 local $month_ = $args[0]
 if $month_ = '': $month_ = @b.d.t('time.m')
 $result = @em.str.getWord($month_, time['month'])
---- int.time.month ---------------------------------
+-- int.time.month ---------------------------------

@@ -18,4 +18,4 @@ if point_count['hero.level.point'] >= point_count['hero.level.marker']:
 	$print['counters'] += '<br>' + @int.din.text('<font color=#00ccff><b>Ты (достиг/достигла) </b>' + $str(point_count['hero.level.level']) + ' <b>' + @get.word.padez($l_word_, 'Р') + '.</b></font>')
 	$print['counters'] += "<br><font color=#005588><b>Получено</b> <<point_count['hero.teaching.up'] + property['hero.teaching']>> <b><<@get.word.end(point_count['hero.teaching.up'] + property['hero.teaching'],'очко|очка|очков')>> обучения.</b></font>"
 end
---- hero.level ---------------------------------
+-- hero.level ---------------------------------

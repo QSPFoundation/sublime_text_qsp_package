@@ -10,4 +10,4 @@ if $args[2] ='':
 else:
 	$result = '<a href="exec:'+"@get.new.obj.inMount('<<$args[0]>>','<<$args[1]>>','<<$args[2]>>')"+'">Создать <<$name_>>. Понадобится: <<$args[3]>></a>'
 end
---- gen.ahref.inMount ---------------------------------
+-- gen.ahref.inMount ---------------------------------

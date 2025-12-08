@@ -18,7 +18,7 @@ elseif $case_ = 'Т':
 elseif $case_ = 'П':
 	$result = @em.str.getWord($string_, 6) & exit
 end
---- get.word.padez ---------------------------------
+-- get.word.padez ---------------------------------
 
 
 ! вычисляет окончание по числу.
@@ -42,7 +42,7 @@ local $four_ending_ = @em.str.getWord($ending_, 4)
 if number_ = 0 and $four_ending_ <> '' and $four_ending_ <> $result:
 	$result = $four_ending_
 end
---- get.word.end ---------------------------------
+-- get.word.end ---------------------------------
 
 ! Локация склеивает две строки с числовыми тегами.
 $args[0] = $args[0]
@@ -58,7 +58,7 @@ loop local u, a = 1, 0 while a < 2 step a += 1:
 		$args[a] = $TRIM($replace($args[a],"[<<i>>:<<$s>>:<<i>>]"))
 	end
 end
---- remastering.tag.number ---------------------------------
+-- remastering.tag.number ---------------------------------
 
 # get.loc.id
 if $curloc = '[chest]' or ($cvar['loc_id' + $cvar['chest']]<>'' and $strfind($curloc,'(\[м:[\d]+\]_[\s\S]+|место;|place;)')<>''):
@@ -66,4 +66,4 @@ if $curloc = '[chest]' or ($cvar['loc_id' + $cvar['chest']]<>'' and $strfind($cu
 else
 	$result = $curloc
 end
---- get.loc.id ---------------------------------
+-- get.loc.id ---------------------------------

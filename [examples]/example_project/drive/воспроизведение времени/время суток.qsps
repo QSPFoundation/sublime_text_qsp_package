@@ -10,4 +10,4 @@ if time['hour'] >= 5 and time['hour'] < 11: i=1
 if time['hour'] >= 11 and time['hour'] < 18: i=2
 if time['hour'] >= 18 and time['hour'] < 22: i=3
 $result = @em.str.getWord($time_of_day_, i)
---- int.time.hours ---------------------------------
+-- int.time.hours ---------------------------------

@@ -17,4 +17,4 @@ loop local delimiter while len($args[0])>0 and args[1]>0 step args[1]-=1:
 	end
 end
 $result=$replace($cut_string,$args[2])
---- em.str.getWord ---------------------------------
+-- em.str.getWord ---------------------------------

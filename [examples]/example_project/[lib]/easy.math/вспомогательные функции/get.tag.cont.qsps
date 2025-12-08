@@ -24,4 +24,4 @@ elseif $strfind($args[0],$args[1]+':([\s\S]+?):'+$args[1])<>'':
 	!@ tag:any symbols:tag
 	$result = $strfind($args[0],$args[1]+':([\s\S]+?):'+$args[1],1)
 end
---- em.tag.getCont ---------------------------------
+-- em.tag.getCont ---------------------------------

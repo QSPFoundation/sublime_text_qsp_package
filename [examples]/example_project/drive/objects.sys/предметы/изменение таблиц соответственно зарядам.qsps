@@ -35,4 +35,4 @@ if instr($object_array[place_pos_],'<body>') = 0:
 else:
 	$result = $obj_id_
 end
---- redo.obj.inCharge ---------------------------------
+-- redo.obj.inCharge ---------------------------------

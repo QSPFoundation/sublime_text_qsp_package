@@ -27,4 +27,4 @@ back:<<$back_loc_>>
 $result = "<a class=""plain"" href=""exec:$time['goto']='<<$goto_time_>>' & GAME_VALUE['goto'] = 1"
 $result += " & goto '<<$loc_name_>>','<<$loc_id_>>','<<$cmd_>>','<<$back_loc_>>'"">"
 $result += "<font color=#009988><<$text_>></font></a>"
---- int.dyn.goto ---------------------------------
+-- int.dyn.goto ---------------------------------

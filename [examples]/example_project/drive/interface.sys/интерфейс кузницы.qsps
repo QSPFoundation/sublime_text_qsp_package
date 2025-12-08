@@ -30,4 +30,4 @@ $args['main.text']+=$SQUARE['SQUARE.loc.fromSource']		&	!	описание из 
 $args['main.text']+=$SQUARE['SQUARE.loc.plustext']			&	!	добавочный текст
 $args['main.text']+=$SQUARE['SQUARE.loc.dvar']				&	!	текст в накидку
 
---- interface.smith ---------------------------------
+-- interface.smith ---------------------------------

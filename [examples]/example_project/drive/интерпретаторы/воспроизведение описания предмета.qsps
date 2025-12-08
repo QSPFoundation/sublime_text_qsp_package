@@ -98,4 +98,4 @@ if $GAME_INTERFACE['obj.image.stat']='hide':
 else
 	$result='<font size=-1><table width=100%><tr><td>'+$args['res.021213']+'</td><td align=right valign=top><img src="'+@base.new.obj($args['obj'],'image')+'"></td></tr></table></font>'
 end
---- int.obj.property ---------------------------------
+-- int.obj.property ---------------------------------

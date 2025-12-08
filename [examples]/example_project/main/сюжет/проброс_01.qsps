@@ -7,4 +7,4 @@
 @hero.bodypart
 @hero.count
 goto '[1.2_story_start]'
---- [1.1_game_start] ---------------------------------
+-- [1.1_game_start] ---------------------------------

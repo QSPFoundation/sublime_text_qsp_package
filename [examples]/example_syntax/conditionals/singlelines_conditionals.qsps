@@ -2,10 +2,10 @@ QSP-Game Условия. Однострочные
 
 # singlelines_conditionals
 if x = 1: *pl '1' elseif x = 2: *pl '2' elseif x=3: *pl '3' else: *pl '4'
---- singlelines_conditionals ---------------------------------
+-- singlelines_conditionals ---------------------------------
 
 # wrong_singlelines_conditionals
 !@ Эта конструкция распознаётся, как часть многострочного условия.
 !@ Пока не придумал, как излечить
 if x = 1: *pl '1' elseif x = 2: *pl '2' elseif x=3: *pl '3' else:
---- wrong_singlelines_conditionals ---------------------------------
+-- wrong_singlelines_conditionals ---------------------------------

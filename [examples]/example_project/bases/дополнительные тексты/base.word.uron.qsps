@@ -20,4 +20,4 @@ if $args[1]='ядовитый_psn': $args['pril']=$func('em.str.getWord','я|Я'
 
 if $args[1]='luck': $result='Поглощение удачи' 	&	exit
 $result=$args['start']+$args['pril']+$args['end']
---- base.word.uron ---------------------------------
+-- base.word.uron ---------------------------------

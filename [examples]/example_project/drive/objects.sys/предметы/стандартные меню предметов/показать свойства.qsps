@@ -6,4 +6,4 @@ if $obj_id_ = '': $obj_id_ = $OOS['oid']
 $print['obj.property'] = @int.obj.property($obj_id_)
 local pos_ = arrpos('$id_array',$obj_id_)
 if $strfind($run_array[pos_],'!obj.property!') <> '': $temp_ = @run.dynamic.script('!obj.property!',$obj_id_)
---- menu.obj.property ---------------------------------
+-- menu.obj.property ---------------------------------

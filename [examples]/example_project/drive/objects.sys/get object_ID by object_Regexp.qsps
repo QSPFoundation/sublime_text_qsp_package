@@ -4,4 +4,4 @@ QSP-Game ! функция получает первый в списке объе
 # get.id.obj
 local pos_ = arrcomp('$object_array', '[\s\S]*<<$args[0]>>[\s\S]*')
 $result = $iif(pos_ <> -1, $id_array[pos_], 'false')
---- get.id.obj ---------------------------------
+-- get.id.obj ---------------------------------

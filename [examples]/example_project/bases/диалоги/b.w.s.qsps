@@ -229,4 +229,4 @@ if $args[0]='help' or ($GAME_INTERFACE['подсказки']='show' and $args['g
 	$res_ += @int.din.text('<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size=1>Отключить подсказки можно в меню "Дневник странника" на вкладке "Настройки"</font>')
 end
 $result = $res_
---- b.w.s ---------------------------------
+-- b.w.s ---------------------------------

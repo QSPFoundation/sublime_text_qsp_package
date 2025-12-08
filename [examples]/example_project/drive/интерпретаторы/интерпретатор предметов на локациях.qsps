@@ -22,4 +22,4 @@ if @get.daughter.obj($loc_id_,$regexp_,'$temp_id_ilo_') = 'true':
 end
 time_[2] = msecscount
 $log_error[] = '<br>Генерация выводимых на локации объектов заняла мсек: <<time_[2]-time_[1]>>'
---- int.loc.obj ---------------------------------
+-- int.loc.obj ---------------------------------

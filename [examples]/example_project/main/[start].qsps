@@ -41,4 +41,4 @@ $usercom = 'inputText'
 
 <a href=""exec: goto '[1.0_game_start]'"" class=plain>начать</a></div></td></tr></table></center>
 "
---- [start] ---------------------------------
+-- [start] ---------------------------------

@@ -30,4 +30,4 @@ $lvar['локация.исходник'] = {<qhtml><center><table width=720><tr>
 </font></div></td></tr></table></center>
 <!-- Зацикливаем выход --><center><a href="exec:gt $curloc,2">Далее</a></center></qhtml>}
 end
---- [1.3_story_next] ---------------------------------
+-- [1.3_story_next] ---------------------------------

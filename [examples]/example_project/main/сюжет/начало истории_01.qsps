@@ -56,4 +56,4 @@ $lvar['локация.исходник'] = {<qhtml><center><table width=720><tr>
 </font></div></td></tr></table></center>
 <center><a href="exec:@add.new.task($diary['id.diary'],'I_выйти_из_комнаты','I_I_зажечь_свет') & gt '[м:1]_моя_комната'">Осмотреться</a></center></qhtml>}
 end
---- [1.2_story_start] ---------------------------------
+-- [1.2_story_start] ---------------------------------

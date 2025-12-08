@@ -14,4 +14,4 @@ if $task_name_ <> '':
 	$note_ = '<font color=#<<$task_color_>> face="CyrillicOld" size=+2><b><<$task_name_>>:</b></font><br>'
 end
 $result = $note_ + $func('[diary]', $task_kind_, $task_color_)
---- int.notes ---------------------------------
+-- int.notes ---------------------------------

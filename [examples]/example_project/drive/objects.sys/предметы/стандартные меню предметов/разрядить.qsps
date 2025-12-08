@@ -25,4 +25,4 @@ charge_array[pos_] = 0
 weight_ = @em.tag.getNum($object_array[pos_], 'weight')
 $object_array[pos_] = $replace($object_array[pos_], "[weight:<<weight_>>]", "[weight:<<weight_-weight_decr_)>>]")
 $print['menu.else'] += @b.w.s('dch', $obj_id_, $output_text_, $bag_id_)
---- menu.obj.disCharge ---------------------------------
+-- menu.obj.disCharge ---------------------------------

@@ -41,4 +41,4 @@ if $to_stat_screen_<>'': pl @int.din.text($to_stat_screen_)
 if $to_acts_screen_<>'': dynamic $to_acts_screen_
 @setScreen($SQUARE['SQUARE.loc.type'],$color_design_)
 @int.inventory()
---- int.loc.interface ---------------------------------
+-- int.loc.interface ---------------------------------

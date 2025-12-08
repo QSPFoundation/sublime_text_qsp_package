@@ -7,7 +7,7 @@ p ' text' & *p ' text'
 
 clr & *clr
 clear & *clear
---- main_and_stat_operators ---------------------------------
+-- main_and_stat_operators ---------------------------------
 
 # other_operators
 addobj 'Название предмета','путь к файлу картинки/picture.jpg',позиция
@@ -87,7 +87,7 @@ wait 1000
 
 xgoto 'location name' & xgt 'jfjfjfjjfjfjf'
 xgoto & xgt & ! xgoto без аргумента
---- other_operators ---------------------------------
+-- other_operators ---------------------------------
 
 # definite_var_operators
 let num = 1234
@@ -95,7 +95,7 @@ let num = 1234
 set $string = 'dkkdkkdkd'
 
 local a, b, $s = 1, 2, 'f333f'
---- definite_var_operators ---------------------------------
+-- definite_var_operators ---------------------------------
 
 # controls_operators
 act 'Название действия', 'путь к картинке.png':
@@ -128,5 +128,5 @@ if условие_выполнено:
 	!@ Если условие выполнено
 	!@ Код, который выполняется, если условие не выполнено
 end if комментарий после end & *pl 'other operator'
---- controls_operators ---------------------------------
+-- controls_operators ---------------------------------
 

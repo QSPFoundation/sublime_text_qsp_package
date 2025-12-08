@@ -7,4 +7,4 @@ if $sex_ = 'мужской':
 elseif $sex_= 'женский':
 	$result = $mid($string_,instr($string_,'//')+2,len($string_)-instr($string_,'//')-2)
 end
---- int.word.SEX ---------------------------------
+-- int.word.SEX ---------------------------------

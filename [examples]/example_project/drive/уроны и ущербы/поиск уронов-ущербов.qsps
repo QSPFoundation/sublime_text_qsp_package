@@ -17,7 +17,7 @@ args['i']+=1
 if len($args[1])>0 and args['i']<100: jump 'for_uron'
 $args['res.021213']+='</table>'
 $result=$args['res.021213']
---- get.uron.list ---------------------------------
+-- get.uron.list ---------------------------------
 
 # get.similar.Uron
 ! Локация сравнивает два набора характеристик
@@ -56,7 +56,7 @@ killvar '$gsu0'
 killvar '$gsu1'
 killvar 'i_gsu'
 killvar 'u_gsu'
---- get.similar.Uron ---------------------------------
+-- get.similar.Uron ---------------------------------
 
 попробуем и сюда вставить какой-то комментарий
 
@@ -98,4 +98,4 @@ if $strfind($args[0],"u[\d]+:[\s\S]+:u[\d]+")!'':
 	jump 'надежда_твой_компас_земной'
 end
 $result='true'
---- sim.uron.onFull ---------------------------------
+-- sim.uron.onFull ---------------------------------

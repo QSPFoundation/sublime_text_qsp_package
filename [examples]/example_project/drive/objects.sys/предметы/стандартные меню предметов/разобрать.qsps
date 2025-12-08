@@ -37,4 +37,4 @@ end
 :print
 @int.inventory
 @true.goto.curloc($curloc)
---- menu.obj.unmount ---------------------------------
+-- menu.obj.unmount ---------------------------------

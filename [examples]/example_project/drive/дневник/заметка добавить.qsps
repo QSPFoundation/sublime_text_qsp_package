@@ -11,4 +11,4 @@ if $note_name_ = '': $note_name_ = "[name:<<time['date']>>/<<time['month']>>/<<t
 if $subnote_ = '': $subnote_ = "[sn:" + @em.tag.getCont($object_array[arrpos('$id_array', @get.loc.id())], 'name') + ":sn] "
 if $features_ = '': $features_ = '[np:[note]:np]'
 $temp_ = @add.new.obj('<note> '+$note_name_+$features_+$note_body_+$subnote_, $diary_id_, 'NOTE')
---- add.new.note ---------------------------------
+-- add.new.note ---------------------------------

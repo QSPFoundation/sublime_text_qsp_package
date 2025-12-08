@@ -7,4 +7,4 @@ local $obj_name_
 $obj_name_ = @em.tag.getCont($object_array[arrpos('$id_array',$obj_id_)], "name")
 $obj_name_ = @get.word.padez($obj_name_, 'В')
 $result = "<a href=""exec: @menu.in.body('<<$obj_id_>>') & @print.word"">Использовать <<$obj_name_>></a>"
---- gen.ahref.actObj ---------------------------------
+-- gen.ahref.actObj ---------------------------------

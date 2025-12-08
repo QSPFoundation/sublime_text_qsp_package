@@ -61,4 +61,4 @@ local $base_tag_, $base_tag_type_
 	end
 	$res_ += (' '+$TRIM($args[0]))
 $result = $res_
---- remastering.obj ---------------------------------
+-- remastering.obj ---------------------------------

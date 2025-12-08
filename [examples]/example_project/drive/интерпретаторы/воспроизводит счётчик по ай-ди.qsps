@@ -46,4 +46,4 @@ elseif instr($args['np'],'[easy]')!0:
 	end
 end
 $result=$args['res.021213']
---- int.counter ---------------------------------
+-- int.counter ---------------------------------

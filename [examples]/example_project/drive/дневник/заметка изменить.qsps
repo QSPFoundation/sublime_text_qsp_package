@@ -10,4 +10,4 @@ pos_ = arrpos('$id_array',$note_id_)
 $old_value_ = $strfind($object_array[pos_], '\[<<$mode_>>:[\s\S]*:<<$mode_>>\]')
 $new_value_ = '[<<$mode_>>:<<$input_>>:<<$mode_>>]'
 $object_array[pos_] = $replace($object_array[pos_], $old_value_, $new_value_)
---- edit.note ---------------------------------
+-- edit.note ---------------------------------

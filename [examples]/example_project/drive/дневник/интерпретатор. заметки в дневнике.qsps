@@ -55,4 +55,4 @@ elseif $args['note']='true':
 end
 killvar '$array_note'
 $result=$args['table.note']
---- int.diary.note ---------------------------------
+-- int.diary.note ---------------------------------

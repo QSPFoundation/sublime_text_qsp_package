@@ -7,4 +7,4 @@ local $obj_id_, $regexp_, $new_ = $args[0], $args[1], $args[2]
 local pos_=arrpos('$id_array', $obj_id_)
 local $old_ = $strfind($object_array[pos_], $regexp_)
 $object_array[pos_] = $replace($object_array[pos_], $old_, $new_)
---- rpl.str.inObj.id ---------------------------------
+-- rpl.str.inObj.id ---------------------------------

@@ -50,4 +50,4 @@ elseif $strfind($link_,'<obj:[\s\S]+:obj>') <> '':
 		exit
 	end
 end
---- int.link ---------------------------------
+-- int.link ---------------------------------

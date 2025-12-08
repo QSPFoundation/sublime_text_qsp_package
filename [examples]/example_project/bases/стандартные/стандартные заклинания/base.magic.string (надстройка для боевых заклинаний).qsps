@@ -3,4 +3,4 @@ QSP-Game
 $args[0] - калибровочный код
 # base.magic.string
 if $args[0] = 'warspell': $result = "$result = @magic.warspell($args[0], $args[1], $args[2])" & exit
---- base.magic.string ---------------------------------
+-- base.magic.string ---------------------------------

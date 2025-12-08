@@ -60,7 +60,7 @@ if $strfind($args['menergy'],"u[\d]+:[\s\S]+:u[\d]+")!'':
 	jump 'for'
 end
 $result = 'true'
---- magic.menergy.spell ---------------------------------
+-- magic.menergy.spell ---------------------------------
 
 # magic.add.spell
 ! Функция позволяет добавить в игру заклинание, прописанное в базе предметов base.new.obj
@@ -71,4 +71,4 @@ $args['get.spell.body']=$replace($args['get.spell.body'],'[свиток]')
 $args['get.spell.dyncode']=$func('base.new.obj',$args[0],'get.obj get.run_array')
 $args['res.13122013']=$func('add.new.obj',$args['get.spell.body'],$args[1],'SPELL',0,0,$args['get.spell.dyncode'])
 $result=$args['res.13122013']
---- magic.add.spell ---------------------------------
+-- magic.add.spell ---------------------------------

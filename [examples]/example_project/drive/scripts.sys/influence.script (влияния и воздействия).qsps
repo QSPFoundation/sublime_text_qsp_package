@@ -13,4 +13,4 @@ loop local pos_ = -1 while arrsize('$temp_hero_')>0 step killvar '$temp_hero_',0
 		$temp_ = @run.dynamic.script($cmd_, $temp_hero_[0], $temp_hero_[0], $add_cmd_)
 	end
 end
---- int.influence.scripts ---------------------------------
+-- int.influence.scripts ---------------------------------

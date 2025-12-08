@@ -30,4 +30,4 @@ if change_ <> 0:
 	dynamic $min_code_, $prop_
 	$print['hero.health'] += '<font size=-1>' + @int.hero.property(@get.id.obj('<property>[\s\S]*\[:<<$prop_>>:\]')) + '</font>'
 end
---- hero.prop ---
+-- hero.prop ---

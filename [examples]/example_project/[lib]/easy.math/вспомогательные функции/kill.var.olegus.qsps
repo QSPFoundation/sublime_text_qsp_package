@@ -7,4 +7,4 @@ if instr($args[0],'$')<>1: $args[0]='$'+$args[0]
 loop local i = 1 while $args[i] <> '' step i += 1:
 	killvar $args[0], $args[1]
 end
---- kill.var.olegus ---------------------------------
+-- kill.var.olegus ---------------------------------

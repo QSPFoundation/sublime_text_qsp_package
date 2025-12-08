@@ -59,4 +59,4 @@ if $args[0]='':
 end
 :end_keep
 $result = "<b><font color=#<<$seller_['color']>>><<$seller_['name']>>:</font></b> - <<$res_>>"
---- b.d.s ---------------------------------
+-- b.d.s ---------------------------------

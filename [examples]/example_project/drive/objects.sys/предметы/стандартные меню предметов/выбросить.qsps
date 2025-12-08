@@ -85,4 +85,4 @@ if $strfind($cmd_,'no GOTO') = '':
 else
 	$result = $last_id_
 end
---- menu.obj.put ---------------------------------
+-- menu.obj.put ---------------------------------

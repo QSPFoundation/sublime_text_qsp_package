@@ -37,4 +37,4 @@ $table_ = ''
 $table_ += $func('int.diary.'+$mode_, $diary_id_,$text_)
 *CLEAR
 *pl $table_
---- int.diary ---------------------------------
+-- int.diary ---------------------------------

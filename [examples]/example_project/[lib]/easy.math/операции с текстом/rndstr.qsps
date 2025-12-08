@@ -50,4 +50,4 @@ if $args[2]<>'': $symbols+=$args[2]
 loop while args[0]>0 step args[0]-=1:
 	$result['rndstr']+=($mid($symbols,rand(1,len($symbols)),1))
 end
---- em.str.random ---------------------------------
+-- em.str.random ---------------------------------

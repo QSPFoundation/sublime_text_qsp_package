@@ -27,7 +27,7 @@ if @get.daughter.obj($GAME_VALUE['inventory.floor'],'', '$temp_id_')='true':
 		!@ если вы хотите, чтобы свойства выводились вместе с основными частями тела, удалите из четырнадцатой строки - and instr($obj_,'<property>')=0
 	end
 end
---- int.inventory ---------------------------------
+-- int.inventory ---------------------------------
 
 # int.inventory.obj
 ! интерпретатор воссоздаёт предмет в инвентаре по ай-ди.
@@ -59,4 +59,4 @@ else
 	if instr($object_array[args['pos']],'<obj>')!0 and kolvo_array[args['pos']]!0: $args['kolvo']=' ('+str(kolvo_array[args['pos']])+')'
 end
 if $args['name']!'': addobj '<font color=#'+$args['color']+'><b>'+$args['name']+'</b>'+$args['kolvo']+'</font><oid:'+$args['oid']+':oid>'
---- int.inventory.obj ---------------------------------
+-- int.inventory.obj ---------------------------------

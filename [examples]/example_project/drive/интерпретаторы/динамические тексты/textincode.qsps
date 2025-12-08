@@ -34,4 +34,4 @@ else
 	$result = $dyn_txt_
 end
 $result = $TRIM($result)
---- int.DIN ---------------------------------
+-- int.DIN ---------------------------------

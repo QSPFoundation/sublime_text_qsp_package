@@ -206,4 +206,4 @@ killvar '$result'
 killvar '$lvar'
 killvar '$avar'
 killvar 'time_goto'
---- onNewLoc ---------------------------------
+-- onNewLoc ---------------------------------

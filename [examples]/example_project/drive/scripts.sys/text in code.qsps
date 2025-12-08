@@ -9,4 +9,4 @@ loop local i = 1 while $strfind($dyn_string_, 'r[\d]+:[\s\S]*:r[\d]+') <> '' ste
 	$run_code_ = $extract_string_ + @em.RN
 end
 dynamic $run_code_
---- int.run ---------------------------------
+-- int.run ---------------------------------

@@ -69,4 +69,4 @@ elseif $strfind($args['property'],'\[hide\]')='':
 	if $args['res.021213']!'': $args['res.int.hero.property']=$args['res.021213']
 end
 $result=$args['res.int.hero.property']
---- int.hero.property ---------------------------------
+-- int.hero.property ---------------------------------

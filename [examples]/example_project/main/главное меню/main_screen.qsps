@@ -22,7 +22,7 @@
 
 
 <center><a href=""exec: goto '[start]'"">Назад</a></center></html>"
---- [0.1_game_info] ---------------------------------
+-- [0.1_game_info] ---------------------------------
 
 # [0.2_drive_info]
 '<center><h1>Волшебство и Сталь</h1></center>'
@@ -36,4 +36,4 @@
 
 
 <center><a href=""exec: goto '[start]'"">Назад</a></center></td></tr></table>"
---- [0.2_drive_info] ---------------------------------
+-- [0.2_drive_info] ---------------------------------

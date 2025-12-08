@@ -7,4 +7,4 @@ pos_ = arrpos('$id_array', $obj_id_)
 if $strfind($run_array[pos_],'!eat!')!'': $temp_ = @run.dynamic.script('!eat!', $obj_id_)
 @minus.obj($obj_id_, 1)
 @int.inventory()
---- menu.obj.eat ---------------------------------
+-- menu.obj.eat ---------------------------------

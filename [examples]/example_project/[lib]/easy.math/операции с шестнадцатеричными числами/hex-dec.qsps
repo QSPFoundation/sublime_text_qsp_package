@@ -16,4 +16,4 @@ loop local i,t,lenght=0,0,len($args[0]) while i<lenght step i+=1:
 	end
 	result+=t	& !@ прибавляем к результату полученное число
 end
---- em.hex.inDec ---------------------------------
+-- em.hex.inDec ---------------------------------

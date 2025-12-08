@@ -23,4 +23,4 @@ $cur['table']+="<div align=justify>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Навыки и
 $cur['table']+="</td><tr height=300><td><<$cur['надпись по центру']>><br><br></td></tr><tr><td align=center>"
 $cur['table']+="<<$cur['мужской пол']>><br><<$cur['женский пол']>><br><br><<$cur['далее']>></td></tr></table></center>"
 *pl $cur['table']
---- [1.0_game_start] ---------------------------------
+-- [1.0_game_start] ---------------------------------

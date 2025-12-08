@@ -7,7 +7,7 @@ local nominal_cost_, $seller_id_ = $args[0], $args[1]
 local pos_ = arrpos('$id_array', $seller_id_)
 local margin_ = @em.tag.getNum($object_array[pos_], 'margin')	&	!@	индивидуальная наценка торговца в процентах
 result = nominal_cost_ + (nominal_cost_ * (margin_ - 20)) / 100
---- obj.sale.cost ---------------------------------
+-- obj.sale.cost ---------------------------------
 
 QSP-Game ! Функция вычисляет полную стоимость при покупке
 [0]	&	!	номинальная стоимость
@@ -18,4 +18,4 @@ local nominal_cost_, $seller_id_ = $args[0], $args[1]
 local pos_ = arrpos('$id_array', $seller_id_)
 local discount_ = @em.tag.getNum($object_array[pos_], 'discount')	&	!@	индивидуальная скидка торговца в процентах
 result = nominal_cost_ + (nominal_cost_ * (20 - discount_)) / 100
---- obj.purc.cost ---------------------------------
+-- obj.purc.cost ---------------------------------

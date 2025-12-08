@@ -1409,4 +1409,4 @@ elseif $cmd_='unmount':
 		exit
 	end
 end
---- base.new.obj ---------------------------------
+-- base.new.obj ---------------------------------

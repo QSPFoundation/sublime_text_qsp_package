@@ -39,4 +39,4 @@ if how_many_ <> 0 and no how_many_*weight_>property['hero.power.max']-property['
 else
 	result = 0
 end
---- prv.obj.weight ---------------------------------
+-- prv.obj.weight ---------------------------------

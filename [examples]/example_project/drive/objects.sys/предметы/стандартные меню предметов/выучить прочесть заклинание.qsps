@@ -1,6 +1,6 @@
 # menu.obj.spell.teach
 
---- menu.obj.spell.teach ---------------------------------
+-- menu.obj.spell.teach ---------------------------------
 
 ! Функция реализует скрипт прочтения заклинания
 ! Всем заклинаниям передаются одинаковые наборы аргументов
@@ -54,4 +54,4 @@ if $spell_mode_ = 'true':
 end
 @int.inventory()
 @true.goto.curloc($curloc)
---- menu.obj.spell.read ---------------------------------
+-- menu.obj.spell.read ---------------------------------

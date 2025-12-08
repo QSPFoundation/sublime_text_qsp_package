@@ -229,4 +229,4 @@ if arrsize('$menu_OOS')>0 and instr($OOS['obj'],'[lock.obj]')=0: menu "$menu_OOS
 unselect
 @int.inventory
 @true.goto.curloc($curloc)
---- onObjSel ---------------------------------
+-- onObjSel ---------------------------------

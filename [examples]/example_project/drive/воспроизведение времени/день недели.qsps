@@ -5,4 +5,4 @@ QSP-Game Функция возвращает текущее название д�
 local $weekday_ = $args[0]
 if $weekday_ = '': $weekday_ = @b.d.t('time.wd')
 $result = @em.str.getWord($weekday_, time['weekday'] + 1)
---- int.time.days ---------------------------------
+-- int.time.days ---------------------------------

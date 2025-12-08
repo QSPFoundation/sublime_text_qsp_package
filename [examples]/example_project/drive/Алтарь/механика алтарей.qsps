@@ -65,7 +65,7 @@ $result += '<tr><td align=right valign=middle>'+@b.d.t('altar.karma')+': </td><t
 $result += '<tr><td align=left valign=middle><<$charged_link_>></td><td align=center valign=middle width=35%><<$charge_>></td></tr>'
 $result += '<tr><td align=left valign=top><<$altar_>></td><td align=center valign=bottom width=35%><<$action_>></td></tr>'
 $result += '</table>'
---- int.altar ---------------------------------
+-- int.altar ---------------------------------
 
 QSP-Game приносит предметы в жертву
 $[0]	&	!	id локации
@@ -91,7 +91,7 @@ $god_id_ = @get.id.obj('(<god>[\s\S]*\[god:<<$temp_>>:god\]|\[god:<<$temp_>>:god
 kolvo_array[arrpos('$id_array', $god_id_)] += karma_add_
 charge_array[arrpos('$id_array', $god_id_)] += prayer_add_
 $print['charge.altar'] += @b.w.s('altar.sacrifice', prayer_add_)
---- altar.sacrifice ---------------------------------
+-- altar.sacrifice ---------------------------------
 
 QSP-Game локация производит заряд предмета от кармической энергии, если это возможно.
 $[0]	&	!@ идентификатор локации
@@ -138,7 +138,7 @@ if $obj_id_ <> '':
 		$print['charge.altar'] += @b.w.s('altar.charge', 'part', $obj_id_)
 	end
 end
---- altar.charge.obj ---------------------------------
+-- altar.charge.obj ---------------------------------
 
 функция получает "духовную стоимость" предмета. Духовную ценность можно указывать для определённого божества.
 $[0]	&	!	ай-ди предмета
@@ -203,7 +203,7 @@ if spirit_ = 0:
 	if instr($spirit_type_,'[меновой]')!0: spirit_+=1
 end
 result = spirit_ * kolvo_array[pos_]
---- get.spirit ---------------------------------
+-- get.spirit ---------------------------------
 
 Надстройка для сброса предмета.  Эта метка мешает алтарю уничтожить предмет как жертвенный
 # menu.obj.put.onAltar
@@ -218,4 +218,4 @@ end
 !</onALTAR>
 }
 @menu.obj.put($args[0],1)
---- menu.obj.put.onAltar ---------------------------------
+-- menu.obj.put.onAltar ---------------------------------

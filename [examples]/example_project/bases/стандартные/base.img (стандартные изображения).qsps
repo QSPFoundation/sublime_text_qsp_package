@@ -102,4 +102,4 @@ if $args[0]='cls3':	$result='res/img/diary/close.green-blue-under' & exit
 if $args[0]='cls4':	$result='res/img/diary/close.green-white-under' & exit
 !@ зелёная с белым текстом
 if $args[0]='cls5':	$result='res/img/diary/close.green-white-plain' & exit
---- base.img ---------------------------------
+-- base.img ---------------------------------

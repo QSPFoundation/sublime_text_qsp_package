@@ -47,4 +47,4 @@ $args['res.021213']+='<tr><td align=right width=50 valign=top>'+$args['input.img
 $args['res.021213']+='<tr><td align=right width=50 valign=top>'+$args['сменить представление.img']+'</td><td align=left>'+$args['сменить представление.txt']+'</td></tr>'
 $args['res.021213']+='</table>'
 $result=$args['res.021213']
---- int.diary.sets ---------------------------------
+-- int.diary.sets ---------------------------------

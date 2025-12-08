@@ -8,4 +8,4 @@ local $diary_id_, $task_kind_, $stage_one_ = $args[0], $args[1], $args[2]
 if $diary_id_ = '': $diary_id_ = @diary.get_id()
 @add.new.obj('<note> [:<<$task_kind_>>:] [np:[task]:np] [v:next:v] ', $diary_id_, 'NOTE')
 if $stage_one_ <> '': @add.new.stady($diary_id_, $task_kind_, $stage_one_)
---- add.new.task ---------------------------------
+-- add.new.task ---------------------------------

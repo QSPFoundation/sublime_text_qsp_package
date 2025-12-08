@@ -15,5 +15,5 @@ if instr($list_, $delimiter_ + $element_ + $delimiter_) <> 0:
 else:
 	result = 0
 end
---- em.tpl.in ---------------------------------
+-- em.tpl.in ---------------------------------
 !@pp:endif

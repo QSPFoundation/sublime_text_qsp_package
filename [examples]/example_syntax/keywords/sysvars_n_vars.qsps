@@ -40,7 +40,7 @@ onobjsel = 'onObjSel'	& !@ invalid var
 $usercom = 'userCommand'	& !@ valid
 usercom = 'userCommand'	& !@ invalid var
 %usercom = 'userCommand'	& !@ invalid prefix
---- sysvars_string ---------------------------------
+-- sysvars_string ---------------------------------
 
 # sysvar_number
 bcolor = rgb(red,green,blue)	& !@ valid
@@ -68,13 +68,13 @@ $nosave & %nosave	& !@ invalid prefix
 
 usehtml = 1	& !@ valid
 $usehtml & %usehtml	& !@ invalid prefix
---- sysvar_number ---------------------------------
+-- sysvar_number ---------------------------------
 
 
 # altypevars
 args[0] & $args[1] & %args[2]
 result & $result & %result
---- altypevars ---------------------------------
+-- altypevars ---------------------------------
 
 # invar_n_sysvar
 !@ имена системных переменных можно использовать, как часть имён пользовательских переменных
@@ -88,4 +88,4 @@ $result$fname
 new_curloc fffff & !@ Подсветка ошибки неизвестное действие
 showact 1
 $result 34565
---- invar_sysvar ---------------------------------
+-- invar_sysvar ---------------------------------

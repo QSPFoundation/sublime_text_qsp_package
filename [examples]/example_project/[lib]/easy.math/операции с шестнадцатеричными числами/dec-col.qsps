@@ -38,4 +38,4 @@ elseif $result='':
 	$result='00'
 end
 $result=$minus+$result
---- em.dec.inCol ---------------------------------
+-- em.dec.inCol ---------------------------------

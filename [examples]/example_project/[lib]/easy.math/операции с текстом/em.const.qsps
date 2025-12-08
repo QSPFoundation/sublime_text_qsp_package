@@ -3,12 +3,12 @@ QSP-Game Текстовые константы
 # em.RN
 $result = "
 "
---- em.RN ---------------------------------
+-- em.RN ---------------------------------
 
 # const.10SP
 $result = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
---- const.10SP ---------------------------------
+-- const.10SP ---------------------------------
 
 # const.5SP
 $result = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
---- const.5SP ---------------------------------
+-- const.5SP ---------------------------------

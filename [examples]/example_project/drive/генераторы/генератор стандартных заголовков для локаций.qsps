@@ -15,4 +15,4 @@ if instr($mode_,'set_alchemic') <> 0:
 	$specialize_ += '[alchemic]'
 end
 if $specialize_ <> '': @add.new.obj('<заголовок> [spec:<<$specialize_>>:spec]','',$chest_id_)
---- gen.loc.head ---------------------------------
+-- gen.loc.head ---------------------------------

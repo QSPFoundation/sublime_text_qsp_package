@@ -60,7 +60,7 @@ $usrtxt & usrtxt & %usrtxt
 $arrtype($array_name, 0)
 arrtype($array_name, 0)
 %arrtype($array_name, 0)
---- string_functions ---------------------------------
+-- string_functions ---------------------------------
 
 
 # mixtype_functions
@@ -88,7 +88,7 @@ min(12, 34, 56)					& min('a')
 arritem('array_name', 5)
 %arritem('%array_name', 45)
 $arritem('$array_name', 99)
---- mixtype_functions ---------------------------------
+-- mixtype_functions ---------------------------------
 
 # numeric_functions
 ! перед функциями, возвращающими только числовые значения нельзя ставить префикс типа
@@ -141,14 +141,14 @@ $strpos($string,$regexp,1)
 %strpos($string,$regexp,1)
 
 val($string) & $val($string) & %val($string)
---- numeric_functions ---------------------------------
+-- numeric_functions ---------------------------------
 
 # tuple_functions
 ! функции, возвращающие кортеж допускают только префикс типа % перед названием
 %arrpack('$array_name',0,arrsize('$array_name'))
 arrpack('$array_name',0,arrsize('$array_name'))
 $arrpack('$array_name',0,arrsize('$array_name'))
---- tuple_functions ---------------------------------
+-- tuple_functions ---------------------------------
 
 
 # foo
@@ -158,5 +158,5 @@ if 0:
 	elseif $args[0] = 'str': $result = "string"
 	elseif $args[0] = 'num': result = 123
 end
---- foo ---------------------------------
+-- foo ---------------------------------
 

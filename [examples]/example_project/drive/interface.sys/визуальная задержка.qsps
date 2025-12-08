@@ -51,4 +51,4 @@ loop local u = 1 while i > -1 step i -=1 & u +=1:
 	
 	wait delay_
 end
---- waiting.string ---------------------------------
+-- waiting.string ---------------------------------

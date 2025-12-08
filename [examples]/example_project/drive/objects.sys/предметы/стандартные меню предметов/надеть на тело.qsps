@@ -31,4 +31,4 @@ if $strfind($run_array[arrpos('$id_array',$infop['last_id'])],'!outbag!') <> '':
 	if $infop['taked'] = 'true': $temp_ = @run.dynamic.script('!outbag!',$infop['last_id'],$infop['past_id'])
 end
 @int.inventory()
---- menu.in.body ---------------------------------
+-- menu.in.body ---------------------------------

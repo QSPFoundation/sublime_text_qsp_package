@@ -10,4 +10,4 @@ if @em.tag.getCont($menu_string_, 'menu') <> '':
 	end
 	$menu_OOS[arrsize('$menu_OOS')] ='-:-'
 end
---- int.menu.obj ---------------------------------
+-- int.menu.obj ---------------------------------

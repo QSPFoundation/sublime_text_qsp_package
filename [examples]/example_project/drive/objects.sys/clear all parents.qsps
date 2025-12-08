@@ -5,4 +5,4 @@ loop local pos_ = -1 while 1:
 	pos_ = arrpos('$include_array',$args[0], pos_ + 1)
 	if pos_ <> -1: $include_array[pos_] = '' else exit
 end
---- clr.parent.obj ---------------------------------
+-- clr.parent.obj ---------------------------------

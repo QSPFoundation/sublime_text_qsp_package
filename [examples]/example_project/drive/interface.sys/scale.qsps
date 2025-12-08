@@ -48,4 +48,4 @@ loop while max_wide_>0 or fill_wide_>0:
 	fill_wide_ -= 1
 	max_wide_ -= 1
 end
---- get.scale ---------------------------------
+-- get.scale ---------------------------------

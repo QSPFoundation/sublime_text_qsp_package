@@ -40,4 +40,4 @@ if $word_ = 'loc-obj':
 end
 $close_ += '</font>'
 $result = $iif($center_ <> '', $open_ + $center_ + $close_, '')
---- game.help ---------------------------------
+-- game.help ---------------------------------

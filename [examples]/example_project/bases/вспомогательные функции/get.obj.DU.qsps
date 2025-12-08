@@ -7,4 +7,4 @@ if	instr($args[0],'[арбалет]') <> 0: result = 4000
 if	instr($args[0],'[одноручное]') <> 0: result = 200
 if	instr($args[0],'[кинжал]') <> 0: result = 150
 if	instr($args[0],'[нож]') <> 0: result = 100
---- get.obj.DU ---------------------------------
+-- get.obj.DU ---------------------------------

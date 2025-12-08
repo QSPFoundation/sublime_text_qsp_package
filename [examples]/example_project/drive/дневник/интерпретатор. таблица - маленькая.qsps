@@ -40,4 +40,4 @@ $args['res.061213']+='</table></center><br><br><br>'
 $args['res.061213']+='<center><table cellpadding=25 cellspacing=0 border=0 width=90%><tr><td width=80% bgcolor=#ffff88>'+$args['info']+'</td><td bgcolor=#bbbb44>'+$args['time']+'</td></tr></table></center><br>'
 $args['res.061213']+="<table bgcolor=#aaaa33 width=100% cellcpacing=0 cellpadding=5 border=0><tr><td width=5%>"+$args['close.link']+"</td><td width=90%><font size=1>&nbsp;</font></td><td width=5%>"+$args['close.link']+"</td></tr></table>"
 $result=$args['res.061213']
---- int.diary.small ---------------------------------
+-- int.diary.small ---------------------------------

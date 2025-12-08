@@ -10,4 +10,4 @@ if time['month']=3 or time['month']=4 or time['month']=5: i=4
 if time['month']=6 or time['month']=7 or time['month']=8: i=1
 if time['month']=9 or time['month']=10 or time['month']=11: i=2
 $result = @em.str.getWord($seasons_list_, i)
---- int.time.years ---------------------------------
+-- int.time.years ---------------------------------

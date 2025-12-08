@@ -39,4 +39,4 @@ gosub $texts_['f_name'], $texts_['p_recovery'], '+', '', $texts_['p_output']
 
 !@ сохраняем остаток до следующего раза
 $time['ost.'+$args[0]] = "[secunde:<<rest_>>]"
---- hero.vosst.time ---------------------------------
+-- hero.vosst.time ---------------------------------

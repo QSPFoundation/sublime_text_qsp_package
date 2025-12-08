@@ -30,4 +30,4 @@ if $temp_ = 'true':
 	end
 end
 $result=$task_text_
---- int.diary.task ---------------------------------
+-- int.diary.task ---------------------------------

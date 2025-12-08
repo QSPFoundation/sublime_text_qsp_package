@@ -35,4 +35,4 @@ end
 property['hero.power.all'] += w
 $print['power.change'] += @int.hero.property(@get.id.obj('<property>[\s\S]*\[:power:\]'))
 @int.inventory
---- menu.in.bag ---------------------------------
+-- menu.in.bag ---------------------------------

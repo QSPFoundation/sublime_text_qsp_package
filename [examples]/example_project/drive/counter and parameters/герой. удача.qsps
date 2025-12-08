@@ -15,4 +15,4 @@ local $min_code_ = {
 	end
 }
 @hero.prop(change_, $sign_, $level_, $add_text_, $prop_, $texts_, $min_code_, $max_code_)
---- hero.luck ---------------------------------
+-- hero.luck ---------------------------------

@@ -45,4 +45,4 @@ if instr($commands_, '[not last]') <> 0:
 	$array_print_ = $mid($array_print_, 1, len($array_print_) - len($delimiter_))
 end
 $result = $array_print_	& !@ возвращаем результат
---- em.arr.print ---------------------------------
+-- em.arr.print ---------------------------------

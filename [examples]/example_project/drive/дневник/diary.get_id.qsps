@@ -5,4 +5,4 @@ local $ids_diary_
 if @get.daughter.obj('INVENTORY', '<diary>', '$ids_diary_') = 'true':
 	$result = $ids_diary_[0]
 end
---- diary.get_id ---------------------------------
+-- diary.get_id ---------------------------------

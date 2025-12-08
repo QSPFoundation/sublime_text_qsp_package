@@ -169,7 +169,7 @@ QSP_START_TEMPLATE = (
 	'*pl "Quick project start location. Edit this file, and appending new."\n',
 	'*pl "Стартовая локация быстрого проекта. ',
 	'Отредактируйте этот файл и добавьте новые."\n',
-	'--- game.start ---\n')
+	'-- game.start ---------------------------------\n')
 
 # No changable dict for qsp-project.json simple file
 

@@ -10,4 +10,4 @@ loop local i = 0 while i < arrsize('$temp_id_') step i += 1:
 	@del.obj.id($temp_id_[i])
 	@clr.parent.obj($temp_id_[i])
 end
---- del.obj ---------------------------------
+-- del.obj ---------------------------------

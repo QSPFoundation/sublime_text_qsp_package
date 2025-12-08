@@ -22,12 +22,12 @@ $args['ln']=$func('em.tag.getCont',$args['obj'],'name')
 $args['nn']=$func('em.tag.getCont',$args['func'],'name')
 $print['take.obj']+='<font color=#'+$args['lc']+'><b>'+$func('get.word.padez',$args['ln'])+'</b></font> <font color=#9933cc><b>превратился в</b></font> <font color=#'+$args['nc']+'><b>'+$func('get.word.padez',$args['nn'])+'</b></font>.'
 gs 'int.inventory'
---- menu.rainbowsword.color.change ---------------------------------
+-- menu.rainbowsword.color.change ---------------------------------
 
 # menu.backer.back
 ![menu:m1:Запись/Запоминание:menu.backer.memory:m1 m2:Возврат/Откат:menu.backer.back:m2:menu]
---- menu.backer.back ---------------------------------
+-- menu.backer.back ---------------------------------
 
 # menu.backer.memory
 
---- menu.backer.memory ---------------------------------
+-- menu.backer.memory ---------------------------------

@@ -210,4 +210,4 @@ $args['int.diary.big']+='</tr></table>'
 $args['int.diary.big']+='<br>'+$args['close.table']
 $result=$args['int.diary.big']
 killvar '$cur'
---- int.diary.big1 ---------------------------------
+-- int.diary.big1 ---------------------------------

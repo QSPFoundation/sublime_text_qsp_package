@@ -31,4 +31,4 @@ kolvo_array[pos_[1]]=temp_['kolvo']
 charge_array[pos_[1]]=temp_['charge']
 $respawn_array[pos_[1]]=$temp_['respawn']
 $run_array[pos_[1]]=$temp_['run']
---- rtp.obj ---------------------------------
+-- rtp.obj ---------------------------------

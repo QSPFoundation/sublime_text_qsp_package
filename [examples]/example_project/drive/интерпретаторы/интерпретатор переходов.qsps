@@ -102,4 +102,4 @@ elseif $light_array[$func('get.loc.id')]='темно':
 	*pl @base.word.screen('017.4')
 	exit
 end
---- int.act.goto ---------------------------------
+-- int.act.goto ---------------------------------

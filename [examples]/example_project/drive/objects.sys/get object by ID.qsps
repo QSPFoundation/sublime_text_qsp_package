@@ -3,4 +3,4 @@
 $args[0] = $args[0]
 # get.obj.id
 $result = $object_array[arrpos('$id_array',$args[0])]
---- get.obj.id ---------------------------------
+-- get.obj.id ---------------------------------

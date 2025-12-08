@@ -57,4 +57,4 @@ else
 	$error_log += 'location name: "int.link.obj" ERROR!: Link do not have a daughter.<br>'
 end
 @true.goto.curloc($curloc)
---- int.link.obj ---------------------------------
+-- int.link.obj ---------------------------------

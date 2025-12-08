@@ -7,4 +7,4 @@ $interface_+="<tr><td><font size=-1>"+@em.indiv(property['hero.force.all'],100,1
 $interface_+="<tr><td><font size=-1>"+@em.indiv(property['hero.luck.all'],100,10)+"</font></td><td>"+@get.scale('scyl',property['hero.luck.all'],property['hero.luck.max'])+"</td><td><font size=-1>"+@em.indiv(property['hero.luck.max'],100,10)+"</font></td></tr>"
 $interface_+='</table></center>'
 $result = $interface_
---- get.scale.hero ---------------------------------
+-- get.scale.hero ---------------------------------

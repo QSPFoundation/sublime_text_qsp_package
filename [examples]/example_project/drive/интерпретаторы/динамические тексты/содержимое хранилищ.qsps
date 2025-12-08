@@ -15,4 +15,4 @@ else:
 		$result = $chest_name_ + @b.d.t('chest.yep')
 	end
 end
---- int.chest.name ---------------------------------
+-- int.chest.name ---------------------------------

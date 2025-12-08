@@ -28,4 +28,4 @@ if arrsize('$log_print') > 100: killvar '$log_print', 0
 if $GAME_INTERFACE['hero.stat'] = 'stat':  $print_line_ += '<br>' + $replace($replace(@get.scale.hero(),'<center>'),'</center>')
 $print_line_ = $mid($print_line_,1,len($print_line_)-4)
 $result = $print_line_
---- print.word ---------------------------------
+-- print.word ---------------------------------

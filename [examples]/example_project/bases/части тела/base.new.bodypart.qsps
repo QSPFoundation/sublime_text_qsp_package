@@ -138,4 +138,4 @@ elseif instr($cmd_,'full.pos') <> 0:
 	$result = $full_pos_
 	exit
 end
---- base.new.bodypart ---------------------------------
+-- base.new.bodypart ---------------------------------

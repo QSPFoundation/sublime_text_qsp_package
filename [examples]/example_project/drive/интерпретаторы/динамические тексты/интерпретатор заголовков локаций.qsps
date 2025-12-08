@@ -73,4 +73,4 @@ else
 end
 $temp_ = @b.d.t('time.calendar',time['date'],time['year'],$time['hour.onClock'],$time['minute.onClock'])
 $result = '<table width=90% border=0 cellpadding=2 cellspacing=0><tr><td align=left><font color=#<<$head_color_>> face="CyrillicOld" size=6><<$loc_name_>></font><<$head_bank_>></td><td align=right><font color=#<<$head_color_>> face="CyrillicOld" size=6><<$temp_>>:<<@int.time.days()>></font></td></tr></table>'
---- int.loc.head ---------------------------------
+-- int.loc.head ---------------------------------

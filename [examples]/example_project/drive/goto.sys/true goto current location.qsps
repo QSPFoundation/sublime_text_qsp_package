@@ -4,4 +4,4 @@ if $args[0] = '[chest]' or ($cvar['loc_id'+$cvar['chest']]!'' and $strfind($args
 else
 	GOTO $args[0]
 end
---- true.goto.curloc ---------------------------------
+-- true.goto.curloc ---------------------------------

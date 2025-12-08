@@ -36,4 +36,4 @@ if arrsize('$array_body_part') < count_:
 else
 	$result = 'empty'
 end
---- prv.pos.inObj ---------------------------------
+-- prv.pos.inObj ---------------------------------

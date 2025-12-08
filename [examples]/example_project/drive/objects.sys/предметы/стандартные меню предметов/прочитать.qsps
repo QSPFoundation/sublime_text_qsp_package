@@ -21,4 +21,4 @@ else:
 end
 :end_keep
 if $run_array[pos_] <> '': $temp_ = @run.dynamic.script($callback_cmd_, $obj_id_)
---- menu.obj.read ---------------------------------
+-- menu.obj.read ---------------------------------

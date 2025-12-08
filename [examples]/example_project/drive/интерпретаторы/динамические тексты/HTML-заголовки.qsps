@@ -17,4 +17,4 @@ if h_=6 or h_=3: open_=3 & len_=len($string_)-4
 if h_=5 or h_=2: open_=4 & len_=len($string_)-6
 if h_=4 or h_=1: open_=5 & len_=len($string_)-8
 $result = "<h<<h_>>><<$mid($string_,open_,len_)>></h<<h_>>>"
---- int.html.Hn ---------------------------------
+-- int.html.Hn ---------------------------------

@@ -33,4 +33,4 @@ if ($light_array[$loc_id_] = 'темно' and $target_id_ <> "[chest]" and $key_
 		end"
 	end
 end
---- gen.act.goto ---------------------------------
+-- gen.act.goto ---------------------------------

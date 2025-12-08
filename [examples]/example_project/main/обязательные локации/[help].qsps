@@ -24,4 +24,4 @@ end
 if $args[0] = '':	killvar '$help'
 
 $result['[help]'] = $args['result.help'] + @b.w.s('help')
---- [help] ---------------------------------
+-- [help] ---------------------------------

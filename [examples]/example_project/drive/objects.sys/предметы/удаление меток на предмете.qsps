@@ -9,4 +9,4 @@ if $mode_ = 'take':
 	$object_array[pos_] = $replace($object_array[pos_], '[on altar]')
 	$object_array[pos_] = $replace($object_array[pos_], '[lock-obj]')
 end
---- del.markers.obj ---------------------------------
+-- del.markers.obj ---------------------------------

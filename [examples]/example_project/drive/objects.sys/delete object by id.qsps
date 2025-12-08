@@ -10,4 +10,4 @@ killvar 'kolvo_array', pos_
 killvar 'charge_array', pos_
 killvar '$respawn_array', pos_
 killvar '$run_array', pos_
---- del.obj.id ---------------------------------
+-- del.obj.id ---------------------------------

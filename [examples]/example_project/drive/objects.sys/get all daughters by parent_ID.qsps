@@ -23,4 +23,4 @@ loop local r, t = 0, 0 while r < i+1 step r += 1:
 	end
 	killvar "<<$arr_>><<r>>"
 end
---- get.daughter.obj.all ---------------------------------
+-- get.daughter.obj.all ---------------------------------

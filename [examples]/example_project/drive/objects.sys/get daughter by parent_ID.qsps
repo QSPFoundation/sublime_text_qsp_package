@@ -43,4 +43,4 @@ $error_log[]="
 	result:<<$result>> 
 	arrsize:<<arrsize($arr_)>> 
 	time:<<log_finish_-log_start_>>"
---- get.daughter.obj ---------------------------------
+-- get.daughter.obj ---------------------------------

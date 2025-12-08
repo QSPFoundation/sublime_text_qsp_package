@@ -6,4 +6,4 @@ QSP-Game ! Функция проверяет объект на совпаден�
 local $obj_id_, $regexp_ = $args[0], $args[1]
 pos_=arrpos('$id_array',$obj_id_)
 $result = $iif($strfind($object_array[pos_],$regexp_)<>'', 'true', 'false')
---- prv.str.inObj ---------------------------------
+-- prv.str.inObj ---------------------------------

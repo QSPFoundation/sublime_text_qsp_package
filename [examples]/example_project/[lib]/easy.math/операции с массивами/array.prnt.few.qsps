@@ -155,4 +155,4 @@ elseif $args['result']<>'':
 else
 	$result='Oops. If you see this message, that so wrong. Save the game and ask me on aleksversus@mail.ru. Error of easy.math.libs in em.fewArrs.print'
 end
---- em.fewArrs.print ---------------------------------
+-- em.fewArrs.print ---------------------------------

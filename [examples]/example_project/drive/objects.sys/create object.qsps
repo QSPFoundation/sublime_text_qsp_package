@@ -30,4 +30,4 @@ kolvo_array[pit_]=number_
 charge_array[pit_]=charge_
 $run_array[pit_]=$run_code_
 $result = $id_array[pit_]
---- add.new.obj ---------------------------------
+-- add.new.obj ---------------------------------

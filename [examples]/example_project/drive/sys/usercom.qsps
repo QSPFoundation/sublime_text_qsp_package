@@ -108,7 +108,7 @@ elseif $input_text_word_[0] = 'errs':
 elseif	$use_='print' and $input_text_word_[0] <> 'run':
 	*pl $res_
 end
---- inputText ---------------------------------
+-- inputText ---------------------------------
 
 # inputText.obj
 args[0] = args[0]
@@ -119,4 +119,4 @@ $result  +='<font color=#888888>' + @em.RN + 'POS[<<args[0]>>]	=	'+$position_arr
 $result  +='</font>' + @em.RN + 'количество: <<kolvo_array[args[0]]>>, заряд: <<charge_array[args[0]]>>'
 $result  +='<font color=#888888>' + @em.RN + 'респавнится в <<$respawn_array[args[0]]>>'
 $result += '</font>' + @em.RN + 'RUN:' + @em.RN + $replace($replace($run_array[args[0]], '<', '&lt;'), '>', '&gt;')
---- inputText.obj ---------------------------------
+-- inputText.obj ---------------------------------

@@ -152,4 +152,4 @@ local $st_recovery_ = {
 	$res_ = @remastering.obj($property_, $res_)
 	$res_ = @add.new.obj($res_, $place_, 'PROPERTY', 0, 0, $res_callback_)
 	$result = $res_
---- base.new.property ---------------------------------
+-- base.new.property ---------------------------------

@@ -14,4 +14,4 @@ if @get.daughter.obj($diary_id_, '<note>[\s\S]*\[:<<$task_kind_>>:\]', '$ids_dia
 else:
 	$error_log += 'location name: "add.new.stady" ERROR!:Cant Find Task. Cant add Stady.'
 end
---- add.new.stady ---------------------------------
+-- add.new.stady ---------------------------------

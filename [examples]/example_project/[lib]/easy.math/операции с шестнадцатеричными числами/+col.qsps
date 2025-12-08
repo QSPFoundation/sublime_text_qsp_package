@@ -17,7 +17,7 @@ if green<0: green=0
 if blue>255: blue=255
 if blue<0: blue=0
 $result=@em.dec.inCol(red)+@em.dec.inCol(green)+@em.dec.inCol(blue)+$alpha
---- em.col.add ---------------------------------
+-- em.col.add ---------------------------------
 
 @em.dec.inCol
 @em.hex.inDec

@@ -6,4 +6,4 @@ args[1]	=	args[1]	&	!	сколько предметов надо удалить
 local pos_	=	arrpos('$id_array',$args[0])
 kolvo_array[pos_] -= args[1]
 if kolvo_array[pos_] < 1: @del.obj($args[0])
---- minus.obj ---------------------------------
+-- minus.obj ---------------------------------

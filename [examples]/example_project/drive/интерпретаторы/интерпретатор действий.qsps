@@ -29,4 +29,4 @@ if arrsize('$avar')>args['i']:
 	jump 'create_acts'
 end
 $result=$args['res.021213']
---- int.loc.act ---------------------------------
+-- int.loc.act ---------------------------------

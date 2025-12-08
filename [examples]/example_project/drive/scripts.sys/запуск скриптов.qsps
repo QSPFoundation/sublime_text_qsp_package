@@ -8,4 +8,4 @@ local pos_, $run_code_
 pos_ = arrpos('$id_array', $new_obj_)
 $run_code_ = '$args[9] = $args[9]	&	!	строка инициализирующая аргументы' + @em.RN + $run_array[pos_]
 $result = $dyneval($run_code_, $cmd_, $new_obj_, $old_obj_, $add_info_)
---- run.dynamic.script ---------------------------------
+-- run.dynamic.script ---------------------------------

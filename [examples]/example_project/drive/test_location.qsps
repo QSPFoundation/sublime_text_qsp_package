@@ -53,4 +53,4 @@ $func('em.tag.getNum','color:66ff88
 $func('em.tag.getCont','[name:Дублоны:name] <nocount><!-- [color:888800] <num:</nocount><nocount>-!><!--дублон|дублона|дублонов:num></noco-->unt>','<!--!>')+'-4'
 $func('em.tag.getNum','<font color=#88ff88>Какой-то текст</font>','color')
 func('em.tag.getNum','[stoim:561] [color:008800]','stoim')
---- !--tester--! ---------------------------------
+-- !--tester--! ---------------------------------
