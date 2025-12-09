@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Optional
+from typing import Generic, TypeVar, Optional, Union, List
 
 from pp_tokens import PpToken
+import pp_expr as expr
 
 R = TypeVar("R")
 
@@ -43,6 +44,14 @@ class PpVisitor(ABC, Generic[R]):
 
     @abstractmethod
     def visit_assignment_dir(self, stmt:'AssignmentDir[R]') -> R:
+        ...
+
+    @abstractmethod
+    def visit_condition_dir(self, stmt:'ConditionDir[R]') -> R:
+        ...
+
+    @abstractmethod
+    def visit_cond_expr_stmt(self, stmt:'CondExprStmt[R]') -> R:
         ...
 
 @dataclass(eq=False)
@@ -87,3 +96,24 @@ class AssignmentDir(PpDir[R]):
     value:Optional[PpToken]
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_assignment_dir(self)
+
+@dataclass(eq=False)
+class ConditionDir(PpDir[R]):
+    condition:'CondExprStmt[R]'
+    next_dirs:List['NextDir']
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_condition_dir(self)
+
+@dataclass
+class CondExprStmt(PpDir[R]):
+    expr:expr.OrExpr[None]
+    def accept(self, visitor:PpVisitor[R]) -> R:
+        return visitor.visit_cond_expr_stmt(self)
+
+
+NextDir = Union[
+    NoppDir[None],
+    SaveCommDir[None],
+    NoSaveCommDir[None],
+    OnDir[None],
+    OffDir[None]]

@@ -1,16 +1,15 @@
 # from tracemalloc import start
-import uuid
-from typing import List, Callable, Dict, Optional, Any, cast #, Union, Tuple
+from typing import List, Callable, Union, Optional, Any # Dict, Tuple, cast
 
 from pp_tokens import PpToken as Tkn
 from pp_tokens import PpTokenType as tt
 
 import pp_stmts as stm
 import pp_dir as dir
+import pp_expr as expr
 
 Stack = List[Callable[[Tkn], None]]
 PpStmt = stm.PpStmt[Any]
-
 
 class PpParser:
 
@@ -99,8 +98,80 @@ class PpParser:
             if assignment_validation is None:
                 return None
             return stm.PpDirective[None](assignment_validation)
+        if self._check_type(tt.IF_STMT):
+            condition_validation:Optional[dir.ConditionDir[None]] = self._condition_dir()
+            if condition_validation is None: return None
+            return stm.PpDirective[None](condition_validation)
         ... # if statement
 
+    def _condition_dir(self) -> Optional[dir.ConditionDir[None]]:
+        """ Получаем директиву условия """
+        self._eat_tokens(1) # пожирем IF_STMT
+        if not self._check_type(tt.LEFT_PAREN):
+            self._error(f'Expected LEFT_PAREN')
+            return None
+        self._eat_tokens(1)
+        cond_expr_validation:Optional[dir.CondExprStmt[None]] = self._cond_expr_stmt()
+        if cond_expr_validation is None: return None
+        condition_expr:dir.CondExprStmt[None] = cond_expr_validation
+        if not self._check_type(tt.RIGHT_PAREN):
+            self._error(f'Expected RIGHT_PAREN')
+            return None
+        self._eat_tokens(1)
+        if not self._check_type(tt.THEN_STMT):
+            self._error(f'Expected THEN_STMT')
+            return None
+        self._eat_tokens(1)
+        next_dirs_validation:List[dir.NextDir] = self._next_dirs()
+        if not next_dirs_validation: return None
+        next_dirs:List[dir.NextDir] = next_dirs_validation
+        # на данном этапе у нас не поглощён только токен следующей строки
+        self._eat_tokens(1)
+        return dir.ConditionDir(condition_expr, next_dirs)
+
+    def _cond_expr_stmt(self) -> Optional[dir.CondExprStmt[None]]:
+        """ Получаем выражение условия """
+        or_validation:Optional[expr.OrExpr[None]] = self._or()
+        if or_validation is None: return None
+        return dir.CondExprStmt(or_validation)
+
+    def _or(self) -> Optional[expr.OrExpr[None]]:
+        """ Получаем выражение OR """
+        and_validation:Optional[expr.AndExpr[None]] = self._and()
+
+
+    def _not(self) -> Optional[expr.NotType[None]]:
+        """ Получаем выражение с оператором отрицания """
+        # NotExpr = notOperator? EqualExpr
+        if self._check_type(tt.NOT_OPERATOR):
+            operator = self._curtok
+            self._eat_tokens(1)
+            validation_equal = self._equal()
+            if validation_equal is None: return None # если есть ошибка в сравнениях, значит это невалидная директива
+            right = validation_equal
+            return expr.NotExpr(operator, right)
+
+        validation_equal = self._equal()
+        return validation_equal if not validation_equal is None else None
+            
+
+    def _equal(self) -> Optional[expr.EqualType[None]]:
+        """ Получаем выражение сравнения """
+        if not self._check_type(tt.IDENTIFIER):
+            self._error('Expected IDENTIFIER (ex. var name)')
+            return None
+        equal_expr = expr.VarName[None](self._curtok) # TODO: добавлять идентификаторы в окружение на каждом этапе
+        self._eat_tokens(1)
+        while self._match(tt.EQUAL_EQUAL, tt.EQUAL_NOT_EQUAL):
+            operator = self._curtok
+            self._eat_tokens(1)
+            if not self._check_type(tt.IDENTIFIER):
+                self._error('Expected IDENTIFIER (ex. var name)')
+                return None
+            right = expr.VarName[None](self._curtok)
+            self._eat_tokens(1)
+            equal_expr = expr.EqualExpr[None](equal_expr, operator, right)
+        return equal_expr
 
     def _assignment_dir(self) -> Optional[dir.AssignmentDir[None]]:
         """Получаем директиву присваивания"""
@@ -114,7 +185,7 @@ class PpParser:
         if not self._check_type(tt.IDENTIFIER):
             self._error('Expected VARIABLE NAME')
             return None
-        key = self._curtok
+        key = self._curtok # TODO: добавить запись ключа и значения в окружение препроцессора
         self._eat_tokens(1)
         # далее могут идти три варианта
         if self._check_type(tt.RIGHT_PAREN) and self._next_peek().ttype == tt.NEWLINE:
@@ -143,9 +214,6 @@ class PpParser:
         self._error('Unexpected token')
         return None
 
-        
-
-
     def _open_loc(self) -> stm.PpQspLocOpen[None]:
         """ Open Loc Statement Create """
         name = self._curtok
@@ -168,6 +236,9 @@ class PpParser:
         """ Сравнивает тип текущего токена с переданным. """
         return self._curtok.ttype == t
 
+    def _match(self, *t:tt) -> bool:
+        """ Проверяет, относится ли текущий токен к указанному типу """
+        return self._curtok.ttype in t
 
     def _peek(self) -> Optional[Tkn]:
         """ Текущий токен. """
