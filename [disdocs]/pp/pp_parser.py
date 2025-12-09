@@ -48,9 +48,24 @@ class PpParser:
         if self._loc_is_open:
             if self._check_type(tt.LOC_CLOSE):
                 return self._close_loc()
-            elif self._check_type(tt.EXCLAMATION_SIGN):
-                # комментарий
-                
+            # elif self._check_type(tt.LOC_OPEN):
+                # TODO: теоретически может появиться вариант с подобным началом локации
+            elif self._match(tt.EXCLAMATION_SIGN, tt.SIMPLE_SPEC_COMM, tt.LESS_SPEC_COMM):
+                # комментарии трёх типов: обычный, спецкомментарий, спецкомментарий с удалением
+                return self._comment()
+            elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
+                validate_directive_on_loc:Optional[stm.PpDirective[None]] = self._directive()
+                if validate_directive_on_loc:
+                    return validate_directive_on_loc
+                else:
+                    self._reset_curtok(start_declaration)
+                    return self._comment()
+            elif self._match(tt.APOSTROPHE, tt.QUOTE, tt.RAW_LOC_LINE,
+                             tt.LEFT_BRACKET, tt.LEFT_BRACE, tt.LEFT_PAREN,
+                             tt.RIGHT_BRACKET, tt.RIGHT_BRACE, tt.RIGHT_PAREN,
+                             tt.AMPERSAND):
+                    self._statements_line()
+                ...
         else:
             # _open_loc
             if self._check_type(tt.LOC_OPEN):
@@ -58,15 +73,96 @@ class PpParser:
             elif self._check_type(tt.RAW_LINE):
                 return self._raw_line()
             elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
-                validate_directive:Optional[stm.PpDirective[None]] = self._directive()
-                if validate_directive:
-                    return validate_directive
+                validate_directive_out_loc:Optional[stm.PpDirective[None]] = self._directive()
+                if validate_directive_out_loc:
+                    return validate_directive_out_loc
                 else:
                     self._reset_curtok(start_declaration)
                     return self._raw_line_eating()
             else:
                 self._logic_error(f'Expected LOC_OPEN, RAW_LINE or OPEN_DIR_STMT. Get {self._curtok.ttype.name}')
         ...
+
+    def _statements_line(self) -> stm.StmtsLine[None]:
+        """Получаем строку операторов с комментариями"""
+
+    def _comment(self) -> stm.CommentStmt[None]:
+        """ Получение комментариев:
+            - ! обычный комментарий
+            - !@ спецкомментарий
+            - !@< специальный с удалением """
+        name = self._curtok
+        value:stm.CommentValue[None] = []
+        self._eat_tokens(1) # поглощаем токен объявления комментария
+        while not (self._is_eof() or self._curtok.lexeme_start[1] == 0):
+            if self._check_type(tt.LEFT_BRACE):
+                # блок фигурных скобок внутри комментария
+                value.extend(self._comment_brace_block())
+            elif self._check_type(tt.QUOTE):
+                # блок строк внутри комментария
+                value.extend(self._comment_quote_block())
+            elif self._check_type(tt.APOSTROPHE):
+                value.extend(self._comment_apostrophe_block())
+            else:
+                value.append(self._curtok)
+                self._eat_tokens(1)
+        return stm.CommentStmt[None](name, value)
+
+    def _comment_apostrophe_block(self) -> stm.CommentValue[None]:
+        """ Получаем строку в комментарии """
+        value:stm.CommentValue[None] = []
+        value.append(self._curtok)
+        self._eat_tokens(1) # поглощаем токен кавычки
+        while not (self._is_eof() or self._curtok.ttype == tt.APOSTROPHE):
+            # выполняем, пока не достигнем правой кавычки или конца файла
+            value.append(self._curtok)
+            self._eat_tokens(1)
+        if self._check_type(tt.APOSTROPHE):
+            value.append(self._curtok)
+            self._eat_tokens(1) # поглощаем токен кавычки
+        else:
+            self._error('Comments Apostrophe Block. Unexpectable EOF')
+        return value
+
+    def _comment_quote_block(self) -> stm.CommentValue[None]:
+        """ Получаем строку в комментарии """
+        value:stm.CommentValue[None] = []
+        value.append(self._curtok)
+        self._eat_tokens(1) # поглощаем токен кавычки
+        while not (self._is_eof() or self._curtok.ttype == tt.QUOTE):
+            # выполняем, пока не достигнем правой кавычки или конца файла
+            value.append(self._curtok)
+            self._eat_tokens(1)
+        if self._check_type(tt.QUOTE):
+            value.append(self._curtok)
+            self._eat_tokens(1) # поглощаем токен кавычки
+        else:
+            self._error('Comments Quote Block. Unexpectable EOF')
+        return value
+
+    def _comment_brace_block(self) -> stm.CommentValue[None]:
+        """Extract brace block"""
+        value:stm.CommentValue[None] = []
+        value.append(self._curtok)
+        self._eat_tokens(1) # поглощаем токен левой скобки
+        while not (self._is_eof() or self._curtok.ttype == tt.RIGHT_BRACE):
+            # выполняем, пока не достигнем правой скобки или конца файла
+            if self._check_type(tt.LEFT_BRACE):
+                value.extend(self._comment_brace_block())
+            elif self._check_type(tt.QUOTE):
+                # блок строк внутри комментария
+                value.extend(self._comment_quote_block())
+            elif self._check_type(tt.APOSTROPHE):
+                value.extend(self._comment_apostrophe_block())
+            else:
+                value.append(self._curtok)
+                self._eat_tokens(1)
+        if self._check_type(tt.RIGHT_BRACE):
+            value.append(self._curtok)
+            self._eat_tokens(1) # поглощаем токен правой скобки
+        else:
+            self._error('Comments Brace Block. Unexpectable EOF')
+        return value
 
     def _raw_line_eating(self) -> stm.RawLineStmt[None]:
         """ Поглощение токенов для сырой строки вне локации """

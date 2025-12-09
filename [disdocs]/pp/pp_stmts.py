@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar, List
+from typing import Generic, TypeVar, List, Union
 
 from pp_tokens import PpToken
 import pp_dir as dir
@@ -34,6 +34,28 @@ class PpVisitor(ABC, Generic[R]):
     def visit_loc_close_dclrt(self, stmt:'PpQspLocClose[R]') -> R:
         ...
 
+    @abstractmethod
+    def visit_simple_comment_stmt(self, stmt:'CommentStmt[R]') -> R:
+        ...
+
+    @abstractmethod
+    def visit_stmts_line(self, stmt:'StmtsLine[R]') -> R:
+        ...
+
+@dataclass(eq=False)
+class StmtsLine(PpStmt[R]):
+    stmts:List[PpToken]
+    comment:'CommentStmt[R]'
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_stmts_line(self)
+
+@dataclass(eq=False)
+class CommentStmt(PpStmt[R]):
+    name:PpToken
+    value:'CommentValue[R]'
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_simple_comment_stmt(self)
+
 @dataclass(eq=False)
 class PpQspLocOpen(PpStmt[R]):
     name:PpToken
@@ -57,6 +79,8 @@ class PpDirective(PpStmt[R]):
     body:dir.PpDir[R]
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_pp_directive(self)
+
+CommentValue = List[Union[PpToken, PpStmt[R]]]
 
 # Допустим у нас есть объекты класса Животное. От этого класса наследуются:
 # - Собака
