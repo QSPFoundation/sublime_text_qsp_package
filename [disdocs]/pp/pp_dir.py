@@ -1,3 +1,7 @@
+"""
+    Здесь реализованы директивы и операторы препроцессора.
+"""
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, TypeVar, Optional, Union, List
@@ -51,6 +55,14 @@ class PpVisitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
+    def visit_include_dir(self, stmt:'IncludeDir[R]') -> R:
+        ...
+
+    @abstractmethod
+    def visit_exclude_dir(self, stmt:'ExcludeDir[R]') -> R:
+        ...
+
+    @abstractmethod
     def visit_cond_expr_stmt(self, stmt:'CondExprStmt[R]') -> R:
         ...
 
@@ -100,20 +112,34 @@ class AssignmentDir(PpDir[R]):
 @dataclass(eq=False)
 class ConditionDir(PpDir[R]):
     condition:'CondExprStmt[R]'
-    next_dirs:List['NextDir']
+    next_dirs:List['ConditionResolve[R]']
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_condition_dir(self)
 
+@dataclass(eq=False)
+class IncludeDir(PpDir[R]):
+    name:PpToken
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_include_dir(self)
+
+@dataclass(eq=False)
+class ExcludeDir(PpDir[R]):
+    name:PpToken
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_exclude_dir(self)
+
 @dataclass
 class CondExprStmt(PpDir[R]):
-    expr:expr.OrExpr[None]
+    expr:expr.OrType[R]
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_cond_expr_stmt(self)
 
-
-NextDir = Union[
-    NoppDir[None],
-    SaveCommDir[None],
-    NoSaveCommDir[None],
-    OnDir[None],
-    OffDir[None]]
+ConditionResolve = Union[
+    NoppDir[R],
+    SaveCommDir[R],
+    NoSaveCommDir[R],
+    OnDir[R],
+    OffDir[R],
+    IncludeDir[R],
+    ExcludeDir[R]
+]

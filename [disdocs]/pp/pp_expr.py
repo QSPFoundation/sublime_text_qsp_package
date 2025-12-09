@@ -1,13 +1,17 @@
+"""
+    Реализация выржений препроцессора.
+"""
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Optional, Union, List
+from typing import Generic, TypeVar, Union
 
 from pp_tokens import PpToken
 
 R = TypeVar("R")
 
 class PpExpr(ABC, Generic[R]):
-    """ Класс поддержки операторов препроцессинга. В т.ч. общий тип, шаблон. """
+    """ Класс поддержки выражений препроцессинга. В т.ч. общий тип, шаблон. """
     index:int = -1
     @abstractmethod # обязательный метод для всех операторов
     def accept(self, visitor:'PpVisitor[R]') -> R:
@@ -39,30 +43,29 @@ class PpVisitor(ABC, Generic[R]):
 
 @dataclass(eq=False)
 class OrExpr(PpExpr[R]):
-    left_oprnd:PpExpr[R]
+    left_oprnd:'OrType[R]'
     right_oprnd:PpExpr[R]
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_or_expr(self)
 
 @dataclass(eq=False)
 class AndExpr(PpExpr[R]):
-    left_oprnd:PpExpr[R]
-    right_oprnd:PpExpr[R]
+    left_oprnd:'AndType[R]'
+    right_oprnd:'NotType[R]'
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_and_expr(self)
 
 @dataclass(eq=False)
 class NotExpr(PpExpr[R]):
-    operator:PpToken
-    left:'NotType[R]'
+    left:'EqualType[R]'
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_not_expr(self)
 
 @dataclass(eq=False)
 class EqualExpr(PpExpr[R]):
-    right:'EqualType[R]'
+    left:'EqualType[R]'
     operator:PpToken
-    left:'VarName[R]'
+    right:'VarName[R]'
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_equal_expr(self)
 
@@ -74,3 +77,5 @@ class VarName(PpExpr[R]):
 
 EqualType = Union[VarName[R], EqualExpr[R]]
 NotType = Union[EqualType[R], NotExpr[R]]
+AndType = Union[NotType[R], AndExpr[R]]
+OrType = Union[AndType[R], OrExpr[R]]

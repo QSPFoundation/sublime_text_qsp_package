@@ -30,11 +30,21 @@ class PpVisitor(ABC, Generic[R]):
     def visit_pp_directive(self, stmt:'PpDirective[R]') -> R:
         ...
 
+    @abstractmethod
+    def visit_loc_close_dclrt(self, stmt:'PpQspLocClose[R]') -> R:
+        ...
+
 @dataclass(eq=False)
 class PpQspLocOpen(PpStmt[R]):
     name:PpToken
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_loc_open_dclrt(self)
+
+@dataclass(eq=False)
+class PpQspLocClose(PpStmt[R]):
+    name:PpToken
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_loc_close_dclrt(self)
 
 @dataclass(eq=False)
 class RawLineStmt(PpStmt[R]):

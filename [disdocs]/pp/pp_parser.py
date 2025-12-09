@@ -46,7 +46,11 @@ class PpParser:
         # запоминаем стартовый токен
         start_declaration:int = self._curtok_num
         if self._loc_is_open:
-            ...
+            if self._check_type(tt.LOC_CLOSE):
+                return self._close_loc()
+            elif self._check_type(tt.EXCLAMATION_SIGN):
+                # комментарий
+                
         else:
             # _open_loc
             if self._check_type(tt.LOC_OPEN):
@@ -64,10 +68,17 @@ class PpParser:
                 self._logic_error(f'Expected LOC_OPEN, RAW_LINE or OPEN_DIR_STMT. Get {self._curtok.ttype.name}')
         ...
 
+    def _raw_line_eating(self) -> stm.RawLineStmt[None]:
+        """ Поглощение токенов для сырой строки вне локации """
+        value:List[Tkn] = []
+        while not self._check_type(tt.NEWLINE):
+            value.append(self._curtok)
+            self._eat_tokens(1)
+        return stm.RawLineStmt[None](value)
+
     def _directive(self) -> Optional[stm.PpDirective[None]]:
         """ Получаем директиву препроцессора, если возможно. """
         self._eat_tokens(1) # пожираем токен объявления директивы
-        start_declaration:int = self._curtok_num
         next_is_newline = self._next_peek().ttype == tt.NEWLINE
         if self._curtok.ttype == tt.ENDIF_STMT and next_is_newline:
             body = dir.EndifDir[None](self._curtok)
@@ -94,19 +105,20 @@ class PpParser:
             self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
             return stm.PpDirective(body)
         if self._curtok.ttype == tt.VAR_STMT:
+            self._eat_tokens(1) # пожираем токен объявления переменной
             assignment_validation:Optional[dir.AssignmentDir[None]] = self._assignment_dir()
             if assignment_validation is None:
                 return None
             return stm.PpDirective[None](assignment_validation)
         if self._check_type(tt.IF_STMT):
+            self._eat_tokens(1) # пожирем IF_STMT
             condition_validation:Optional[dir.ConditionDir[None]] = self._condition_dir()
             if condition_validation is None: return None
             return stm.PpDirective[None](condition_validation)
-        ... # if statement
+        return None # если ни одна цепочка токенов не прошла валидацию при парсинге
 
     def _condition_dir(self) -> Optional[dir.ConditionDir[None]]:
         """ Получаем директиву условия """
-        self._eat_tokens(1) # пожирем IF_STMT
         if not self._check_type(tt.LEFT_PAREN):
             self._error(f'Expected LEFT_PAREN')
             return None
@@ -122,39 +134,95 @@ class PpParser:
             self._error(f'Expected THEN_STMT')
             return None
         self._eat_tokens(1)
-        next_dirs_validation:List[dir.NextDir] = self._next_dirs()
-        if not next_dirs_validation: return None
-        next_dirs:List[dir.NextDir] = next_dirs_validation
+        cond_resolves_validation:List[dir.ConditionResolve[None]] = self._cond_resolves()
+        if not cond_resolves_validation: return None
+        cond_resolves = cond_resolves_validation
         # на данном этапе у нас не поглощён только токен следующей строки
         self._eat_tokens(1)
-        return dir.ConditionDir(condition_expr, next_dirs)
+        return dir.ConditionDir(condition_expr, cond_resolves)
+
+    def _cond_resolves(self) -> List[dir.ConditionResolve[None]]:
+        """ Получаем список операторов, выполняемых при соблюдении условия """
+        resolves:List[dir.ConditionResolve[None]] = []
+        while not self._check_type(tt.NEWLINE):
+            if self._check_type(tt.NOPP_STMT):
+                resolves.append(dir.NoppDir[None](self._curtok))
+                self._eat_tokens(1)
+                continue
+            if self._check_type(tt.SAVECOMM_STMT):
+                resolves.append(dir.SaveCommDir[None](self._curtok))
+                self._eat_tokens(1)
+                continue
+            if self._check_type(tt.NO_SAVECOMM_STMT):
+                resolves.append(dir.NoSaveCommDir[None](self._curtok))
+                self._eat_tokens(1)
+                continue
+            if self._check_type(tt.ON_STMT):
+                resolves.append(dir.OnDir[None](self._curtok))
+                self._eat_tokens(1)
+                continue
+            if self._check_type(tt.NOPP_STMT):
+                resolves.append(dir.OffDir[None](self._curtok))
+                self._eat_tokens(1)
+                continue
+            if self._check_type(tt.NOPP_STMT):
+                resolves.append(dir.IncludeDir[None](self._curtok))
+                self._eat_tokens(1)
+                continue
+            if self._check_type(tt.NOPP_STMT):
+                resolves.append(dir.ExcludeDir[None](self._curtok))
+                self._eat_tokens(1)
+                continue
+
+        return resolves
 
     def _cond_expr_stmt(self) -> Optional[dir.CondExprStmt[None]]:
         """ Получаем выражение условия """
-        or_validation:Optional[expr.OrExpr[None]] = self._or()
+        or_validation:Optional[expr.OrType[None]] = self._or()
         if or_validation is None: return None
         return dir.CondExprStmt(or_validation)
 
-    def _or(self) -> Optional[expr.OrExpr[None]]:
+    def _or(self) -> Optional[expr.OrType[None]]:
         """ Получаем выражение OR """
-        and_validation:Optional[expr.AndExpr[None]] = self._and()
+        and_validation:Optional[expr.AndType[None]] = self._and()
+        if and_validation is None: return None
+        left = and_validation
+        while self._check_type(tt.OR_OPERATOR):
+            self._eat_tokens(1)
+            right_validation = self._and()
+            if right_validation is None: return None
+            right = right_validation
+            left = expr.OrExpr[None](left, right)
 
+        return left
+
+    def _and(self) -> Optional[expr.AndType[None]]:
+        """ Выражение логического И """
+        not_validation = self._not()
+        if not_validation is None: return None
+        left = not_validation
+        while self._check_type(tt.AND_OPERATOR):
+            self._eat_tokens(1)
+            right_validation = self._not()
+            if right_validation is None: return None
+            right = right_validation
+            left = expr.AndExpr[None](left, right)
+        
+        return left
 
     def _not(self) -> Optional[expr.NotType[None]]:
         """ Получаем выражение с оператором отрицания """
         # NotExpr = notOperator? EqualExpr
         if self._check_type(tt.NOT_OPERATOR):
-            operator = self._curtok
             self._eat_tokens(1)
             validation_equal = self._equal()
             if validation_equal is None: return None # если есть ошибка в сравнениях, значит это невалидная директива
             right = validation_equal
-            return expr.NotExpr(operator, right)
+            return expr.NotExpr(right)
 
         validation_equal = self._equal()
         return validation_equal if not validation_equal is None else None
             
-
     def _equal(self) -> Optional[expr.EqualType[None]]:
         """ Получаем выражение сравнения """
         if not self._check_type(tt.IDENTIFIER):
@@ -174,8 +242,7 @@ class PpParser:
         return equal_expr
 
     def _assignment_dir(self) -> Optional[dir.AssignmentDir[None]]:
-        """Получаем директиву присваивания"""
-        self._eat_tokens(1) # пожираем токен оператора присваивания
+        """Получаем директиву объявления переменной"""
         # далее должен идти токен скобки
         if not self._check_type(tt.LEFT_PAREN):
             self._error(f'Expected LEFT_PAREN')
@@ -219,7 +286,14 @@ class PpParser:
         name = self._curtok
         self._loc_is_open = True
         self._eat_tokens(1)
-        return stm.PpQspLocOpen[None](name)   
+        return stm.PpQspLocOpen[None](name)
+    
+    def _close_loc(self) -> stm.PpQspLocClose[None]:
+        """ Close Loc Statement Create """
+        name = self._curtok
+        self._loc_is_open = False
+        self._eat_tokens(1)
+        return stm.PpQspLocClose[None](name) 
     
     def _raw_line(self) -> stm.RawLineStmt[None]:
         """ Raw Line Statement Create """
@@ -252,6 +326,11 @@ class PpParser:
     def _eat_tokens(self, count:int) -> None:
         """ Поглощает токен. Т.е. передвигает указатель на следующий. """
         self._curtok_num += count # токены передвигаются лишь до EOF, поэтому выход за пределы невозможен
+        self._curtok = self._tokens[self._curtok_num]
+
+    def _reset_curtok(self, start_declaration:int) -> None:
+        """ Сброс начала обработки токенов до указанного """
+        self._curtok_num = start_declaration
         self._curtok = self._tokens[self._curtok_num]
 
     # обработчик ошибок. Пока просто выводим в консоль.
