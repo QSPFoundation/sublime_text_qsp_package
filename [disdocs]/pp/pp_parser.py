@@ -219,22 +219,26 @@ class PpParser:
         value:Optional[stm.OtherStmt[None]] = None
         chain:stm.OtherStmtChain[None] = []
         
-        while not (self._is_eof() or self._curtok.lexeme_start[1] == 0):
+        # CodeBlockContent = ( CodeBlock | PpDirectiveFullLine | rawCodeBlockChar)+
+        # Парсим до RIGHT_BRACE, независимо от позиции в строке
+        while not self._is_eof():
             if self._check_type(tt.RIGHT_BRACE):
                 break
             elif self._check_type(tt.LEFT_BRACE):
                 # Вложенный CodeBlock
                 chain.append(self._code_block())
-            elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
-                # Директива препроцессора внутри CodeBlock
+            elif self._check_type(tt.OPEN_DIRECTIVE_STMT) and self._is_line_start():
+                # PpDirectiveFullLine - директива препроцессора на отдельной строке
+                # Проверяем, что директива начинается с начала строки
                 start_declaration:int = self._curtok_num
                 directive = self._directive()
                 if directive:
                     chain.append(directive)
                 else:
-                    # Если директива невалидна, обрабатываем как обычный токен
+                    # Если директива невалидна, обрабатываем как комментарий
                     self._reset_curtok(start_declaration)
-                    chain.append(self._comment())
+                    chain.append(self._curtok)
+                    self._eat_tokens(1)
             elif self._match(tt.QUOTE, tt.APOSTROPHE):
                 chain.append(self._string_literal())
             elif self._check_type(tt.LEFT_BRACKET):
@@ -590,6 +594,10 @@ class PpParser:
     def _is_eof(self) -> bool:
         """ Является ли токен концом файла. """
         return self._curtok.ttype == tt.EOF
+
+    def _is_line_start(self) -> bool:
+        """ Текущий токен - начало строки? """
+        return self._curtok.lexeme_start[1] == 0
 
     def _check_type(self, t:tt) -> bool:
         """ Сравнивает тип текущего токена с переданным. """
