@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar, List, Union
+from typing import Generic, Optional, TypeVar, List, Union
 
 from pp_tokens import PpToken
 import pp_dir as dir
@@ -42,10 +42,42 @@ class PpVisitor(ABC, Generic[R]):
     def visit_stmts_line(self, stmt:'StmtsLine[R]') -> R:
         ...
 
+    @abstractmethod
+    def visit_other_stmt(self, stmt:'OtherStmt[R]') -> R:
+        ...
+
+    @abstractmethod
+    def visit_string_literal(self, stmt:'StringLiteral[R]') -> R:
+        ...
+
+    @abstractmethod
+    def visit_bracket_block(self, stmt:'BracketBlock[R]') -> R:
+        ...
+
+@dataclass(eq=False)
+class BracketBlock(PpStmt[R]):
+    left:PpToken
+    value:Optional['OtherStmt[R]']
+    right:PpToken
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_bracket_block(self)
+
+@dataclass(eq=False)
+class StringLiteral(PpStmt[R]):
+    value:List[PpToken]
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_string_literal(self)
+
+@dataclass(eq=False)
+class OtherStmt(PpStmt[R]):
+    chain:'OtherStmtChain[R]'
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_other_stmt(self)
+
 @dataclass(eq=False)
 class StmtsLine(PpStmt[R]):
-    stmts:List[PpToken]
-    comment:'CommentStmt[R]'
+    stmts:List[OtherStmt[R]]
+    comment:Optional['CommentStmt[R]']
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_stmts_line(self)
 
@@ -81,6 +113,7 @@ class PpDirective(PpStmt[R]):
         return visitor.visit_pp_directive(self)
 
 CommentValue = List[Union[PpToken, PpStmt[R]]]
+OtherStmtChain = List[Union[PpToken, PpStmt[R]]]
 
 # Допустим у нас есть объекты класса Животное. От этого класса наследуются:
 # - Собака

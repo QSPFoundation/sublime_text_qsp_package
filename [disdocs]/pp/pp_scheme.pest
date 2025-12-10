@@ -11,8 +11,8 @@ QspsPP {
   LocBody = ((~locEndKwrd LocationLine)? newline)*
   locClose = locEndKwrd rawLine?
 
-  RawLinesBlock = (nonLocRawLine (newline | &eof))+
-  nonLocRawLine = (PpDirectiveLine | ~locDefKwrd rawLine)
+  RawLinesBlock = (NonLocRawLine (newline | &eof))+
+  NonLocRawLine = (PpDirectiveLine | ~locDefKwrd rawLine)
 
   LocationLine = CommentStmt
        | StmtsLine
