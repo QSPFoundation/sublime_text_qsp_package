@@ -30,16 +30,16 @@ class PpParser:
 
         self._loc_is_open:bool = False
 
-        self._qsps_file:List[PpStmt] = []
+        self._statements:List[PpStmt] = [] # qsps_file entity
 
     def qsps_file_parse(self) -> None:
         """ Публичная функция вызова парсера. """
         # прежде всего разбиваем файл на директивы и блоки
-        statements = self._qsps_file
         while not self._is_eof():
-            statements.append(self._declaration())
-        ...
-
+            self._statements.append(self._declaration())
+        
+    def get_statements(self) -> List[PpStmt]:
+        return self._statements
 
     def _declaration(self) -> stm.PpStmt[None]:
         """ Распарсиваем целый файл из токенов. """
@@ -241,10 +241,6 @@ class PpParser:
                     self._eat_tokens(1)
             elif self._match(tt.QUOTE, tt.APOSTROPHE):
                 chain.append(self._string_literal())
-            elif self._check_type(tt.LEFT_BRACKET):
-                chain.append(self._bracket_block())
-            elif self._check_type(tt.LEFT_PAREN):
-                chain.append(self._paren_block())
             else:
                 # Обычные символы (rawCodeBlockChar)
                 chain.append(self._curtok)

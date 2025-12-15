@@ -26,7 +26,7 @@ class PpScanner:
         self._scan_funcs:List[Callable[[str], None]] = [self._qsps_file_expect]
         self._prepend_chars:Stack = [] # ожидаемые символы в обратном порядке
 
-        self.keywords:Dict[str, tt] = {
+        self._keywords:Dict[str, tt] = {
             "var": tt.VAR_STMT,
             "on": tt.ON_STMT,
             "if": tt.IF_STMT,
@@ -174,7 +174,7 @@ class PpScanner:
         # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
         next_char = self._next_in_line()
         if not self._is_alnum(next_char):
-            ttype:Optional[tt] = self.keywords.get(''.join(self._curlexeme), None)
+            ttype:Optional[tt] = self._keywords.get(''.join(self._curlexeme), None)
             if ttype == None: ttype = tt.IDENTIFIER
             self._add_token(ttype)
             self._scan_funcs.pop()
