@@ -35,8 +35,19 @@ class PpParser:
     def qsps_file_parse(self) -> None:
         """ Публичная функция вызова парсера. """
         # прежде всего разбиваем файл на директивы и блоки
+        iteration_count = 0
+        max_iterations = len(self._tokens) * 2  # Защита от бесконечного цикла
         while not self._is_eof():
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop detected in qsps_file_parse at token {self._curtok_num}')
+                break
+            iteration_count += 1
+            prev_token_num = self._curtok_num
             self._statements.append(self._declaration())
+            # ТОЧКА ОСТАНОВА: Проверка, что указатель продвинулся
+            if self._curtok_num == prev_token_num and not self._is_eof():
+                self._logic_error(f'Parser stuck at token {self._curtok_num}. Token: {self._curtok.ttype.name}')
+                self._eat_tokens(1)  # Принудительно продвигаем указатель
         
     def get_statements(self) -> List[PpStmt]:
         return self._statements
@@ -54,6 +65,7 @@ class PpParser:
                 return self._comment()
             elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
                 start_declaration_on_loc:int = self._curtok_num
+                print(f'OPEN_DIRECTIVE_STMT: {self._curtok_num}')
                 validate_directive_on_loc:Optional[stm.PpDirective[None]] = self._directive()
                 if validate_directive_on_loc:
                     return validate_directive_on_loc
@@ -64,6 +76,7 @@ class PpParser:
                              tt.LEFT_BRACKET, tt.LEFT_BRACE, tt.LEFT_PAREN,
                              tt.RIGHT_BRACKET, tt.RIGHT_BRACE, tt.RIGHT_PAREN,
                              tt.AMPERSAND):
+                print(f'find quotes: {self._curtok_num}', self._curtok.get_as_node())
                 return self._statements_line()
             else:
                 self._logic_error(f'Unexpected token in location body: {self._curtok.ttype.name}')
@@ -91,11 +104,25 @@ class PpParser:
         stmts:List[stm.OtherStmt[None]] = []
         comment:Optional[stm.CommentStmt[None]] = None
         
+        # Запоминаем номер строки начала, чтобы не завершить цикл преждевременно
+        start_line = self._curtok.lexeme_start[0]
+        
         # Первый OtherStmt обязателен
+        print(f'first otherStatement 108: {self._curtok_num}', self._curtok.get_as_node())
         stmts.append(self._other_stmt())
+        print(f'first otherStatement 110: {self._curtok_num}', self._curtok.get_as_node())
         
         # Обрабатываем разделители & и следующие OtherStmt
-        while not (self._is_eof() or self._curtok.lexeme_start[1] == 0):
+        iteration_count = 0
+        max_iterations = 1000  # Защита от бесконечного цикла
+        # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
+        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)):
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop in _statements_line at token {self._curtok_num}')
+                break
+            iteration_count += 1
+            prev_token_num = self._curtok_num
+            
             if self._check_type(tt.AMPERSAND):
                 self._eat_tokens(1)  # поглощаем разделитель &
                 # Проверяем, не комментарий ли следующий токен
@@ -113,6 +140,9 @@ class PpParser:
             else:
                 # Если не разделитель и не комментарий, значит что-то не так
                 self._logic_error(f'Statements Line. Unexpected Token {self._curtok.ttype.name}')
+                # ТОЧКА ОСТАНОВА: Проверка зацикливания
+                if self._curtok_num == prev_token_num:
+                    self._eat_tokens(1)  # Принудительно продвигаем указатель
                 break
         
         return stm.StmtsLine[None](stmts, comment)
@@ -120,11 +150,24 @@ class PpParser:
     def _other_stmt(self) -> stm.OtherStmt[None]:
         """ Получаем QSP-оператор """
         chain:stm.OtherStmtChain[None] = []
-        while not (self._is_eof() or self._curtok.lexeme_start[1] == 0
+        # Запоминаем номер строки начала оператора, чтобы не завершить цикл преждевременно
+        start_line = self._curtok.lexeme_start[0]
+        iteration_count = 0
+        max_iterations = 10000  # Защита от бесконечного цикла
+        # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
+        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)
                 or self._curtok.ttype == tt.AMPERSAND):
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop in _other_stmt at token {self._curtok_num}')
+                break
+            iteration_count += 1
+            prev_token_num = self._curtok_num
+            
             # тело оператора продолжается до конца строки или амперсанда
             if self._match(tt.QUOTE, tt.APOSTROPHE):
+                print(f'otherStatement find quote 161: {self._curtok_num}', self._curtok.get_as_node())
                 chain.append(self._string_literal())
+                print(f'otherStatement find quote 163: {self._curtok_num}', self._curtok.get_as_node())
             elif self._check_type(tt.LEFT_BRACKET):
                 chain.append(self._bracket_block())
             elif self._check_type(tt.LEFT_PAREN):
@@ -135,6 +178,11 @@ class PpParser:
                 # Обычные символы (rawOtherStmtChar)
                 chain.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
+            
+            # ТОЧКА ОСТАНОВА: Проверка зацикливания
+            if self._curtok_num == prev_token_num:
+                self._logic_error(f'Parser stuck in _other_stmt at token {self._curtok_num}. Token: {self._curtok.ttype.name}')
+                self._eat_tokens(1)  # Принудительно продвигаем указатель
         
         return stm.OtherStmt[None](chain)
 
@@ -143,11 +191,23 @@ class PpParser:
         left:Tkn = self._curtok
         self._eat_tokens(1)
         
+        # Запоминаем номер строки начала блока, чтобы не завершить цикл преждевременно
+        start_line = self._curtok.lexeme_start[0]
+        
         # Собираем все OtherStmt внутри блока (может быть несколько или ни одного)
         value:Optional[stm.OtherStmt[None]] = None
         chain:stm.OtherStmtChain[None] = []
         
-        while not (self._is_eof() or self._curtok.lexeme_start[1] == 0):
+        iteration_count = 0
+        max_iterations = 10000  # Защита от бесконечного цикла
+        # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
+        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)):
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop in _bracket_block at token {self._curtok_num}')
+                break
+            iteration_count += 1
+            prev_token_num = self._curtok_num
+            
             if self._check_type(tt.RIGHT_BRACKET):
                 break
             elif self._match(tt.QUOTE, tt.APOSTROPHE):
@@ -162,6 +222,11 @@ class PpParser:
                 # Обычные символы (rawOtherStmtChar)
                 chain.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
+            
+            # ТОЧКА ОСТАНОВА: Проверка зацикливания
+            if self._curtok_num == prev_token_num:
+                self._logic_error(f'Parser stuck in _bracket_block at token {self._curtok_num}. Token: {self._curtok.ttype.name}')
+                self._eat_tokens(1)  # Принудительно продвигаем указатель
         
         if chain:
             value = stm.OtherStmt[None](chain)
@@ -180,10 +245,22 @@ class PpParser:
         left:Tkn = self._curtok
         self._eat_tokens(1)
         
+        # Запоминаем номер строки начала блока, чтобы не завершить цикл преждевременно
+        start_line = self._curtok.lexeme_start[0]
+        
         value:Optional[stm.OtherStmt[None]] = None
         chain:stm.OtherStmtChain[None] = []
         
-        while not (self._is_eof() or self._curtok.lexeme_start[1] == 0):
+        iteration_count = 0
+        max_iterations = 10000  # Защита от бесконечного цикла
+        # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
+        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)):
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop in _paren_block at token {self._curtok_num}')
+                break
+            iteration_count += 1
+            prev_token_num = self._curtok_num
+            
             if self._check_type(tt.RIGHT_PAREN):
                 break
             elif self._match(tt.QUOTE, tt.APOSTROPHE):
@@ -197,6 +274,11 @@ class PpParser:
             else:
                 chain.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
+            
+            # ТОЧКА ОСТАНОВА: Проверка зацикливания
+            if self._curtok_num == prev_token_num:
+                self._logic_error(f'Parser stuck in _paren_block at token {self._curtok_num}. Token: {self._curtok.ttype.name}')
+                self._eat_tokens(1)  # Принудительно продвигаем указатель
         
         if chain:
             value = stm.OtherStmt[None](chain)
@@ -221,7 +303,15 @@ class PpParser:
         
         # CodeBlockContent = ( CodeBlock | PpDirectiveFullLine | rawCodeBlockChar)+
         # Парсим до RIGHT_BRACE, независимо от позиции в строке
+        iteration_count = 0
+        max_iterations = 10000  # Защита от бесконечного цикла
         while not self._is_eof():
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop in _code_block at token {self._curtok_num}')
+                break
+            iteration_count += 1
+            prev_token_num = self._curtok_num
+            
             if self._check_type(tt.RIGHT_BRACE):
                 break
             elif self._check_type(tt.LEFT_BRACE):
@@ -245,6 +335,11 @@ class PpParser:
                 # Обычные символы (rawCodeBlockChar)
                 chain.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
+            
+            # ТОЧКА ОСТАНОВА: Проверка зацикливания
+            if self._curtok_num == prev_token_num:
+                self._logic_error(f'Parser stuck in _code_block at token {self._curtok_num}. Token: {self._curtok.ttype.name}')
+                self._eat_tokens(1)  # Принудительно продвигаем указатель
         
         if chain:
             value = stm.OtherStmt[None](chain)
@@ -263,14 +358,26 @@ class PpParser:
         value:List[Tkn] = []
         ttype = self._curtok.ttype
         value.append(self._curtok)
+        print(f'_string_literal open 346: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1) # поглощаем токен начала строки
+        print(f'_string_literal 348: {self._curtok_num}', self._curtok.get_as_node())
+        iteration_count = 0
+        max_iterations = 100000  # Защита от бесконечного цикла (строки могут быть длинными)
         while not (self._is_eof() or self._check_type(ttype)):
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop in _string_literal at token {self._curtok_num}')
+                break
+            iteration_count += 1
             # поглощаем токены
             value.append(self._curtok)
+            print(f'_string_literal 358: {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1)
+            print(f'_string_literal 360: {self._curtok_num}', self._curtok.get_as_node())
         if self._check_type(ttype):
             value.append(self._curtok)
+            print(f'_string_literal close 363: {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1)
+            print(f'_string_literal 365: {self._curtok_num}', self._curtok.get_as_node())
         else:
             self._error('Literal String. Unexpectable EOF')
         return stm.StringLiteral[None](value)
@@ -283,7 +390,18 @@ class PpParser:
         name = self._curtok
         value:stm.CommentValue[None] = []
         self._eat_tokens(1) # поглощаем токен объявления комментария
-        while not (self._is_eof() or self._curtok.lexeme_start[1] == 0):
+        # Запоминаем номер строки начала комментария, чтобы не завершить цикл преждевременно
+        start_line = self._curtok.lexeme_start[0]
+        iteration_count = 0
+        max_iterations = 10000  # Защита от бесконечного цикла
+        # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
+        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)):
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop in _comment at token {self._curtok_num}')
+                break
+            iteration_count += 1
+            prev_token_num = self._curtok_num
+            
             if self._check_type(tt.LEFT_BRACE):
                 # блок фигурных скобок внутри комментария
                 value.extend(self._comment_brace_block())
@@ -295,6 +413,11 @@ class PpParser:
             else:
                 value.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
+            
+            # ТОЧКА ОСТАНОВА: Проверка зацикливания
+            if self._curtok_num == prev_token_num:
+                self._logic_error(f'Parser stuck in _comment at token {self._curtok_num}. Token: {self._curtok.ttype.name}')
+                self._eat_tokens(1)  # Принудительно продвигаем указатель
         return stm.CommentStmt[None](name, value)
 
     def _comment_apostrophe_block(self) -> stm.CommentValue[None]:
@@ -356,14 +479,22 @@ class PpParser:
     def _raw_line_eating(self) -> stm.RawLineStmt[None]:
         """ Поглощение токенов для сырой строки вне локации """
         value:List[stm.PpLiteral[None]] = []
+        iteration_count = 0
+        max_iterations = 10000  # Защита от бесконечного цикла
         while not self._check_type(tt.NEWLINE):
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop in _raw_line_eating at token {self._curtok_num}')
+                break
+            iteration_count += 1
             value.append(stm.PpLiteral[None](self._curtok))
             self._eat_tokens(1)
         return stm.RawLineStmt[None](value)
 
     def _directive(self) -> Optional[stm.PpDirective[None]]:
         """ Получаем директиву препроцессора, если возможно. """
+        print(f'_directive 466: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1) # пожираем токен объявления директивы
+        print(f'_directive 468: {self._curtok_num}', self._curtok.get_as_node())
         next_is_newline = self._next_peek().ttype == tt.NEWLINE
         if self._curtok.ttype == tt.ENDIF_STMT and next_is_newline:
             body = dir.EndifDir[None](self._curtok)
@@ -396,7 +527,9 @@ class PpParser:
                 return None
             return stm.PpDirective[None](assignment_validation)
         if self._check_type(tt.IF_STMT):
+            print(f'_directive 501: {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1) # пожирем IF_STMT
+            print(f'_directive 503: {self._curtok_num}', self._curtok.get_as_node())
             condition_validation:Optional[dir.ConditionDir[None]] = self._condition_dir()
             if condition_validation is None: return None
             return stm.PpDirective[None](condition_validation)
@@ -407,57 +540,89 @@ class PpParser:
         if not self._check_type(tt.LEFT_PAREN):
             self._error(f'Expected LEFT_PAREN')
             return None
+        print(f'_condition_dir 514: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1)
+        print(f'_condition_dir 516: {self._curtok_num}', self._curtok.get_as_node())
         cond_expr_validation:Optional[dir.CondExprStmt[None]] = self._cond_expr_stmt()
         if cond_expr_validation is None: return None
         condition_expr:dir.CondExprStmt[None] = cond_expr_validation
         if not self._check_type(tt.RIGHT_PAREN):
             self._error(f'Expected RIGHT_PAREN')
             return None
+        print(f'_condition_dir 523: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1)
+        print(f'_condition_dir 525: {self._curtok_num}', self._curtok.get_as_node())
         if not self._check_type(tt.THEN_STMT):
             self._error(f'Expected THEN_STMT')
             return None
+        print(f'_condition_dir 529: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1)
+        print(f'_condition_dir 531: {self._curtok_num}', self._curtok.get_as_node())
         cond_resolves_validation:List[dir.ConditionResolve[None]] = self._cond_resolves()
         if not cond_resolves_validation: return None
         cond_resolves = cond_resolves_validation
         # на данном этапе у нас не поглощён только токен следующей строки
+        print(f'_condition_dir 536: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1)
+        print(f'_condition_dir 538: {self._curtok_num}', self._curtok.get_as_node())
         return dir.ConditionDir(condition_expr, cond_resolves)
 
     def _cond_resolves(self) -> List[dir.ConditionResolve[None]]:
         """ Получаем список операторов, выполняемых при соблюдении условия """
         resolves:List[dir.ConditionResolve[None]] = []
+        iteration_count = 0
+        max_iterations = 1000  # Защита от бесконечного цикла
         while not self._check_type(tt.NEWLINE):
+            if iteration_count >= max_iterations:
+                self._logic_error(f'Infinite loop in _cond_resolves at token {self._curtok_num}')
+                break
+            iteration_count += 1
+            
             if self._check_type(tt.NOPP_STMT):
                 resolves.append(dir.NoppDir[None](self._curtok))
+                print(f'_cond_resolves 555: {self._curtok_num}', self._curtok.get_as_node())
                 self._eat_tokens(1)
+                print(f'_cond_resolves 557: {self._curtok_num}', self._curtok.get_as_node())
                 continue
             if self._check_type(tt.SAVECOMM_STMT):
                 resolves.append(dir.SaveCommDir[None](self._curtok))
+                print(f'_cond_resolves 561: {self._curtok_num}', self._curtok.get_as_node())
                 self._eat_tokens(1)
+                print(f'_cond_resolves 563: {self._curtok_num}', self._curtok.get_as_node())
                 continue
             if self._check_type(tt.NO_SAVECOMM_STMT):
                 resolves.append(dir.NoSaveCommDir[None](self._curtok))
+                print(f'_cond_resolves 567: {self._curtok_num}', self._curtok.get_as_node())
                 self._eat_tokens(1)
+                print(f'_cond_resolves 569: {self._curtok_num}', self._curtok.get_as_node())
                 continue
             if self._check_type(tt.ON_STMT):
                 resolves.append(dir.OnDir[None](self._curtok))
+                print(f'_cond_resolves 573: {self._curtok_num}', self._curtok.get_as_node())
                 self._eat_tokens(1)
+                print(f'_cond_resolves 575: {self._curtok_num}', self._curtok.get_as_node())
                 continue
-            if self._check_type(tt.NOPP_STMT):
+            if self._check_type(tt.OFF_STMT):
                 resolves.append(dir.OffDir[None](self._curtok))
+                print(f'_cond_resolves 579: {self._curtok_num}', self._curtok.get_as_node())
                 self._eat_tokens(1)
+                print(f'_cond_resolves 581: {self._curtok_num}', self._curtok.get_as_node())
                 continue
-            if self._check_type(tt.NOPP_STMT):
+            if self._check_type(tt.INCLUDE_STMT):
                 resolves.append(dir.IncludeDir[None](self._curtok))
+                print(f'_cond_resolves 585: {self._curtok_num}', self._curtok.get_as_node())
                 self._eat_tokens(1)
+                print(f'_cond_resolves 587: {self._curtok_num}', self._curtok.get_as_node())
                 continue
-            if self._check_type(tt.NOPP_STMT):
+            if self._check_type(tt.EXCLUDE_STMT):
                 resolves.append(dir.ExcludeDir[None](self._curtok))
+                print(f'_cond_resolves 591: {self._curtok_num}', self._curtok.get_as_node())
                 self._eat_tokens(1)
+                print(f'_cond_resolves 593: {self._curtok_num}', self._curtok.get_as_node())
                 continue
+
+            self._error(f'Unexpected token. Expect Condition resolve tokens')
+            return []
 
         return resolves
 
@@ -473,7 +638,9 @@ class PpParser:
         if and_validation is None: return None
         left = and_validation
         while self._check_type(tt.OR_OPERATOR):
+            print(f'_or 602: {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1)
+            print(f'_or 604: {self._curtok_num}', self._curtok.get_as_node())
             right_validation = self._and()
             if right_validation is None: return None
             right = right_validation
@@ -487,7 +654,9 @@ class PpParser:
         if not_validation is None: return None
         left = not_validation
         while self._check_type(tt.AND_OPERATOR):
+            print(f'_and 618: {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1)
+            print(f'_and 620: {self._curtok_num}', self._curtok.get_as_node())
             right_validation = self._not()
             if right_validation is None: return None
             right = right_validation
@@ -499,7 +668,9 @@ class PpParser:
         """ Получаем выражение с оператором отрицания """
         # NotExpr = notOperator? EqualExpr
         if self._check_type(tt.NOT_OPERATOR):
+            print(f'_not 632: {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1)
+            print(f'_not 634: {self._curtok_num}', self._curtok.get_as_node())
             validation_equal = self._equal()
             if validation_equal is None: return None # если есть ошибка в сравнениях, значит это невалидная директива
             right = validation_equal
@@ -514,15 +685,21 @@ class PpParser:
             self._error('Expected IDENTIFIER (ex. var name)')
             return None
         equal_expr = expr.VarName[None](self._curtok) # TODO: добавлять идентификаторы в окружение на каждом этапе
+        print(f'_equal 649: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1)
+        print(f'_equal 651: {self._curtok_num}', self._curtok.get_as_node())
         while self._match(tt.EQUAL_EQUAL, tt.EQUAL_NOT_EQUAL):
             operator = self._curtok
+            print(f'_equal 654: {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1)
+            print(f'_equal 656: {self._curtok_num}', self._curtok.get_as_node())
             if not self._check_type(tt.IDENTIFIER):
                 self._error('Expected IDENTIFIER (ex. var name)')
                 return None
             right = expr.VarName[None](self._curtok)
+            print(f'_equal 661 {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1)
+            print(f'_equal 663: {self._curtok_num}', self._curtok.get_as_node())
             equal_expr = expr.EqualExpr[None](equal_expr, operator, right)
         return equal_expr
 

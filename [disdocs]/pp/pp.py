@@ -33,11 +33,11 @@ class QspsPP:
 
 if __name__ == "__main__":
     path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
-    out = "..\\..\\[examples]\\example_preprocessor\\pp_ast.qsps"
+    out = "..\\..\\[examples]\\example_preprocessor\\pp_ast.json"
     with open(path, 'r', encoding='utf-8') as fp:
         qsps_lines = fp.readlines()
 
     preprocessor = QspsPP()
     ast_tree = AstPrinter(preprocessor.pp_this_lines(qsps_lines)).get_ast()
     with open(out, 'w', encoding='utf-8') as fp:
-        json.dump(ast_tree, fp)
+        json.dump(ast_tree, fp, ensure_ascii=False, indent=2)

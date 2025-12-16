@@ -74,7 +74,7 @@ class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[
         return {
             'type': 'stmt',
             'class': 'StmtsLine',
-            'value': [el.accept(self) for el in stmt.stmts] + [stmt.comment.accept(self)] if stmt.comment else []
+            'value': [el.accept(self) for el in stmt.stmts] + ([stmt.comment.accept(self)] if stmt.comment else [])
         }
 
     def visit_comment_stmt(self, stmt: stm.CommentStmt[AstNode]) -> AstNode:
@@ -169,7 +169,7 @@ class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[
         return {
             'type': 'dir',
             'class': 'AssignmentDir',
-            'value': [self._token(stmt.key)] + [self._token(stmt.value)] if stmt.value else []
+            'value': [self._token(stmt.key)] + ([self._token(stmt.value)] if stmt.value else [])
         }
 
     def visit_condition_dir(self, stmt: dir.ConditionDir[AstNode]) -> AstNode:
@@ -218,7 +218,7 @@ class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[
         return {
             'type': 'expr',
             'class': 'NotExpr',
-            'value': [stmt.left.accept(self)]
+            'value': stmt.left.accept(self)
         }
         
     def visit_var_name(self, stmt: expr.VarName[AstNode]) -> AstNode:
@@ -232,6 +232,10 @@ class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[
         return {
             'type': 'expr',
             'class': 'EqualExpr',
-            'value': [stmt.left.accept(self)] + [self._token(stmt.operator)] + [stmt.right.accept(self)]
+            'value': [
+                        stmt.left.accept(self),
+                        self._token(stmt.operator),
+                        stmt.right.accept(self)
+                    ]
         }
     
