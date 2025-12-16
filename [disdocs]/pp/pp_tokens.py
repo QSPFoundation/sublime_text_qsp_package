@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Tuple
+from typing import Tuple, Dict, Union, List
 
 from enum import (IntEnum, auto)
 
@@ -62,5 +62,11 @@ class PpTokenType(IntEnum):
 class PpToken:
     ttype:PpTokenType
     lexeme:str # вся лексема целиком
-    literal:Any # только значение
     lexeme_start:Tuple[int, int] # строка и номер символа в которой токен находится
+
+    def print(self) -> Dict[str, Union[str, List[int]]]:
+        return {
+            "token-type": self.ttype.name,  # название константы вместо номера
+            'lexeme': self.lexeme,
+            'lexeme_start': list(self.lexeme_start)
+        }

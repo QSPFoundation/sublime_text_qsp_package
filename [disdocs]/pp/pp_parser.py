@@ -23,7 +23,7 @@ class PpParser:
             return None
         if self._tokens and self._tokens[-1].ttype != tt.EOF:
             self._logic_error(f'There is not EOF in tokens-chain on initial stage')
-            self._tokens.append(Tkn(tt.EOF, '', None, (-1,-1)))        
+            self._tokens.append(Tkn(tt.EOF, '', (-1,-1)))        
 
         self._curtok_num:int = 0
         self._curtok:Tkn = self._tokens[0]
@@ -168,7 +168,7 @@ class PpParser:
         
         if not self._check_type(tt.RIGHT_BRACKET):
             self._error('BracketBlock. Expected RIGHT_BRACKET')
-            return stm.BracketBlock[None](left, value, Tkn(tt.RIGHT_BRACKET, '', None, (-1,-1)))
+            return stm.BracketBlock[None](left, value, Tkn(tt.RIGHT_BRACKET, '', (-1,-1)))
         
         right:Tkn = self._curtok
         self._eat_tokens(1)
@@ -203,7 +203,7 @@ class PpParser:
         
         if not self._check_type(tt.RIGHT_PAREN):
             self._error('ParenBlock. Expected RIGHT_PAREN')
-            return stm.BracketBlock[None](left, value, Tkn(tt.RIGHT_PAREN, '', None, (-1,-1)))
+            return stm.BracketBlock[None](left, value, Tkn(tt.RIGHT_PAREN, '', (-1,-1)))
         
         right:Tkn = self._curtok
         self._eat_tokens(1)
@@ -251,7 +251,7 @@ class PpParser:
         
         if not self._check_type(tt.RIGHT_BRACE):
             self._error('CodeBlock. Expected RIGHT_BRACE')
-            return stm.BracketBlock[None](left, value, Tkn(tt.RIGHT_BRACE, '', None, (-1,-1)))
+            return stm.BracketBlock[None](left, value, Tkn(tt.RIGHT_BRACE, '', (-1,-1)))
         
         right:Tkn = self._curtok
         self._eat_tokens(1)

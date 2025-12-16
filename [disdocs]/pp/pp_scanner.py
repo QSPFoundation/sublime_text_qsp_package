@@ -55,7 +55,7 @@ class PpScanner:
         if self._curlexeme and self._scan_funcs:
             print(self._scan_funcs[-1].__name__)
 
-        self._tokens.append(tkn(tt.EOF, "", None, (-1, -1)))
+        self._tokens.append(tkn(tt.EOF, "", (-1, -1)))
 
     def get_tokens(self) -> List[tkn]:
         return self._tokens
@@ -340,11 +340,10 @@ class PpScanner:
         else:
             return '\0'
 
-    def _add_token(self, ttype:tt, literal:Any = None) -> None:
+    def _add_token(self, ttype:tt) -> None:
         self._tokens.append(tkn(
             ttype,
             ''.join(self._curlexeme),
-            literal,
             self._start_lexeme))
 
         self._curlexeme.clear()
@@ -368,12 +367,7 @@ def _main():
     scanner.scan_tokens()
     l: List[Dict[str, Any]] = []
     for t in scanner.get_tokens():
-        l.append({
-            "token-type": t.ttype.name,  # название константы вместо номера
-            'lexeme': t.lexeme,
-            'literal': t.literal,
-            'lexeme_start': list(t.lexeme_start)
-        })
+        l.append(t.print())
     with open(outp, 'w', encoding='utf-8') as fp:
         json.dump(l, fp, indent=4, ensure_ascii=False)
 
