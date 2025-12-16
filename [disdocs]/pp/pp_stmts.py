@@ -54,6 +54,10 @@ class PpVisitor(ABC, Generic[R]):
     def visit_bracket_block(self, stmt:'BracketBlock[R]') -> R:
         ...
 
+    @abstractmethod
+    def visit_pp_literal(self, stmt:'PpLiteral[R]') -> R:
+        ...
+
 @dataclass(eq=False)
 class BracketBlock(PpStmt[R]):
     left:PpToken
@@ -102,7 +106,7 @@ class PpQspLocClose(PpStmt[R]):
 
 @dataclass(eq=False)
 class RawLineStmt(PpStmt[R]):
-    value:List[PpToken]
+    value:List['PpLiteral[R]']
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_raw_line_dclrt(self)
 
@@ -112,8 +116,14 @@ class PpDirective(PpStmt[R]):
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_pp_directive(self)
 
-CommentValue = List[Union[PpToken, PpStmt[R]]]
-OtherStmtChain = List[Union[PpToken, PpStmt[R]]]
+@dataclass(eq=False)
+class PpLiteral(PpStmt[R]):
+    value:PpToken
+    def accept(self, visitor:PpVisitor[R]) -> R:
+        return visitor.visit_pp_literal(self)
+
+CommentValue = List[Union[PpStmt[R]]]
+OtherStmtChain = List[Union[PpStmt[R]]]
 
 # Допустим у нас есть объекты класса Животное. От этого класса наследуются:
 # - Собака

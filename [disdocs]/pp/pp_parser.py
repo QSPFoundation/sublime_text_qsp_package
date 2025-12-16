@@ -133,7 +133,7 @@ class PpParser:
                 chain.append(self._code_block())
             else:
                 # Обычные символы (rawOtherStmtChar)
-                chain.append(self._curtok)
+                chain.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
         
         return stm.OtherStmt[None](chain)
@@ -160,7 +160,7 @@ class PpParser:
                 chain.append(self._code_block())
             else:
                 # Обычные символы (rawOtherStmtChar)
-                chain.append(self._curtok)
+                chain.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
         
         if chain:
@@ -195,7 +195,7 @@ class PpParser:
             elif self._check_type(tt.LEFT_BRACE):
                 chain.append(self._code_block())
             else:
-                chain.append(self._curtok)
+                chain.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
         
         if chain:
@@ -237,13 +237,13 @@ class PpParser:
                 else:
                     # Если директива невалидна, обрабатываем как комментарий
                     self._reset_curtok(start_declaration)
-                    chain.append(self._curtok)
+                    chain.append(stm.PpLiteral[None](self._curtok))
                     self._eat_tokens(1)
             elif self._match(tt.QUOTE, tt.APOSTROPHE):
                 chain.append(self._string_literal())
             else:
                 # Обычные символы (rawCodeBlockChar)
-                chain.append(self._curtok)
+                chain.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
         
         if chain:
@@ -293,21 +293,21 @@ class PpParser:
             elif self._check_type(tt.APOSTROPHE):
                 value.extend(self._comment_apostrophe_block())
             else:
-                value.append(self._curtok)
+                value.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
         return stm.CommentStmt[None](name, value)
 
     def _comment_apostrophe_block(self) -> stm.CommentValue[None]:
         """ Получаем строку в комментарии """
         value:stm.CommentValue[None] = []
-        value.append(self._curtok)
+        value.append(stm.PpLiteral[None](self._curtok))
         self._eat_tokens(1) # поглощаем токен кавычки
         while not (self._is_eof() or self._curtok.ttype == tt.APOSTROPHE):
             # выполняем, пока не достигнем правой кавычки или конца файла
-            value.append(self._curtok)
+            value.append(stm.PpLiteral[None](self._curtok))
             self._eat_tokens(1)
         if self._check_type(tt.APOSTROPHE):
-            value.append(self._curtok)
+            value.append(stm.PpLiteral[None](self._curtok))
             self._eat_tokens(1) # поглощаем токен кавычки
         else:
             self._error('Comments Apostrophe Block. Unexpectable EOF')
@@ -316,14 +316,14 @@ class PpParser:
     def _comment_quote_block(self) -> stm.CommentValue[None]:
         """ Получаем строку в комментарии """
         value:stm.CommentValue[None] = []
-        value.append(self._curtok)
+        value.append(stm.PpLiteral[None](self._curtok))
         self._eat_tokens(1) # поглощаем токен кавычки
         while not (self._is_eof() or self._check_type(tt.QUOTE)):
             # выполняем, пока не достигнем правой кавычки или конца файла
-            value.append(self._curtok)
+            value.append(stm.PpLiteral[None](self._curtok))
             self._eat_tokens(1)
         if self._check_type(tt.QUOTE):
-            value.append(self._curtok)
+            value.append(stm.PpLiteral[None](self._curtok))
             self._eat_tokens(1) # поглощаем токен кавычки
         else:
             self._error('Comments Quote Block. Unexpectable EOF')
@@ -332,7 +332,7 @@ class PpParser:
     def _comment_brace_block(self) -> stm.CommentValue[None]:
         """Extract brace block"""
         value:stm.CommentValue[None] = []
-        value.append(self._curtok)
+        value.append(stm.PpLiteral[None](self._curtok))
         self._eat_tokens(1) # поглощаем токен левой скобки
         while not (self._is_eof() or self._curtok.ttype == tt.RIGHT_BRACE):
             # выполняем, пока не достигнем правой скобки или конца файла
@@ -344,10 +344,10 @@ class PpParser:
             elif self._check_type(tt.APOSTROPHE):
                 value.extend(self._comment_apostrophe_block())
             else:
-                value.append(self._curtok)
+                value.append(stm.PpLiteral[None](self._curtok))
                 self._eat_tokens(1)
         if self._check_type(tt.RIGHT_BRACE):
-            value.append(self._curtok)
+            value.append(stm.PpLiteral[None](self._curtok))
             self._eat_tokens(1) # поглощаем токен правой скобки
         else:
             self._error('Comments Brace Block. Unexpectable EOF')
@@ -355,9 +355,9 @@ class PpParser:
 
     def _raw_line_eating(self) -> stm.RawLineStmt[None]:
         """ Поглощение токенов для сырой строки вне локации """
-        value:List[Tkn] = []
+        value:List[stm.PpLiteral[None]] = []
         while not self._check_type(tt.NEWLINE):
-            value.append(self._curtok)
+            value.append(stm.PpLiteral[None](self._curtok))
             self._eat_tokens(1)
         return stm.RawLineStmt[None](value)
 
@@ -582,7 +582,7 @@ class PpParser:
     
     def _raw_line(self) -> stm.RawLineStmt[None]:
         """ Raw Line Statement Create """
-        value:List[Tkn] = [self._curtok]
+        value:List[stm.PpLiteral[None]] = [stm.PpLiteral[None](self._curtok)]
         self._eat_tokens(1)
         return stm.RawLineStmt[None](value)
 
