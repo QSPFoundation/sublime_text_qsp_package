@@ -367,7 +367,7 @@ def _main():
     scanner.scan_tokens()
     l: List[Dict[str, Any]] = []
     for t in scanner.get_tokens():
-        l.append(t.print())
+        l.append(t.get_as_node())
     with open(outp, 'w', encoding='utf-8') as fp:
         json.dump(l, fp, indent=4, ensure_ascii=False)
 

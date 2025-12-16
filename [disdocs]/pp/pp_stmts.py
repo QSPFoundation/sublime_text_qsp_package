@@ -35,7 +35,7 @@ class PpVisitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
-    def visit_simple_comment_stmt(self, stmt:'CommentStmt[R]') -> R:
+    def visit_comment_stmt(self, stmt:'CommentStmt[R]') -> R:
         ...
 
     @abstractmethod
@@ -90,7 +90,7 @@ class CommentStmt(PpStmt[R]):
     name:PpToken
     value:'CommentValue[R]'
     def accept(self, visitor: 'PpVisitor[R]') -> R:
-        return visitor.visit_simple_comment_stmt(self)
+        return visitor.visit_comment_stmt(self)
 
 @dataclass(eq=False)
 class PpQspLocOpen(PpStmt[R]):

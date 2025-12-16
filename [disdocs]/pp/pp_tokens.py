@@ -64,7 +64,7 @@ class PpToken:
     lexeme:str # вся лексема целиком
     lexeme_start:Tuple[int, int] # строка и номер символа в которой токен находится
 
-    def print(self) -> Dict[str, Union[str, List[int]]]:
+    def get_as_node(self) -> Dict[str, Union[str, List[int]]]:
         return {
             "token-type": self.ttype.name,  # название константы вместо номера
             'lexeme': self.lexeme,
