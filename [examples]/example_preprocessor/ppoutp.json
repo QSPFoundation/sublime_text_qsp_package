@@ -2,7 +2,6 @@
     {
         "token-type": "RAW_LINE",
         "lexeme": "QSP-Game тестовый файл для препроцессинга [0]\n",
-        "literal": null,
         "lexeme_start": [
             0,
             0
@@ -11,7 +10,6 @@
     {
         "token-type": "RAW_LINE",
         "lexeme": "Не валидная игра! \"Первой или второй строкой могут идти команды !@pp:on или !@pp:off - включающие и выключающие препроцессинг\" [1]\n",
-        "literal": null,
         "lexeme_start": [
             1,
             0
@@ -20,7 +18,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             2,
             0
@@ -29,7 +26,6 @@
     {
         "token-type": "ON_STMT",
         "lexeme": "on",
-        "literal": null,
         "lexeme_start": [
             2,
             5
@@ -37,8 +33,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             2,
             7
@@ -47,7 +42,6 @@
     {
         "token-type": "RAW_LINE",
         "lexeme": "Далее можно выставлять метки и их значения. Например ниже метке name выставлено значение 123 [3]\n",
-        "literal": null,
         "lexeme_start": [
             3,
             0
@@ -56,7 +50,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             4,
             0
@@ -65,7 +58,6 @@
     {
         "token-type": "VAR_STMT",
         "lexeme": "var",
-        "literal": null,
         "lexeme_start": [
             4,
             5
@@ -74,7 +66,6 @@
     {
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
-        "literal": null,
         "lexeme_start": [
             4,
             8
@@ -83,7 +74,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "name",
-        "literal": null,
         "lexeme_start": [
             4,
             9
@@ -92,7 +82,6 @@
     {
         "token-type": "ASSIGNMENT_OPERATOR",
         "lexeme": "=",
-        "literal": null,
         "lexeme_start": [
             4,
             13
@@ -101,7 +90,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "123",
-        "literal": null,
         "lexeme_start": [
             4,
             14
@@ -110,7 +98,6 @@
     {
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
-        "literal": null,
         "lexeme_start": [
             4,
             17
@@ -118,8 +105,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             4,
             18
@@ -128,7 +114,6 @@
     {
         "token-type": "RAW_LINE",
         "lexeme": "Можно определить только название метки и проверять затем лишь её наличие: [5]\n",
-        "literal": null,
         "lexeme_start": [
             5,
             0
@@ -137,7 +122,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             6,
             0
@@ -146,7 +130,6 @@
     {
         "token-type": "VAR_STMT",
         "lexeme": "var",
-        "literal": null,
         "lexeme_start": [
             6,
             5
@@ -155,7 +138,6 @@
     {
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
-        "literal": null,
         "lexeme_start": [
             6,
             8
@@ -164,7 +146,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "layer1",
-        "literal": null,
         "lexeme_start": [
             6,
             9
@@ -173,7 +154,6 @@
     {
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
-        "literal": null,
         "lexeme_start": [
             6,
             15
@@ -181,8 +161,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             6,
             16
@@ -191,7 +170,6 @@
     {
         "token-type": "RAW_LINE",
         "lexeme": "Метки можно определять и дальше по ходу препроцессинга. [7]\n",
-        "literal": null,
         "lexeme_start": [
             7,
             0
@@ -200,7 +178,6 @@
     {
         "token-type": "LOC_OPEN",
         "lexeme": "# [pp.start] [8]\n",
-        "literal": null,
         "lexeme_start": [
             8,
             0
@@ -209,7 +186,6 @@
     {
         "token-type": "EXCLAMATION_SIGN",
         "lexeme": "!",
-        "literal": null,
         "lexeme_start": [
             9,
             0
@@ -218,7 +194,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " команды препроцессора должны быть записаны отдельной строкой ",
-        "literal": null,
         "lexeme_start": [
             9,
             1
@@ -227,7 +202,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             9,
             63
@@ -236,7 +210,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "9",
-        "literal": null,
         "lexeme_start": [
             9,
             64
@@ -245,16 +218,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             9,
             65
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             9,
             66
@@ -263,7 +234,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             10,
             0
@@ -272,7 +242,6 @@
     {
         "token-type": "IF_STMT",
         "lexeme": "if",
-        "literal": null,
         "lexeme_start": [
             10,
             5
@@ -281,7 +250,6 @@
     {
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
-        "literal": null,
         "lexeme_start": [
             10,
             7
@@ -290,7 +258,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "name",
-        "literal": null,
         "lexeme_start": [
             10,
             8
@@ -299,7 +266,6 @@
     {
         "token-type": "EQUAL_EQUAL",
         "lexeme": "==",
-        "literal": null,
         "lexeme_start": [
             10,
             12
@@ -308,7 +274,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "123",
-        "literal": null,
         "lexeme_start": [
             10,
             14
@@ -317,7 +282,6 @@
     {
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
-        "literal": null,
         "lexeme_start": [
             10,
             17
@@ -326,7 +290,6 @@
     {
         "token-type": "THEN_STMT",
         "lexeme": ":",
-        "literal": null,
         "lexeme_start": [
             10,
             18
@@ -335,7 +298,6 @@
     {
         "token-type": "EXCLUDE_STMT",
         "lexeme": "exclude",
-        "literal": null,
         "lexeme_start": [
             10,
             19
@@ -343,8 +305,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             10,
             26
@@ -353,7 +314,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             11,
             0
@@ -362,7 +322,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Данные строки кода будут исключены из конечного файла, ",
-        "literal": null,
         "lexeme_start": [
             11,
             1
@@ -371,7 +330,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             11,
             56
@@ -380,7 +338,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "11",
-        "literal": null,
         "lexeme_start": [
             11,
             57
@@ -389,16 +346,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             11,
             59
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             11,
             60
@@ -407,7 +362,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "так как инструкция exclude указывает препроцессору на это, ",
-        "literal": null,
         "lexeme_start": [
             12,
             0
@@ -416,7 +370,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             12,
             59
@@ -425,7 +378,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "12",
-        "literal": null,
         "lexeme_start": [
             12,
             60
@@ -434,16 +386,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             12,
             62
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             12,
             63
@@ -452,7 +402,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "а условие name==123 выполняется. Исключение строк завершается ",
-        "literal": null,
         "lexeme_start": [
             13,
             0
@@ -461,7 +410,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             13,
             62
@@ -470,7 +418,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "13",
-        "literal": null,
         "lexeme_start": [
             13,
             63
@@ -479,16 +426,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             13,
             65
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             13,
             66
@@ -497,7 +442,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "после команды ",
-        "literal": null,
         "lexeme_start": [
             14,
             0
@@ -506,7 +450,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             14,
             14
@@ -515,7 +458,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "pp:endif",
-        "literal": null,
         "lexeme_start": [
             14,
             16
@@ -524,7 +466,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             14,
             24
@@ -533,7 +474,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             14,
             25
@@ -542,7 +482,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             14,
             26
@@ -551,7 +490,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "14",
-        "literal": null,
         "lexeme_start": [
             14,
             27
@@ -560,16 +498,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             14,
             29
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             14,
             30
@@ -578,7 +514,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             15,
             0
@@ -587,7 +522,6 @@
     {
         "token-type": "ENDIF_STMT",
         "lexeme": "endif",
-        "literal": null,
         "lexeme_start": [
             15,
             5
@@ -595,8 +529,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             15,
             10
@@ -605,7 +538,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             16,
             0
@@ -614,7 +546,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Спецкомментарии удобны для быстрой разметки строк для препроцессинга. ",
-        "literal": null,
         "lexeme_start": [
             16,
             1
@@ -623,7 +554,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             16,
             71
@@ -632,7 +562,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "16",
-        "literal": null,
         "lexeme_start": [
             16,
             72
@@ -641,16 +570,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             16,
             74
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             16,
             75
@@ -659,7 +586,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             17,
             0
@@ -668,7 +594,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " спецкомментарий такого рода будет удалён из строки кода в конечном файле. ",
-        "literal": null,
         "lexeme_start": [
             17,
             2
@@ -677,7 +602,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             17,
             77
@@ -686,7 +610,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "17",
-        "literal": null,
         "lexeme_start": [
             17,
             78
@@ -695,16 +618,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             17,
             80
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             17,
             81
@@ -713,7 +634,6 @@
     {
         "token-type": "LESS_SPEC_COMM",
         "lexeme": "!@<",
-        "literal": null,
         "lexeme_start": [
             18,
             0
@@ -722,7 +642,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " если в строке стоит такой спецкомментарий, вся строка кода будет удалена при препроцессинге ",
-        "literal": null,
         "lexeme_start": [
             18,
             3
@@ -731,7 +650,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             18,
             96
@@ -740,7 +658,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "18",
-        "literal": null,
         "lexeme_start": [
             18,
             97
@@ -749,16 +666,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             18,
             99
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             18,
             100
@@ -767,7 +682,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Исключение составляют строки кода, обрабатываемые с предварительным отключением обработки спецкоментариев, ",
-        "literal": null,
         "lexeme_start": [
             19,
             0
@@ -776,7 +690,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             19,
             107
@@ -785,7 +698,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "19",
-        "literal": null,
         "lexeme_start": [
             19,
             108
@@ -794,16 +706,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             19,
             110
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             19,
             111
@@ -812,7 +722,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "а так же все строки, помещённые внутрь кавычек, апострофов и фигурных скобок.",
-        "literal": null,
         "lexeme_start": [
             20,
             0
@@ -821,7 +730,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             20,
             77
@@ -830,7 +738,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             20,
             78
@@ -839,7 +746,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             20,
             79
@@ -848,7 +754,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "20",
-        "literal": null,
         "lexeme_start": [
             20,
             80
@@ -857,16 +762,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             20,
             82
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             20,
             83
@@ -875,7 +778,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "clr ",
-        "literal": null,
         "lexeme_start": [
             21,
             0
@@ -883,8 +785,7 @@
     },
     {
         "token-type": "AMPERSAND",
-        "lexeme": "&",
-        "literal": null,
+        "lexeme": "& ",
         "lexeme_start": [
             21,
             4
@@ -892,35 +793,23 @@
     },
     {
         "token-type": "RAW_LOC_LINE",
-        "lexeme": " clear ",
-        "literal": null,
+        "lexeme": "clear ",
         "lexeme_start": [
             21,
-            5
+            6
         ]
     },
     {
         "token-type": "AMPERSAND",
-        "lexeme": "&",
-        "literal": null,
+        "lexeme": "& ",
         "lexeme_start": [
             21,
             12
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
-        "lexeme": " ",
-        "literal": null,
-        "lexeme_start": [
-            21,
-            13
-        ]
-    },
-    {
         "token-type": "LESS_SPEC_COMM",
         "lexeme": "!@<",
-        "literal": null,
         "lexeme_start": [
             21,
             14
@@ -929,7 +818,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " спецкомментарий, который помечает строку под удаление при препроцессинге ",
-        "literal": null,
         "lexeme_start": [
             21,
             17
@@ -938,7 +826,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             21,
             91
@@ -947,7 +834,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "21",
-        "literal": null,
         "lexeme_start": [
             21,
             92
@@ -956,16 +842,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             21,
             94
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             21,
             95
@@ -974,7 +858,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "p ",
-        "literal": null,
         "lexeme_start": [
             22,
             0
@@ -983,7 +866,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             22,
             2
@@ -992,7 +874,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Текст для вывода в окно дополнительного описания ",
-        "literal": null,
         "lexeme_start": [
             22,
             3
@@ -1001,7 +882,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             22,
             52
@@ -1010,7 +890,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "22",
-        "literal": null,
         "lexeme_start": [
             22,
             53
@@ -1019,7 +898,6 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             22,
             55
@@ -1028,7 +906,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             22,
             56
@@ -1037,7 +914,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             22,
             57
@@ -1045,26 +921,15 @@
     },
     {
         "token-type": "AMPERSAND",
-        "lexeme": "&",
-        "literal": null,
+        "lexeme": "& ",
         "lexeme_start": [
             22,
             58
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
-        "lexeme": " ",
-        "literal": null,
-        "lexeme_start": [
-            22,
-            59
-        ]
-    },
-    {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             22,
             60
@@ -1072,17 +937,23 @@
     },
     {
         "token-type": "RAW_LOC_LINE",
-        "lexeme": " спецкомментарий, который будет удалён из строки при препроцессинге\n",
-        "literal": null,
+        "lexeme": " спецкомментарий, который будет удалён из строки при препроцессинге",
         "lexeme_start": [
             22,
             62
         ]
     },
     {
+        "token-type": "NEWLINE",
+        "lexeme": "\n",
+        "lexeme_start": [
+            22,
+            129
+        ]
+    },
+    {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "nl ",
-        "literal": null,
         "lexeme_start": [
             23,
             0
@@ -1091,7 +962,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             23,
             3
@@ -1100,7 +970,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Ещё строка текста для вывода в окно дополнительного описания.",
-        "literal": null,
         "lexeme_start": [
             23,
             4
@@ -1109,7 +978,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             23,
             65
@@ -1118,7 +986,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             23,
             66
@@ -1126,26 +993,15 @@
     },
     {
         "token-type": "AMPERSAND",
-        "lexeme": "&",
-        "literal": null,
+        "lexeme": "& ",
         "lexeme_start": [
             23,
             67
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
-        "lexeme": " ",
-        "literal": null,
-        "lexeme_start": [
-            23,
-            68
-        ]
-    },
-    {
         "token-type": "EXCLAMATION_SIGN",
         "lexeme": "!",
-        "literal": null,
         "lexeme_start": [
             23,
             69
@@ -1154,7 +1010,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " обычный комментарий. С ним ничего не сделается ",
-        "literal": null,
         "lexeme_start": [
             23,
             70
@@ -1163,7 +1018,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             23,
             118
@@ -1172,7 +1026,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "23",
-        "literal": null,
         "lexeme_start": [
             23,
             119
@@ -1181,16 +1034,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             23,
             121
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             23,
             122
@@ -1199,7 +1050,6 @@
     {
         "token-type": "EXCLAMATION_SIGN",
         "lexeme": "!",
-        "literal": null,
         "lexeme_start": [
             24,
             0
@@ -1208,7 +1058,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " можно добавлять спецкомментарии в конце обычных комментариев, это тоже будет работать ",
-        "literal": null,
         "lexeme_start": [
             24,
             1
@@ -1217,7 +1066,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             24,
             88
@@ -1226,7 +1074,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "24",
-        "literal": null,
         "lexeme_start": [
             24,
             89
@@ -1235,7 +1082,6 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             24,
             91
@@ -1244,7 +1090,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             24,
             92
@@ -1253,7 +1098,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             24,
             93
@@ -1261,17 +1105,23 @@
     },
     {
         "token-type": "RAW_LOC_LINE",
-        "lexeme": " спецкомментарий удалится\n",
-        "literal": null,
+        "lexeme": " спецкомментарий удалится",
         "lexeme_start": [
             24,
             95
         ]
     },
     {
+        "token-type": "NEWLINE",
+        "lexeme": "\n",
+        "lexeme_start": [
+            24,
+            120
+        ]
+    },
+    {
         "token-type": "EXCLAMATION_SIGN",
         "lexeme": "!",
-        "literal": null,
         "lexeme_start": [
             25,
             0
@@ -1280,7 +1130,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " данная строка кода ",
-        "literal": null,
         "lexeme_start": [
             25,
             1
@@ -1289,7 +1138,6 @@
     {
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
-        "literal": null,
         "lexeme_start": [
             25,
             21
@@ -1298,7 +1146,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "комментарий",
-        "literal": null,
         "lexeme_start": [
             25,
             22
@@ -1307,7 +1154,6 @@
     {
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
-        "literal": null,
         "lexeme_start": [
             25,
             33
@@ -1316,7 +1162,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " так же будет удалена ",
-        "literal": null,
         "lexeme_start": [
             25,
             34
@@ -1325,7 +1170,6 @@
     {
         "token-type": "LESS_SPEC_COMM",
         "lexeme": "!@<",
-        "literal": null,
         "lexeme_start": [
             25,
             56
@@ -1334,7 +1178,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             25,
             59
@@ -1343,7 +1186,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             25,
             60
@@ -1352,7 +1194,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "25",
-        "literal": null,
         "lexeme_start": [
             25,
             61
@@ -1361,16 +1202,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             25,
             63
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             25,
             64
@@ -1379,7 +1218,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             26,
             0
@@ -1388,7 +1226,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Для отключения обработки спецкомментариев можно использовать безусловную команду ",
-        "literal": null,
         "lexeme_start": [
             26,
             1
@@ -1397,7 +1234,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             26,
             82
@@ -1406,7 +1242,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "pp:savecomm",
-        "literal": null,
         "lexeme_start": [
             26,
             84
@@ -1415,7 +1250,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             26,
             95
@@ -1424,7 +1258,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             26,
             96
@@ -1433,7 +1266,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             26,
             97
@@ -1442,7 +1274,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "26",
-        "literal": null,
         "lexeme_start": [
             26,
             98
@@ -1451,16 +1282,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             26,
             100
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             26,
             101
@@ -1469,7 +1298,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             27,
             0
@@ -1478,7 +1306,6 @@
     {
         "token-type": "SAVECOMM_STMT",
         "lexeme": "savecomm",
-        "literal": null,
         "lexeme_start": [
             27,
             5
@@ -1486,8 +1313,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             27,
             13
@@ -1496,7 +1322,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "*pl ",
-        "literal": null,
         "lexeme_start": [
             28,
             0
@@ -1505,7 +1330,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             28,
             4
@@ -1514,7 +1338,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "text",
-        "literal": null,
         "lexeme_start": [
             28,
             5
@@ -1523,7 +1346,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             28,
             9
@@ -1532,7 +1354,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             28,
             10
@@ -1540,26 +1361,15 @@
     },
     {
         "token-type": "AMPERSAND",
-        "lexeme": "&",
-        "literal": null,
+        "lexeme": "& ",
         "lexeme_start": [
             28,
             11
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
-        "lexeme": " ",
-        "literal": null,
-        "lexeme_start": [
-            28,
-            12
-        ]
-    },
-    {
         "token-type": "LESS_SPEC_COMM",
         "lexeme": "!@<",
-        "literal": null,
         "lexeme_start": [
             28,
             13
@@ -1568,7 +1378,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " строка кода и спецкомментарий не удалятся ",
-        "literal": null,
         "lexeme_start": [
             28,
             16
@@ -1577,7 +1386,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             28,
             59
@@ -1586,7 +1394,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "28",
-        "literal": null,
         "lexeme_start": [
             28,
             60
@@ -1595,16 +1402,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             28,
             62
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             28,
             63
@@ -1613,7 +1418,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             29,
             0
@@ -1622,7 +1426,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " спецкомментарий останется в конечном файле ",
-        "literal": null,
         "lexeme_start": [
             29,
             2
@@ -1631,7 +1434,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             29,
             46
@@ -1640,7 +1442,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "29",
-        "literal": null,
         "lexeme_start": [
             29,
             47
@@ -1649,16 +1450,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             29,
             49
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             29,
             50
@@ -1667,7 +1466,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             30,
             0
@@ -1676,7 +1474,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Включаем обработку обратно командой ",
-        "literal": null,
         "lexeme_start": [
             30,
             1
@@ -1685,7 +1482,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             30,
             37
@@ -1694,7 +1490,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "pp:nosavecomm",
-        "literal": null,
         "lexeme_start": [
             30,
             39
@@ -1703,7 +1498,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             30,
             52
@@ -1712,7 +1506,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             30,
             53
@@ -1721,7 +1514,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             30,
             54
@@ -1730,7 +1522,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "30",
-        "literal": null,
         "lexeme_start": [
             30,
             55
@@ -1739,16 +1530,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             30,
             57
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             30,
             58
@@ -1757,7 +1546,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             31,
             0
@@ -1766,7 +1554,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "nosavecomm",
-        "literal": null,
         "lexeme_start": [
             31,
             5
@@ -1774,8 +1561,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             31,
             15
@@ -1784,7 +1570,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             32,
             0
@@ -1793,7 +1578,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Так же отключать обработку спецкомментариве можно по условию:",
-        "literal": null,
         "lexeme_start": [
             32,
             1
@@ -1802,7 +1586,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             32,
             62
@@ -1811,7 +1594,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             32,
             63
@@ -1820,7 +1602,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             32,
             64
@@ -1829,7 +1610,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "32",
-        "literal": null,
         "lexeme_start": [
             32,
             65
@@ -1838,16 +1618,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             32,
             67
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             32,
             68
@@ -1856,7 +1634,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             33,
             0
@@ -1865,7 +1642,6 @@
     {
         "token-type": "IF_STMT",
         "lexeme": "if",
-        "literal": null,
         "lexeme_start": [
             33,
             5
@@ -1874,7 +1650,6 @@
     {
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
-        "literal": null,
         "lexeme_start": [
             33,
             7
@@ -1883,7 +1658,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "name",
-        "literal": null,
         "lexeme_start": [
             33,
             8
@@ -1892,7 +1666,6 @@
     {
         "token-type": "EQUAL_EQUAL",
         "lexeme": "==",
-        "literal": null,
         "lexeme_start": [
             33,
             12
@@ -1901,7 +1674,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "123",
-        "literal": null,
         "lexeme_start": [
             33,
             14
@@ -1910,7 +1682,6 @@
     {
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
-        "literal": null,
         "lexeme_start": [
             33,
             17
@@ -1919,7 +1690,6 @@
     {
         "token-type": "THEN_STMT",
         "lexeme": ":",
-        "literal": null,
         "lexeme_start": [
             33,
             18
@@ -1928,7 +1698,6 @@
     {
         "token-type": "SAVECOMM_STMT",
         "lexeme": "savecomm",
-        "literal": null,
         "lexeme_start": [
             33,
             19
@@ -1936,8 +1705,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             33,
             27
@@ -1946,7 +1714,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             34,
             0
@@ -1955,7 +1722,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Поскольку условие выполняется",
-        "literal": null,
         "lexeme_start": [
             34,
             1
@@ -1964,7 +1730,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             34,
             30
@@ -1973,7 +1738,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             34,
             31
@@ -1981,26 +1745,15 @@
     },
     {
         "token-type": "AMPERSAND",
-        "lexeme": "&",
-        "literal": null,
+        "lexeme": "& ",
         "lexeme_start": [
             34,
             32
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
-        "lexeme": " ",
-        "literal": null,
-        "lexeme_start": [
-            34,
-            33
-        ]
-    },
-    {
         "token-type": "LESS_SPEC_COMM",
         "lexeme": "!@<",
-        "literal": null,
         "lexeme_start": [
             34,
             34
@@ -2009,7 +1762,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " строка кода и спецкомментарий сохраняются ",
-        "literal": null,
         "lexeme_start": [
             34,
             37
@@ -2018,7 +1770,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             34,
             80
@@ -2027,7 +1778,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "34",
-        "literal": null,
         "lexeme_start": [
             34,
             81
@@ -2036,16 +1786,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             34,
             83
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             34,
             84
@@ -2054,7 +1802,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             35,
             0
@@ -2063,7 +1810,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " данный спецкомментарий так же сохранится ",
-        "literal": null,
         "lexeme_start": [
             35,
             2
@@ -2072,7 +1818,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             35,
             44
@@ -2081,7 +1826,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "35",
-        "literal": null,
         "lexeme_start": [
             35,
             45
@@ -2090,16 +1834,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             35,
             47
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             35,
             48
@@ -2108,7 +1850,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             36,
             0
@@ -2117,7 +1858,6 @@
     {
         "token-type": "ENDIF_STMT",
         "lexeme": "endif",
-        "literal": null,
         "lexeme_start": [
             36,
             5
@@ -2125,8 +1865,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             36,
             10
@@ -2135,7 +1874,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             37,
             0
@@ -2144,7 +1882,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "если",
-        "literal": null,
         "lexeme_start": [
             37,
             5
@@ -2153,7 +1890,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "команда",
-        "literal": null,
         "lexeme_start": [
             37,
             10
@@ -2162,7 +1898,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "не",
-        "literal": null,
         "lexeme_start": [
             37,
             18
@@ -2171,7 +1906,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "распознана",
-        "literal": null,
         "lexeme_start": [
             37,
             21
@@ -2180,7 +1914,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "препроцессором",
-        "literal": null,
         "lexeme_start": [
             37,
             32
@@ -2189,7 +1922,6 @@
     {
         "token-type": "RAW_LINE",
         "lexeme": ", строка с неизвестной командой игнорируется [37]",
-        "literal": null,
         "lexeme_start": [
             37,
             46
@@ -2197,8 +1929,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             37,
             95
@@ -2207,7 +1938,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             38,
             0
@@ -2216,7 +1946,6 @@
     {
         "token-type": "IF_STMT",
         "lexeme": "if",
-        "literal": null,
         "lexeme_start": [
             38,
             5
@@ -2225,7 +1954,6 @@
     {
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
-        "literal": null,
         "lexeme_start": [
             38,
             7
@@ -2234,7 +1962,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "layer2",
-        "literal": null,
         "lexeme_start": [
             38,
             8
@@ -2243,7 +1970,6 @@
     {
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
-        "literal": null,
         "lexeme_start": [
             38,
             14
@@ -2252,7 +1978,6 @@
     {
         "token-type": "THEN_STMT",
         "lexeme": ":",
-        "literal": null,
         "lexeme_start": [
             38,
             15
@@ -2261,7 +1986,6 @@
     {
         "token-type": "INCLUDE_STMT",
         "lexeme": "include",
-        "literal": null,
         "lexeme_start": [
             38,
             16
@@ -2269,8 +1993,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             38,
             23
@@ -2279,7 +2002,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             39,
             0
@@ -2288,7 +2010,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Эти строки кода не сохранятся так как метка layer2 не была определена, ",
-        "literal": null,
         "lexeme_start": [
             39,
             1
@@ -2297,7 +2018,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             39,
             72
@@ -2306,7 +2026,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "39",
-        "literal": null,
         "lexeme_start": [
             39,
             73
@@ -2315,16 +2034,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             39,
             75
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             39,
             76
@@ -2333,7 +2050,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "а данные строки кода должны быть включены в конечный файл только ",
-        "literal": null,
         "lexeme_start": [
             40,
             0
@@ -2342,7 +2058,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             40,
             65
@@ -2351,7 +2066,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "40",
-        "literal": null,
         "lexeme_start": [
             40,
             66
@@ -2360,16 +2074,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             40,
             68
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             40,
             69
@@ -2378,7 +2090,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "при наличии метки.",
-        "literal": null,
         "lexeme_start": [
             41,
             0
@@ -2387,7 +2098,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             41,
             18
@@ -2396,7 +2106,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             41,
             19
@@ -2405,7 +2114,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             41,
             20
@@ -2414,7 +2122,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "41",
-        "literal": null,
         "lexeme_start": [
             41,
             21
@@ -2423,16 +2130,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             41,
             23
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             41,
             24
@@ -2441,7 +2146,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             42,
             0
@@ -2450,7 +2154,6 @@
     {
         "token-type": "ENDIF_STMT",
         "lexeme": "endif",
-        "literal": null,
         "lexeme_start": [
             42,
             5
@@ -2458,8 +2161,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             42,
             10
@@ -2468,7 +2170,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             43,
             0
@@ -2477,7 +2178,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Можно отключить препроцессор на время, по условию. Это делается с помощью директивы nopp:",
-        "literal": null,
         "lexeme_start": [
             43,
             1
@@ -2486,7 +2186,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             43,
             90
@@ -2495,7 +2194,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             43,
             91
@@ -2504,7 +2202,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             43,
             92
@@ -2513,7 +2210,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "43",
-        "literal": null,
         "lexeme_start": [
             43,
             93
@@ -2522,16 +2218,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             43,
             95
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             43,
             96
@@ -2540,7 +2234,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             44,
             0
@@ -2549,7 +2242,6 @@
     {
         "token-type": "IF_STMT",
         "lexeme": "if",
-        "literal": null,
         "lexeme_start": [
             44,
             5
@@ -2558,7 +2250,6 @@
     {
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
-        "literal": null,
         "lexeme_start": [
             44,
             7
@@ -2567,7 +2258,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "layer1",
-        "literal": null,
         "lexeme_start": [
             44,
             8
@@ -2576,7 +2266,6 @@
     {
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
-        "literal": null,
         "lexeme_start": [
             44,
             14
@@ -2585,7 +2274,6 @@
     {
         "token-type": "THEN_STMT",
         "lexeme": ":",
-        "literal": null,
         "lexeme_start": [
             44,
             15
@@ -2594,7 +2282,6 @@
     {
         "token-type": "NOPP_STMT",
         "lexeme": "nopp",
-        "literal": null,
         "lexeme_start": [
             44,
             16
@@ -2603,7 +2290,6 @@
     {
         "token-type": "RAW_LINE",
         "lexeme": "[44]",
-        "literal": null,
         "lexeme_start": [
             44,
             21
@@ -2611,8 +2297,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             44,
             25
@@ -2621,7 +2306,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             45,
             0
@@ -2630,7 +2314,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Отключение заставляет препроцессор игнорировать все команды кроме ",
-        "literal": null,
         "lexeme_start": [
             45,
             1
@@ -2639,7 +2322,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             45,
             67
@@ -2648,7 +2330,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "pp:endif",
-        "literal": null,
         "lexeme_start": [
             45,
             69
@@ -2657,7 +2338,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             45,
             77
@@ -2666,7 +2346,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             45,
             78
@@ -2674,26 +2353,15 @@
     },
     {
         "token-type": "AMPERSAND",
-        "lexeme": "&",
-        "literal": null,
+        "lexeme": "& ",
         "lexeme_start": [
             45,
             79
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
-        "lexeme": " ",
-        "literal": null,
-        "lexeme_start": [
-            45,
-            80
-        ]
-    },
-    {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             45,
             81
@@ -2702,7 +2370,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " например данный спецкомментарий сохранится ",
-        "literal": null,
         "lexeme_start": [
             45,
             83
@@ -2711,7 +2378,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             45,
             127
@@ -2720,7 +2386,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "45",
-        "literal": null,
         "lexeme_start": [
             45,
             128
@@ -2729,16 +2394,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             45,
             130
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             45,
             131
@@ -2747,7 +2410,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             46,
             0
@@ -2756,7 +2418,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Эта строка кода так же сохранится",
-        "literal": null,
         "lexeme_start": [
             46,
             1
@@ -2765,7 +2426,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             46,
             34
@@ -2774,7 +2434,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             46,
             35
@@ -2782,26 +2441,15 @@
     },
     {
         "token-type": "AMPERSAND",
-        "lexeme": "&",
-        "literal": null,
+        "lexeme": "& ",
         "lexeme_start": [
             46,
             36
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
-        "lexeme": " ",
-        "literal": null,
-        "lexeme_start": [
-            46,
-            37
-        ]
-    },
-    {
         "token-type": "LESS_SPEC_COMM",
         "lexeme": "!@<",
-        "literal": null,
         "lexeme_start": [
             46,
             38
@@ -2810,7 +2458,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             46,
             41
@@ -2819,7 +2466,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             46,
             42
@@ -2828,7 +2474,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "46",
-        "literal": null,
         "lexeme_start": [
             46,
             43
@@ -2837,16 +2482,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             46,
             45
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             46,
             46
@@ -2855,7 +2498,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             47,
             0
@@ -2864,7 +2506,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "данная",
-        "literal": null,
         "lexeme_start": [
             47,
             5
@@ -2873,7 +2514,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "строка",
-        "literal": null,
         "lexeme_start": [
             47,
             12
@@ -2882,7 +2522,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "тоже",
-        "literal": null,
         "lexeme_start": [
             47,
             19
@@ -2891,7 +2530,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "сохранится",
-        "literal": null,
         "lexeme_start": [
             47,
             24
@@ -2900,7 +2538,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "в конечном",
-        "literal": null,
         "lexeme_start": [
             47,
             35
@@ -2909,7 +2546,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "файле",
-        "literal": null,
         "lexeme_start": [
             47,
             46
@@ -2918,7 +2554,6 @@
     {
         "token-type": "RAW_LINE",
         "lexeme": "[47]",
-        "literal": null,
         "lexeme_start": [
             47,
             52
@@ -2926,8 +2561,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             47,
             56
@@ -2936,7 +2570,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             48,
             0
@@ -2945,7 +2578,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "nosavecomm",
-        "literal": null,
         "lexeme_start": [
             48,
             5
@@ -2953,8 +2585,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             48,
             15
@@ -2963,7 +2594,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             49,
             0
@@ -2972,7 +2602,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " можно заметить, что nosavecomm не заставила препроцессор вновь обрабатывать спецкомментарии ",
-        "literal": null,
         "lexeme_start": [
             49,
             2
@@ -2981,7 +2610,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             49,
             95
@@ -2990,7 +2618,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "49",
-        "literal": null,
         "lexeme_start": [
             49,
             96
@@ -2999,16 +2626,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             49,
             98
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             49,
             99
@@ -3017,7 +2642,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             50,
             0
@@ -3026,7 +2650,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "А сейчас блок условия будет закрыт и препроцессор возобновит нормальную работу",
-        "literal": null,
         "lexeme_start": [
             50,
             1
@@ -3035,7 +2658,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             50,
             79
@@ -3044,7 +2666,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             50,
             80
@@ -3053,7 +2674,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             50,
             81
@@ -3062,7 +2682,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "50",
-        "literal": null,
         "lexeme_start": [
             50,
             82
@@ -3071,16 +2690,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             50,
             84
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             50,
             85
@@ -3089,7 +2706,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             51,
             0
@@ -3098,7 +2714,6 @@
     {
         "token-type": "ENDIF_STMT",
         "lexeme": "endif",
-        "literal": null,
         "lexeme_start": [
             51,
             5
@@ -3106,8 +2721,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             51,
             10
@@ -3116,7 +2730,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             52,
             0
@@ -3125,7 +2738,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Хочу обратить ваше внимание, что команды препроцессора работают, даже если ",
-        "literal": null,
         "lexeme_start": [
             52,
             1
@@ -3134,7 +2746,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             52,
             76
@@ -3143,7 +2754,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "52",
-        "literal": null,
         "lexeme_start": [
             52,
             77
@@ -3152,16 +2762,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             52,
             79
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             52,
             80
@@ -3170,7 +2778,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "записаны внутри строк. Для этого достаточно записать команду препроцессора ",
-        "literal": null,
         "lexeme_start": [
             53,
             0
@@ -3179,7 +2786,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             53,
             75
@@ -3188,7 +2794,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "53",
-        "literal": null,
         "lexeme_start": [
             53,
             76
@@ -3197,16 +2802,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             53,
             78
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             53,
             79
@@ -3215,7 +2818,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "отдельной строкой в многострочном текстовом значении: ",
-        "literal": null,
         "lexeme_start": [
             54,
             0
@@ -3224,7 +2826,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             54,
             54
@@ -3233,7 +2834,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "54",
-        "literal": null,
         "lexeme_start": [
             54,
             55
@@ -3242,16 +2842,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             54,
             57
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             54,
             58
@@ -3260,7 +2858,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             55,
             0
@@ -3269,7 +2866,6 @@
     {
         "token-type": "IF_STMT",
         "lexeme": "if",
-        "literal": null,
         "lexeme_start": [
             55,
             5
@@ -3278,7 +2874,6 @@
     {
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
-        "literal": null,
         "lexeme_start": [
             55,
             7
@@ -3287,7 +2882,6 @@
     {
         "token-type": "IDENTIFIER",
         "lexeme": "layer1",
-        "literal": null,
         "lexeme_start": [
             55,
             8
@@ -3296,7 +2890,6 @@
     {
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
-        "literal": null,
         "lexeme_start": [
             55,
             14
@@ -3305,7 +2898,6 @@
     {
         "token-type": "THEN_STMT",
         "lexeme": ":",
-        "literal": null,
         "lexeme_start": [
             55,
             15
@@ -3314,7 +2906,6 @@
     {
         "token-type": "EXCLUDE_STMT",
         "lexeme": "exclude",
-        "literal": null,
         "lexeme_start": [
             55,
             16
@@ -3322,8 +2913,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             55,
             23
@@ -3332,7 +2922,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Эти строки будут исключены из конечного файла, ",
-        "literal": null,
         "lexeme_start": [
             56,
             0
@@ -3341,7 +2930,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             56,
             47
@@ -3350,7 +2938,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "56",
-        "literal": null,
         "lexeme_start": [
             56,
             48
@@ -3359,16 +2946,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             56,
             50
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             56,
             51
@@ -3377,7 +2962,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "так как сработала команда препроцессора ",
-        "literal": null,
         "lexeme_start": [
             57,
             0
@@ -3386,7 +2970,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             57,
             40
@@ -3395,7 +2978,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "57",
-        "literal": null,
         "lexeme_start": [
             57,
             41
@@ -3404,16 +2986,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             57,
             43
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             57,
             44
@@ -3422,7 +3002,6 @@
     {
         "token-type": "OPEN_DIRECTIVE_STMT",
         "lexeme": "!@pp:",
-        "literal": null,
         "lexeme_start": [
             58,
             0
@@ -3431,7 +3010,6 @@
     {
         "token-type": "ENDIF_STMT",
         "lexeme": "endif",
-        "literal": null,
         "lexeme_start": [
             58,
             5
@@ -3439,8 +3017,7 @@
     },
     {
         "token-type": "NEWLINE",
-        "lexeme": "",
-        "literal": null,
+        "lexeme": "\n",
         "lexeme_start": [
             58,
             10
@@ -3449,7 +3026,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Будьте аккуратны при работе с командами препроцессора. ",
-        "literal": null,
         "lexeme_start": [
             59,
             0
@@ -3458,7 +3034,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             59,
             55
@@ -3467,7 +3042,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "59",
-        "literal": null,
         "lexeme_start": [
             59,
             56
@@ -3476,16 +3050,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             59,
             58
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             59,
             59
@@ -3494,7 +3066,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "Если вам нужно именно вывести команду препроцессора отдельной строкой, ",
-        "literal": null,
         "lexeme_start": [
             60,
             0
@@ -3503,7 +3074,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             60,
             71
@@ -3512,7 +3082,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "60",
-        "literal": null,
         "lexeme_start": [
             60,
             72
@@ -3521,16 +3090,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             60,
             74
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             60,
             75
@@ -3539,7 +3106,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "используйте отдельные кавычки для этой строки",
-        "literal": null,
         "lexeme_start": [
             61,
             0
@@ -3548,7 +3114,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             61,
             45
@@ -3557,7 +3122,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             61,
             46
@@ -3566,7 +3130,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             61,
             47
@@ -3575,7 +3138,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "61",
-        "literal": null,
         "lexeme_start": [
             61,
             48
@@ -3584,16 +3146,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             61,
             50
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             61,
             51
@@ -3602,7 +3162,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             62,
             0
@@ -3611,7 +3170,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             62,
             1
@@ -3620,7 +3178,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "pp:if",
-        "literal": null,
         "lexeme_start": [
             62,
             3
@@ -3629,7 +3186,6 @@
     {
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
-        "literal": null,
         "lexeme_start": [
             62,
             8
@@ -3638,7 +3194,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "layer1",
-        "literal": null,
         "lexeme_start": [
             62,
             9
@@ -3647,7 +3202,6 @@
     {
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
-        "literal": null,
         "lexeme_start": [
             62,
             15
@@ -3656,7 +3210,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": ":exclude",
-        "literal": null,
         "lexeme_start": [
             62,
             16
@@ -3665,7 +3218,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             62,
             24
@@ -3674,7 +3226,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             62,
             25
@@ -3683,7 +3234,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             62,
             26
@@ -3692,7 +3242,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "62",
-        "literal": null,
         "lexeme_start": [
             62,
             27
@@ -3701,16 +3250,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             62,
             29
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             62,
             30
@@ -3719,7 +3266,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             63,
             0
@@ -3728,7 +3274,6 @@
     {
         "token-type": "SIMPLE_SPEC_COMM",
         "lexeme": "!@",
-        "literal": null,
         "lexeme_start": [
             63,
             1
@@ -3737,7 +3282,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "pp:endif",
-        "literal": null,
         "lexeme_start": [
             63,
             3
@@ -3746,7 +3290,6 @@
     {
         "token-type": "QUOTE",
         "lexeme": "\"",
-        "literal": null,
         "lexeme_start": [
             63,
             11
@@ -3755,7 +3298,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": " ",
-        "literal": null,
         "lexeme_start": [
             63,
             12
@@ -3764,7 +3306,6 @@
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
-        "literal": null,
         "lexeme_start": [
             63,
             13
@@ -3773,7 +3314,6 @@
     {
         "token-type": "RAW_LOC_LINE",
         "lexeme": "63",
-        "literal": null,
         "lexeme_start": [
             63,
             14
@@ -3782,16 +3322,14 @@
     {
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
-        "literal": null,
         "lexeme_start": [
             63,
             16
         ]
     },
     {
-        "token-type": "RAW_LOC_LINE",
+        "token-type": "NEWLINE",
         "lexeme": "\n",
-        "literal": null,
         "lexeme_start": [
             63,
             17
@@ -3800,7 +3338,6 @@
     {
         "token-type": "LOC_CLOSE",
         "lexeme": "--- [pp.start] -------------------------------- [64]",
-        "literal": null,
         "lexeme_start": [
             64,
             0
@@ -3809,7 +3346,6 @@
     {
         "token-type": "EOF",
         "lexeme": "",
-        "literal": null,
         "lexeme_start": [
             -1,
             -1

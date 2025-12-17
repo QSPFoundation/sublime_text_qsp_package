@@ -43,7 +43,7 @@ class PpScanner:
         }
         self._curlexeme:List[str] = []
 
-        self._loc_line_delimiters = ("\"", "'", "{", "}", "[", "]", "(", ")", "&", "!")
+        self._loc_line_delimiters = ("\"", "'", "{", "}", "[", "]", "(", ")", "&", "!", '\n')
 
     def scan_tokens(self) -> None:
         """ Find all tokens in the file. """
@@ -69,6 +69,7 @@ class PpScanner:
                 # если лексема пуста (начало новой лексемы), устанавливаем начало
                 self._set_start_lexeme()
             self._curlexeme.append(c)
+            # print(c, self._scan_funcs[-1].__name__)
             self._scan_funcs[-1](c)
             
     # методы поиска, учитывающие контекст
@@ -153,6 +154,7 @@ class PpScanner:
         
         if self._current_is_last_in_line():
             # если это последний символ строки, добавляем токен конца строки
+            if c == '\n': self._curlexeme.append(c)
             self._add_token(tt.NEWLINE)
             # удаляем парсер директив из стека
             self._scan_funcs.pop()
@@ -179,8 +181,9 @@ class PpScanner:
             self._add_token(ttype)
             self._scan_funcs.pop()
 
-    def _raw_line_end_expect(self, c:str, ttype:tt = tt.RAW_LINE) -> None:
+    def _raw_line_end_expect(self, c:str) -> None:
         """ Поглощение токена сырой строки. """
+        ttype:tt = tt.RAW_LINE
         # самый надёжный способ это проверить, последний ли это символ
         if self._current_is_last_in_line():
             # это последний символ, закрываем сырую строку, убираем функцию из стека
@@ -210,16 +213,30 @@ class PpScanner:
             self._add_token(tt.LOC_CLOSE)
             self._scan_funcs.pop()
 
+    def _preformatter_expect(self, c:str) -> None:
+        """ Поглощение пробелов в начале строки """
+        if not c in (' ', '\t'):
+            self._add_token(tt.PREFORMATTER)
+
+    def _ampersand_expect(self, c:str) -> None:
+        """ Поглощение разделителя с постлежащими пробелами """
+        if not self._next_in_line() in (' ', '\t', '&'):
+            self._add_token(tt.AMPERSAND)
+            self._scan_funcs.pop()
+
     def _loc_body_scan(self, c:str) -> None:
         """ Сканирование тела локации. """
         cn:int = self._current
         # В первую очередь нужно проверить, не является ли очередная строка концом локации
-        if cn == 0 and c == '-' and self._line[1] == '-':
+        if cn == 0 and c in (' ', '\t'):
+            # пробелы с начала строки поглощаем до непробельного символа
+            self._scan_funcs.append(self._preformatter_expect)
+        elif cn == 0 and c == '-' and self._line[1] == '-':
             # если следующий символ является -, поглощаем строку, как конец локации
             self._scan_funcs.pop() # закрываем сканер тела локации
             self._scan_funcs.append(self._loc_close_expect)
         elif cn == 0 and c == '!' and self._line[0:5] == '!@pp:':
-           # директива
+            # директива
             self._add_expected_chars('@pp:')
             self._scan_funcs.append(self._pp_directive_stmt_expect)
         elif c == '!' and cn+2 < self._line_len and self._line[cn:cn+3] == '!@<':
@@ -251,7 +268,9 @@ class PpScanner:
         elif c == ")":
             self._add_token(tt.RIGHT_PAREN)
         elif c == "&":
-            self._add_token(tt.AMPERSAND)
+            self._scan_funcs.append(self._ampersand_expect)
+        elif c == '\n':
+            self._add_token(tt.NEWLINE)
         elif (not self._next_in_line() in self._loc_line_delimiters and
               not self._current_is_last_in_line()):
             # предусматриваем, что следующий символ не является значимым токеном локации
@@ -290,10 +309,11 @@ class PpScanner:
             self._scan_funcs.pop()
 
     def _raw_loc_line_expect(self, c:str) -> None:
-        """ Данная строка оканчивается, когда встречает токен, значимый для локации,
-        или конец строки, или конец файла. """
-        if (self._current_is_last_in_line() or
-            self._next_in_line() in self._loc_line_delimiters):
+        """ Получение токена сырого текста на локации. """
+        # Данная строка оканчивается, когда встречает токен, значимый для локации,
+        # или конец строки, или конец файла
+        if (self._next_in_line() in self._loc_line_delimiters or
+            self._current_is_last_in_file()):
             self._add_token(tt.RAW_LOC_LINE)
             self._scan_funcs.pop()
 

@@ -8,6 +8,9 @@ class PpTokenType(IntEnum):
     # 
     NEWLINE = 0
 
+    # preformatting spaces
+    PREFORMATTER = auto()
+
     # One char tokens:
     AMPERSAND = auto()
     LEFT_PAREN = auto()
