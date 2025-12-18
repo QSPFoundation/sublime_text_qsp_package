@@ -43,6 +43,8 @@ class PpParser:
                 break
             iteration_count += 1
             prev_token_num = self._curtok_num
+            # если попадается токен пробелов с преформатированием, просто поглощаем его
+            if self._check_type(tt.PREFORMATTER): self._eat_tokens(1)
             self._statements.append(self._declaration())
             # ТОЧКА ОСТАНОВА: Проверка, что указатель продвинулся
             if self._curtok_num == prev_token_num and not self._is_eof():
@@ -76,7 +78,6 @@ class PpParser:
                              tt.LEFT_BRACKET, tt.LEFT_BRACE, tt.LEFT_PAREN,
                              tt.RIGHT_BRACKET, tt.RIGHT_BRACE, tt.RIGHT_PAREN,
                              tt.AMPERSAND):
-                print(f'find quotes: {self._curtok_num}', self._curtok.get_as_node())
                 return self._statements_line()
             else:
                 self._logic_error(f'Unexpected token in location body: {self._curtok.ttype.name}')
@@ -104,9 +105,6 @@ class PpParser:
         stmts:List[stm.OtherStmt[None]] = []
         comment:Optional[stm.CommentStmt[None]] = None
         
-        # Запоминаем номер строки начала, чтобы не завершить цикл преждевременно
-        start_line = self._curtok.lexeme_start[0]
-        
         # Первый OtherStmt обязателен
         print(f'first otherStatement 108: {self._curtok_num}', self._curtok.get_as_node())
         stmts.append(self._other_stmt())
@@ -116,13 +114,15 @@ class PpParser:
         iteration_count = 0
         max_iterations = 1000  # Защита от бесконечного цикла
         # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
-        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)):
+        while not self._is_eof():
             if iteration_count >= max_iterations:
                 self._logic_error(f'Infinite loop in _statements_line at token {self._curtok_num}')
                 break
             iteration_count += 1
             prev_token_num = self._curtok_num
-            
+            if self._check_type(tt.NEWLINE):
+                self._eat_tokens(1)
+                break
             if self._check_type(tt.AMPERSAND):
                 self._eat_tokens(1)  # поглощаем разделитель &
                 # Проверяем, не комментарий ли следующий токен
@@ -151,12 +151,10 @@ class PpParser:
         """ Получаем QSP-оператор """
         chain:stm.OtherStmtChain[None] = []
         # Запоминаем номер строки начала оператора, чтобы не завершить цикл преждевременно
-        start_line = self._curtok.lexeme_start[0]
         iteration_count = 0
         max_iterations = 10000  # Защита от бесконечного цикла
         # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
-        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)
-                or self._curtok.ttype == tt.AMPERSAND):
+        while not (self._is_eof() or self._match(tt.NEWLINE, tt.AMPERSAND)):
             if iteration_count >= max_iterations:
                 self._logic_error(f'Infinite loop in _other_stmt at token {self._curtok_num}')
                 break
@@ -191,17 +189,14 @@ class PpParser:
         left:Tkn = self._curtok
         self._eat_tokens(1)
         
-        # Запоминаем номер строки начала блока, чтобы не завершить цикл преждевременно
-        start_line = self._curtok.lexeme_start[0]
-        
         # Собираем все OtherStmt внутри блока (может быть несколько или ни одного)
         value:Optional[stm.OtherStmt[None]] = None
         chain:stm.OtherStmtChain[None] = []
         
         iteration_count = 0
         max_iterations = 10000  # Защита от бесконечного цикла
-        # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
-        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)):
+        # Цикл продолжается до правой квадратной скобки или конца файла
+        while not self._is_eof():
             if iteration_count >= max_iterations:
                 self._logic_error(f'Infinite loop in _bracket_block at token {self._curtok_num}')
                 break
@@ -245,16 +240,13 @@ class PpParser:
         left:Tkn = self._curtok
         self._eat_tokens(1)
         
-        # Запоминаем номер строки начала блока, чтобы не завершить цикл преждевременно
-        start_line = self._curtok.lexeme_start[0]
-        
         value:Optional[stm.OtherStmt[None]] = None
         chain:stm.OtherStmtChain[None] = []
         
         iteration_count = 0
         max_iterations = 10000  # Защита от бесконечного цикла
         # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
-        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)):
+        while not self._is_eof():
             if iteration_count >= max_iterations:
                 self._logic_error(f'Infinite loop in _paren_block at token {self._curtok_num}')
                 break
@@ -314,7 +306,7 @@ class PpParser:
             
             if self._check_type(tt.RIGHT_BRACE):
                 break
-            elif self._check_type(tt.LEFT_BRACE):
+            if self._check_type(tt.LEFT_BRACE):
                 # Вложенный CodeBlock
                 chain.append(self._code_block())
             elif self._check_type(tt.OPEN_DIRECTIVE_STMT) and self._is_line_start():
@@ -360,26 +352,30 @@ class PpParser:
         value.append(self._curtok)
         print(f'_string_literal open 346: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1) # поглощаем токен начала строки
-        print(f'_string_literal 348: {self._curtok_num}', self._curtok.get_as_node())
+        print(f'_string_literal open 348: {self._curtok_num}', self._curtok.get_as_node())
         iteration_count = 0
         max_iterations = 100000  # Защита от бесконечного цикла (строки могут быть длинными)
-        while not (self._is_eof() or self._check_type(ttype)):
+        while not self._is_eof():
             if iteration_count >= max_iterations:
                 self._logic_error(f'Infinite loop in _string_literal at token {self._curtok_num}')
                 break
             iteration_count += 1
             # поглощаем токены
+
+            if self._check_type(ttype):
+                value.append(self._curtok)
+                print(f'_string_literal close 363: {self._curtok_num}', self._curtok.get_as_node())
+                self._eat_tokens(1)
+                print(f'_string_literal close 365: {self._curtok_num}', self._curtok.get_as_node())
+                break
+                
             value.append(self._curtok)
             print(f'_string_literal 358: {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1)
             print(f'_string_literal 360: {self._curtok_num}', self._curtok.get_as_node())
-        if self._check_type(ttype):
-            value.append(self._curtok)
-            print(f'_string_literal close 363: {self._curtok_num}', self._curtok.get_as_node())
-            self._eat_tokens(1)
-            print(f'_string_literal 365: {self._curtok_num}', self._curtok.get_as_node())
         else:
             self._error('Literal String. Unexpectable EOF')
+
         return stm.StringLiteral[None](value)
 
     def _comment(self) -> stm.CommentStmt[None]:
@@ -390,18 +386,21 @@ class PpParser:
         name = self._curtok
         value:stm.CommentValue[None] = []
         self._eat_tokens(1) # поглощаем токен объявления комментария
-        # Запоминаем номер строки начала комментария, чтобы не завершить цикл преждевременно
-        start_line = self._curtok.lexeme_start[0]
+
         iteration_count = 0
         max_iterations = 10000  # Защита от бесконечного цикла
         # Прерываем цикл, если: переход на новую строку И токен в начале этой новой строки
-        while not (self._is_eof() or (self._curtok.lexeme_start[0] != start_line and self._curtok.lexeme_start[1] == 0)):
+        while not self._is_eof():
             if iteration_count >= max_iterations:
                 self._logic_error(f'Infinite loop in _comment at token {self._curtok_num}')
                 break
             iteration_count += 1
             prev_token_num = self._curtok_num
             
+            if self._check_type(tt.NEWLINE):
+                self._eat_tokens(1)
+                break
+
             if self._check_type(tt.LEFT_BRACE):
                 # блок фигурных скобок внутри комментария
                 value.extend(self._comment_brace_block())
@@ -418,6 +417,7 @@ class PpParser:
             if self._curtok_num == prev_token_num:
                 self._logic_error(f'Parser stuck in _comment at token {self._curtok_num}. Token: {self._curtok.ttype.name}')
                 self._eat_tokens(1)  # Принудительно продвигаем указатель
+
         return stm.CommentStmt[None](name, value)
 
     def _comment_apostrophe_block(self) -> stm.CommentValue[None]:

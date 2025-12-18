@@ -17,6 +17,7 @@ class QspsPP:
 
     def pp_this_lines(self, qsps_lines: List[str]) -> List[str]:
         """ Preprocess the list of lines. """
+
         scanner = PpScanner(qsps_lines)
         scanner.scan_tokens()
 

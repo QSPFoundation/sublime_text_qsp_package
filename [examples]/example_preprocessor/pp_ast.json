@@ -137,12 +137,6 @@
         "class": "PpLiteral",
         "sub": "RIGHT_BRACKET",
         "value": "]"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "RAW_LOC_LINE",
-        "value": "\n"
       }
     ]
   },
@@ -225,7 +219,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -250,7 +244,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -275,7 +269,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -322,12 +316,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -381,7 +369,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -411,7 +399,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -441,7 +429,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -466,7 +454,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -503,12 +491,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -538,26 +520,15 @@
             "type": "stmt",
             "class": "PpLiteral",
             "sub": "RAW_LOC_LINE",
-            "value": " clear "
+            "value": "clear "
           }
         ]
       },
       {
         "type": "stmt",
-        "class": "OtherStmt",
+        "class": "CommentStmt",
+        "sub": "LESS_SPEC_COMM",
         "value": [
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": " "
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "LESS_SPEC_COMM",
-            "value": "!@<"
-          },
           {
             "type": "stmt",
             "class": "PpLiteral",
@@ -566,26 +537,21 @@
           },
           {
             "type": "stmt",
-            "class": "BracketBlock",
+            "class": "PpLiteral",
             "sub": "LEFT_BRACKET",
-            "value": {
-              "type": "stmt",
-              "class": "OtherStmt",
-              "value": [
-                {
-                  "type": "stmt",
-                  "class": "PpLiteral",
-                  "sub": "RAW_LOC_LINE",
-                  "value": "21"
-                }
-              ]
-            }
+            "value": "["
           },
           {
             "type": "stmt",
             "class": "PpLiteral",
             "sub": "RAW_LOC_LINE",
-            "value": "\n"
+            "value": "21"
+          },
+          {
+            "type": "stmt",
+            "class": "PpLiteral",
+            "sub": "RIGHT_BRACKET",
+            "value": "]"
           }
         ]
       }
@@ -651,25 +617,14 @@
       },
       {
         "type": "stmt",
-        "class": "OtherStmt",
+        "class": "CommentStmt",
+        "sub": "SIMPLE_SPEC_COMM",
         "value": [
           {
             "type": "stmt",
             "class": "PpLiteral",
             "sub": "RAW_LOC_LINE",
-            "value": " "
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "SIMPLE_SPEC_COMM",
-            "value": "!@"
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": " спецкомментарий, который будет удалён из строки при препроцессинге\n"
+            "value": " спецкомментарий, который будет удалён из строки при препроцессинге"
           }
         ]
       }
@@ -720,20 +675,9 @@
       },
       {
         "type": "stmt",
-        "class": "OtherStmt",
+        "class": "CommentStmt",
+        "sub": "EXCLAMATION_SIGN",
         "value": [
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": " "
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "EXCLAMATION_SIGN",
-            "value": "!"
-          },
           {
             "type": "stmt",
             "class": "PpLiteral",
@@ -742,26 +686,21 @@
           },
           {
             "type": "stmt",
-            "class": "BracketBlock",
+            "class": "PpLiteral",
             "sub": "LEFT_BRACKET",
-            "value": {
-              "type": "stmt",
-              "class": "OtherStmt",
-              "value": [
-                {
-                  "type": "stmt",
-                  "class": "PpLiteral",
-                  "sub": "RAW_LOC_LINE",
-                  "value": "23"
-                }
-              ]
-            }
+            "value": "["
           },
           {
             "type": "stmt",
             "class": "PpLiteral",
             "sub": "RAW_LOC_LINE",
-            "value": "\n"
+            "value": "23"
+          },
+          {
+            "type": "stmt",
+            "class": "PpLiteral",
+            "sub": "RIGHT_BRACKET",
+            "value": "]"
           }
         ]
       }
@@ -812,7 +751,7 @@
         "type": "stmt",
         "class": "PpLiteral",
         "sub": "RAW_LOC_LINE",
-        "value": " спецкомментарий удалится\n"
+        "value": " спецкомментарий удалится"
       }
     ]
   },
@@ -880,12 +819,6 @@
         "class": "PpLiteral",
         "sub": "RIGHT_BRACKET",
         "value": "]"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "RAW_LOC_LINE",
-        "value": "\n"
       }
     ]
   },
@@ -950,12 +883,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -1015,20 +942,9 @@
       },
       {
         "type": "stmt",
-        "class": "OtherStmt",
+        "class": "CommentStmt",
+        "sub": "LESS_SPEC_COMM",
         "value": [
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": " "
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "LESS_SPEC_COMM",
-            "value": "!@<"
-          },
           {
             "type": "stmt",
             "class": "PpLiteral",
@@ -1037,26 +953,21 @@
           },
           {
             "type": "stmt",
-            "class": "BracketBlock",
+            "class": "PpLiteral",
             "sub": "LEFT_BRACKET",
-            "value": {
-              "type": "stmt",
-              "class": "OtherStmt",
-              "value": [
-                {
-                  "type": "stmt",
-                  "class": "PpLiteral",
-                  "sub": "RAW_LOC_LINE",
-                  "value": "28"
-                }
-              ]
-            }
+            "value": "["
           },
           {
             "type": "stmt",
             "class": "PpLiteral",
             "sub": "RAW_LOC_LINE",
-            "value": "\n"
+            "value": "28"
+          },
+          {
+            "type": "stmt",
+            "class": "PpLiteral",
+            "sub": "RIGHT_BRACKET",
+            "value": "]"
           }
         ]
       }
@@ -1090,12 +1001,6 @@
         "class": "PpLiteral",
         "sub": "RIGHT_BRACKET",
         "value": "]"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "RAW_LOC_LINE",
-        "value": "\n"
       }
     ]
   },
@@ -1160,12 +1065,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -1181,12 +1080,6 @@
         "class": "PpLiteral",
         "sub": "IDENTIFIER",
         "value": "nosavecomm"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "NEWLINE",
-        "value": ""
       }
     ]
   },
@@ -1241,12 +1134,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -1331,20 +1218,9 @@
       },
       {
         "type": "stmt",
-        "class": "OtherStmt",
+        "class": "CommentStmt",
+        "sub": "LESS_SPEC_COMM",
         "value": [
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": " "
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "LESS_SPEC_COMM",
-            "value": "!@<"
-          },
           {
             "type": "stmt",
             "class": "PpLiteral",
@@ -1353,26 +1229,21 @@
           },
           {
             "type": "stmt",
-            "class": "BracketBlock",
+            "class": "PpLiteral",
             "sub": "LEFT_BRACKET",
-            "value": {
-              "type": "stmt",
-              "class": "OtherStmt",
-              "value": [
-                {
-                  "type": "stmt",
-                  "class": "PpLiteral",
-                  "sub": "RAW_LOC_LINE",
-                  "value": "34"
-                }
-              ]
-            }
+            "value": "["
           },
           {
             "type": "stmt",
             "class": "PpLiteral",
             "sub": "RAW_LOC_LINE",
-            "value": "\n"
+            "value": "34"
+          },
+          {
+            "type": "stmt",
+            "class": "PpLiteral",
+            "sub": "RIGHT_BRACKET",
+            "value": "]"
           }
         ]
       }
@@ -1406,12 +1277,6 @@
         "class": "PpLiteral",
         "sub": "RIGHT_BRACKET",
         "value": "]"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "RAW_LOC_LINE",
-        "value": "\n"
       }
     ]
   },
@@ -1464,12 +1329,6 @@
         "class": "PpLiteral",
         "sub": "RAW_LINE",
         "value": ", строка с неизвестной командой игнорируется [37]"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "NEWLINE",
-        "value": ""
       }
     ]
   },
@@ -1536,7 +1395,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -1561,7 +1420,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -1598,12 +1457,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -1669,12 +1522,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -1726,12 +1573,6 @@
         "class": "PpLiteral",
         "sub": "RAW_LINE",
         "value": "[44]"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "NEWLINE",
-        "value": ""
       }
     ]
   },
@@ -1784,20 +1625,9 @@
       },
       {
         "type": "stmt",
-        "class": "OtherStmt",
+        "class": "CommentStmt",
+        "sub": "SIMPLE_SPEC_COMM",
         "value": [
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": " "
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "SIMPLE_SPEC_COMM",
-            "value": "!@"
-          },
           {
             "type": "stmt",
             "class": "PpLiteral",
@@ -1806,26 +1636,21 @@
           },
           {
             "type": "stmt",
-            "class": "BracketBlock",
+            "class": "PpLiteral",
             "sub": "LEFT_BRACKET",
-            "value": {
-              "type": "stmt",
-              "class": "OtherStmt",
-              "value": [
-                {
-                  "type": "stmt",
-                  "class": "PpLiteral",
-                  "sub": "RAW_LOC_LINE",
-                  "value": "45"
-                }
-              ]
-            }
+            "value": "["
           },
           {
             "type": "stmt",
             "class": "PpLiteral",
             "sub": "RAW_LOC_LINE",
-            "value": "\n"
+            "value": "45"
+          },
+          {
+            "type": "stmt",
+            "class": "PpLiteral",
+            "sub": "RIGHT_BRACKET",
+            "value": "]"
           }
         ]
       }
@@ -1870,7 +1695,8 @@
       },
       {
         "type": "stmt",
-        "class": "OtherStmt",
+        "class": "CommentStmt",
+        "sub": "LESS_SPEC_COMM",
         "value": [
           {
             "type": "stmt",
@@ -1881,37 +1707,20 @@
           {
             "type": "stmt",
             "class": "PpLiteral",
-            "sub": "LESS_SPEC_COMM",
-            "value": "!@<"
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": " "
-          },
-          {
-            "type": "stmt",
-            "class": "BracketBlock",
             "sub": "LEFT_BRACKET",
-            "value": {
-              "type": "stmt",
-              "class": "OtherStmt",
-              "value": [
-                {
-                  "type": "stmt",
-                  "class": "PpLiteral",
-                  "sub": "RAW_LOC_LINE",
-                  "value": "46"
-                }
-              ]
-            }
+            "value": "["
           },
           {
             "type": "stmt",
             "class": "PpLiteral",
             "sub": "RAW_LOC_LINE",
-            "value": "\n"
+            "value": "46"
+          },
+          {
+            "type": "stmt",
+            "class": "PpLiteral",
+            "sub": "RIGHT_BRACKET",
+            "value": "]"
           }
         ]
       }
@@ -1963,12 +1772,6 @@
         "class": "PpLiteral",
         "sub": "RAW_LINE",
         "value": "[47]"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "NEWLINE",
-        "value": ""
       }
     ]
   },
@@ -1982,12 +1785,6 @@
         "class": "PpLiteral",
         "sub": "IDENTIFIER",
         "value": "nosavecomm"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "NEWLINE",
-        "value": ""
       }
     ]
   },
@@ -2019,12 +1816,6 @@
         "class": "PpLiteral",
         "sub": "RIGHT_BRACKET",
         "value": "]"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "RAW_LOC_LINE",
-        "value": "\n"
       }
     ]
   },
@@ -2079,12 +1870,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -2138,7 +1923,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -2163,7 +1948,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -2188,7 +1973,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -2229,7 +2014,7 @@
               {
                 "type": "tkn",
                 "sub": "NEWLINE",
-                "value": ""
+                "value": "\n"
               },
               {
                 "type": "tkn",
@@ -2253,7 +2038,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -2278,7 +2063,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -2294,7 +2079,7 @@
               {
                 "type": "tkn",
                 "sub": "NEWLINE",
-                "value": ""
+                "value": "\n"
               },
               {
                 "type": "tkn",
@@ -2318,7 +2103,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -2343,7 +2128,7 @@
               },
               {
                 "type": "tkn",
-                "sub": "RAW_LOC_LINE",
+                "sub": "NEWLINE",
                 "value": "\n"
               },
               {
@@ -2380,12 +2165,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -2467,12 +2246,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
@@ -2534,12 +2307,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "stmt",
-            "class": "PpLiteral",
-            "sub": "RAW_LOC_LINE",
-            "value": "\n"
           }
         ]
       }
