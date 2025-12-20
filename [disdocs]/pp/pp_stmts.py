@@ -58,6 +58,10 @@ class PpVisitor(ABC, Generic[R]):
     def visit_pp_literal(self, stmt:'PpLiteral[R]') -> R:
         ...
 
+    @abstractmethod
+    def visit_raw_string_line(self, stmt:'RawStringLine[R]') -> R:
+        ...
+
 @dataclass(eq=False)
 class BracketBlock(PpStmt[R]):
     left:PpToken
@@ -68,7 +72,8 @@ class BracketBlock(PpStmt[R]):
 
 @dataclass(eq=False)
 class StringLiteral(PpStmt[R]):
-    value:List[PpToken]
+    left:PpToken
+    value:List['StringLine[R]']
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_string_literal(self)
 
@@ -116,14 +121,21 @@ class PpDirective(PpStmt[R]):
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_pp_directive(self)
 
+@dataclass
+class RawStringLine(PpStmt[R]):
+    value:List[PpToken]
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_raw_string_line(self)
+
 @dataclass(eq=False)
 class PpLiteral(PpStmt[R]):
     value:PpToken
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_pp_literal(self)
 
-CommentValue = List[Union[PpStmt[R]]]
-OtherStmtChain = List[Union[PpStmt[R]]]
+CommentValue = List[PpStmt[R]]
+OtherStmtChain = List[PpStmt[R]]
+StringLine = Union[RawStringLine[R], PpDirective[R]]
 
 # Допустим у нас есть объекты класса Животное. От этого класса наследуются:
 # - Собака

@@ -67,7 +67,6 @@ class PpParser:
                 return self._comment()
             elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
                 start_declaration_on_loc:int = self._curtok_num
-                print(f'OPEN_DIRECTIVE_STMT: {self._curtok_num}')
                 validate_directive_on_loc:Optional[stm.PpDirective[None]] = self._directive()
                 if validate_directive_on_loc:
                     return validate_directive_on_loc
@@ -106,9 +105,7 @@ class PpParser:
         comment:Optional[stm.CommentStmt[None]] = None
         
         # Первый OtherStmt обязателен
-        print(f'first otherStatement 108: {self._curtok_num}', self._curtok.get_as_node())
         stmts.append(self._other_stmt())
-        print(f'first otherStatement 110: {self._curtok_num}', self._curtok.get_as_node())
         
         # Обрабатываем разделители & и следующие OtherStmt
         iteration_count = 0
@@ -163,9 +160,7 @@ class PpParser:
             
             # тело оператора продолжается до конца строки или амперсанда
             if self._match(tt.QUOTE, tt.APOSTROPHE):
-                print(f'otherStatement find quote 161: {self._curtok_num}', self._curtok.get_as_node())
                 chain.append(self._string_literal())
-                print(f'otherStatement find quote 163: {self._curtok_num}', self._curtok.get_as_node())
             elif self._check_type(tt.LEFT_BRACKET):
                 chain.append(self._bracket_block())
             elif self._check_type(tt.LEFT_PAREN):
@@ -347,14 +342,15 @@ class PpParser:
 
     def _string_literal(self) -> stm.StringLiteral[None]:
         """ Получаем строку """
-        value:List[Tkn] = []
+        value:List[stm.StringLine[None]] = []
+        # обрабатываем токен начала строки
         ttype = self._curtok.ttype
-        value.append(self._curtok)
-        print(f'_string_literal open 346: {self._curtok_num}', self._curtok.get_as_node())
-        self._eat_tokens(1) # поглощаем токен начала строки
-        print(f'_string_literal open 348: {self._curtok_num}', self._curtok.get_as_node())
+        left = self._curtok
+        self._eat_tokens(1)
+
         iteration_count = 0
         max_iterations = 100000  # Защита от бесконечного цикла (строки могут быть длинными)
+
         while not self._is_eof():
             if iteration_count >= max_iterations:
                 self._logic_error(f'Infinite loop in _string_literal at token {self._curtok_num}')
@@ -362,21 +358,44 @@ class PpParser:
             iteration_count += 1
             # поглощаем токены
 
-            if self._check_type(ttype):
-                value.append(self._curtok)
-                print(f'_string_literal close 363: {self._curtok_num}', self._curtok.get_as_node())
+            if self._check_type(ttype): # строка окончилась
                 self._eat_tokens(1)
-                print(f'_string_literal close 365: {self._curtok_num}', self._curtok.get_as_node())
                 break
-                
-            value.append(self._curtok)
-            print(f'_string_literal 358: {self._curtok_num}', self._curtok.get_as_node())
-            self._eat_tokens(1)
-            print(f'_string_literal 360: {self._curtok_num}', self._curtok.get_as_node())
+            if self._check_type(tt.PREFORMATTER):
+                # токен преформатирования просто пропускаем
+                self._eat_tokens(1)
+                continue
+            elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
+                start_declaration:int = self._curtok_num
+                validate_directive:Optional[stm.PpDirective[None]] = self._directive()
+                if validate_directive:
+                    value.append(validate_directive)
+                else:
+                    self._reset_curtok(start_declaration)
+                    value.append(self._raw_string_line(ttype))
+            else:
+                value.append(self._raw_string_line(ttype))
         else:
             self._error('Literal String. Unexpectable EOF')
 
-        return stm.StringLiteral[None](value)
+        return stm.StringLiteral[None](left, value)
+
+    def _raw_string_line(self, ttype:tt = tt.QUOTE) -> stm.RawStringLine[None]:
+        """ Получение сырой строки для строковой константы """
+        value:List[Tkn] = []
+        # цикл выполняется, пока не достигнут конец файла или кавычка,
+        # при этом токен не поглощается.
+        while not (self._is_eof() or self._check_type(ttype)):
+            if self._check_type(tt.NEWLINE):
+                # разбиваем на отдельные строки, для этого по переводу строки прерываем цикл.
+                value.append(self._curtok)
+                self._eat_tokens(1)
+                break
+
+            value.append(self._curtok)
+            self._eat_tokens(1)
+
+        return stm.RawStringLine[None](value)
 
     def _comment(self) -> stm.CommentStmt[None]:
         """ Получение комментариев:
@@ -492,9 +511,7 @@ class PpParser:
 
     def _directive(self) -> Optional[stm.PpDirective[None]]:
         """ Получаем директиву препроцессора, если возможно. """
-        print(f'_directive 466: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1) # пожираем токен объявления директивы
-        print(f'_directive 468: {self._curtok_num}', self._curtok.get_as_node())
         next_is_newline = self._next_peek().ttype == tt.NEWLINE
         if self._curtok.ttype == tt.ENDIF_STMT and next_is_newline:
             body = dir.EndifDir[None](self._curtok)
@@ -527,9 +544,7 @@ class PpParser:
                 return None
             return stm.PpDirective[None](assignment_validation)
         if self._check_type(tt.IF_STMT):
-            print(f'_directive 501: {self._curtok_num}', self._curtok.get_as_node())
             self._eat_tokens(1) # пожирем IF_STMT
-            print(f'_directive 503: {self._curtok_num}', self._curtok.get_as_node())
             condition_validation:Optional[dir.ConditionDir[None]] = self._condition_dir()
             if condition_validation is None: return None
             return stm.PpDirective[None](condition_validation)
@@ -540,31 +555,23 @@ class PpParser:
         if not self._check_type(tt.LEFT_PAREN):
             self._error(f'Expected LEFT_PAREN')
             return None
-        print(f'_condition_dir 514: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1)
-        print(f'_condition_dir 516: {self._curtok_num}', self._curtok.get_as_node())
         cond_expr_validation:Optional[dir.CondExprStmt[None]] = self._cond_expr_stmt()
         if cond_expr_validation is None: return None
         condition_expr:dir.CondExprStmt[None] = cond_expr_validation
         if not self._check_type(tt.RIGHT_PAREN):
             self._error(f'Expected RIGHT_PAREN')
             return None
-        print(f'_condition_dir 523: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1)
-        print(f'_condition_dir 525: {self._curtok_num}', self._curtok.get_as_node())
         if not self._check_type(tt.THEN_STMT):
             self._error(f'Expected THEN_STMT')
             return None
-        print(f'_condition_dir 529: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1)
-        print(f'_condition_dir 531: {self._curtok_num}', self._curtok.get_as_node())
         cond_resolves_validation:List[dir.ConditionResolve[None]] = self._cond_resolves()
         if not cond_resolves_validation: return None
         cond_resolves = cond_resolves_validation
         # на данном этапе у нас не поглощён только токен следующей строки
-        print(f'_condition_dir 536: {self._curtok_num}', self._curtok.get_as_node())
         self._eat_tokens(1)
-        print(f'_condition_dir 538: {self._curtok_num}', self._curtok.get_as_node())
         return dir.ConditionDir(condition_expr, cond_resolves)
 
     def _cond_resolves(self) -> List[dir.ConditionResolve[None]]:

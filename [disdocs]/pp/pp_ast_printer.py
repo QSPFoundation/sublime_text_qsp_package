@@ -67,6 +67,14 @@ class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[
         return {
             'type': 'stmt',
             'class': 'StringLiteral',
+            'sub': stmt.left.ttype.name,
+            'value': [s.accept(self) for s in stmt.value]
+        }
+
+    def visit_raw_string_line(self, stmt: stm.RawStringLine[AstNode]) -> AstNode:
+        return {
+            'type': 'stmt',
+            'class': 'RawStringLine',
             'value': [self._token(t) for t in stmt.value]
         }
 

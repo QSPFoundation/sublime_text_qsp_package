@@ -32,7 +32,7 @@ class PpScanner:
             "if": tt.IF_STMT,
             "off": tt.OFF_STMT,
             "savecomm": tt.SAVECOMM_STMT,
-            "nosavecom": tt.NO_SAVECOMM_STMT,
+            "nosavecomm": tt.NO_SAVECOMM_STMT,
             "nopp": tt.NOPP_STMT,
             "include": tt.INCLUDE_STMT,
             "exclude": tt.EXCLUDE_STMT,
