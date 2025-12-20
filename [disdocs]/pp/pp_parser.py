@@ -1,5 +1,5 @@
 # from tracemalloc import start
-from typing import List, Callable, Optional, Any # Dict, Tuple, cast
+from typing import List, Callable, Optional, Any
 
 from pp_tokens import PpToken as Tkn
 from pp_tokens import PpTokenType as tt
@@ -579,7 +579,7 @@ class PpParser:
         if not self._check_type(tt.IDENTIFIER):
             self._error('Expected IDENTIFIER (ex. var name)')
             return None
-        equal_expr = expr.VarName[None](self._curtok) # TODO: добавлять идентификаторы в окружение на каждом этапе
+        equal_expr = expr.VarName[None](self._curtok)
         
         self._eat_tokens(1)
         
@@ -591,8 +591,9 @@ class PpParser:
             if not self._check_type(tt.IDENTIFIER):
                 self._error('Expected IDENTIFIER (ex. var name)')
                 return None
+
             right = expr.VarName[None](self._curtok)
-            print(f'_equal 661 {self._curtok_num}', self._curtok.get_as_node())
+
             self._eat_tokens(1)
             
             equal_expr = expr.EqualExpr[None](equal_expr, operator, right)
@@ -614,9 +615,8 @@ class PpParser:
         # далее могут идти три варианта
         if self._check_type(tt.RIGHT_PAREN) and self._next_peek().ttype == tt.NEWLINE:
             # правая скобка и newline означают, что объявление завершено
-            assignment = dir.AssignmentDir[None](key, None)
             self._eat_tokens(2) # пожираем два токена, в т.ч. newline
-            return assignment
+            return dir.AssignmentDir[None](key, None)
         if self._check_type(tt.ASSIGNMENT_OPERATOR):
             self._eat_tokens(1)
             if not self._check_type(tt.IDENTIFIER):
@@ -697,7 +697,8 @@ class PpParser:
     # обработчик ошибок. Пока просто выводим в консоль.
     def _error(self, message:str) -> None:
         name = self._curtok.ttype.name
-        print(f"Err. {message}: {name} ({self._curtok_num}).")
+        coords = self._curtok.lexeme_start
+        print(f"Err. {message}: {name} ({self._curtok_num}) [{coords}].")
 
     def _logic_error(self, message:str) -> None:
         print(f"Logic error: {message}. Please, report to the developer.")

@@ -26,13 +26,14 @@ AstNode = Dict[
 
 class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNode]):
 
-    def __init__(self, stmts:List[stm.PpStmt[AstNode]]) -> None:
-        self._stmts = stmts
+    def __init__(self) -> None:
         self._ast:List[AstNode] = []
 
-    def get_ast(self, ) -> List[AstNode]:
-        for statement in self._stmts:
+    def gen_ast(self, stmts:List[stm.PpStmt[AstNode]]) -> None:
+        for statement in stmts:
             self._ast.append(statement.accept(self))
+
+    def get_ast(self) -> List[AstNode]:
         return self._ast
 
     def _token(self, t:tkn.PpToken) -> AstNode:

@@ -1511,7 +1511,7 @@
                   {
                     "type": "tkn",
                     "sub": "RAW_LOC_LINE",
-                    "value": "Можно отключить препроцессор на время, по условию. Это делается с помощью директивы nopp:"
+                    "value": "Можно отключить препроцессор на время, по условию. Это делается с помощью директивы off:"
                   }
                 ]
               }
@@ -1546,52 +1546,27 @@
   },
   {
     "type": "stmt",
-    "class": "CommentStmt",
-    "sub": "OPEN_DIRECTIVE_STMT",
-    "value": [
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "IF_STMT",
-        "value": "if"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "LEFT_PAREN",
-        "value": "("
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "IDENTIFIER",
-        "value": "layer1"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "RIGHT_PAREN",
-        "value": ")"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "THEN_STMT",
-        "value": ":"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "NOPP_STMT",
-        "value": "nopp"
-      },
-      {
-        "type": "stmt",
-        "class": "PpLiteral",
-        "sub": "RAW_LINE",
-        "value": "[44]"
-      }
-    ]
+    "class": "PpDirective",
+    "value": {
+      "type": "dir",
+      "class": "ConditionDir",
+      "value": [
+        {
+          "type": "dir",
+          "class": "CondExprStmt",
+          "value": {
+            "type": "expr",
+            "class": "VarName",
+            "value": "layer1"
+          }
+        },
+        {
+          "type": "dir",
+          "class": "OffDir",
+          "value": "off"
+        }
+      ]
+    }
   },
   {
     "type": "stmt",

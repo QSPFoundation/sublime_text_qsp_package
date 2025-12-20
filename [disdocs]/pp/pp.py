@@ -1,6 +1,7 @@
 import json
-from typing import List, Any
+from typing import List, Optional
 
+from pp_environment import PpEnvironment
 from pp_scanner import PpScanner
 from pp_parser import PpParser
 from pp_ast_printer import AstPrinter
@@ -11,11 +12,13 @@ from pp_tokens import PpTokenType as tt
 class QspsPP:
     """ Препроцессор для файлов  """
     def __init__(self) -> None:
-        # Здесь будут определяться различные параметры,
-        # необходимые для работы одной сессии препроцессора.
+        # Препроцессор и окружение для директив общее для всех файлов:
+        self._ns = PpEnvironment()
         ...
 
-    def pp_this_lines(self, qsps_lines: List[str]) -> List[str]:
+    def pp_this_lines(self,
+                      qsps_lines: List[str],
+                      ast_printer:Optional[AstPrinter]=None) -> List[str]:
         """ Preprocess the list of lines. """
 
         scanner = PpScanner(qsps_lines)
@@ -27,7 +30,11 @@ class QspsPP:
         parser.qsps_file_parse()
 
         statements = parser.get_statements()
-        return statements
+        
+        if ast_printer:
+            ast_printer.gen_ast(statements)
+
+
 
     
         
@@ -39,6 +46,8 @@ if __name__ == "__main__":
         qsps_lines = fp.readlines()
 
     preprocessor = QspsPP()
-    ast_tree = AstPrinter(preprocessor.pp_this_lines(qsps_lines)).get_ast()
+    ast_printer = AstPrinter()
+    preprocessor.pp_this_lines(qsps_lines, ast_printer)
+    ast_tree = ast_printer.get_ast()
     with open(out, 'w', encoding='utf-8') as fp:
         json.dump(ast_tree, fp, ensure_ascii=False, indent=2)
