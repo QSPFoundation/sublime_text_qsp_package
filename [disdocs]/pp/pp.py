@@ -5,6 +5,7 @@ from pp_environment import PpEnvironment
 from pp_scanner import PpScanner
 from pp_parser import PpParser
 from pp_ast_printer import AstPrinter
+from pp_int import PpInt
 
 from pp_tokens import PpToken
 from pp_tokens import PpTokenType as tt
@@ -23,16 +24,17 @@ class QspsPP:
 
         scanner = PpScanner(qsps_lines)
         scanner.scan_tokens()
-
         tokens = scanner.get_tokens()
 
         parser = PpParser(tokens)
         parser.qsps_file_parse()
-
         statements = parser.get_statements()
         
         if ast_printer:
             ast_printer.gen_ast(statements)
+
+        interpreter = PpInt(statements, self._ns, qsps_lines)
+        interpreter.run()
 
 
 

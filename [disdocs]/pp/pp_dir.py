@@ -26,9 +26,9 @@ class PpVisitor(ABC, Generic[R]):
     def visit_endif_dir(self, stmt:'EndifDir[R]') -> R:
         ...
 
-    @abstractmethod
-    def visit_nopp_dir(self, stmt:'NoppDir[R]') -> R:
-        ...
+    # @abstractmethod
+    # def visit_nopp_dir(self, stmt:'NoppDir[R]') -> R:
+    #     ...
 
     @abstractmethod
     def visit_off_dir(self, stmt:'OffDir[R]') -> R:
@@ -72,11 +72,11 @@ class EndifDir(PpDir[R]):
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_endif_dir(self)
 
-@dataclass(eq=False)
-class NoppDir(PpDir[R]):
-    name:PpToken
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
-        return visitor.visit_nopp_dir(self)
+# @dataclass(eq=False)
+# class NoppDir(PpDir[R]):
+#     name:PpToken
+#     def accept(self, visitor: 'PpVisitor[R]') -> R:
+#         return visitor.visit_nopp_dir(self)
 
 @dataclass(eq=False)
 class OffDir(PpDir[R]):
@@ -135,7 +135,7 @@ class CondExprStmt(PpDir[R]):
         return visitor.visit_cond_expr_stmt(self)
 
 ConditionResolve = Union[
-    NoppDir[R],
+    # NoppDir[R],
     SaveCommDir[R],
     NoSaveCommDir[R],
     OnDir[R],

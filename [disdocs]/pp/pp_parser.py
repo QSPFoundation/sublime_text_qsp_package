@@ -380,7 +380,7 @@ class PpParser:
 
     def _comment_brace_block(self) -> stm.CommentValue[None]:
         """Extract brace block"""
-        value:stm.CommentValue[None] = []
+        value: List[stm.PpLiteral[None]] = []
         value.append(stm.PpLiteral[None](self._curtok))
         self._eat_tokens(1) # поглощаем токен левой скобки
         while not (self._is_eof() or self._curtok.ttype == tt.RIGHT_BRACE):

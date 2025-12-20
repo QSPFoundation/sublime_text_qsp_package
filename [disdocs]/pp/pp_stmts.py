@@ -133,7 +133,7 @@ class PpLiteral(PpStmt[R]):
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_pp_literal(self)
 
-CommentValue = List[PpStmt[R]]
+CommentValue = List[PpLiteral[R]]
 OtherStmtChain = List[PpStmt[R]]
 StringLine = Union[RawStringLine[R], PpDirective[R]]
 

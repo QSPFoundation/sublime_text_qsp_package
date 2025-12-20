@@ -8,6 +8,18 @@ class PpEnvironment:
             'False': False
         }
 
+    def def_key_set_value(self, key:str, value:str='') -> None:
+        self.def_var(key)
+        if value:
+            self.def_var(value)
+            self.set_var(key, value)
+
+    def def_var(self, key:str) -> None:
+        """ Объявление переменной. """
+        key = key.strip()
+        if key in ('True', 'False'): return
+        self._labels[key] = key
+
     def set_var(self, key:str, value:str='') -> None:
         """ Устанавливаем метку или значение """
         key = key.strip()
