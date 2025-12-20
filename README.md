@@ -596,7 +596,7 @@ UnicodeEncodeError: 'charmap' codec can't encode character '\u2191' in position 
 
 Подробный пример смотрите в файле "`[disdocs]/example_project/[pp-test]/pptest.qsps`".
 
-```qsp
+```qsps
 !@pp:on
 !@pp:var(layer=1)
 # start
@@ -608,7 +608,7 @@ UnicodeEncodeError: 'charmap' codec can't encode character '\u2191' in position 
 !@pp:if(layer==1):exclude
 "Этот текст будет исключён из конечного файла" & ! и комментарий тоже
 !@pp:endif
-- start
+-- start
 ```
 
 ```qsp
@@ -623,7 +623,7 @@ UnicodeEncodeError: 'charmap' codec can't encode character '\u2191' in position 
 "Этот текст не будет исключён из конечного файла" & ! и комментарий тоже
 name=123 & !@< а вот эта строка кода будет удалена
 !@pp:endif
-- start
+-- start
 ```
 
 ### Подсветка синтаксиса QSP

@@ -41,7 +41,7 @@ class PpTokenType(IntEnum):
     OFF_STMT = auto()
     SAVECOMM_STMT = auto()
     NO_SAVECOMM_STMT = auto()
-    NOPP_STMT = auto()
+    # NOPP_STMT = auto()
     INCLUDE_STMT = auto()
     EXCLUDE_STMT = auto()
     ENDIF_STMT = auto()
