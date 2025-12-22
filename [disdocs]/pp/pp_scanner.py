@@ -228,7 +228,7 @@ class PpScanner:
 
     def _ampersand_expect(self, c:str) -> None:
         """ Поглощение разделителя с постлежащими пробелами """
-        if not self._next_in_line() in (' ', '\t', '&'):
+        if not self._next_in_line() in (' ', '\t'):
             self._add_token(tt.AMPERSAND)
             self._scan_funcs.pop()
 
