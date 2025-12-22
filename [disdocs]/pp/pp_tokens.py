@@ -3,6 +3,8 @@ from typing import Tuple, Dict, Union, List
 
 from enum import (IntEnum, auto)
 
+Point = Tuple[int, int]
+
 # ------------------------------ Tokens Types ------------------------------ #
 class PpTokenType(IntEnum):
     # 
@@ -65,7 +67,7 @@ class PpTokenType(IntEnum):
 class PpToken:
     ttype:PpTokenType
     lexeme:str # вся лексема целиком
-    lexeme_start:Tuple[int, int] # строка и номер символа в которой токен находится
+    lexeme_start:Point # строка и номер символа в которой токен находится
 
     def get_as_node(self) -> Dict[str, Union[str, List[int]]]:
         return {
@@ -73,3 +75,7 @@ class PpToken:
             'lexeme': self.lexeme,
             'lexeme_start': list(self.lexeme_start)
         }
+
+    def get_end_pos(self) -> Point:
+        line, char = self.lexeme_start
+        return (line, char + len(self.lexeme))

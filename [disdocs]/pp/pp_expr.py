@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Union
+from typing import Generic, TypeVar, Union, List
 
 from pp_tokens import PpToken
 
@@ -63,9 +63,8 @@ class NotExpr(PpExpr[R]):
 
 @dataclass(eq=False)
 class EqualExpr(PpExpr[R]):
-    left:'EqualType[R]'
-    operator:PpToken
-    right:'VarName[R]'
+    operands:List['VarName[R]']
+    operators:List[PpToken]
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_equal_expr(self)
 

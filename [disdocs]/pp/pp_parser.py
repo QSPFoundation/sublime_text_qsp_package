@@ -17,7 +17,6 @@ class PpParser:
         self._tokens:List[Tkn] = tokens
 
         # валидация цепочки токенов
-        
         if not self._tokens:
             self._logic_error(f'Init-stage. Tokens-chain is empty')
             return None
@@ -579,25 +578,22 @@ class PpParser:
         if not self._check_type(tt.IDENTIFIER):
             self._error('Expected IDENTIFIER (ex. var name)')
             return None
-        equal_expr = expr.VarName[None](self._curtok)
-        
+        operands:List[expr.VarName[None]] = [expr.VarName[None](self._curtok)]
+        operators:List[Tkn] = []
         self._eat_tokens(1)
         
         while self._match(tt.EQUAL_EQUAL, tt.EQUAL_NOT_EQUAL):
-            operator = self._curtok
-            
+            operators.append(self._curtok)
             self._eat_tokens(1)
             
             if not self._check_type(tt.IDENTIFIER):
                 self._error('Expected IDENTIFIER (ex. var name)')
                 return None
 
-            right = expr.VarName[None](self._curtok)
-
+            operands.append(expr.VarName[None](self._curtok))
             self._eat_tokens(1)
             
-            equal_expr = expr.EqualExpr[None](equal_expr, operator, right)
-        return equal_expr
+        return expr.EqualExpr[None](operands, operators)
 
     def _assignment_dir(self) -> Optional[dir.AssignmentDir[None]]:
         """Получаем директиву объявления переменной"""

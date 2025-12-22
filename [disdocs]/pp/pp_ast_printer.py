@@ -139,12 +139,12 @@ class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[
             'value': stmt.name.lexeme
         }
 
-    def visit_nopp_dir(self, stmt: dir.NoppDir[AstNode]) -> AstNode:
-        return {
-            'type': 'dir',
-            'class': 'NoppDir',
-            'value': stmt.name.lexeme
-        }
+    # def visit_nopp_dir(self, stmt: dir.NoppDir[AstNode]) -> AstNode:
+    #     return {
+    #         'type': 'dir',
+    #         'class': 'NoppDir',
+    #         'value': stmt.name.lexeme
+    #     }
 
     def visit_off_dir(self, stmt: dir.OffDir[AstNode]) -> AstNode:
         return {
@@ -242,9 +242,9 @@ class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[
             'type': 'expr',
             'class': 'EqualExpr',
             'value': [
-                        stmt.left.accept(self),
-                        self._token(stmt.operator),
-                        stmt.right.accept(self)
+                        v.accept(self) for v in stmt.operands
+                    ] + [
+                        self._token(t) for t in stmt.operators
                     ]
         }
     

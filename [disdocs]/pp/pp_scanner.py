@@ -9,6 +9,25 @@ Stack = List[str]
 
 class PpScanner:
     """ Scanner for QspsPP. """
+
+    _KEYWORDS:Dict[str, tt] = {
+            "var": tt.VAR_STMT,
+            "on": tt.ON_STMT,
+            "if": tt.IF_STMT,
+            "off": tt.OFF_STMT,
+            "savecomm": tt.SAVECOMM_STMT,
+            "nosavecomm": tt.NO_SAVECOMM_STMT,
+            # "nopp": tt.NOPP_STMT,
+            "include": tt.INCLUDE_STMT,
+            "exclude": tt.EXCLUDE_STMT,
+            "and": tt.AND_OPERATOR,
+            "or": tt.OR_OPERATOR,
+            "not": tt.NOT_OPERATOR,
+            "endif": tt.ENDIF_STMT
+        }
+
+    _LOC_LINE_DELIMITERS = ("\"", "'", "{", "}", "[", "]", "(", ")", "&", "!", '\n')
+
     def __init__(self, qsps_lines: List[str]) -> None:
         self._qsps_lines = qsps_lines
         self._qsps_len:int = len(self._qsps_lines) # число строк
@@ -26,24 +45,7 @@ class PpScanner:
         self._scan_funcs:List[Callable[[str], None]] = [self._qsps_file_expect]
         self._prepend_chars:Stack = [] # ожидаемые символы в обратном порядке
 
-        self._keywords:Dict[str, tt] = {
-            "var": tt.VAR_STMT,
-            "on": tt.ON_STMT,
-            "if": tt.IF_STMT,
-            "off": tt.OFF_STMT,
-            "savecomm": tt.SAVECOMM_STMT,
-            "nosavecomm": tt.NO_SAVECOMM_STMT,
-            # "nopp": tt.NOPP_STMT,
-            "include": tt.INCLUDE_STMT,
-            "exclude": tt.EXCLUDE_STMT,
-            "and": tt.AND_OPERATOR,
-            "or": tt.OR_OPERATOR,
-            "not": tt.NOT_OPERATOR,
-            "endif": tt.ENDIF_STMT
-        }
         self._curlexeme:List[str] = []
-
-        self._loc_line_delimiters = ("\"", "'", "{", "}", "[", "]", "(", ")", "&", "!", '\n')
 
     def scan_tokens(self) -> None:
         """ Find all tokens in the file. """
@@ -81,12 +83,25 @@ class PpScanner:
                 # Начало локации, значит это токен начала локации,
                 # просто добавляем поглощение токена в список:
                 self._scan_funcs.append(self._loc_open_expect)
+            elif c in (' ', '\t'):
+                # поглощаем токен преформатирования
+                self._scan_funcs.append(self._preformatter_expect)
             elif c == "!" and self._line_len >= 5 and self._line[0:5] == '!@pp:':
                 # Начало директивы препроцессора. Это однозначно, осталось поглотить токен.
                 self._add_expected_chars('@pp:')
                 self._scan_funcs.append(self._pp_directive_stmt_expect)
             else:
                 # Любой другой символ, это начало сырой строки
+                self._scan_funcs.append(self._raw_line_end_expect)
+        elif (self._tokens and self._tokens[-1].ttype == tt.PREFORMATTER):
+            # если до этого мы поглощали токен преформатирования
+            pte = self._tokens[-1].get_end_pos()[1] # prev token end
+            if c == "!" and len(self._line[pte:]) > 5 and self._line[pte:pte+5] == '!@pp:':
+                # имеем дело с диррективой
+                self._add_expected_chars('@pp:')
+                self._scan_funcs.append(self._pp_directive_stmt_expect)
+            else:
+                # или с сырой строкой
                 self._scan_funcs.append(self._raw_line_end_expect)
         else:
             # такой вариант невозможен, но предусмотрительно обрабатываем, как сырую строку
@@ -113,9 +128,6 @@ class PpScanner:
             self._add_token(tt.OPEN_DIRECTIVE_STMT)
             self._scan_funcs.pop() # убираем функцию из стека
             self._scan_funcs.append(self._scan_pp_dirrective) # добавляем функцию для сканирования директивы
-        else:
-            # директива препроцессора не закончена, просто продолжаем
-            pass
 
     def _scan_pp_dirrective(self, c:str) -> None:
         """ Распознаём внутренние токены директивы """
@@ -132,15 +144,12 @@ class PpScanner:
             self._add_token(tt.RIGHT_PAREN)
         elif c == "=":
             # Либо это assignment либо начало equal
-            next_char = self._next_in_line()
-            if next_char != "=":
-                # assignment
+            if self._next_in_line() != "=":    # assignment
                 self._add_token(tt.ASSIGNMENT_OPERATOR)
             else:
                 self._scan_funcs.append(self._equal_expect)
         elif c == "!":
-            next_char = self._next_in_line()
-            if next_char != "=":
+            if self._next_in_line() != "=":
                 self._scan_funcs.append(self._raw_text_expect)
             else:
                 self._scan_funcs.append(self._equal_expect)
@@ -176,18 +185,16 @@ class PpScanner:
         # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
         next_char = self._next_in_line()
         if not self._is_alnum(next_char):
-            ttype:Optional[tt] = self._keywords.get(''.join(self._curlexeme), None)
+            ttype:Optional[tt] = self._KEYWORDS.get(''.join(self._curlexeme), None)
             if ttype == None: ttype = tt.IDENTIFIER
             self._add_token(ttype)
             self._scan_funcs.pop()
 
     def _raw_line_end_expect(self, c:str) -> None:
         """ Поглощение токена сырой строки. """
-        ttype:tt = tt.RAW_LINE
-        # самый надёжный способ это проверить, последний ли это символ
         if self._current_is_last_in_line():
             # это последний символ, закрываем сырую строку, убираем функцию из стека
-            self._add_token(ttype)
+            self._add_token(tt.RAW_LINE)
             self._scan_funcs.pop()
 
     def _raw_text_expect(self, c:str) -> None:
@@ -216,7 +223,8 @@ class PpScanner:
     def _preformatter_expect(self, c:str) -> None:
         """ Поглощение пробелов в начале строки """
         if not c in (' ', '\t'):
-            self._add_token(tt.PREFORMATTER)
+            self._add_token(tt.PREFORMATTER) # формируем токен
+            self._scan_funcs.pop() # отключаем поглощение
 
     def _ampersand_expect(self, c:str) -> None:
         """ Поглощение разделителя с постлежащими пробелами """
@@ -271,7 +279,7 @@ class PpScanner:
             self._scan_funcs.append(self._ampersand_expect)
         elif c == '\n':
             self._add_token(tt.NEWLINE)
-        elif (not self._next_in_line() in self._loc_line_delimiters and
+        elif (not self._next_in_line() in self._LOC_LINE_DELIMITERS and
               not self._current_is_last_in_line()):
             # предусматриваем, что следующий символ не является значимым токеном локации
             # тогда можно включить выборку сырой строки
@@ -312,7 +320,7 @@ class PpScanner:
         """ Получение токена сырого текста на локации. """
         # Данная строка оканчивается, когда встречает токен, значимый для локации,
         # или конец строки, или конец файла
-        if (self._next_in_line() in self._loc_line_delimiters or
+        if (self._next_in_line() in self._LOC_LINE_DELIMITERS or
             self._current_is_last_in_file()):
             self._add_token(tt.RAW_LOC_LINE)
             self._scan_funcs.pop()
