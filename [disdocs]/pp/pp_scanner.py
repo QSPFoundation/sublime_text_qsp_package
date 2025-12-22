@@ -77,7 +77,8 @@ class PpScanner:
     # методы поиска, учитывающие контекст
     def _qsps_file_expect(self, c:str) -> None:
         """ Поиск токенов, из которых состоит qsps-файл """
-        if self._current == 0:
+        cn = self._current
+        if cn == 0:
             # Если это первый символ в строке, ищем начало локации или начало директивы
             if c == "#":
                 # Начало локации, значит это токен начала локации,
@@ -95,8 +96,7 @@ class PpScanner:
                 self._scan_funcs.append(self._raw_line_end_expect)
         elif (self._tokens and self._tokens[-1].ttype == tt.PREFORMATTER):
             # если до этого мы поглощали токен преформатирования
-            pte = self._tokens[-1].get_end_pos()[1] # prev token end
-            if c == "!" and len(self._line[pte:]) > 5 and self._line[pte:pte+5] == '!@pp:':
+            if c == "!" and len(self._line[cn:]) > 5 and self._line[cn:cn+5] == '!@pp:':
                 # имеем дело с диррективой
                 self._add_expected_chars('@pp:')
                 self._scan_funcs.append(self._pp_directive_stmt_expect)
@@ -235,7 +235,6 @@ class PpScanner:
     def _loc_body_scan(self, c:str) -> None:
         """ Сканирование тела локации. """
         cn:int = self._current
-        # В первую очередь нужно проверить, не является ли очередная строка концом локации
         if cn == 0 and c in (' ', '\t'):
             # пробелы с начала строки поглощаем до непробельного символа
             self._scan_funcs.append(self._preformatter_expect)
@@ -243,10 +242,13 @@ class PpScanner:
             # если следующий символ является -, поглощаем строку, как конец локации
             self._scan_funcs.pop() # закрываем сканер тела локации
             self._scan_funcs.append(self._loc_close_expect)
-        elif cn == 0 and c == '!' and self._line[0:5] == '!@pp:':
-            # директива
-            self._add_expected_chars('@pp:')
-            self._scan_funcs.append(self._pp_directive_stmt_expect)
+        elif c == '!' and len(self._line[cn:]) > 5 and self._line[cn:cn+5] == '!@pp:':
+            if cn == 0 or (self._tokens and self._tokens[-1].ttype == tt.PREFORMATTER):
+                self._add_expected_chars('@pp:')
+                self._scan_funcs.append(self._pp_directive_stmt_expect)
+            else:
+                self._add_expected_chars('@')
+                self._scan_funcs.append(self._spec_comm_tkn_expect)
         elif c == '!' and cn+2 < self._line_len and self._line[cn:cn+3] == '!@<':
             # токен коммента под удаление строки
             self._add_expected_chars('@<')
@@ -288,7 +290,6 @@ class PpScanner:
             # если следующий символ является значимым токеном локации,
             # закрываем сырую строку на этом же символе
             self._add_token(tt.RAW_LOC_LINE)
-
 
     def _less_spec_comm_tkn_expect(self, c:str) -> None:
         """ Поглощение токена спецкомментария с удалением строки """
@@ -386,13 +387,16 @@ class PpScanner:
         print(f"Err. {message}: ({self._line_num}, {self._current}).")
 
 def _main():
+    import time
     path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
-    outp = "..\\..\\[examples]\\example_preprocessor\\ppoutp.json"
+    outp = "..\\..\\[examples]\\example_preprocessor\\tokens.json"
     with open(path, 'r', encoding='utf-8') as fp:
         lines = fp.readlines()
-
+    old = time.time()
     scanner = PpScanner(lines)
     scanner.scan_tokens()
+    new = time.time()
+    print(['scanner-time', new-old])
     l: List[Dict[str, Any]] = []
     for t in scanner.get_tokens():
         l.append(t.get_as_node())
