@@ -27,6 +27,9 @@ class PpParser:
         self._curtok_num:int = 0
         self._curtok:Tkn = self._tokens[0]
 
+        self._tbuffer:Optional[Tkn] = None
+        self._eated_count:int = 0
+
         self._loc_is_open:bool = False
 
         self._statements:List[PpStmt] = [] # qsps_file entity
@@ -34,18 +37,18 @@ class PpParser:
     def qsps_file_parse(self) -> None:
         """ Публичная функция вызова парсера. """
         # прежде всего разбиваем файл на директивы и блоки
-
         while not self._is_eof():
-            # если попадается токен пробелов с преформатированием, просто поглощаем его
-            if self._check_type(tt.PREFORMATTER): self._eat_tokens(1)
+            if self._check_type(tt.PREFORMATTER):
+                self._tbuffer = self._curtok
+                self._eat_tokens(1)
             self._statements.append(self._declaration())
+            self._tbuffer = None
         
     def get_statements(self) -> List[PpStmt]:
         return self._statements
 
     def _declaration(self) -> stm.PpStmt[None]:
         """ Распарсиваем целый файл из токенов. """
-        # запоминаем стартовый токен
         if self._loc_is_open:
             if self._check_type(tt.LOC_CLOSE):
                 return self._close_loc()
@@ -71,7 +74,6 @@ class PpParser:
                 self._logic_error(f'Unexpected token in location body: {self._curtok.ttype.name}')
                 return self._raw_line_eating()
         else:
-            # _open_loc
             if self._check_type(tt.LOC_OPEN):
                 return self._open_loc()
             elif self._check_type(tt.RAW_LINE):
@@ -321,129 +323,127 @@ class PpParser:
             - ! обычный комментарий
             - !@ спецкомментарий
             - !@< специальный с удалением """
+        pref, self._tbuffer = self._tbuffer, None
         name = self._curtok
-        value:stm.CommentValue[None] = []
         self._eat_tokens(1) # поглощаем токен объявления комментария
+        value:List[Tkn] = []      
 
         while not self._is_eof():
             
             if self._check_type(tt.NEWLINE):
+                value.append(self._curtok)
                 self._eat_tokens(1)
                 break
 
             if self._check_type(tt.LEFT_BRACE):
                 # блок фигурных скобок внутри комментария
                 value.extend(self._comment_brace_block())
-            elif self._check_type(tt.QUOTE):
+            elif self._match(tt.QUOTE, tt.APOSTROPHE):
                 # блок строк внутри комментария
-                value.extend(self._comment_quote_block())
-            elif self._check_type(tt.APOSTROPHE):
-                value.extend(self._comment_apostrophe_block())
+                value.extend(self._comment_string_block())
             else:
-                value.append(stm.PpLiteral[None](self._curtok))
+                value.append(self._curtok)
                 self._eat_tokens(1)
 
-        return stm.CommentStmt[None](name, value)
+        return stm.CommentStmt[None](pref, name, value)
 
-    def _comment_apostrophe_block(self) -> stm.CommentValue[None]:
+    def _comment_string_block(self) -> List[Tkn]:
         """ Получаем строку в комментарии """
-        value:stm.CommentValue[None] = []
-        value.append(stm.PpLiteral[None](self._curtok))
+        ttype = self._curtok.ttype
+        value:List[Tkn] = []
+        value.append(self._curtok)
         self._eat_tokens(1) # поглощаем токен кавычки
-        while not (self._is_eof() or self._curtok.ttype == tt.APOSTROPHE):
-            # выполняем, пока не достигнем правой кавычки или конца файла
-            value.append(stm.PpLiteral[None](self._curtok))
+        while not self._is_eof():
+            if self._check_type(ttype):
+                value.append(self._curtok)
+                self._eat_tokens(1)
+                break
+            value.append(self._curtok)
             self._eat_tokens(1)
-        if self._check_type(tt.APOSTROPHE):
-            value.append(stm.PpLiteral[None](self._curtok))
-            self._eat_tokens(1) # поглощаем токен кавычки
         else:
-            self._error('Comments Apostrophe Block. Unexpectable EOF')
+            self._error('Comments Apostrophe Block. Unexpectable EOF')        
         return value
 
-    def _comment_quote_block(self) -> stm.CommentValue[None]:
-        """ Получаем строку в комментарии """
-        value:stm.CommentValue[None] = []
-        value.append(stm.PpLiteral[None](self._curtok))
-        self._eat_tokens(1) # поглощаем токен кавычки
-        while not (self._is_eof() or self._check_type(tt.QUOTE)):
-            # выполняем, пока не достигнем правой кавычки или конца файла
-            value.append(stm.PpLiteral[None](self._curtok))
-            self._eat_tokens(1)
-        if self._check_type(tt.QUOTE):
-            value.append(stm.PpLiteral[None](self._curtok))
-            self._eat_tokens(1) # поглощаем токен кавычки
-        else:
-            self._error('Comments Quote Block. Unexpectable EOF')
-        return value
-
-    def _comment_brace_block(self) -> stm.CommentValue[None]:
+    def _comment_brace_block(self) -> List[Tkn]:
         """Extract brace block"""
-        value: List[stm.PpLiteral[None]] = []
-        value.append(stm.PpLiteral[None](self._curtok))
+        value:List[Tkn] = []
+        value.append(self._curtok)
         self._eat_tokens(1) # поглощаем токен левой скобки
-        while not (self._is_eof() or self._curtok.ttype == tt.RIGHT_BRACE):
-            # выполняем, пока не достигнем правой скобки или конца файла
-            if self._check_type(tt.LEFT_BRACE):
+        while not self._is_eof():
+            if self._curtok.ttype == tt.RIGHT_BRACE:
+                value.append(self._curtok)
+                self._eat_tokens(1) # поглощаем токен правой скобки
+                break
+            elif self._check_type(tt.LEFT_BRACE):
                 value.extend(self._comment_brace_block())
-            elif self._check_type(tt.QUOTE):
+            elif self._match(tt.QUOTE, tt.APOSTROPHE):
                 # блок строк внутри комментария
-                value.extend(self._comment_quote_block())
-            elif self._check_type(tt.APOSTROPHE):
-                value.extend(self._comment_apostrophe_block())
+                value.extend(self._comment_string_block())
             else:
-                value.append(stm.PpLiteral[None](self._curtok))
+                value.append(self._curtok)
                 self._eat_tokens(1)
-        if self._check_type(tt.RIGHT_BRACE):
-            value.append(stm.PpLiteral[None](self._curtok))
-            self._eat_tokens(1) # поглощаем токен правой скобки
         else:
             self._error('Comments Brace Block. Unexpectable EOF')
         return value
 
     def _raw_line_eating(self) -> stm.RawLineStmt[None]:
         """ Поглощение токенов для сырой строки вне локации """
-        value:List[stm.PpLiteral[None]] = []
-        while not self._check_type(tt.NEWLINE):
-            value.append(stm.PpLiteral[None](self._curtok))
+        pref, self._tbuffer = self._tbuffer, None
+        value:List[Tkn] = []
+        while not self._is_eof():
+            if self._check_type(tt.NEWLINE):
+                value.append(self._curtok)
+                self._eat_tokens(1)
+                break
+            value.append(self._curtok)
             self._eat_tokens(1)
-        return stm.RawLineStmt[None](value)
+        return stm.RawLineStmt[None](pref, value)
 
     def _directive(self) -> Optional[stm.PpDirective[None]]:
         """ Получаем директиву препроцессора, если возможно. """
+        pref, self._tbuffer = self._tbuffer, None
+        lexeme = self._curtok # !@pp:
         self._eat_tokens(1) # пожираем токен объявления директивы
-        next_is_newline = self._next_peek().ttype == tt.NEWLINE
-        if self._curtok.ttype == tt.ENDIF_STMT and next_is_newline:
+        next_peek = self._next_peek()
+        next_is_newline = next_peek.ttype == tt.NEWLINE
+        if self._check_type(tt.ENDIF_STMT) and next_is_newline:
             body = dir.EndifDir[None](self._curtok)
             self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(body)
+            return stm.PpDirective(pref, lexeme, body, next_peek)
         # if self._curtok.ttype == tt.NOPP_STMT and next_is_newline:
         #     body = dir.NoppDir[None](self._curtok)
         #     self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-        #     return stm.PpDirective(body)
+        #     return stm.PpDirective(pref, lexeme, body, next_peek)
         if self._curtok.ttype == tt.OFF_STMT and next_is_newline:
             body = dir.OffDir[None](self._curtok)
             self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(body)
+            return stm.PpDirective(pref, lexeme, body, next_peek)
         if self._curtok.ttype == tt.ON_STMT and next_is_newline:
             body = dir.OnDir[None](self._curtok)
             self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(body)
+            return stm.PpDirective(pref, lexeme, body, next_peek)
         if self._curtok.ttype == tt.NO_SAVECOMM_STMT and next_is_newline:
             body = dir.NoSaveCommDir[None](self._curtok)
             self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(body)
+            return stm.PpDirective(pref, lexeme, body, next_peek)
         if self._curtok.ttype == tt.SAVECOMM_STMT and next_is_newline:
             body = dir.SaveCommDir[None](self._curtok)
             self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(body)
-        if self._curtok.ttype == tt.VAR_STMT:
+            return stm.PpDirective(pref, lexeme, body, next_peek)
+        if self._check_type(tt.VAR_STMT):
             self._eat_tokens(1) # пожираем токен объявления переменной
             assignment_validation:Optional[dir.AssignmentDir[None]] = self._assignment_dir()
             if assignment_validation is None:
                 return None
-            return stm.PpDirective[None](assignment_validation)
+            end_assignment = self._curtok # newline ещё не пожрали
+            self._eat_tokens(1)
+            return stm.PpDirective[None](pref, lexeme, assignment_validation, end_assignment)
         if self._check_type(tt.IF_STMT):
+
+            ...
+            ...
+            ...
+
             self._eat_tokens(1) # пожирем IF_STMT
             condition_validation:Optional[dir.ConditionDir[None]] = self._condition_dir()
             if condition_validation is None: return None
@@ -606,12 +606,12 @@ class PpParser:
         if not self._check_type(tt.IDENTIFIER):
             self._error('Expected VARIABLE NAME')
             return None
-        key = self._curtok # TODO: добавить запись ключа и значения в окружение препроцессора
+        key = self._curtok
         self._eat_tokens(1)
         # далее могут идти три варианта
         if self._check_type(tt.RIGHT_PAREN) and self._next_peek().ttype == tt.NEWLINE:
             # правая скобка и newline означают, что объявление завершено
-            self._eat_tokens(2) # пожираем два токена, в т.ч. newline
+            self._eat_tokens(1) # newline не пожираем
             return dir.AssignmentDir[None](key, None)
         if self._check_type(tt.ASSIGNMENT_OPERATOR):
             self._eat_tokens(1)

@@ -92,8 +92,9 @@ class StmtsLine(PpStmt[R]):
 
 @dataclass(eq=False)
 class CommentStmt(PpStmt[R]):
+    pref:Optional[PpToken]
     name:PpToken
-    value:'CommentValue[R]'
+    value:List[PpToken]
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_comment_stmt(self)
 
@@ -110,14 +111,18 @@ class PpQspLocClose(PpStmt[R]):
         return visitor.visit_loc_close_dclrt(self)
 
 @dataclass(eq=False)
-class RawLineStmt(PpStmt[R]):
-    value:List['PpLiteral[R]']
+class RawLineStmt(PpStmt[R]): # Raw Line between location
+    pref:Optional[PpToken]
+    value:List[PpToken]
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_raw_line_dclrt(self)
 
 @dataclass
 class PpDirective(PpStmt[R]):
+    pref:Optional[PpToken]
+    lexeme:PpToken
     body:dir.PpDir[R]
+    end:PpToken # tt.NEWLINE
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_pp_directive(self)
 
@@ -133,7 +138,6 @@ class PpLiteral(PpStmt[R]):
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_pp_literal(self)
 
-CommentValue = List[PpLiteral[R]]
 OtherStmtChain = List[PpStmt[R]]
 StringLine = Union[RawStringLine[R], PpDirective[R]]
 
