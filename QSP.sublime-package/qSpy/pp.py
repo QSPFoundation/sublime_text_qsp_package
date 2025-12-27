@@ -1,8 +1,24 @@
 import re
-from typing import (List, Literal, Tuple, Dict, Match, Optional, Callable, Union)
+from typing import (List, Literal, Tuple, Dict, Match, Optional, Callable, Union, cast)
+
+Modes = Dict[str, Union[bool, str, Dict[str, bool]]]
+PpVars = Dict[str, bool]
+CorTable = Dict[
+	Literal['apostrophe', 'quote', 'brace-open'],
+	Literal['apostrophes', 'quotes', 'brackets']
+]
+ScopeType = Optional[Literal[
+	'apostrophe', 'quote', 'brace-open',
+	'brace-close', 'simple-speccom', 'strong-speccom'
+]]
+ScopeRgx = Match[str]
+PrevTxt = str
+PostTxt = str
 
 # regular expressions constants
-_DUMMY_MATCH = re.compile(r'^\s*$').match('')
+_dummy_match_temp = re.compile(r'^\s*$').match('')
+assert _dummy_match_temp is not None
+_DUMMY_MATCH:ScopeRgx = _dummy_match_temp
 
 _PP_DIRECTIVE_START = re.compile(r'^!@pp:')
 _PP_ON_DIRECTIVE = re.compile(r'^on\n$')
@@ -83,7 +99,7 @@ def met_condition(variables:dict, directive:str) -> bool:
 def open_condition(command:str, condition:bool, args:dict) -> None:
 	""" Open condition for loop use. """
 	instructions:List[str] = re.split(r'\s+', command.strip())
-	prev_args:dict = args['if']
+	prev_args:Dict[str, bool] = args['if']
 	for i in instructions:
 		if i == "exclude":
 			prev_args["include"] = args["include"]
@@ -100,7 +116,7 @@ def open_condition(command:str, condition:bool, args:dict) -> None:
 	args["openif"] = True
 
 # функция, которая правильно закрывает условие
-def close_condition(args:dict) -> None:
+def close_condition(args:Modes) -> None:
 	""" Right closing of condition """
 	prev_args = args["if"]
 	args["include"] = prev_args["include"]
@@ -108,38 +124,37 @@ def close_condition(args:dict) -> None:
 	args["savecomm"] = prev_args["savecomm"]
 	
 
-def find_speccom_scope(string_line:str) -> Tuple[Optional[str], str, Match[str], str]:
+def find_speccom_scope(string_line:str) -> Tuple[ScopeType, PrevTxt, ScopeRgx, PostTxt]:
 	""" Find in string scopes of special comments """
 	maximal = len(string_line)+1
-	mini_data_base:Dict[str, list] = {
-		"scope-name": [
-			'simple-speccom',
-			'strong-speccom',
-			'apostrophe',
-			'quote',
-			'brace-open',
-			'brace-close'
-		],
-		"scope-regexp":
-		[
-			_SIMPLE_SPECCOM.search(string_line),
-			_HARDER_SPECCOM.search(string_line),
-			_DOUBLE_QUOTES.search(string_line),
-			_SINGLE_QUOTES.search(string_line),
-			_OPEN_BRACE.search(string_line),
-			_CLOSE_BRACE.search(string_line)
-		],
-		"scope-instring":
-		[]
-	}
-	for i, _ in enumerate(mini_data_base['scope-name']):
-		match_in:Match[str] = mini_data_base['scope-regexp'][i]
-		mini_data_base['scope-instring'].append(match_in.start(0) if match_in else maximal)
-	minimal:int = min(mini_data_base['scope-instring'])
+	# mini_data_base:MiniDataBase = {
+	scope_names:List[ScopeType] = [
+		'simple-speccom',
+		'strong-speccom',
+		'apostrophe',
+		'quote',
+		'brace-open',
+		'brace-close'
+	]
+	scope_regexps:List[Optional[ScopeRgx]] = [
+		_SIMPLE_SPECCOM.search(string_line),
+		_HARDER_SPECCOM.search(string_line),
+		_DOUBLE_QUOTES.search(string_line),
+		_SINGLE_QUOTES.search(string_line),
+		_OPEN_BRACE.search(string_line),
+		_CLOSE_BRACE.search(string_line)
+	]
+	scope_instring:List[int] = []
+
+	for i, _ in enumerate(scope_names):
+		match_in:Optional[ScopeRgx] = scope_regexps[i]
+		scope_instring.append(match_in.start(0) if match_in else maximal)
+	minimal:int = min(scope_instring)
 	if minimal != maximal:
-		i:int = mini_data_base['scope-instring'].index(minimal)
-		scope_type:str = mini_data_base['scope-name'][i]
-		scope_regexp_obj:Match[str] = mini_data_base['scope-regexp'][i]
+		i:int = scope_instring.index(minimal)
+		scope_type:ScopeType = scope_names[i]
+		scope_regexp_obj:Optional[ScopeRgx] = scope_regexps[i]
+		assert scope_regexp_obj is not None
 		scope:str = scope_regexp_obj.group(0)
 		q:int = scope_regexp_obj.start(0)
 		prev_line:str = string_line[0:q]
@@ -149,7 +164,7 @@ def find_speccom_scope(string_line:str) -> Tuple[Optional[str], str, Match[str],
 		return None, '', _DUMMY_MATCH, string_line
 
 
-def pp_string(text_lines:List[str], string:str, args:dict) -> None:
+def pp_string(text_lines:List[str], string:str, args:Modes) -> None:
 	""" обработка строки. Поиск спецкомментариев """
 	if not args["include"]:
 		# Режим добавления строк к результирующему списку отключен,
@@ -161,7 +176,7 @@ def pp_string(text_lines:List[str], string:str, args:dict) -> None:
 		# 1. режим добавления строк включен;
 		# 2. препроцессор включен;
 		# 3. сохранение спецкомментариев отключено
-		correspondence_table:dict = {
+		correspondence_table:CorTable = {
 			# scope_type: quote-type
 			'apostrophe': 'apostrophes',
 			'quote': 'quotes',
@@ -175,7 +190,7 @@ def pp_string(text_lines:List[str], string:str, args:dict) -> None:
 			x.count('"') % 2 == 0 and x.count("'") % 2 == 0 and x.count('{') <= x.count('}'))
 		
 		def _head_tail_fill(result_list:List[str],
-					  split_str:Tuple[Optional[str], str, Match[str], str]) -> Tuple[str, str]:
+					  split_str:Tuple[ScopeType, PrevTxt, ScopeRgx, PostTxt]) -> PostTxt:
 			_, prev_text, scope_regexp_obj, post_text = split_str
 			result_list.append(prev_text + scope_regexp_obj.group(0))
 			return post_text
@@ -202,6 +217,7 @@ def pp_string(text_lines:List[str], string:str, args:dict) -> None:
 					result_list.append(string)
 					break
 			elif scope_type is not None:
+				scope_type = cast(Literal['apostrophe', 'quote', 'brace-open'], scope_type)
 				if args["quote"] == correspondence_table.get(scope_type, None):
 					args["openquote"] = False
 					args["quote"] = ""
@@ -214,19 +230,21 @@ def pp_string(text_lines:List[str], string:str, args:dict) -> None:
 	if args["openquote"] or result.split(): # если открыты кавычки, или это не пустая строка
 		text_lines.append(result)
 
-def pp_this_file(file_path:str, args:dict, variables:dict = None) -> str:
+def pp_this_file(file_path:str, args:Modes, variables:Optional[PpVars] = None) -> str:
 	""" Preprocessing of input file and Returns output text. """
 	with open(file_path, 'r', encoding='utf-8') as pp_file:
 		file_lines = pp_file.readlines() # получаем список всех строк файла
 	result_lines = pp_this_lines(file_lines, args, variables)
 	return ''.join(result_lines)
 
-def pp_this_lines(file_lines:List[str], args:Dict[str, bool], variables:Dict[str, bool] = None) -> List[str]:
+
+
+def pp_this_lines(file_lines:List[str], args:Modes, variables:Optional[PpVars] = None) -> List[str]:
 	""" List of lines Preprocessing. Return list of lines after preprocesing. """
 	# стандартные значения, если не указаны:
 	if not variables: variables = { "Initial": True, "True": True, "False": False }
 	result_text:List[str] = [] # результат обработки: список строк
-	arguments:Dict[str, Union[bool, Dict[str, bool]]] = {
+	arguments:Modes = {
 		# словарь режимов (текущих аргументов):
 		"include": True, # пока включен этот режим, строки добавляются в результат
 		"pp": True, # пока включен этот режим, строки обрабатываются парсером
@@ -273,7 +291,7 @@ def pp_this_lines(file_lines:List[str], args:Dict[str, bool], variables:Dict[str
 def _autotest():
 	""" Autotest will works if all files are exists. """
 	import time
-	args={"include":True, "pp":True, "savecomm":False} # глобальные значения
+	args:Modes={"include":True, "pp":True, "savecomm":False} # глобальные значения
 	source_file_path = "../../[examples]/example_preprocessor/pptest.qsps"
 	autotest_file_path = "../../[examples]/example_preprocessor/for_autotest.qsps"
 	with open(source_file_path, 'r', encoding='utf-8') as pp_file:
@@ -301,10 +319,14 @@ def _autotest():
 
 # main
 def main():
-	args={"include":True, "pp":True, "savecomm":False} # глобальные значения
+	import time
+	args:Modes={"include":True, "pp":True, "savecomm":False} # глобальные значения
 	source_file_path = "../../[examples]/example_preprocessor/pptest.qsps"
 	output_file_path = "../../[examples]/example_preprocessor/output.qsps"
+	old = time.time()
 	output_text = pp_this_file(source_file_path, args)
+	new = time.time()
+	print(['old pp, with open file', new-old])
 	with open(output_file_path, 'w', encoding='utf-8') as fp:
 		fp.write(output_text)
 

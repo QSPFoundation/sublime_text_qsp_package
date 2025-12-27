@@ -43,7 +43,7 @@ class QspsPP:
 
 if __name__ == "__main__":
     path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
-    out = "..\\..\\[examples]\\example_preprocessor\\pp_ast.json"
+    out = ".\\_test\\pp_ast.json"
     with open(path, 'r', encoding='utf-8') as fp:
         qsps_lines = fp.readlines()
 

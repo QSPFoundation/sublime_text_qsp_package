@@ -389,7 +389,7 @@ class PpScanner:
 def _main():
     import time
     path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
-    outp = "..\\..\\[examples]\\example_preprocessor\\tokens.json"
+    outp = ".\\_test\\tokens.json"
     with open(path, 'r', encoding='utf-8') as fp:
         lines = fp.readlines()
     old = time.time()
