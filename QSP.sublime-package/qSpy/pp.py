@@ -2,7 +2,7 @@ import re
 from typing import (List, Literal, Tuple, Dict, Match, Optional, Callable, Union, cast)
 
 Modes = Dict[str, Union[bool, str, Dict[str, bool]]]
-PpVars = Dict[str, bool]
+PpVars = Dict[str, Union[bool,str]]
 CorTable = Dict[
 	Literal['apostrophe', 'quote', 'brace-open'],
 	Literal['apostrophes', 'quotes', 'brackets']
@@ -45,12 +45,12 @@ def extract_directive(string:str, directive:Literal['var', 'if']) -> str:
 	return string.replace(directive, '', 1).strip()[1:-1]
 
 # функция, добавляющая метку и значение
-def add_variable(variables:dict, directive:str) -> None:
+def add_variable(variables:PpVars, directive:str) -> None:
 	""" Add variable and value to variables dictionary. """
-	temp = [False, False]
+	temp:List[Union[bool, str]] = [False, False]
 	if "=" in directive:
 		# делим по знаку равенства
-		direct_list = directive.split("=")
+		direct_list:List[str] = directive.split("=")
 		temp[0] = (variables[direct_list[0]] if direct_list[0] in variables else direct_list[0])
 		temp[1] = (variables[direct_list[1]] if direct_list[1] in variables else direct_list[1])
 		if direct_list[0] in variables and type(variables[direct_list[0]]) == bool:
@@ -65,7 +65,7 @@ def add_variable(variables:dict, directive:str) -> None:
 		variables[directive] = True
 
 # функция распарсивает строку условия на элементы
-def parse_condition(variables:dict, directive:str) -> None:
+def parse_condition(variables:PpVars, directive:str) -> List[str]:
 	""" Condition Parsing at operands """
 	operand_list:List[str] = _OPERANDS.split(directive)
 	for operand in operand_list:
@@ -78,9 +78,9 @@ def parse_condition(variables:dict, directive:str) -> None:
 	return operand_list
 
 # функция, которая проверяет, выполняется ли условие
-def met_condition(variables:dict, directive:str) -> bool:
+def met_condition(variables:PpVars, directive:str) -> bool:
 	""" Check if the condition is met. """
-	result = dict()
+	result:Dict[str, bool] = {}
 	operands:List[str] = parse_condition(variables, directive)
 	# следующий цикл формирует условие с действительными значениями вместо элементов
 	for var in operands:
@@ -96,29 +96,29 @@ def met_condition(variables:dict, directive:str) -> bool:
 	return result['out']
 
 # функция, которая правильно открывает блок условия
-def open_condition(command:str, condition:bool, args:dict) -> None:
+def open_condition(command:str, condition:bool, args:Modes) -> None:
 	""" Open condition for loop use. """
 	instructions:List[str] = re.split(r'\s+', command.strip())
-	prev_args:Dict[str, bool] = args['if']
+	prev_args:Dict[str, bool] = cast(Dict[str, bool], args['if'])
 	for i in instructions:
 		if i == "exclude":
-			prev_args["include"] = args["include"]
+			prev_args["include"] = cast(bool, args["include"])
 			args["include"] = not condition
 		elif i == "include":
-			prev_args["include"] = args["include"]
+			prev_args["include"] = cast(bool, args["include"])
 			args["include"] = condition
 		elif i == "nopp":
-			prev_args["pp"] = args["pp"]
+			prev_args["pp"] = cast(bool, args["pp"])
 			args["pp"] = not condition
 		elif i == "savecomm":
-			prev_args["savecomm"] = args["savecomm"]
+			prev_args["savecomm"] = cast(bool, args["savecomm"])
 			args["savecomm"] = condition
 	args["openif"] = True
 
 # функция, которая правильно закрывает условие
 def close_condition(args:Modes) -> None:
 	""" Right closing of condition """
-	prev_args = args["if"]
+	prev_args: Dict[str, bool] = cast(Dict[str, bool], args["if"])
 	args["include"] = prev_args["include"]
 	args["pp"] = prev_args["pp"]
 	args["savecomm"] = prev_args["savecomm"]
@@ -313,7 +313,7 @@ def _autotest():
 			print('Extra lines:', output_lines[i:])
 			return None
 		elif output_lines[i] != autotest_lines[i]:
-			print('Lines don\'t match', [output_lines[i], autotest_lines[i]])
+			print(['Lines don\'t match'], [output_lines[i], autotest_lines[i]])
 			return None
 	print('Autotest is ok!')
 
