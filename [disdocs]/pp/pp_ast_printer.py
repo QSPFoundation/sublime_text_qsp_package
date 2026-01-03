@@ -13,6 +13,8 @@ AstNode = Dict[
         'class', # class of node /ex. BracketBlock/
         'sub', # subclass of node /ex. token type of open bracket/
         'value', # value / lexeme of token, chain of stmt and other /
+        'pref', # preformatting token,
+        'end', # newline token
     ],
 
     # value
@@ -91,7 +93,8 @@ class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[
             'type': 'stmt',
             'class': 'CommentStmt',
             'sub': stmt.name.ttype.name,
-            'value': [el.accept(self) for el in stmt.value]
+            'value': ([self._token(stmt.pref)] if stmt.pref else [])
+                     + [self._token(el) for el in stmt.value]
         }
 
     def visit_loc_open_dclrt(self, stmt: stm.PpQspLocOpen[AstNode]) -> AstNode:
@@ -114,14 +117,18 @@ class AstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[
         return {
             'type': 'stmt',
             'class': 'RawLineStmt',
-            'value': [el.accept(self) for el in stmt.value]
+            'value': ([self._token(stmt.pref)] if stmt.pref else [])
+                     + [self._token(el) for el in stmt.value]
         }
 
     def visit_pp_directive(self, stmt: stm.PpDirective[AstNode]) -> AstNode:
         return {
             'type': 'stmt',
             'class': 'PpDirective',
-            'value': stmt.body.accept(self)
+            'sub': stmt.lexeme.lexeme,
+            'pref': self._token(stmt.pref) if stmt.pref else None,
+            'value': stmt.body.accept(self),
+            'end': self._token(stmt.end)
         }
 
     def visit_pp_literal(self, stmt: stm.PpLiteral[AstNode]) -> AstNode:

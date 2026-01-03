@@ -47,9 +47,13 @@ if __name__ == "__main__":
     with open(path, 'r', encoding='utf-8') as fp:
         qsps_lines = fp.readlines()
 
+    import time
+    old = time.time()
     preprocessor = QspsPP()
     ast_printer = AstPrinter()
     preprocessor.pp_this_lines(qsps_lines, ast_printer)
     ast_tree = ast_printer.get_ast()
+    new = time.time()
+    print(['new pp all time: ', new-old])
     with open(out, 'w', encoding='utf-8') as fp:
         json.dump(ast_tree, fp, ensure_ascii=False, indent=2)

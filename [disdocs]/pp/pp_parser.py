@@ -1,5 +1,5 @@
 # from tracemalloc import start
-from typing import List, Callable, Optional, Any
+from typing import List, Optional, Any
 
 from pp_tokens import PpToken as Tkn
 from pp_tokens import PpTokenType as tt
@@ -8,7 +8,7 @@ import pp_stmts as stm
 import pp_dir as dir
 import pp_expr as expr
 
-Stack = List[Callable[[Tkn], None]]
+# Stack = List[Callable[[Tkn], None]]
 PpStmt = stm.PpStmt[Any]
 
 class PpParser:
@@ -402,10 +402,11 @@ class PpParser:
     def _directive(self) -> Optional[stm.PpDirective[None]]:
         """ Получаем директиву препроцессора, если возможно. """
         pref, self._tbuffer = self._tbuffer, None
-        lexeme = self._curtok # !@pp:
+        lexeme = self._curtok # !@pp: tt.OPEN_DIRECTIVE_STMT
         self._eat_tokens(1) # пожираем токен объявления директивы
         next_peek = self._next_peek()
-        next_is_newline = next_peek.ttype == tt.NEWLINE
+        next_is_newline = (next_peek.ttype == tt.NEWLINE)
+
         if self._check_type(tt.ENDIF_STMT) and next_is_newline:
             body = dir.EndifDir[None](self._curtok)
             self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
@@ -430,6 +431,7 @@ class PpParser:
             body = dir.SaveCommDir[None](self._curtok)
             self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
             return stm.PpDirective(pref, lexeme, body, next_peek)
+
         if self._check_type(tt.VAR_STMT):
             self._eat_tokens(1) # пожираем токен объявления переменной
             assignment_validation:Optional[dir.AssignmentDir[None]] = self._assignment_dir()
@@ -438,16 +440,12 @@ class PpParser:
             end_assignment = self._curtok # newline ещё не пожрали
             self._eat_tokens(1)
             return stm.PpDirective[None](pref, lexeme, assignment_validation, end_assignment)
+
         if self._check_type(tt.IF_STMT):
-
-            ...
-            ...
-            ...
-
             self._eat_tokens(1) # пожирем IF_STMT
             condition_validation:Optional[dir.ConditionDir[None]] = self._condition_dir()
             if condition_validation is None: return None
-            return stm.PpDirective[None](condition_validation)
+            return stm.PpDirective[None](pref, lexeme, condition_validation, next_peek)
         return None # если ни одна цепочка токенов не прошла валидацию при парсинге
 
     def _condition_dir(self) -> Optional[dir.ConditionDir[None]]:
@@ -627,8 +625,7 @@ class PpParser:
             if not self._check_type(tt.NEWLINE): # директива должна заканчиваться переносом на новую строку
                 self._error('Expected end of Directive')
                 return None
-            # теперь, когда вся валидация пройдена, поглощаем токен новой строки, и возвращаем присвоение
-            self._eat_tokens(1)
+            # теперь, когда вся валидация пройдена возвращаем присвоение
             return dir.AssignmentDir[None](key, value)
         # любой другой токен означает, что что-то сломано в комманде
         self._error('Unexpected token')
@@ -650,9 +647,10 @@ class PpParser:
     
     def _raw_line(self) -> stm.RawLineStmt[None]:
         """ Raw Line Statement Create """
-        value:List[stm.PpLiteral[None]] = [stm.PpLiteral[None](self._curtok)]
+        pref, self._tbuffer = self._tbuffer, None
+        value:List[Tkn] = [self._curtok]
         self._eat_tokens(1)
-        return stm.RawLineStmt[None](value)
+        return stm.RawLineStmt[None](pref, value)
 
     # aux operations
     def _is_eof(self) -> bool:

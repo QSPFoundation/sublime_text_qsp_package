@@ -222,7 +222,7 @@ class PpScanner:
 
     def _preformatter_expect(self, c:str) -> None:
         """ Поглощение пробелов в начале строки """
-        if not c in (' ', '\t'):
+        if not self._next_in_line() in (' ', '\t'):
             self._add_token(tt.PREFORMATTER) # формируем токен
             self._scan_funcs.pop() # отключаем поглощение
 

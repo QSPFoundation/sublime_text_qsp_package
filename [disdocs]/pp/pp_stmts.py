@@ -119,8 +119,8 @@ class RawLineStmt(PpStmt[R]): # Raw Line between location
 
 @dataclass
 class PpDirective(PpStmt[R]):
-    pref:Optional[PpToken]
-    lexeme:PpToken
+    pref:Optional[PpToken] # tt.PREFORMATTER
+    lexeme:PpToken # tt.OPEN_DIRECTIVE_STMT
     body:dir.PpDir[R]
     end:PpToken # tt.NEWLINE
     def accept(self, visitor:PpVisitor[R]) -> R:
