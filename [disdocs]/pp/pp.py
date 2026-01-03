@@ -10,6 +10,8 @@ from pp_int import PpInt
 from pp_tokens import PpToken
 from pp_tokens import PpTokenType as tt
 
+from dir_scanner import DirsScaner
+
 class QspsPP:
     """ Препроцессор для файлов  """
     def __init__(self) -> None:
@@ -21,6 +23,17 @@ class QspsPP:
                       qsps_lines: List[str],
                       ast_printer:Optional[AstPrinter]=None) -> List[str]:
         """ Preprocess the list of lines. """
+        # 1. Scan by directives
+        dirs_scanner = DirsScaner(qsps_lines)
+        dirs_scanner.scan_tokens()
+        dirs_tokens = dirs_scanner.get_tokens()
+        # 2. Parse directives
+        dirs_parser = DirParser(dirs_tokens)
+        # 3. Interpret directives, and marked lines
+
+        # 4. Scan by Stmts
+        # 5. Parse by Stmts
+        # 6. Interpret by Stmts and markers
 
         scanner = PpScanner(qsps_lines)
         scanner.scan_tokens()

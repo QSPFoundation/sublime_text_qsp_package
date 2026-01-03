@@ -1,0 +1,22 @@
+{
+	"nodes":[
+		{"id":"aea7289ceda4e5fd","x":-295,"y":-220,"width":125,"height":60,"type":"text","text":"pp = True"},
+		{"id":"5d3e799eff10b588","x":140,"y":-220,"width":135,"height":60,"type":"text","text":"pp = False"},
+		{"id":"69838e93488a4896","x":-45,"y":-220,"width":70,"height":60,"type":"text","text":"pp"},
+		{"id":"1f7c511488f1c995","x":-295,"y":-20,"width":250,"height":60,"type":"text","text":"pp_if = False"},
+		{"id":"1c62cb67b41b36a3","x":-295,"y":100,"width":250,"height":60,"type":"text","text":"Не выполняются директивы кроме endif"},
+		{"id":"3027dd184ce1d60a","x":25,"y":-20,"width":250,"height":60,"type":"text","text":"pp_if = True"},
+		{"id":"4a84abc52147b7c5","x":25,"y":100,"width":250,"height":60,"type":"text","text":"Выполняются все директивы до endif"},
+		{"id":"83d4d10c1ded60e3","x":-135,"y":-420,"width":250,"height":60,"type":"text","text":"pp_global"}
+	],
+	"edges":[
+		{"id":"f2b30b3b33c1c8f5","fromNode":"83d4d10c1ded60e3","fromSide":"bottom","toNode":"aea7289ceda4e5fd","toSide":"top","label":"On"},
+		{"id":"eab1428b5ad0fa71","fromNode":"83d4d10c1ded60e3","fromSide":"bottom","toNode":"5d3e799eff10b588","toSide":"top","label":"Off"},
+		{"id":"601cb813ad3541a3","fromNode":"69838e93488a4896","fromSide":"bottom","toNode":"1f7c511488f1c995","toSide":"top","label":"True"},
+		{"id":"7c253f00358cf5e2","fromNode":"69838e93488a4896","fromSide":"bottom","toNode":"3027dd184ce1d60a","toSide":"top","label":"False"},
+		{"id":"62dc8006bc9458b7","fromNode":"3027dd184ce1d60a","fromSide":"bottom","toNode":"4a84abc52147b7c5","toSide":"top"},
+		{"id":"9b19da1760440061","fromNode":"1f7c511488f1c995","fromSide":"bottom","toNode":"1c62cb67b41b36a3","toSide":"top"},
+		{"id":"3e4b2a87a6772f62","fromNode":"aea7289ceda4e5fd","fromSide":"right","toNode":"69838e93488a4896","toSide":"left"},
+		{"id":"f7d1a1684bd7c8e0","fromNode":"5d3e799eff10b588","fromSide":"left","toNode":"69838e93488a4896","toSide":"right"}
+	]
+}

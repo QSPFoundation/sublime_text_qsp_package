@@ -27,11 +27,11 @@ class PpVisitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
-    def visit_pp_directive(self, stmt:'PpDirective[R]') -> R:
+    def visit_loc_close_dclrt(self, stmt:'PpQspLocClose[R]') -> R:
         ...
 
     @abstractmethod
-    def visit_loc_close_dclrt(self, stmt:'PpQspLocClose[R]') -> R:
+    def visit_pp_directive(self, stmt:'PpDirective[R]') -> R:
         ...
 
     @abstractmethod

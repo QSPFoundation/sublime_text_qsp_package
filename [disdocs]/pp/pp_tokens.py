@@ -33,6 +33,13 @@ class PpTokenType(IntEnum):
     LESS_SPEC_COMM = auto()
     EXCLAMATION_SIGN = auto()
 
+    # Raw Lines
+    
+    RAW_LINE = auto()
+    RAW_LOC_LINE = auto()
+
+    QSPS_LINE = auto()
+
     # PreProcessors Directives tokens:
     OPEN_DIRECTIVE_STMT = auto()
     IF_STMT = auto()
@@ -43,7 +50,6 @@ class PpTokenType(IntEnum):
     OFF_STMT = auto()
     SAVECOMM_STMT = auto()
     NO_SAVECOMM_STMT = auto()
-    # NOPP_STMT = auto()
     INCLUDE_STMT = auto()
     EXCLUDE_STMT = auto()
     ENDIF_STMT = auto()
@@ -57,9 +63,7 @@ class PpTokenType(IntEnum):
 
     IDENTIFIER = auto() # любая переменная или её значение
 
-    RAW_LINE = auto()
-    RAW_LOC_LINE = auto()
-
+    # EOF
     EOF = auto()
 
 # ---------------------------- Token Class ------------------------------ #

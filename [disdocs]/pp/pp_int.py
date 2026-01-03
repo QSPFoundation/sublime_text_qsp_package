@@ -1,4 +1,4 @@
-from typing import List, Dict, Union, Literal, Callable
+from typing import List, Dict, Union, Literal
 
 from pp_tokens import PpTokenType as tt
 
@@ -9,6 +9,15 @@ import pp_dir as dir
 from pp_environment import PpEnvironment
 
 AstNode = Union[None, bool, str]
+Modes = Dict[
+    Literal[
+        'pp',
+        'no_save_comm',
+        'open_if',
+        'include',
+        'loc'
+    ],
+    bool]
 
 class PpInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNode]):
 
@@ -24,60 +33,69 @@ class PpInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNo
                  qsps_raw_lines:List[str]) -> None:
         self._ns = ns # ссылка на общи для всего препроцессора неймспейс
         self._stmts = stmts
-        self._qsps_pp_lines:List[str] = []
+        self._output_lines:List[str] = []
         self._qsps_raw_lines:List[str] = qsps_raw_lines
 
         # TODO: сюда должен падать режим от препроцессора.
         # TODO: наверное его стоит прописывать в окружении
-        self._modes:Dict[
-            Literal['pp', 'no_save_comm', 'open_if', 'include', 'loc'], bool] = {
+        self._modes:List[Modes] = [{
             'pp': False, # on True preprocessor is work
             'no_save_comm': True, # on True spec-comments don't saves in file
-            'open_if': False, # on True condition block is open
+            'open_if': False, # on True condition block is open. На старте условие всегда закрыто!
             'include': True, # on True qsps-lines includes in result
             'loc': False, # if location is opened - True
-        }
+        }]
 
     def run(self) -> None:
         """Обработка дерева разбора """
         for stmt in self._stmts:
             stmt.accept(self)
 
+    # Statements
+
     def visit_raw_line_dclrt(self, stmt: stm.RawLineStmt[AstNode]) -> AstNode:
-        # Сырую строку между локациями не возвращаем, обрабатывать её не нужно в любом режиме
+        # Сырую строку между локациями не возвращаем,
+        # обрабатывать её не нужно в любом режиме.
         pass
 
+    def visit_loc_open_dclrt(self, stmt: stm.PpQspLocOpen[AstNode]) -> AstNode:
+        # Если режим включения строк в выходной список работает, то:
+            #   - строка с объявлением локации добавляется в аутпут
+            #   - включается контекст, что локация открыта
+            # Если режим включения строк в аутпут не задействован, строка с объявлением
+            # локации не попадёт в аутпут, поэтому и парсить последующие stmt в контексте
+            # открытой локации не имеет смысла.
+        if self._includes():
+            line = stmt.name.lexeme_start[0] # line from tuple(line, char)
+            self._output_lines.append(self._qsps_raw_lines[line])
+            self._loc('open')
+
+    def visit_loc_close_dclrt(self, stmt: stm.PpQspLocClose[AstNode]) -> AstNode:
+        # аналогично ^
+        if self._includes():
+            line = stmt.name.lexeme_start[0] # line from tuple(line, char)
+            self._output_lines.append(self._qsps_raw_lines[line])
+            self._loc('close')
+
     def visit_pp_directive(self, stmt: stm.PpDirective[AstNode]) -> AstNode:
-        # если препроцессор включён, вне зависимости от того, где находится директива
-        if self._pp_is_on():
+        # если препроцессор включён, или выключен по условию
+        # вне зависимости от того, где находится директива
+        if self._pp_is_on() or self._is_endif(stmt.body):
             stmt.body.accept(self) # выполняем
         elif self._loc_is_open():
-            # препроцессор выключен, но локация открыта - нужно сохранить директиву
-            ...            
+            # препроцессор выключен, но локация открыта. строка сохраняется в файле
+            sl = (stmt.pref.lexeme_start[0] if stmt.pref else stmt.lexeme.lexeme_start[0])
+            el = stmt.end.get_end_pos()[0]
+            self._output_lines.extend(self._qsps_raw_lines[sl:el+1])
+        else:
+            # и препроцессор выключен, и локация закрыта, игнорируем строку
+            pass
 
-    def visit_on_dir(self, stmt: dir.OnDir[AstNode]) -> AstNode:
-        # данная директива просто включает препроцессор до конца файла
-        self._pp('on')
-
-    def visit_off_dir(self, stmt: dir.OffDir[AstNode]) -> AstNode:
-        # данная директива просто выключает препроцессор до конца файла
-        self._pp('off')
-
-    def visit_assignment_dir(self, stmt: dir.AssignmentDir[AstNode]) -> AstNode:
-        # объявление переменной (с присвоением, опционально)
-        key = stmt.key.lexeme
-        value = stmt.value.lexeme if stmt.value else ''
-        self._ns.def_key_set_value(key, value)
-        print(self._ns.get_env())
-    
-
-    def visit_bracket_block(self, stmt: stm.BracketBlock[AstNode]) -> AstNode:
-        return {
-            'type': 'stmt',
-            'class': 'BracketBlock',
-            'sub': stmt.left.ttype.name,
-            'value': stmt.value.accept(self) if stmt.value is not None else None
-        }
+    def visit_stmts_line(self, stmt: stm.StmtsLine[AstNode]) -> AstNode:
+        # StmtsLine требует определить, сохраняем мы её, или нет.
+        comment_validate = stmt.comment.accept(self) if stmt.comment else None
+        [el.accept(self) for el in stmt.stmts]
+  
 
     def visit_other_stmt(self, stmt: stm.OtherStmt[AstNode]) -> AstNode:
         chain:List[AstNode] = []
@@ -90,6 +108,18 @@ class PpInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNo
             'type': 'stmt',
             'class': 'OtherStmt',
             'value': chain
+        }
+
+    def visit_comment_stmt(self, stmt: stm.CommentStmt[AstNode]) -> AstNode: # 'less', 'spec', ''
+        # CommentStmt является либо частью OtherStmt, либо самостоятельным оператором
+
+
+    def visit_bracket_block(self, stmt: stm.BracketBlock[AstNode]) -> AstNode:
+        return {
+            'type': 'stmt',
+            'class': 'BracketBlock',
+            'sub': stmt.left.ttype.name,
+            'value': stmt.value.accept(self) if stmt.value is not None else None
         }
 
     def visit_string_literal(self, stmt: stm.StringLiteral[AstNode]) -> AstNode:
@@ -107,39 +137,6 @@ class PpInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNo
             'value': [self._token(t) for t in stmt.value]
         }
 
-    def visit_stmts_line(self, stmt: stm.StmtsLine[AstNode]) -> AstNode:
-        return {
-            'type': 'stmt',
-            'class': 'StmtsLine',
-            'value': [el.accept(self) for el in stmt.stmts] + ([stmt.comment.accept(self)] if stmt.comment else [])
-        }
-
-    def visit_comment_stmt(self, stmt: stm.CommentStmt[AstNode]) -> AstNode:
-        # если включён режим исключения строк, ни один комментарий не попадает в выходной файл
-        if not self._includes(): return
-        # если это обычный комментарий, либо спецкомментарий при включённом режиме сохранения
-        # спецкомментариев. Сохраняем спецкомментарии
-        sign = stmt.name.ttype
-        if sign == tt.EXCLAMATION_SIGN or (sign in self._SPEC_COMM_TTS and self._save_spec_comm())):
-            start_line = stmt.name.lexeme_start[0]
-            end_line = stmt.value[-1].value.lexeme_start[0]
-            new_lines = self._qsps_raw_lines[start_line:end_line+1]
-            self._qsps_pp_lines.extend(new_lines)
-
-    def visit_loc_open_dclrt(self, stmt: stm.PpQspLocOpen[AstNode]) -> AstNode:
-        if self._includes():
-            line = stmt.name.lexeme_start[0] # line from tuple(line, char)
-            self._qsps_pp_lines.append(self._qsps_raw_lines[line])
-        
-
-    def visit_loc_close_dclrt(self, stmt: stm.PpQspLocClose[AstNode]) -> AstNode:
-        return {
-            'type': 'stmt',
-            'class': 'PpQspLocClose',
-            'sub': stmt.name.ttype.name,
-            'value': stmt.name.lexeme
-        }
-
     def visit_pp_literal(self, stmt: stm.PpLiteral[AstNode]) -> AstNode:
         return {
             'type': 'stmt',
@@ -148,16 +145,37 @@ class PpInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNo
             'value': stmt.value.lexeme
         }
 
+    # Directives
+
+    def visit_assignment_dir(self, stmt: dir.AssignmentDir[AstNode]) -> AstNode:
+        # объявление переменной (с присвоением, опционально)
+        key = stmt.key.lexeme
+        value = stmt.value.lexeme if stmt.value else ''
+        self._ns.def_key_set_value(key, value)
+        print(self._ns.get_env())
+
+    def visit_condition_dir(self, stmt: dir.ConditionDir[AstNode]) -> AstNode:
+        # требует разрешения условия. Если условие верно, запускает цепочку переключения режимов
+        is_true = stmt.condition.accept(self)
+        if is_true:
+            self._new_modes()
+            self._modes[-1]['open_if'] = True # текущий - режим открытого условия
+            for dir in stmt.next_dirs:
+                dir.accept(self)
+
     def visit_endif_dir(self, stmt: dir.EndifDir[AstNode]) -> None:
         # здесь восстанавливаются значения, работавшие до выполнения условия
-        ...
+        # Закрыватся условие очень просто. Удаляем последний элемент списка
+        self._modes.pop()
 
-    # def visit_nopp_dir(self, stmt: dir.NoppDir[AstNode]) -> AstNode:
-    #     return {
-    #         'type': 'dir',
-    #         'class': 'NoppDir',
-    #         'value': stmt.name.lexeme
-    #     }
+
+    def visit_on_dir(self, stmt: dir.OnDir[AstNode]) -> AstNode:
+        # данная директива просто включает препроцессор до конца файла
+        self._pp('on')
+
+    def visit_off_dir(self, stmt: dir.OffDir[AstNode]) -> AstNode:
+        # данная директива просто выключает препроцессор до конца файла
+        self._pp('off')
 
     def visit_nosavecomm_dir(self, stmt: dir.NoSaveCommDir[AstNode]) -> AstNode:
         # директива выключает сохранение спецкомментариев
@@ -167,18 +185,20 @@ class PpInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNo
         # включает сохранение спецкомментариев
         self._save_next_comms()
 
-    def visit_condition_dir(self, stmt: dir.ConditionDir[AstNode]) -> AstNode:
-        # требует разрешения условия. Если условие верно, запускает цепочку переключения режимов
-        is_true = stmt.condition.accept(self)
-        if is_true:
-            for dir in stmt.next_dirs:
-                dir.accept(self)
-        
     def visit_include_dir(self, stmt: dir.IncludeDir[AstNode]) -> AstNode:
         self._include_next_lines()
         
     def visit_exclude_dir(self, stmt: dir.ExcludeDir[AstNode]) -> AstNode:
-        self._exclude_next_lines()
+        self._exclude_next_lines()    
+
+    # def visit_nopp_dir(self, stmt: dir.NoppDir[AstNode]) -> AstNode:
+    #     return {
+    #         'type': 'dir',
+    #         'class': 'NoppDir',
+    #         'value': stmt.name.lexeme
+    #     }
+        
+    # Expressions (PpDir's Expr)
         
     def visit_cond_expr_stmt(self, stmt: dir.CondExprStmt[AstNode]) -> AstNode:
         return stmt.expr.accept(self)
@@ -195,7 +215,6 @@ class PpInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNo
 
     def visit_not_expr(self, stmt: expr.NotExpr[AstNode]) -> bool:
         return not bool(stmt.left.accept(self))
-
         
     def visit_var_name(self, stmt: expr.VarName[AstNode]) -> Union[str, bool]:
         return self._ns.get_var(stmt.value.lexeme)
@@ -218,41 +237,52 @@ class PpInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNo
     # aux funcs
     def _includes(self) -> bool:
         """ True if next lines need include in output """
-        return self._modes['include']
+        return self._modes[-1]['include']
 
     def _save_spec_comm(self) -> bool:
         """ True if speccomments need save in output """
-        return not self._modes['no_save_comm']
+        return not self._modes[-1]['no_save_comm']
 
     def _not_save_spec_comm(self) -> bool:
         """ True if speccomments need exclude from project """
-        return self._modes['no_save_comm']
+        return self._modes[-1]['no_save_comm']
 
     def _include_next_lines(self) -> None:
-        self._modes['include'] = True
+        self._modes[-1]['include'] = True
 
     def _exclude_next_lines(self) -> None:
-        self._modes['include'] = False
+        self._modes[-1]['include'] = False
 
     def _save_next_comms(self) -> None:
         """Отключает обработку спецкомментариев"""
-        self._modes['no_save_comm'] = False
+        self._modes[-1]['no_save_comm'] = False
 
     def _no_save_next_comms(self) -> None:
         """Включает обработку спецкомментариев"""
-        self._modes['no_save_comm'] = True
+        self._modes[-1]['no_save_comm'] = True
 
     def _pp(self, switch:Literal['on', 'off']) -> None:
         if switch == 'on':
-            self._modes['pp'] = True
+            self._modes[-1]['pp'] = True
         else:
-            self._modes['pp'] = False
+            self._modes[-1]['pp'] = False
 
     def _pp_is_on(self) -> bool:
-        return self._modes['pp']
+        return self._modes[-1]['pp']
 
     def _loc_is_open(self) -> bool:
-        return self._modes['loc']
+        return self._modes[-1]['loc']
+
+    def _loc(self, sets:Literal['open', 'close']) -> None:
+        self._modes[-1]['loc'] = (sets == 'open')
+
+    def _is_endif(self, body:dir.PpDir[AstNode]) -> bool:
+        return self._modes[-1]['open_if'] and isinstance(body, dir.EndifDir)
+
+    def _new_modes(self) -> None:
+        cur = self._modes[-1]
+        self._modes.append({})
+        self._modes[-1].update(cur)
 
     # обработчик ошибок. Пока просто выводим в консоль.
     def _error(self, message:str) -> None:
