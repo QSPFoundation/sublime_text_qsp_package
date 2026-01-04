@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, Optional, TypeVar, List, Union
+from typing import Generic, Optional, TypeVar, List
 
 from pp_tokens import PpToken
-import pp_dir as dir
 
 R = TypeVar("R")
 
@@ -28,10 +27,6 @@ class PpVisitor(ABC, Generic[R]):
 
     @abstractmethod
     def visit_loc_close_dclrt(self, stmt:'PpQspLocClose[R]') -> R:
-        ...
-
-    @abstractmethod
-    def visit_pp_directive(self, stmt:'PpDirective[R]') -> R:
         ...
 
     @abstractmethod
@@ -130,7 +125,7 @@ class PpLiteral(PpStmt[R]):
         return visitor.visit_pp_literal(self)
 
 OtherStmtChain = List[PpStmt[R]]
-StringLine = Union[RawStringLine[R], PpDirective[R]]
+StringLine = RawStringLine[R]
 
 # Допустим у нас есть объекты класса Животное. От этого класса наследуются:
 # - Собака

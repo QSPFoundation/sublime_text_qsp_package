@@ -8,7 +8,8 @@ from pp_tokens import PpTokenType as tt
 ScanHandler = Callable[[str], None]
 HandlerStack = List[ScanHandler]
 
-CharsStack = List[str]
+Char = str
+CharsStack = List[Char]
 QspsLine = str
 QspsLines = List[QspsLine]
 
@@ -77,7 +78,7 @@ class DirsScaner:
             self._scan_funcs[-1](c)
             
     # методы поиска, учитывающие контекст
-    def _qsps_file_expect(self, c:str) -> None:
+    def _qsps_file_expect(self, c:Char) -> None:
         """ Поиск токенов, из которых состоит qsps-файл """
         cn = self._current
         if cn == 0:
@@ -105,7 +106,7 @@ class DirsScaner:
             # такой вариант невозможен, но предусмотрительно обрабатываем, как сырую строку
             self._scan_funcs.append(self._qsps_line_expect)
 
-    def _pp_directive_stmt_expect(self, c:str) -> None:
+    def _pp_directive_stmt_expect(self, c:Char) -> None:
         """ Ожидание токена директивы препроцессора. """
         # Данный метод вызывается однозначно, это означает, что мы просто убеждаемся,
         # что поглощаем токен директивы препроцессора. На старте есть список ожидаемых
@@ -127,7 +128,7 @@ class DirsScaner:
             self._scan_funcs.pop() # убираем функцию из стека
             self._scan_funcs.append(self._scan_pp_dirrective) # добавляем функцию для сканирования директивы
 
-    def _scan_pp_dirrective(self, c:str) -> None:
+    def _scan_pp_dirrective(self, c:Char) -> None:
         """ Распознаём внутренние токены директивы """
         if c in (" ", "\t", "\r", "\n"):
             # пробелы не учитываются
@@ -157,7 +158,7 @@ class DirsScaner:
             self._scan_funcs.append(self._identifier_expect)
         else:
             # любой другой символ включает выборку сырого текста до конца строки
-            self._scan_funcs.append(self._qsps_line_expect)
+            self._scan_funcs.append(self._raw_text_expect)
         
         if self._current_is_last_in_line():
             # если это последний символ строки, добавляем токен конца строки
@@ -166,7 +167,7 @@ class DirsScaner:
             # удаляем парсер директив из стека
             self._scan_funcs.pop()
     
-    def _equal_expect(self, c:str) -> None:
+    def _equal_expect(self, c:Char) -> None:
         """ Получает токен оператора сравнения """
         # предыдущий символ уже поглощён, и он ! или =
         prev_char = self._prev_in_line()
@@ -178,7 +179,7 @@ class DirsScaner:
             self._error(f"equal_expect: expected '=', got '{c}'")
         self._scan_funcs.pop()
 
-    def _identifier_expect(self, c:str) -> None:
+    def _identifier_expect(self, c:Char) -> None:
         """ Сборка идентификатора директивы препроцессора. """
         # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
         next_char = self._next_in_line()
@@ -188,10 +189,16 @@ class DirsScaner:
             self._add_token(ttype)
             self._scan_funcs.pop()
 
+    def _raw_text_expect(self, c:Char) -> None:
+        """Поглощение токена сырого текста"""
+        # конец строки исключается, чтобы потом закрыть директиву
+        if self._next_is_last_in_line():
+            self._add_token(tt.RAW_LINE)
+            self._scan_funcs.pop()
+
     def _qsps_line_expect(self, c:str) -> None:
-        """ Поглощение токена сырой строки. """
+        """ Поглощение токена qsps-строки. """
         if self._current_is_last_in_line():
-            # это последний символ, закрываем сырую строку, убираем функцию из стека
             self._add_token(tt.QSPS_LINE)
             self._scan_funcs.pop()
 

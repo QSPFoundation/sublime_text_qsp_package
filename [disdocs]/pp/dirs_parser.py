@@ -10,7 +10,7 @@ import pp_expr as expr
 
 DirStmt = stm.DirStmt[Any]
 
-class PpParser:
+class DirsParser:
 
     def __init__(self, tokens:List[Tkn]) -> None:
         self._tokens:List[Tkn] = tokens
@@ -48,6 +48,7 @@ class PpParser:
 
     def _declaration(self) -> stm.DirStmt[None]:
         """ Распарсиваем целый файл из токенов. """
+        print(self._curtok)
         if self._check_type(tt.OPEN_DIRECTIVE_STMT):
             start_declaration_on_loc:int = self._curtok_num
             validate_directive_on_loc:Optional[stm.DirectiveStmt[None]] = self._directive()
@@ -59,7 +60,7 @@ class PpParser:
         elif self._check_type(tt.QSPS_LINE):
             return self._qsps_line_stmt()
         else:
-            self._logic_error(f'Unexpected token: {self._curtok.ttype.name}')
+            self._logic_error(f'Unexpected token: {self._curtok.ttype.name} {self._curtok.lexeme_start}')
             return self._qsps_line_stmt()
 
     def _qsps_line_stmt(self) -> stm.QspsLineStmt[None]:
