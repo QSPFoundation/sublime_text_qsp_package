@@ -47,9 +47,7 @@ class QspsPP:
         # 3. Interpret directives, and marked lines
         dirs_int = DirsInt(dirs_stmts, self._ns, qsps_lines)
         dirs_int.run()
-        output_lines = dirs_int.get_output_lines()
-
-        print(len(output_lines), self._ns.get_env())
+        marked_lines = dirs_int.get_marked_lines()
 
         # 4. Scan by Stmts
         # 5. Parse by Stmts

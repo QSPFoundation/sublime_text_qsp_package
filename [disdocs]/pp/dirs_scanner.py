@@ -221,14 +221,6 @@ class DirsScaner:
         """ Является ли следующий символ последним в строке? """
         return self._current + 1 == self._line_len - 1
 
-    def _current_is_last_in_file(self) -> bool:
-        """ Является ли текущий символ последним в файле? """
-        return self._curline_is_last() and self._current_is_last_in_line()
-
-    def _next_is_last_in_file(self) -> bool:
-        """ Является ли следующий символ последним в файле? """
-        return self._curline_is_last() and self._next_is_last_in_line()
-
     def _set_start_lexeme(self) -> None:
         """ Устанавливаем начало лексемы. """
         self._start_lexeme = (self._line_num, self._current)

@@ -1,0 +1,1070 @@
+[
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "QSP-Game тестовый файл для препроцессинга [0]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "Не валидная игра! \"Первой или второй строкой могут идти команды !@pp:on или !@pp:off - включающие и выключающие препроцессинг\" [1]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "OnDir",
+      "value": "on"
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "Далее можно выставлять метки и их значения. Например ниже метке name выставлено значение 123 [3]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "AssignmentDir",
+      "value": [
+        {
+          "type": "tkn",
+          "sub": "IDENTIFIER",
+          "value": "name"
+        },
+        {
+          "type": "tkn",
+          "sub": "IDENTIFIER",
+          "value": "123"
+        }
+      ]
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "Можно определить только название метки и проверять затем лишь её наличие: [5]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": {
+      "type": "tkn",
+      "sub": "PREFORMATTER",
+      "value": "\t\t\t"
+    },
+    "value": {
+      "type": "dir",
+      "class": "AssignmentDir",
+      "value": [
+        {
+          "type": "tkn",
+          "sub": "IDENTIFIER",
+          "value": "layer1"
+        }
+      ]
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "Метки можно определять и дальше по ходу препроцессинга. [7]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "# [pp.start] [8]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "! команды препроцессора должны быть записаны отдельной строкой [9]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "ConditionDir",
+      "value": [
+        {
+          "type": "dir",
+          "class": "CondExprStmt",
+          "value": {
+            "type": "expr",
+            "class": "EqualExpr",
+            "value": [
+              {
+                "type": "expr",
+                "class": "VarName",
+                "value": "name"
+              },
+              {
+                "type": "expr",
+                "class": "VarName",
+                "value": "123"
+              },
+              {
+                "type": "tkn",
+                "sub": "EQUAL_EQUAL",
+                "value": "=="
+              }
+            ]
+          }
+        },
+        {
+          "type": "dir",
+          "class": "ExcludeDir",
+          "value": "exclude"
+        }
+      ]
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "LEFT_PAREN",
+      "value": "("
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Данные строки кода будут исключены из конечного файла, [11]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "так как инструкция exclude указывает препроцессору на это, [12]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "а условие name==123 выполняется. Исключение строк завершается [13]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "после команды !@pp:endif\" [14]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "EndifDir",
+      "value": "endif"
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Спецкомментарии удобны для быстрой разметки строк для препроцессинга. [16]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "!@ спецкомментарий такого рода будет удалён из строки кода в конечном файле. [17]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "!@< если в строке стоит такой спецкомментарий, вся строка кода будет удалена при препроцессинге [18]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "Исключение составляют строки кода, обрабатываемые с предварительным отключением обработки спецкоментариев, [19]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "а так же все строки, помещённые внутрь кавычек, апострофов и фигурных скобок.\" [20]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "clr & clear & !@< спецкомментарий, который помечает строку под удаление при препроцессинге [21]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "p \"Текст для вывода в окно дополнительного описания [22]\" & !@ спецкомментарий, который будет удалён из строки при препроцессинге\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "nl \"Ещё строка текста для вывода в окно дополнительного описания.\" & ! обычный комментарий. С ним ничего не сделается [23]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "! можно добавлять спецкомментарии в конце обычных комментариев, это тоже будет работать [24] !@ спецкомментарий удалится\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "! данная строка кода (комментарий) так же будет удалена !@< [25]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Для отключения обработки спецкомментариев можно использовать безусловную команду !@pp:savecomm\" [26]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "SaveCommDir",
+      "value": "savecomm"
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "PREFORMATTER",
+        "value": "\t\t"
+      },
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "*pl \"text\" & !@< строка кода и спецкомментарий не удалятся [28]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "!@ спецкомментарий останется в конечном файле [29]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Включаем обработку обратно командой !@pp:nosavecomm\" [30]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "NoSaveCommDir",
+      "value": "nosavecomm"
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Так же отключать обработку спецкомментариве можно по условию:\" [32]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "ConditionDir",
+      "value": [
+        {
+          "type": "dir",
+          "class": "CondExprStmt",
+          "value": {
+            "type": "expr",
+            "class": "EqualExpr",
+            "value": [
+              {
+                "type": "expr",
+                "class": "VarName",
+                "value": "name"
+              },
+              {
+                "type": "expr",
+                "class": "VarName",
+                "value": "123"
+              },
+              {
+                "type": "tkn",
+                "sub": "EQUAL_EQUAL",
+                "value": "=="
+              }
+            ]
+          }
+        },
+        {
+          "type": "dir",
+          "class": "SaveCommDir",
+          "value": "savecomm"
+        }
+      ]
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "LEFT_PAREN",
+      "value": "("
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Поскольку условие выполняется\" & !@< строка кода и спецкомментарий сохраняются [34]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "!@ данный спецкомментарий так же сохранится [35]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "EndifDir",
+      "value": "endif"
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "OPEN_DIRECTIVE_STMT",
+        "value": "!@pp:"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "если"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "команда"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "не"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "распознана"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "препроцессором"
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LINE",
+        "value": ", строка с неизвестной командой игнорируется [37]"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "ConditionDir",
+      "value": [
+        {
+          "type": "dir",
+          "class": "CondExprStmt",
+          "value": {
+            "type": "expr",
+            "class": "EqualExpr",
+            "value": [
+              {
+                "type": "expr",
+                "class": "VarName",
+                "value": "layer2"
+              }
+            ]
+          }
+        },
+        {
+          "type": "dir",
+          "class": "IncludeDir",
+          "value": "include"
+        }
+      ]
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "LEFT_PAREN",
+      "value": "("
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Эти строки кода не сохранятся так как метка layer2 не была определена, [39]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "а данные строки кода должны быть включены в конечный файл только [40]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "при наличии метки.\" [41]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "EndifDir",
+      "value": "endif"
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Можно отключить препроцессор на время, по условию. Это делается с помощью директивы off:\" [43]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "ConditionDir",
+      "value": [
+        {
+          "type": "dir",
+          "class": "CondExprStmt",
+          "value": {
+            "type": "expr",
+            "class": "EqualExpr",
+            "value": [
+              {
+                "type": "expr",
+                "class": "VarName",
+                "value": "layer1"
+              }
+            ]
+          }
+        },
+        {
+          "type": "dir",
+          "class": "OffDir",
+          "value": "off"
+        }
+      ]
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "LEFT_PAREN",
+      "value": "("
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Отключение заставляет препроцессор игнорировать все команды кроме !@pp:endif\" & !@ например данный спецкомментарий сохранится [45]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Эта строка кода так же сохранится\" & !@< [46]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "OPEN_DIRECTIVE_STMT",
+        "value": "!@pp:"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "данная"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "строка"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "тоже"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "сохранится"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "в конечном"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "файле"
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LINE",
+        "value": "[47]"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "NoSaveCommDir",
+      "value": "nosavecomm"
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "!@ можно заметить, что nosavecomm не заставила препроцессор вновь обрабатывать спецкомментарии [49]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"А сейчас блок условия будет закрыт и препроцессор возобновит нормальную работу\" [50]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "EndifDir",
+      "value": "endif"
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"Хочу обратить ваше внимание, что команды препроцессора работают, даже если [52]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "записаны внутри строк. Для этого достаточно записать команду препроцессора [53]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "отдельной строкой в многострочном текстовом значении: [54]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "ConditionDir",
+      "value": [
+        {
+          "type": "dir",
+          "class": "CondExprStmt",
+          "value": {
+            "type": "expr",
+            "class": "EqualExpr",
+            "value": [
+              {
+                "type": "expr",
+                "class": "VarName",
+                "value": "layer1"
+              }
+            ]
+          }
+        },
+        {
+          "type": "dir",
+          "class": "ExcludeDir",
+          "value": "exclude"
+        }
+      ]
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "LEFT_PAREN",
+      "value": "("
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "Эти строки будут исключены из конечного файла, [56]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "так как сработала команда препроцессора [57]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "PpDirective",
+    "sub": "!@pp:",
+    "pref": null,
+    "value": {
+      "type": "dir",
+      "class": "EndifDir",
+      "value": "endif"
+    },
+    "end": {
+      "type": "tkn",
+      "sub": "NEWLINE",
+      "value": "\n"
+    }
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "Будьте аккуратны при работе с командами препроцессора. [59]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "Если вам нужно именно вывести команду препроцессора отдельной строкой, [60]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "используйте отдельные кавычки для этой строки\" [61]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"!@pp:if(layer1):exclude\" [62]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "\"!@pp:endif\" [63]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "--- [pp.start] -------------------------------- [64]\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "OPEN_DIRECTIVE_STMT",
+        "value": "!@pp:"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "корявый"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "RAW"
+      },
+      {
+        "type": "tkn",
+        "sub": "IDENTIFIER",
+        "value": "LINE"
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LINE",
+        "value": "[65]"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "QspsLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "QSPS_LINE",
+        "value": "Ещё одна строка, чтобы проверить работу парсера [66]"
+      }
+    ]
+  }
+]

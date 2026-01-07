@@ -21,7 +21,7 @@ Modes = Dict[
 QspsLine = str
 NoSaveComm = Literal[True, False]
 IncludeLine = Literal[True, False]
-OutputLine = Tuple[
+MarkedLine = Tuple[
     QspsLine,
     NoSaveComm,
     IncludeLine
@@ -36,7 +36,7 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
                  qsps_raw_lines:List[str]) -> None:
         self._ns = ns # ссылка на общий для всего препроцессора неймспейс
         self._stmts = stmts
-        self._output_lines:List[OutputLine] = []
+        self._marked_lines:List[MarkedLine] = []
         self._qsps_raw_lines:List[QspsLine] = qsps_raw_lines
 
 
@@ -50,14 +50,13 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
             'include': True, # on True qsps-lines includes in result
         }]
 
-    def get_output_lines(self) -> List[OutputLine]:
-        return self._output_lines
+    def get_marked_lines(self) -> List[MarkedLine]:
+        return self._marked_lines
 
     def run(self) -> None:
         """Обработка дерева разбора """
         for stmt in self._stmts:
             stmt.accept(self)
-            print(self._output_lines[-1], self._modes)
 
     # Statements
 
@@ -67,15 +66,15 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         el = stmt.end.get_end_pos()[0]
         if self._pp_is_on() or self._is_endif(stmt.body):
             stmt.body.accept(self) # выполняем
-            self._output_lines.extend(self._gen_output(sl, el, True))
+            self._marked_lines.extend(self._gen_output(sl, el, True))
         else:
             # препроцессор выключен, 
-            self._output_lines.extend(self._gen_output(sl, el))
+            self._marked_lines.extend(self._gen_output(sl, el))
 
     def visit_qsps_line(self, stmt: stm.QspsLineStmt[AstNode]) -> AstNode:
         sl = (stmt.pref.lexeme_start[0] if stmt.pref else stmt.value[0].lexeme_start[0])
         el = stmt.value[-1].get_end_pos()[0] if stmt.value else sl
-        self._output_lines.extend(self._gen_output(sl, el))  
+        self._marked_lines.extend(self._gen_output(sl, el))  
 
     # Directives
 
@@ -109,13 +108,11 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         }[self._is_true]))
 
     def visit_off_dir(self, stmt: dir.OffDir[AstNode]) -> AstNode:
-        mode = cast(Literal['on', 'off'], {
+        self._pp(cast(Literal['on', 'off'], {
             None:  'off',
             True:  'off',
             False: 'on'
-        }[self._is_true])
-        self._pp(mode)
-        print(mode)
+        }[self._is_true]))
 
     def visit_nosavecomm_dir(self, stmt: dir.NoSaveCommDir[AstNode]) -> AstNode:
         {
@@ -151,23 +148,18 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
     def visit_or_expr(self, stmt: expr.OrExpr[AstNode]) -> bool:
         left = stmt.left_oprnd.accept(self)
         right = stmt.right_oprnd.accept(self)
-        print(('or', left, right))
         return bool(left or right)
         
     def visit_and_expr(self, stmt: expr.AndExpr[AstNode]) -> bool:
         left = stmt.left_oprnd.accept(self)
         right = stmt.right_oprnd.accept(self)
-        print(('and', left, right))
         return bool(left and right)
 
     def visit_not_expr(self, stmt: expr.NotExpr[AstNode]) -> bool:
-        print(('not'))
         return not bool(stmt.left.accept(self))
         
     def visit_var_name(self, stmt: expr.VarName[AstNode]) -> Union[str, bool]:
-        v = self._ns.get_var(stmt.value.lexeme)
-        print(('varname', v))
-        return v
+        return self._ns.get_var(stmt.value.lexeme)
     
     def visit_equal_expr(self, stmt: expr.EqualExpr[AstNode]) -> bool:
         """
@@ -181,8 +173,6 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         # чтобы не было повторной оценки (как в цепочках сравнений Python).
         values = [op.accept(self) for op in stmt.operands]
         operators = stmt.operators
-
-        print(("equals", values))
 
         # Если по какой‑то причине операторов нет, просто приводим
         # единственный операнд к bool (на практике сюда, вероятно, не попадаем).
@@ -251,9 +241,9 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         self._modes.append({})
         self._modes[-1].update(cur)
 
-    def _gen_output(self, strt_ln:LineNum, end_ln:LineNum, exclude:bool=False) -> List[OutputLine]:
+    def _gen_output(self, strt_ln:LineNum, end_ln:LineNum, exclude:bool=False) -> List[MarkedLine]:
         """ Генерируем список выходных строк. """
-        output_lines:List[OutputLine] = []
+        output_lines:List[MarkedLine] = []
         include = False if exclude else self._modes[-1]['include']
         no_save_comm = self._modes[-1]['no_save_comm']
         for line in self._qsps_raw_lines[strt_ln:end_ln+1]:

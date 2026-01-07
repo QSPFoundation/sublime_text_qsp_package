@@ -318,10 +318,6 @@ class DirsParser:
         """ Является ли токен концом файла. """
         return self._curtok.ttype == tt.EOF
 
-    def _is_line_start(self) -> bool:
-        """ Текущий токен - начало строки? """
-        return self._curtok.lexeme_start[1] == 0
-
     def _check_type(self, t:tt) -> bool:
         """ Сравнивает тип текущего токена с переданным. """
         return self._curtok.ttype == t
@@ -329,10 +325,6 @@ class DirsParser:
     def _match(self, *t:tt) -> bool:
         """ Проверяет, относится ли текущий токен к указанному типу """
         return self._curtok.ttype in t
-
-    def _peek(self) -> Optional[Tkn]:
-        """ Текущий токен. """
-        return self._curtok
 
     def _next_peek(self) -> Tkn:
         """ Возващает следующий токен. """
