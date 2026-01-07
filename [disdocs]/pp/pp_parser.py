@@ -5,8 +5,6 @@ from pp_tokens import PpToken as Tkn
 from pp_tokens import PpTokenType as tt
 
 import pp_stmts as stm
-import pp_dir as dir
-import pp_expr as expr
 
 # Stack = List[Callable[[Tkn], None]]
 PpStmt = stm.PpStmt[Any]
@@ -34,7 +32,7 @@ class PpParser:
 
         self._statements:List[PpStmt] = [] # qsps_file entity
 
-    def qsps_file_parse(self) -> None:
+    def tokens_parse(self) -> None:
         """ Публичная функция вызова парсера. """
         # прежде всего разбиваем файл на директивы и блоки
         while not self._is_eof():
@@ -57,14 +55,6 @@ class PpParser:
             elif self._match(tt.EXCLAMATION_SIGN, tt.SIMPLE_SPEC_COMM, tt.LESS_SPEC_COMM):
                 # комментарии трёх типов: обычный, спецкомментарий, спецкомментарий с удалением
                 return self._comment()
-            elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
-                start_declaration_on_loc:int = self._curtok_num
-                validate_directive_on_loc:Optional[stm.PpDirective[None]] = self._directive()
-                if validate_directive_on_loc:
-                    return validate_directive_on_loc
-                else:
-                    self._reset_curtok(start_declaration_on_loc)
-                    return self._comment()
             elif self._match(tt.APOSTROPHE, tt.QUOTE, tt.RAW_LOC_LINE,
                              tt.LEFT_BRACKET, tt.LEFT_BRACE, tt.LEFT_PAREN,
                              tt.RIGHT_BRACKET, tt.RIGHT_BRACE, tt.RIGHT_PAREN,
@@ -78,14 +68,6 @@ class PpParser:
                 return self._open_loc()
             elif self._check_type(tt.RAW_LINE):
                 return self._raw_line()
-            elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
-                start_declaration:int = self._curtok_num
-                validate_directive_out_loc:Optional[stm.PpDirective[None]] = self._directive()
-                if validate_directive_out_loc:
-                    return validate_directive_out_loc
-                else:
-                    self._reset_curtok(start_declaration)
-                    return self._raw_line_eating()
             else:
                 self._logic_error(f'Expected LOC_OPEN, RAW_LINE or OPEN_DIR_STMT. Get {self._curtok.ttype.name}')
                 return self._raw_line_eating()
@@ -105,14 +87,14 @@ class PpParser:
             if self._check_type(tt.AMPERSAND):
                 self._eat_tokens(1)  # поглощаем разделитель &
                 # Проверяем, не комментарий ли следующий токен
-                if self._match(tt.EXCLAMATION_SIGN, tt.SIMPLE_SPEC_COMM, tt.LESS_SPEC_COMM, tt.OPEN_DIRECTIVE_STMT):
+                if self._match(tt.EXCLAMATION_SIGN, tt.SIMPLE_SPEC_COMM, tt.LESS_SPEC_COMM):
                     # Опциональный комментарий после разделителя
                     comment = self._comment()
                     break
                 else:
                     # Следующий OtherStmt после разделителя
                     stmts.append(self._other_stmt())
-            elif self._match(tt.EXCLAMATION_SIGN, tt.SIMPLE_SPEC_COMM, tt.LESS_SPEC_COMM, tt.OPEN_DIRECTIVE_STMT):
+            elif self._match(tt.EXCLAMATION_SIGN, tt.SIMPLE_SPEC_COMM, tt.LESS_SPEC_COMM):
                 # Комментарий без разделителя (не должно быть по грамматике, но обработаем)
                 comment = self._comment()
                 break
@@ -237,18 +219,6 @@ class PpParser:
             if self._check_type(tt.LEFT_BRACE):
                 # Вложенный CodeBlock
                 chain.append(self._code_block())
-            elif self._check_type(tt.OPEN_DIRECTIVE_STMT) and self._is_line_start():
-                # PpDirectiveFullLine - директива препроцессора на отдельной строке
-                # Проверяем, что директива начинается с начала строки
-                start_declaration:int = self._curtok_num
-                directive = self._directive()
-                if directive:
-                    chain.append(directive)
-                else:
-                    # Если директива невалидна, обрабатываем как комментарий
-                    self._reset_curtok(start_declaration)
-                    chain.append(stm.PpLiteral[None](self._curtok))
-                    self._eat_tokens(1)
             elif self._match(tt.QUOTE, tt.APOSTROPHE):
                 chain.append(self._string_literal())
             else:
@@ -286,14 +256,6 @@ class PpParser:
                 # токен преформатирования просто пропускаем
                 self._eat_tokens(1)
                 continue
-            elif self._check_type(tt.OPEN_DIRECTIVE_STMT):
-                start_declaration:int = self._curtok_num
-                validate_directive:Optional[stm.PpDirective[None]] = self._directive()
-                if validate_directive:
-                    value.append(validate_directive)
-                else:
-                    self._reset_curtok(start_declaration)
-                    value.append(self._raw_string_line(ttype))
             else:
                 value.append(self._raw_string_line(ttype))
         else:
@@ -398,238 +360,6 @@ class PpParser:
             value.append(self._curtok)
             self._eat_tokens(1)
         return stm.RawLineStmt[None](pref, value)
-
-    def _directive(self) -> Optional[stm.PpDirective[None]]:
-        """ Получаем директиву препроцессора, если возможно. """
-        pref, self._tbuffer = self._tbuffer, None
-        lexeme = self._curtok # !@pp: tt.OPEN_DIRECTIVE_STMT
-        self._eat_tokens(1) # пожираем токен объявления директивы
-        next_peek = self._next_peek()
-        next_is_newline = (next_peek.ttype == tt.NEWLINE)
-
-        if self._check_type(tt.ENDIF_STMT) and next_is_newline:
-            body = dir.EndifDir[None](self._curtok)
-            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(pref, lexeme, body, next_peek)
-        # if self._curtok.ttype == tt.NOPP_STMT and next_is_newline:
-        #     body = dir.NoppDir[None](self._curtok)
-        #     self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-        #     return stm.PpDirective(pref, lexeme, body, next_peek)
-        if self._curtok.ttype == tt.OFF_STMT and next_is_newline:
-            body = dir.OffDir[None](self._curtok)
-            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(pref, lexeme, body, next_peek)
-        if self._curtok.ttype == tt.ON_STMT and next_is_newline:
-            body = dir.OnDir[None](self._curtok)
-            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(pref, lexeme, body, next_peek)
-        if self._curtok.ttype == tt.NO_SAVECOMM_STMT and next_is_newline:
-            body = dir.NoSaveCommDir[None](self._curtok)
-            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(pref, lexeme, body, next_peek)
-        if self._curtok.ttype == tt.SAVECOMM_STMT and next_is_newline:
-            body = dir.SaveCommDir[None](self._curtok)
-            self._eat_tokens(2) # поглощаем сразу два токена, т.е ещё и newline
-            return stm.PpDirective(pref, lexeme, body, next_peek)
-
-        if self._check_type(tt.VAR_STMT):
-            self._eat_tokens(1) # пожираем токен объявления переменной
-            assignment_validation:Optional[dir.AssignmentDir[None]] = self._assignment_dir()
-            if assignment_validation is None:
-                return None
-            end_assignment = self._curtok # newline ещё не пожрали
-            self._eat_tokens(1)
-            return stm.PpDirective[None](pref, lexeme, assignment_validation, end_assignment)
-
-        if self._check_type(tt.IF_STMT):
-            self._eat_tokens(1) # пожирем IF_STMT
-            condition_validation:Optional[dir.ConditionDir[None]] = self._condition_dir()
-            if condition_validation is None: return None
-            return stm.PpDirective[None](pref, lexeme, condition_validation, next_peek)
-        return None # если ни одна цепочка токенов не прошла валидацию при парсинге
-
-    def _condition_dir(self) -> Optional[dir.ConditionDir[None]]:
-        """ Получаем директиву условия """
-        if not self._check_type(tt.LEFT_PAREN):
-            self._error(f'Expected LEFT_PAREN')
-            return None
-        self._eat_tokens(1)
-        cond_expr_validation:Optional[dir.CondExprStmt[None]] = self._cond_expr_stmt()
-        if cond_expr_validation is None: return None
-        condition_expr:dir.CondExprStmt[None] = cond_expr_validation
-        if not self._check_type(tt.RIGHT_PAREN):
-            self._error(f'Expected RIGHT_PAREN')
-            return None
-        self._eat_tokens(1)
-        if not self._check_type(tt.THEN_STMT):
-            self._error(f'Expected THEN_STMT')
-            return None
-        self._eat_tokens(1)
-        cond_resolves_validation:List[dir.ConditionResolve[None]] = self._cond_resolves()
-        if not cond_resolves_validation: return None
-        cond_resolves = cond_resolves_validation
-        # на данном этапе у нас не поглощён только токен следующей строки
-        self._eat_tokens(1)
-        return dir.ConditionDir(condition_expr, cond_resolves)
-
-    def _cond_resolves(self) -> List[dir.ConditionResolve[None]]:
-        """ Получаем список операторов, выполняемых при соблюдении условия """
-        resolves:List[dir.ConditionResolve[None]] = []
-
-        while not self._check_type(tt.NEWLINE):
-            
-            # if self._check_type(tt.NOPP_STMT):
-            #     resolves.append(dir.NoppDir[None](self._curtok))
-            #     self._eat_tokens(1)
-            #     continue
-
-            if self._check_type(tt.SAVECOMM_STMT):
-                resolves.append(dir.SaveCommDir[None](self._curtok))
-                self._eat_tokens(1)
-                continue
-
-            if self._check_type(tt.NO_SAVECOMM_STMT):
-                resolves.append(dir.NoSaveCommDir[None](self._curtok))
-                self._eat_tokens(1)
-                continue
-
-            if self._check_type(tt.ON_STMT):
-                resolves.append(dir.OnDir[None](self._curtok))
-                self._eat_tokens(1)
-                continue
-
-            if self._check_type(tt.OFF_STMT):
-                resolves.append(dir.OffDir[None](self._curtok))
-                self._eat_tokens(1)
-                continue
-
-            if self._check_type(tt.INCLUDE_STMT):
-                resolves.append(dir.IncludeDir[None](self._curtok))
-                self._eat_tokens(1)
-                continue
-
-            if self._check_type(tt.EXCLUDE_STMT):
-                resolves.append(dir.ExcludeDir[None](self._curtok))
-                self._eat_tokens(1)
-                continue
-
-            self._error(f'Unexpected token. Expect Condition resolve tokens')
-            return []
-
-        return resolves
-
-    def _cond_expr_stmt(self) -> Optional[dir.CondExprStmt[None]]:
-        """ Получаем выражение условия """
-        or_validation:Optional[expr.OrType[None]] = self._or()
-        if or_validation is None: return None
-        return dir.CondExprStmt(or_validation)
-
-    def _or(self) -> Optional[expr.OrType[None]]:
-        """ Получаем выражение OR """
-        and_validation:Optional[expr.AndType[None]] = self._and()
-        if and_validation is None: return None
-        left = and_validation
-        while self._check_type(tt.OR_OPERATOR):
-            
-            self._eat_tokens(1)
-            
-            right_validation = self._and()
-            if right_validation is None: return None
-            right = right_validation
-            left = expr.OrExpr[None](left, right)
-
-        return left
-
-    def _and(self) -> Optional[expr.AndType[None]]:
-        """ Выражение логического И """
-        not_validation = self._not()
-        if not_validation is None: return None
-        left = not_validation
-        while self._check_type(tt.AND_OPERATOR):
-            
-            self._eat_tokens(1)
-            
-            right_validation = self._not()
-            if right_validation is None: return None
-            right = right_validation
-            left = expr.AndExpr[None](left, right)
-        
-        return left
-
-    def _not(self) -> Optional[expr.NotType[None]]:
-        """ Получаем выражение с оператором отрицания """
-        # NotExpr = notOperator? EqualExpr
-        if self._check_type(tt.NOT_OPERATOR):
-            
-            self._eat_tokens(1)
-            
-            validation_equal = self._equal()
-            if validation_equal is None: return None # если есть ошибка в сравнениях, значит это невалидная директива
-            right = validation_equal
-            return expr.NotExpr(right)
-
-        validation_equal = self._equal()
-        return validation_equal if not validation_equal is None else None
-            
-    def _equal(self) -> Optional[expr.EqualType[None]]:
-        """ Получаем выражение сравнения """
-        if not self._check_type(tt.IDENTIFIER):
-            self._error('Expected IDENTIFIER (ex. var name)')
-            return None
-        operands:List[expr.VarName[None]] = [expr.VarName[None](self._curtok)]
-        operators:List[Tkn] = []
-        self._eat_tokens(1)
-        
-        while self._match(tt.EQUAL_EQUAL, tt.EQUAL_NOT_EQUAL):
-            operators.append(self._curtok)
-            self._eat_tokens(1)
-            
-            if not self._check_type(tt.IDENTIFIER):
-                self._error('Expected IDENTIFIER (ex. var name)')
-                return None
-
-            operands.append(expr.VarName[None](self._curtok))
-            self._eat_tokens(1)
-            
-        return expr.EqualExpr[None](operands, operators)
-
-    def _assignment_dir(self) -> Optional[dir.AssignmentDir[None]]:
-        """Получаем директиву объявления переменной"""
-        # далее должен идти токен скобки
-        if not self._check_type(tt.LEFT_PAREN):
-            self._error(f'Expected LEFT_PAREN')
-            return None
-        self._eat_tokens(1) # поглотили токен скобки
-        # далее идёт идентификатор
-        if not self._check_type(tt.IDENTIFIER):
-            self._error('Expected VARIABLE NAME')
-            return None
-        key = self._curtok
-        self._eat_tokens(1)
-        # далее могут идти три варианта
-        if self._check_type(tt.RIGHT_PAREN) and self._next_peek().ttype == tt.NEWLINE:
-            # правая скобка и newline означают, что объявление завершено
-            self._eat_tokens(1) # newline не пожираем
-            return dir.AssignmentDir[None](key, None)
-        if self._check_type(tt.ASSIGNMENT_OPERATOR):
-            self._eat_tokens(1)
-            if not self._check_type(tt.IDENTIFIER):
-                self._error('Expected IDENTIFIER (ex. variable name)')
-                return None
-            value = self._curtok
-            self._eat_tokens(1)
-            if not self._check_type(tt.RIGHT_PAREN):
-                self._error(f'Expected RIGHT_PAREN')
-                return None
-            self._eat_tokens(1)
-            if not self._check_type(tt.NEWLINE): # директива должна заканчиваться переносом на новую строку
-                self._error('Expected end of Directive')
-                return None
-            # теперь, когда вся валидация пройдена возвращаем присвоение
-            return dir.AssignmentDir[None](key, value)
-        # любой другой токен означает, что что-то сломано в комманде
-        self._error('Unexpected token')
-        return None
 
     def _open_loc(self) -> stm.PpQspLocOpen[None]:
         """ Open Loc Statement Create """

@@ -23,19 +23,14 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "OnDir",
-      "value": "on"
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
+    "class": "RawLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LINE",
+        "value": "!@pp:on\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -50,30 +45,14 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "AssignmentDir",
-      "value": [
-        {
-          "type": "tkn",
-          "sub": "IDENTIFIER",
-          "value": "name"
-        },
-        {
-          "type": "tkn",
-          "sub": "IDENTIFIER",
-          "value": "123"
-        }
-      ]
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
+    "class": "RawLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LINE",
+        "value": "!@pp:var(name=123)\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -88,29 +67,19 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": {
-      "type": "tkn",
-      "sub": "PREFORMATTER",
-      "value": "\t\t\t"
-    },
-    "value": {
-      "type": "dir",
-      "class": "AssignmentDir",
-      "value": [
-        {
-          "type": "tkn",
-          "sub": "IDENTIFIER",
-          "value": "layer1"
-        }
-      ]
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
+    "class": "RawLineStmt",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "PREFORMATTER",
+        "value": "\t\t\t"
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LINE",
+        "value": "!@pp:var(layer1)\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -163,50 +132,40 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "ConditionDir",
-      "value": [
-        {
-          "type": "dir",
-          "class": "CondExprStmt",
-          "value": {
-            "type": "expr",
-            "class": "EqualExpr",
-            "value": [
-              {
-                "type": "expr",
-                "class": "VarName",
-                "value": "name"
-              },
-              {
-                "type": "expr",
-                "class": "VarName",
-                "value": "123"
-              },
-              {
-                "type": "tkn",
-                "sub": "EQUAL_EQUAL",
-                "value": "=="
-              }
-            ]
-          }
-        },
-        {
-          "type": "dir",
-          "class": "ExcludeDir",
-          "value": "exclude"
-        }
-      ]
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "LEFT_PAREN",
-      "value": "("
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:if"
+      },
+      {
+        "type": "tkn",
+        "sub": "LEFT_PAREN",
+        "value": "("
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "name==123"
+      },
+      {
+        "type": "tkn",
+        "sub": "RIGHT_PAREN",
+        "value": ")"
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": ":exclude"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -366,19 +325,20 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "EndifDir",
-      "value": "endif"
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:endif"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -534,7 +494,7 @@
                   {
                     "type": "tkn",
                     "sub": "RAW_LOC_LINE",
-                    "value": "а так же все строки, помещённые внутрь кавычек, апострофов и фигурных скобок."
+                    "value": "а так же все строки кода, помещённые внутрь кавычек, апострофов и фигурных скобок."
                   }
                 ]
               }
@@ -785,7 +745,7 @@
       {
         "type": "tkn",
         "sub": "RAW_LOC_LINE",
-        "value": " можно добавлять спецкомментарии в конце обычных комментариев, это тоже будет работать "
+        "value": " спецкомментарий в конце обычного комментария не удалится. "
       },
       {
         "type": "tkn",
@@ -815,7 +775,7 @@
       {
         "type": "tkn",
         "sub": "RAW_LOC_LINE",
-        "value": " спецкомментарий удалится"
+        "value": " спецкомментарий не удалится"
       },
       {
         "type": "tkn",
@@ -827,7 +787,7 @@
   {
     "type": "stmt",
     "class": "CommentStmt",
-    "sub": "EXCLAMATION_SIGN",
+    "sub": "LESS_SPEC_COMM",
     "value": [
       {
         "type": "tkn",
@@ -853,16 +813,6 @@
         "type": "tkn",
         "sub": "RAW_LOC_LINE",
         "value": " так же будет удалена "
-      },
-      {
-        "type": "tkn",
-        "sub": "LESS_SPEC_COMM",
-        "value": "!@<"
-      },
-      {
-        "type": "tkn",
-        "sub": "RAW_LOC_LINE",
-        "value": " "
       },
       {
         "type": "tkn",
@@ -951,19 +901,20 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "SaveCommDir",
-      "value": "savecomm"
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:savecomm"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -1010,6 +961,11 @@
         "class": "CommentStmt",
         "sub": "LESS_SPEC_COMM",
         "value": [
+          {
+            "type": "tkn",
+            "sub": "PREFORMATTER",
+            "value": "\t\t"
+          },
           {
             "type": "tkn",
             "sub": "RAW_LOC_LINE",
@@ -1136,19 +1092,20 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "NoSaveCommDir",
-      "value": "nosavecomm"
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:nosavecomm"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -1170,7 +1127,7 @@
                   {
                     "type": "tkn",
                     "sub": "RAW_LOC_LINE",
-                    "value": "Так же отключать обработку спецкомментариве можно по условию:"
+                    "value": "Так же отключать обработку спецкомментариев можно по условию:"
                   }
                 ]
               }
@@ -1205,50 +1162,40 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "ConditionDir",
-      "value": [
-        {
-          "type": "dir",
-          "class": "CondExprStmt",
-          "value": {
-            "type": "expr",
-            "class": "EqualExpr",
-            "value": [
-              {
-                "type": "expr",
-                "class": "VarName",
-                "value": "name"
-              },
-              {
-                "type": "expr",
-                "class": "VarName",
-                "value": "123"
-              },
-              {
-                "type": "tkn",
-                "sub": "EQUAL_EQUAL",
-                "value": "=="
-              }
-            ]
-          }
-        },
-        {
-          "type": "dir",
-          "class": "SaveCommDir",
-          "value": "savecomm"
-        }
-      ]
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "LEFT_PAREN",
-      "value": "("
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:if"
+      },
+      {
+        "type": "tkn",
+        "sub": "LEFT_PAREN",
+        "value": "("
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "name==123"
+      },
+      {
+        "type": "tkn",
+        "sub": "RIGHT_PAREN",
+        "value": ")"
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": ":savecomm"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -1352,54 +1299,13 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "EndifDir",
-      "value": "endif"
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
-  },
-  {
-    "type": "stmt",
     "class": "CommentStmt",
-    "sub": "OPEN_DIRECTIVE_STMT",
+    "sub": "SIMPLE_SPEC_COMM",
     "value": [
       {
         "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "если"
-      },
-      {
-        "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "команда"
-      },
-      {
-        "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "не"
-      },
-      {
-        "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "распознана"
-      },
-      {
-        "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "препроцессором"
-      },
-      {
-        "type": "tkn",
-        "sub": "RAW_LINE",
-        "value": ", строка с неизвестной командой игнорируется [37]"
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:endif"
       },
       {
         "type": "tkn",
@@ -1410,40 +1316,72 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "ConditionDir",
-      "value": [
-        {
-          "type": "dir",
-          "class": "CondExprStmt",
-          "value": {
-            "type": "expr",
-            "class": "EqualExpr",
-            "value": [
-              {
-                "type": "expr",
-                "class": "VarName",
-                "value": "layer2"
-              }
-            ]
-          }
-        },
-        {
-          "type": "dir",
-          "class": "IncludeDir",
-          "value": "include"
-        }
-      ]
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "LEFT_PAREN",
-      "value": "("
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:если команда не распознана препроцессором, строка с неизвестной командой игнорируется "
+      },
+      {
+        "type": "tkn",
+        "sub": "LEFT_BRACKET",
+        "value": "["
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "37"
+      },
+      {
+        "type": "tkn",
+        "sub": "RIGHT_BRACKET",
+        "value": "]"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
+  },
+  {
+    "type": "stmt",
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:if"
+      },
+      {
+        "type": "tkn",
+        "sub": "LEFT_PAREN",
+        "value": "("
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "layer2"
+      },
+      {
+        "type": "tkn",
+        "sub": "RIGHT_PAREN",
+        "value": ")"
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": ":include"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -1562,19 +1500,20 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "EndifDir",
-      "value": "endif"
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:endif"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -1631,40 +1570,40 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "ConditionDir",
-      "value": [
-        {
-          "type": "dir",
-          "class": "CondExprStmt",
-          "value": {
-            "type": "expr",
-            "class": "EqualExpr",
-            "value": [
-              {
-                "type": "expr",
-                "class": "VarName",
-                "value": "layer1"
-              }
-            ]
-          }
-        },
-        {
-          "type": "dir",
-          "class": "OffDir",
-          "value": "off"
-        }
-      ]
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "LEFT_PAREN",
-      "value": "("
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:if"
+      },
+      {
+        "type": "tkn",
+        "sub": "LEFT_PAREN",
+        "value": "("
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "layer1"
+      },
+      {
+        "type": "tkn",
+        "sub": "RIGHT_PAREN",
+        "value": ")"
+      },
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": ":off"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -1815,42 +1754,27 @@
   {
     "type": "stmt",
     "class": "CommentStmt",
-    "sub": "OPEN_DIRECTIVE_STMT",
+    "sub": "SIMPLE_SPEC_COMM",
     "value": [
       {
         "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "данная"
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:данная строка тоже сохранится в конечном файле "
       },
       {
         "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "строка"
+        "sub": "LEFT_BRACKET",
+        "value": "["
       },
       {
         "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "тоже"
+        "sub": "RAW_LOC_LINE",
+        "value": "47"
       },
       {
         "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "сохранится"
-      },
-      {
-        "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "в конечном"
-      },
-      {
-        "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "файле"
-      },
-      {
-        "type": "tkn",
-        "sub": "RAW_LINE",
-        "value": "[47]"
+        "sub": "RIGHT_BRACKET",
+        "value": "]"
       },
       {
         "type": "tkn",
@@ -1861,19 +1785,20 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "NoSaveCommDir",
-      "value": "nosavecomm"
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:nosavecomm"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -1962,19 +1887,20 @@
   },
   {
     "type": "stmt",
-    "class": "PpDirective",
-    "sub": "!@pp:",
-    "pref": null,
-    "value": {
-      "type": "dir",
-      "class": "EndifDir",
-      "value": "endif"
-    },
-    "end": {
-      "type": "tkn",
-      "sub": "NEWLINE",
-      "value": "\n"
-    }
+    "class": "CommentStmt",
+    "sub": "SIMPLE_SPEC_COMM",
+    "value": [
+      {
+        "type": "tkn",
+        "sub": "RAW_LOC_LINE",
+        "value": "pp:endif"
+      },
+      {
+        "type": "tkn",
+        "sub": "NEWLINE",
+        "value": "\n"
+      }
+    ]
   },
   {
     "type": "stmt",
@@ -2084,40 +2010,44 @@
               },
               {
                 "type": "stmt",
-                "class": "PpDirective",
-                "sub": "!@pp:",
-                "pref": null,
-                "value": {
-                  "type": "dir",
-                  "class": "ConditionDir",
-                  "value": [
-                    {
-                      "type": "dir",
-                      "class": "CondExprStmt",
-                      "value": {
-                        "type": "expr",
-                        "class": "EqualExpr",
-                        "value": [
-                          {
-                            "type": "expr",
-                            "class": "VarName",
-                            "value": "layer1"
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "dir",
-                      "class": "ExcludeDir",
-                      "value": "exclude"
-                    }
-                  ]
-                },
-                "end": {
-                  "type": "tkn",
-                  "sub": "LEFT_PAREN",
-                  "value": "("
-                }
+                "class": "RawStringLine",
+                "value": [
+                  {
+                    "type": "tkn",
+                    "sub": "SIMPLE_SPEC_COMM",
+                    "value": "!@"
+                  },
+                  {
+                    "type": "tkn",
+                    "sub": "RAW_LOC_LINE",
+                    "value": "pp:if"
+                  },
+                  {
+                    "type": "tkn",
+                    "sub": "LEFT_PAREN",
+                    "value": "("
+                  },
+                  {
+                    "type": "tkn",
+                    "sub": "RAW_LOC_LINE",
+                    "value": "layer1"
+                  },
+                  {
+                    "type": "tkn",
+                    "sub": "RIGHT_PAREN",
+                    "value": ")"
+                  },
+                  {
+                    "type": "tkn",
+                    "sub": "RAW_LOC_LINE",
+                    "value": ":exclude"
+                  },
+                  {
+                    "type": "tkn",
+                    "sub": "NEWLINE",
+                    "value": "\n"
+                  }
+                ]
               },
               {
                 "type": "stmt",
@@ -2183,19 +2113,24 @@
               },
               {
                 "type": "stmt",
-                "class": "PpDirective",
-                "sub": "!@pp:",
-                "pref": null,
-                "value": {
-                  "type": "dir",
-                  "class": "EndifDir",
-                  "value": "endif"
-                },
-                "end": {
-                  "type": "tkn",
-                  "sub": "NEWLINE",
-                  "value": "\n"
-                }
+                "class": "RawStringLine",
+                "value": [
+                  {
+                    "type": "tkn",
+                    "sub": "SIMPLE_SPEC_COMM",
+                    "value": "!@"
+                  },
+                  {
+                    "type": "tkn",
+                    "sub": "RAW_LOC_LINE",
+                    "value": "pp:endif"
+                  },
+                  {
+                    "type": "tkn",
+                    "sub": "NEWLINE",
+                    "value": "\n"
+                  }
+                ]
               },
               {
                 "type": "stmt",
@@ -2447,33 +2382,8 @@
     "value": [
       {
         "type": "tkn",
-        "sub": "OPEN_DIRECTIVE_STMT",
-        "value": "!@pp:"
-      },
-      {
-        "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "корявый"
-      },
-      {
-        "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "RAW"
-      },
-      {
-        "type": "tkn",
-        "sub": "IDENTIFIER",
-        "value": "LINE"
-      },
-      {
-        "type": "tkn",
         "sub": "RAW_LINE",
-        "value": "[65]"
-      },
-      {
-        "type": "tkn",
-        "sub": "NEWLINE",
-        "value": "\n"
+        "value": "!@pp:корявый RAW LINE [65]\n"
       }
     ]
   },

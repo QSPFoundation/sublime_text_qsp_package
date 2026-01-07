@@ -36,7 +36,7 @@ class DirsParser:
     def get_statements(self) -> List[DirStmt]:
         return self._statements
 
-    def qsps_file_parse(self) -> None:
+    def tokens_parse(self) -> None:
         """ Публичная функция вызова парсера. """
         # разбиваем файл на директивы и строки, валидация директив
         while not self._is_eof():

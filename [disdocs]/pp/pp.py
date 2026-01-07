@@ -16,6 +16,7 @@ from dirs_parser import DirsParser
 from dirs_int import DirsInt
 
 from pp_scanner import PpScanner
+from pp_parser import PpParser
 
 class QspsPP:
     """ Препроцессор для файлов  """
@@ -35,7 +36,7 @@ class QspsPP:
 
         # 2. Parse directives
         dirs_parser = DirsParser(dirs_tokens)
-        dirs_parser.qsps_file_parse()
+        dirs_parser.tokens_parse()
         dirs_stmts = dirs_parser.get_statements()
 
         if __name__ == "__main__":
@@ -66,6 +67,20 @@ class QspsPP:
                 json.dump(l, fp, indent=4, ensure_ascii=False)
 
         # 5. Parse by Stmts
+
+        pp_parser = PpParser(pp_tokens)
+        pp_parser.tokens_parse()
+        pp_stmts = pp_parser.get_statements()
+
+        if __name__ == "__main__":
+            from pp_ast_printer import AstPrinter
+            ast_printer = AstPrinter(pp_stmts)
+            ast_printer.gen_ast()
+            ast_tree = ast_printer.get_ast()
+            out = ".\\_test\\pp_ast.json"
+            with open(out, 'w', encoding='utf-8') as fp:
+                json.dump(ast_tree, fp, ensure_ascii=False, indent=2)
+
         # 6. Interpret by Stmts and markers
 
 
