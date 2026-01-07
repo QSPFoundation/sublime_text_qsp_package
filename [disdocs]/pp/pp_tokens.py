@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Tuple, Dict, Union, List
 
 from enum import (IntEnum, auto)
@@ -6,6 +6,8 @@ from enum import (IntEnum, auto)
 LineNum = int
 CharNum = int
 Point = Tuple[LineNum, CharNum]
+
+TokenNode = Dict[str, Union[str, List[int], bool]]
 
 # ------------------------------ Tokens Types ------------------------------ #
 class PpTokenType(IntEnum):
@@ -76,11 +78,15 @@ class PpToken:
     lexeme:str # вся лексема целиком
     lexeme_start:Point # строка и номер символа в которой токен находится
 
-    def get_as_node(self) -> Dict[str, Union[str, List[int]]]:
+    no_save_comment:bool = field(default=True)
+    include_line:bool = field(default=True)
+    def get_as_node(self) -> TokenNode:
         return {
             "token-type": self.ttype.name,  # название константы вместо номера
             'lexeme': self.lexeme,
-            'lexeme_start': list(self.lexeme_start)
+            'lexeme_start': list(self.lexeme_start),
+            'no_save_comment': self.no_save_comment,
+            'include_line': self.include_line
         }
 
     def get_end_pos(self) -> Point:

@@ -29,13 +29,6 @@ class PpEnvironment:
 
         self._labels[key] = value
 
-    def upd_var(self, key:str) -> None:
-        """ Создание метки из под условия """
-        key = key.strip()
-        if key in ('True', 'False'): return
-        if not key in self._labels:
-            self._labels[key] = False
-
     def get_var(self, key:str) -> Union[str, bool]:
         """ Извлекаем значение метки """
         return self._labels.get(key, False)

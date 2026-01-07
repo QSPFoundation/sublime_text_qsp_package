@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from typing import List, Optional, Dict, Union
 
 from pp_environment import PpEnvironment
 # from pp_scanner import PpScanner
@@ -9,10 +9,13 @@ from pp_environment import PpEnvironment
 
 from pp_tokens import PpToken
 from pp_tokens import PpTokenType as tt
+from pp_tokens import TokenNode
 
 from dirs_scanner import DirsScaner
 from dirs_parser import DirsParser
 from dirs_int import DirsInt
+
+from pp_scanner import PpScanner
 
 class QspsPP:
     """ Препроцессор для файлов  """
@@ -50,6 +53,18 @@ class QspsPP:
         marked_lines = dirs_int.get_marked_lines()
 
         # 4. Scan by Stmts
+        pp_scanner = PpScanner(marked_lines)
+        pp_scanner.scan_tokens()
+        pp_tokens = pp_scanner.get_tokens()
+
+        if __name__ == "__main__":
+            out = '.\\_test\\pp_tokens.json'
+            l: List[TokenNode] = []
+            for t in pp_tokens:
+                l.append(t.get_as_node())
+            with open(out, 'w', encoding='utf-8') as fp:
+                json.dump(l, fp, indent=4, ensure_ascii=False)
+
         # 5. Parse by Stmts
         # 6. Interpret by Stmts and markers
 
@@ -61,10 +76,8 @@ class QspsPP:
 
 if __name__ == "__main__":
     path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
-    
     with open(path, 'r', encoding='utf-8') as fp:
         qsps_lines = fp.readlines()
-
     import time
     old = time.time()
     preprocessor = QspsPP()
