@@ -128,7 +128,7 @@ class ExcludeDir(PpDir[R]):
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_exclude_dir(self)
 
-@dataclass
+@dataclass(eq=False)
 class CondExprStmt(PpDir[R]):
     expr:expr.OrType[R]
     def accept(self, visitor:PpVisitor[R]) -> R:

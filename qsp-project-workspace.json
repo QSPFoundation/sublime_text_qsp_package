@@ -3073,15 +3073,6 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\for_autotest.qsps": [
-            [
-                "[pp.start] [8]",
-                [
-                    412,
-                    426
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[disdocs]\\crash.qsps": [
             [
                 "s",
@@ -3209,12 +3200,21 @@
                 ]
             ]
         ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\output.qsps": [
+            [
+                "[pp.start] [8]",
+                [
+                    414,
+                    428
+                ]
+            ]
+        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\pptest.qsps": [
             [
                 "[pp.start] [8]",
                 [
-                    458,
-                    472
+                    461,
+                    475
                 ]
             ]
         ]
@@ -3401,8 +3401,9 @@
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\drive\\objects.sys\\предметы\\надевание предмета.qsps": "732ae8195a3901414b63255af7a82572",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_syntax\\comments\\wrong_comments.qsps": "1226e67ab42444e78336c7a95f63bd8d",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\examples_splitter\\basesex.qsps": "4399ce872eaec74f8d469202638a4f47",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\for_autotest.qsps": "775c9128e76b986a22d177069168eb5e",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\new_grammar test.qsps": "7d390465e9323fab9d6f6cc3770e109c",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\pptest.qsps": "505c7a1353c5d5510e12426453349bca"
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\output.qsps": "9dad14ec729f4cb1d0cb8ee5955b0a9e",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\pptest.qsps": "4a91063b9f7119cf8bb0c6426f493564",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\for_autotest.qsps": "84fb88c4383b6dc313674e5b749a9741"
     }
 }

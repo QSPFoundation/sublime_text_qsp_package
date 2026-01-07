@@ -12,6 +12,7 @@ from pp_tokens import PpTokenType as tt
 
 from dirs_scanner import DirsScaner
 from dirs_parser import DirsParser
+from dirs_int import DirsInt
 
 class QspsPP:
     """ Препроцессор для файлов  """
@@ -23,14 +24,17 @@ class QspsPP:
     def pp_this_lines(self,
                       qsps_lines: List[str]) -> List[str]:
         """ Preprocess the list of lines. """
+
         # 1. Scan by directives
         dirs_scanner = DirsScaner(qsps_lines)
         dirs_scanner.scan_tokens()
         dirs_tokens = dirs_scanner.get_tokens()
+
         # 2. Parse directives
         dirs_parser = DirsParser(dirs_tokens)
         dirs_parser.qsps_file_parse()
         dirs_stmts = dirs_parser.get_statements()
+
         if __name__ == "__main__":
             from dirs_ast_printer import DirsAstPrinter
             ast_printer = DirsAstPrinter(dirs_stmts)
@@ -41,24 +45,16 @@ class QspsPP:
                 json.dump(ast_tree, fp, ensure_ascii=False, indent=2)
 
         # 3. Interpret directives, and marked lines
+        dirs_int = DirsInt(dirs_stmts, self._ns, qsps_lines)
+        dirs_int.run()
+        output_lines = dirs_int.get_output_lines()
+
+        print(len(output_lines), self._ns.get_env())
 
         # 4. Scan by Stmts
         # 5. Parse by Stmts
         # 6. Interpret by Stmts and markers
 
-        # scanner = PpScanner(qsps_lines)
-        # scanner.scan_tokens()
-        # tokens = scanner.get_tokens()
-
-        # parser = PpParser(tokens)
-        # parser.qsps_file_parse()
-        # statements = parser.get_statements()
-        
-        # if ast_printer:
-        #     ast_printer.gen_ast(statements)
-
-        # interpreter = PpInt(statements, self._ns, qsps_lines)
-        # interpreter.run()
 
 
 

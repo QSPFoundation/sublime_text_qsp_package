@@ -3,7 +3,9 @@ from typing import Tuple, Dict, Union, List
 
 from enum import (IntEnum, auto)
 
-Point = Tuple[int, int]
+LineNum = int
+CharNum = int
+Point = Tuple[LineNum, CharNum]
 
 # ------------------------------ Tokens Types ------------------------------ #
 class PpTokenType(IntEnum):

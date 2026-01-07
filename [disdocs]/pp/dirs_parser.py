@@ -48,7 +48,6 @@ class DirsParser:
 
     def _declaration(self) -> stm.DirStmt[None]:
         """ Распарсиваем целый файл из токенов. """
-        print(self._curtok)
         if self._check_type(tt.OPEN_DIRECTIVE_STMT):
             start_declaration_on_loc:int = self._curtok_num
             validate_directive_on_loc:Optional[stm.DirectiveStmt[None]] = self._directive()
@@ -153,7 +152,7 @@ class DirsParser:
         cond_resolves = cond_resolves_validation
         # на данном этапе у нас не поглощён только токен следующей строки
         self._eat_tokens(1)
-        return dir.ConditionDir(condition_expr, cond_resolves)
+        return dir.ConditionDir(condition=condition_expr, next_dirs=cond_resolves)
 
     def _cond_resolves(self) -> List[dir.ConditionResolve[None]]:
         """ Получаем список операторов, выполняемых при соблюдении условия """
