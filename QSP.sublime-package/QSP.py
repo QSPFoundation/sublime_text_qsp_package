@@ -4,7 +4,7 @@ import sublime_plugin   # type: ignore
 import os
 import re
 import json
-from typing import (Union, List, Tuple)
+from typing import Union, List, Tuple, cast, Dict, Literal
 # import time
 
 # Importing my modules from qSpy package.
@@ -17,122 +17,17 @@ from .qSpy import function as qsp
 # Import constants
 from .qSpy import const
 
-
-def _read_grammar_keywords() -> dict:
-	"""Read `qsp_grammar.pest` and extract keywords: statements, functions, markers."""
-	grammar_path = os.path.join(os.path.dirname(__file__), 'qsp_grammar.pest')
-	if not os.path.isfile(grammar_path):
-		return {'statements': set(), 'functions': set(), 'markers': set()}
-	with open(grammar_path, 'r', encoding='utf-8') as fp:
-		text = fp.read()
-	# helpers
-	def _capture_alternatives(rule_name:str) -> List[str]:
-		pattern = rf"\b{rule_name}\s*=\s*(?:[\s\S]*?)\n"  # first line with rule
-		m = re.search(pattern, text)
-		if m is None:
-			return []
-		# get from the match start to the next closing brace or newline group until '}' of grammar? safer: capture quoted list lines following rule header
-		start = m.end()
-		end = text.find('\n\n', start)
-		chunk = text[start:end if end != -1 else None]
-		alts = re.findall(r'"([^"]+)"', chunk)
-		return alts
-	statements = set(_capture_alternatives('statementName'))
-	functions = set(_capture_alternatives('functionName'))
-	markers = set(_capture_alternatives('setMarker'))
-	markers.update(_capture_alternatives('localMarker'))
-	markers.update(_capture_alternatives('actMarker'))
-	markers.update(_capture_alternatives('endActMarker'))
-	markers.update(_capture_alternatives('ifMarker'))
-	markers.update(_capture_alternatives('elseIfNoSpaceMarker'))
-	markers.update(_capture_alternatives('elseMarker'))
-	markers.update(_capture_alternatives('endIfMarker'))
-	markers.update(_capture_alternatives('loopMarker'))
-	markers.update(_capture_alternatives('whileMarker'))
-	markers.update(_capture_alternatives('stepMarker'))
-	markers.update(_capture_alternatives('endLoopMarker'))
-	return {
-		'statements': set(map(str.lower, statements)),
-		'functions': set(map(str.lower, functions)),
-		'markers': set(map(str.lower, markers))
-	}
+# My typing
+BuilderArgs = Dict[
+	Literal['build', 'run', 'point_file', 'qgc_path'],
+	Union[bool, str]
+]
 
 
-def _mask_strings_and_braces(source:str) -> str:
-	"""Return text with strings and {...} code blocks replaced by spaces (preserving length)."""
-	result = list(source)
-	in_single = False
-	in_double = False
-	brace = 0
-	i = 0
-	length = len(result)
-	while i < length:
-		ch = result[i]
-		# handle entering/exiting strings unless inside braces masking already
-		if brace == 0:
-			if not in_double and ch == "'":
-				in_single = not in_single
-				result[i] = ' '
-				i += 1
-				continue
-			elif not in_single and ch == '"':
-				in_double = not in_double
-				result[i] = ' '
-				i += 1
-				continue
-			# escape pairs inside strings per grammar ('', "")
-			if in_single and ch == "'" and i+1 < length and result[i+1] == "'":
-				result[i] = ' '
-				result[i+1] = ' '
-				i += 2
-				continue
-			if in_double and ch == '"' and i+1 < length and result[i+1] == '"':
-				result[i] = ' '
-				result[i+1] = ' '
-				i += 2
-				continue
-			# start brace block only if not inside string
-			if not in_single and not in_double and ch == '{':
-				brace = 1
-				result[i] = ' '
-				i += 1
-				continue
-		else:
-			# inside brace block; support nesting
-			if ch == '{':
-				brace += 1
-			elif ch == '}':
-				brace -= 1
-			result[i] = ' '
-			i += 1
-			continue
-		# mask string contents
-		if in_single or in_double:
-			result[i] = ' '
-			i += 1
-			continue
-		i += 1
-	return ''.join(result)
 
 
-def _pos_to_line_index_map(text:str) -> List[int]:
-	"""Return list of starting offsets of each line for fast pos->line mapping."""
-	starts = [0]
-	for m in re.finditer(r'\n', text):
-		starts.append(m.end())
-	return starts
 
 
-def _line_number_at(pos:int, line_starts:List[int]) -> int:
-	# binary search
-	lo, hi = 0, len(line_starts)-1
-	while lo <= hi:
-		mid = (lo+hi)//2
-		if line_starts[mid] <= pos:
-			lo = mid + 1
-		else:
-			hi = mid - 1
-	return hi + 1  # 1-based
 
 
 class QspBuildCommand(sublime_plugin.WindowCommand):
@@ -142,51 +37,27 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 	def run(self, qsp_mode:str="--br") -> None:
 		# Three commands from arguments.
 		argv = self.window.extract_variables()
-		if 'file' not in argv:
+		if not 'file' in argv:
 			qsp.write_error_log(const.QSP_ERROR_MSG.NEED_SAVE_FILE)
 			return None
-		args = qsp.parse_args(qsp_mode, argv['file'])
+		# -----------------------------------------------------------------------
+		args:BuilderArgs = {}
+
+		args['build'] = (qsp_mode in ('--br', '--build'))  # - command for build the project
+		args['run'] = (qsp_mode in ('--br', '--run'))      # - command for run the project
+		args['point_file'] = os.path.abspath(argv['file']) # - start point for search `qsp-project.json`
+		args['qgc_path'] = ''                              # - path to win-converter
+
 		if sublime.platform() == 'windows':
-			qgc_path = os.path.join(
-				sublime.packages_path(),
+			qgc_path = os.path.join(sublime.packages_path(),
 				'QSP', 'qgc', 'app', 'QGC.exe')
 			if os.path.isfile(qgc_path):
 				args['qgc_path'] = qgc_path
-
 		# -----------------------------------------------------------------------
-		# args['point_file'] - start point for search `qsp-project.json`
-		# args['build'] - command for build the project
-		# args['run'] - command for run the project
-		# args['qgc_path'] — path to win-converter
-		# -----------------------------------------------------------------------
-
-		# change project.json -> qsp-project.json before beta-release
-		if 'point_file' in args:
-			project_file = 'project.json'
-			project_folder = qsp.search_project_folder(
-				args['point_file'],
-				print_error = False,
-				project_file = project_file)
-			if project_folder is not None:
-				project_file_path = os.path.join(project_folder, project_file)
-				with open(project_file_path, 'r', encoding='utf-8') as fp:
-					root = json.load(fp)
-				for instruction in root['project']:
-					if 'build' in instruction:
-						instruction['module'] = instruction['build']
-						del instruction['build']
-				if 'save_txt2gam' in root:
-					root['save_temp_files'] = root['save_txt2gam']
-					del root['save_txt2gam']
-				with open(os.path.join(project_folder, 'qsp-project.json'), 'w', encoding='utf-8') as fp:
-					json.dump(root, fp, indent=4, ensure_ascii=False)
-				os.remove(project_file_path)
 				
 		# old_time = time.time()
-		# Initialise of Builder:
-		builder = BuildQSP(args)
-		# Run the Builder to work:
-		builder.build_and_run()
+		builder = BuildQSP(args) # Initialise of Builder.
+		builder.build_and_run()  # Run the Builder to work.
 		# new_time = time.time()
 		# print(new_time - old_time)
 
@@ -410,7 +281,7 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 				with open(qsp_loc_place, 'r', encoding='utf-8') as file:
 					string = file.read()
 				match = re.search(
-					r'^\#\s*'+qsp.clear_locname(qsp_loc_name)+'$', 
+					r'^\#\s*'+re.escape(qsp_loc_name)+'$', 
 					string, 
 					flags=re.MULTILINE)
 				if match is not None: count = ':'+str(len(string[:match.start()].split('\n')))
