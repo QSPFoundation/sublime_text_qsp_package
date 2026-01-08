@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional, Dict, Union
+from typing import List
 
 from pp_environment import PpEnvironment
 # from pp_scanner import PpScanner
@@ -7,8 +7,6 @@ from pp_environment import PpEnvironment
 # from pp_ast_printer import AstPrinter
 # from pp_int import PpInt
 
-from pp_tokens import PpToken
-from pp_tokens import PpTokenType as tt
 from pp_tokens import TokenNode
 
 from dirs_scanner import DirsScaner
@@ -17,6 +15,7 @@ from dirs_int import DirsInt
 
 from pp_scanner import PpScanner
 from pp_parser import PpParser
+from pp_int import PpInt
 
 class QspsPP:
     """ Препроцессор для файлов  """
@@ -82,6 +81,19 @@ class QspsPP:
                 json.dump(ast_tree, fp, ensure_ascii=False, indent=2)
 
         # 6. Interpret by Stmts and markers
+
+        pp_int = PpInt(pp_stmts, marked_lines)
+        pp_int.run()
+        output_lines = pp_int.get_output()
+
+        if __name__ == "__main__":
+            out = ".\\_test\\output.qsps"
+            with open(out, 'w', encoding='utf-8') as fp:
+                fp.write(''.join(output_lines))
+
+        return output_lines
+
+
 
 
 
