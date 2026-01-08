@@ -106,15 +106,17 @@ class PpInt(stm.PpVisitor[AstNode]):
             comm = cast(stm.CommentStmt[AstNode], stmt.comment)
             comment_line.append(comm.name.lexeme)
             comment_line.extend(t.lexeme for t in comm.value)
+        
+        
         self._temporary = []
         for other_stmt in stmt.stmts:
             other_stmt.accept(self)
-            self._temporary.append(' & ')
         if comment_line:
             self._temporary.extend(comment_line)
-        else:
-            # если комментария нет, удаляем последний &
-            self._temporary.pop()
+        elif comment_validate == 'simple_spec_comm':
+            # специальный комментарий не попадёт в выходной файл, но перенос строки надо сохранить
+            self._temporary.append('\n')
+        if len(self._temporary) >= 2 and self._temporary[-2].strip() == '&': self._temporary.pop(-2)
         self._output_lines.extend(self._temporary)
         self._temporary = []
 
@@ -131,7 +133,6 @@ class PpInt(stm.PpVisitor[AstNode]):
         for s in stmt.chain:
             # обрабатываем цепочку
             s.accept(self)
-        self._temporary.append('\n')
  
     def visit_string_literal(self, stmt: stm.StringLiteral[AstNode]) -> AstNode:
         self._new_context()
@@ -150,10 +151,8 @@ class PpInt(stm.PpVisitor[AstNode]):
 
     def visit_pp_literal(self, stmt: stm.PpLiteral[AstNode]) -> AstNode:
         if not stmt.value.include_line: return
-        if self._contexts[-1]['in_literal_string']:
-            self._temporary.append(stmt.value.lexeme)
-        else:
-            self._temporary.append(stmt.value.lexeme.strip())
+        self._temporary.append(stmt.value.lexeme)
+        
 
     def visit_bracket_block(self, stmt: stm.BracketBlock[AstNode]) -> AstNode:
         if stmt.left.include_line:

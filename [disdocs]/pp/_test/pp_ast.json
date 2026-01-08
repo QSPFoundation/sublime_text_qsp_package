@@ -320,6 +320,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -524,6 +530,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -545,6 +557,12 @@
       },
       {
         "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "AMPERSAND",
+        "value": "& "
+      },
+      {
+        "type": "stmt",
         "class": "OtherStmt",
         "value": [
           {
@@ -554,6 +572,12 @@
             "value": "clear "
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "AMPERSAND",
+        "value": "& "
       },
       {
         "type": "stmt",
@@ -646,6 +670,12 @@
       },
       {
         "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "AMPERSAND",
+        "value": "& "
+      },
+      {
+        "type": "stmt",
         "class": "CommentStmt",
         "sub": "SIMPLE_SPEC_COMM",
         "value": [
@@ -702,6 +732,12 @@
             "value": " "
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "AMPERSAND",
+        "value": "& "
       },
       {
         "type": "stmt",
@@ -896,6 +932,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -955,6 +997,12 @@
             "value": " "
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "AMPERSAND",
+        "value": "& "
       },
       {
         "type": "stmt",
@@ -1087,6 +1135,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -1157,6 +1211,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -1230,6 +1290,12 @@
             "value": " "
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "AMPERSAND",
+        "value": "& "
       },
       {
         "type": "stmt",
@@ -1495,6 +1561,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -1565,6 +1637,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -1651,6 +1729,12 @@
       },
       {
         "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "AMPERSAND",
+        "value": "& "
+      },
+      {
+        "type": "stmt",
         "class": "CommentStmt",
         "sub": "SIMPLE_SPEC_COMM",
         "value": [
@@ -1716,6 +1800,12 @@
             "value": " "
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "AMPERSAND",
+        "value": "& "
       },
       {
         "type": "stmt",
@@ -1882,6 +1972,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -2231,6 +2327,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -2309,6 +2411,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },
@@ -2367,6 +2475,12 @@
             }
           }
         ]
+      },
+      {
+        "type": "stmt",
+        "class": "PpLiteral",
+        "sub": "NEWLINE",
+        "value": "\n"
       }
     ]
   },

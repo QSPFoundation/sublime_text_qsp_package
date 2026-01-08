@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, Optional, TypeVar, List
+from typing import Generic, Optional, TypeVar, List, Union
 
 from pp_tokens import PpToken
 
@@ -68,7 +68,7 @@ class BracketBlock(PpStmt[R]):
 @dataclass(eq=False)
 class StringLiteral(PpStmt[R]):
     left:PpToken
-    value:List['StringLine[R]']
+    value:List['RawStringLine[R]']
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_string_literal(self)
 
@@ -80,7 +80,7 @@ class OtherStmt(PpStmt[R]):
 
 @dataclass(eq=False)
 class StmtsLine(PpStmt[R]):
-    stmts:List[OtherStmt[R]]
+    stmts:List[Union[OtherStmt[R], 'PpLiteral[R]']]
     comment:Optional['CommentStmt[R]']
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_stmts_line(self)
@@ -125,7 +125,6 @@ class PpLiteral(PpStmt[R]):
         return visitor.visit_pp_literal(self)
 
 OtherStmtChain = List[PpStmt[R]]
-StringLine = RawStringLine[R]
 
 # Допустим у нас есть объекты класса Животное. От этого класса наследуются:
 # - Собака

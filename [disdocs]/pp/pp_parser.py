@@ -74,7 +74,7 @@ class PpParser:
 
     def _statements_line(self) -> stm.StmtsLine[None]:
         """Получаем строку операторов с комментариями"""
-        stmts:List[stm.OtherStmt[None]] = []
+        stmts:List[stm.StmtLinePart[None]] = []
         comment:Optional[stm.CommentStmt[None]] = None
         
         # Первый OtherStmt обязателен
@@ -82,9 +82,11 @@ class PpParser:
         
         while not self._is_eof():
             if self._check_type(tt.NEWLINE):
+                stmts.append(stm.PpLiteral(self._curtok))
                 self._eat_tokens(1)
                 break
             if self._check_type(tt.AMPERSAND):
+                stmts.append(stm.PpLiteral(self._curtok))
                 self._eat_tokens(1)  # поглощаем разделитель &
                 # Проверяем, не комментарий ли следующий токен
                 if self._match(tt.EXCLAMATION_SIGN, tt.SIMPLE_SPEC_COMM, tt.LESS_SPEC_COMM):
@@ -110,7 +112,6 @@ class PpParser:
         chain:stm.OtherStmtChain[None] = []
 
         while not (self._is_eof() or self._match(tt.NEWLINE, tt.AMPERSAND)):
-            
             # тело оператора продолжается до конца строки или амперсанда
             if self._match(tt.QUOTE, tt.APOSTROPHE):
                 chain.append(self._string_literal())
@@ -240,7 +241,7 @@ class PpParser:
 
     def _string_literal(self) -> stm.StringLiteral[None]:
         """ Получаем строку """
-        value:List[stm.StringLine[None]] = []
+        value:List[stm.RawStringLine[None]] = []
         # обрабатываем токен начала строки
         ttype = self._curtok.ttype
         left = self._curtok

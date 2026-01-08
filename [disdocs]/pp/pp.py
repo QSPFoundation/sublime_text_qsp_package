@@ -52,6 +52,12 @@ class QspsPP:
         dirs_int.run()
         marked_lines = dirs_int.get_marked_lines()
 
+        if __name__ == "__main__":
+            out = '.\\_test\\dirs_ml.json'
+            l: List[TokenNode] = []
+            with open(out, 'w', encoding='utf-8') as fp:
+                json.dump(marked_lines, fp, indent=4, ensure_ascii=False)
+
         # 4. Scan by Stmts
         pp_scanner = PpScanner(marked_lines)
         pp_scanner.scan_tokens()

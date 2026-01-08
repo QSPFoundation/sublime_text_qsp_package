@@ -64,6 +64,7 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         # если (препроцессор включён) или (отключен блоком условия и это конец условия)
         sl = (stmt.pref.lexeme_start[0] if stmt.pref else stmt.lexeme.lexeme_start[0])
         el = stmt.end.get_end_pos()[0]
+        print(stmt.lexeme.lexeme, stmt.lexeme.lexeme_start, self._pp_is_on())
         if self._pp_is_on() or self._is_endif(stmt.body):
             stmt.body.accept(self) # выполняем
             self._marked_lines.extend(self._gen_output(sl, el, True))
@@ -108,6 +109,7 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         }[self._is_true]))
 
     def visit_off_dir(self, stmt: dir.OffDir[AstNode]) -> AstNode:
+        print('is_true', self._is_true)
         self._pp(cast(Literal['on', 'off'], {
             None:  'off',
             True:  'off',
@@ -238,14 +240,14 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
 
     def _new_modes(self) -> None:
         cur = self._modes[-1]
-        self._modes.append({})
+        self._modes.append(cast(Modes, {}))
         self._modes[-1].update(cur)
 
     def _gen_output(self, strt_ln:LineNum, end_ln:LineNum, exclude:bool=False) -> List[MarkedLine]:
         """ Генерируем список выходных строк. """
         output_lines:List[MarkedLine] = []
         include = False if exclude else self._modes[-1]['include']
-        no_save_comm = self._modes[-1]['no_save_comm']
+        no_save_comm = self._modes[-1]['no_save_comm'] and self._pp_is_on()
         for line in self._qsps_raw_lines[strt_ln:end_ln+1]:
             output_lines.append((line, no_save_comm, include))
         return output_lines
