@@ -19,8 +19,7 @@ class QspsPP:
         self._ns = PpEnvironment()
         ...
 
-    def pp_this_lines(self,
-                      qsps_lines: List[str]) -> List[str]:
+    def pp_this_lines(self, qsps_lines: List[str]) -> List[str]:
         """ Preprocess the list of lines. """
 
         # 1. Scan by directives
