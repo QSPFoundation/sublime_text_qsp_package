@@ -67,7 +67,7 @@ class PpScanner:
             self._scan_line(line)
             
         if self._curlexeme and self._scan_funcs:
-            print(['pp_scanner', ''.join(self._curlexeme), self._scan_funcs[-1].__name__])
+            print(['Pp-Scanner', ''.join(self._curlexeme), self._scan_funcs[-1].__name__])
 
         self._tokens.append(tkn(tt.EOF, "", (-1, -1)))
 
@@ -294,4 +294,4 @@ class PpScanner:
 
     # обработчик ошибок. Пока просто выводим в консоль.
     def _error(self, message:str) -> None:
-        print(f"Err. {message}: ({self._line_num}, {self._curchar}).")
+        print(f"Pp-Scanner. {message}: ({self._line_num}, {self._curchar}).")

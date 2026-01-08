@@ -109,6 +109,7 @@ class PpInt(stm.PpVisitor[AstNode]):
         
         
         self._temporary = []
+        if stmt.pref: self._temporary.append(stmt.pref.lexeme)
         for other_stmt in stmt.stmts:
             other_stmt.accept(self)
         if comment_line:
@@ -117,6 +118,7 @@ class PpInt(stm.PpVisitor[AstNode]):
             # специальный комментарий не попадёт в выходной файл, но перенос строки надо сохранить
             self._temporary.append('\n')
         if len(self._temporary) >= 2 and self._temporary[-2].strip() == '&': self._temporary.pop(-2)
+        if len(''.join(self._temporary).split()) == 0: return # пропускаем пустые строки
         self._output_lines.extend(self._temporary)
         self._temporary = []
 

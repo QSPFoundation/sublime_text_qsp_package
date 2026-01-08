@@ -80,7 +80,8 @@ class OtherStmt(PpStmt[R]):
 
 @dataclass(eq=False)
 class StmtsLine(PpStmt[R]):
-    stmts:List[Union[OtherStmt[R], 'PpLiteral[R]']]
+    pref:Optional[PpToken]
+    stmts:List['StmtLinePart[R]']
     comment:Optional['CommentStmt[R]']
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_stmts_line(self)
@@ -113,18 +114,19 @@ class RawLineStmt(PpStmt[R]): # Raw Line between location
         return visitor.visit_raw_line_dclrt(self)
 
 @dataclass
-class RawStringLine(PpStmt[R]):
+class RawStringLine(PpStmt[R]): # Raw Line in literal string
     value:List[PpToken]
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_raw_string_line(self)
 
 @dataclass(eq=False)
-class PpLiteral(PpStmt[R]):
+class PpLiteral(PpStmt[R]): # token wrap
     value:PpToken
     def accept(self, visitor:PpVisitor[R]) -> R:
         return visitor.visit_pp_literal(self)
 
 OtherStmtChain = List[PpStmt[R]]
+StmtLinePart = Union[OtherStmt[R], PpLiteral[R]]
 
 # Допустим у нас есть объекты класса Животное. От этого класса наследуются:
 # - Собака

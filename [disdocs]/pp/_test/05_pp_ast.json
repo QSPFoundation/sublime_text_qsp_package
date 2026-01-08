@@ -1011,11 +1011,6 @@
         "value": [
           {
             "type": "tkn",
-            "sub": "PREFORMATTER",
-            "value": "\t\t"
-          },
-          {
-            "type": "tkn",
             "sub": "RAW_LOC_LINE",
             "value": " строка кода и спецкомментарий не удалятся "
           },

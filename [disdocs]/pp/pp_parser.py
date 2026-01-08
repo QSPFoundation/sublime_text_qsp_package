@@ -6,7 +6,6 @@ from pp_tokens import PpTokenType as tt
 
 import pp_stmts as stm
 
-# Stack = List[Callable[[Tkn], None]]
 PpStmt = stm.PpStmt[Any]
 
 class PpParser:
@@ -74,6 +73,7 @@ class PpParser:
 
     def _statements_line(self) -> stm.StmtsLine[None]:
         """Получаем строку операторов с комментариями"""
+        pref, self._tbuffer = self._tbuffer, None
         stmts:List[stm.StmtLinePart[None]] = []
         comment:Optional[stm.CommentStmt[None]] = None
         
@@ -105,7 +105,7 @@ class PpParser:
                 self._logic_error(f'Statements Line. Unexpected Token {self._curtok.ttype.name}')
                 break
         
-        return stm.StmtsLine[None](stmts, comment)
+        return stm.StmtsLine[None](pref, stmts, comment)
        
     def _other_stmt(self) -> stm.OtherStmt[None]:
         """ Получаем QSP-оператор """

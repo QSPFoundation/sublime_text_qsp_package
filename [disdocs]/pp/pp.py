@@ -2,11 +2,6 @@ import json
 from typing import List
 
 from pp_environment import PpEnvironment
-# from pp_scanner import PpScanner
-# from pp_parser import PpParser
-# from pp_ast_printer import AstPrinter
-# from pp_int import PpInt
-
 from pp_tokens import TokenNode
 
 from dirs_scanner import DirsScaner
@@ -33,6 +28,14 @@ class QspsPP:
         dirs_scanner.scan_tokens()
         dirs_tokens = dirs_scanner.get_tokens()
 
+        if __name__ == "__main__":
+            out = '.\\_test\\01_dirs_tokens.json'
+            out_l: List[TokenNode] = []
+            for t in dirs_tokens:
+                out_l.append(t.get_as_node())
+            with open(out, 'w', encoding='utf-8') as fp:
+                json.dump(out_l, fp, indent=4, ensure_ascii=False)
+
         # 2. Parse directives
         dirs_parser = DirsParser(dirs_tokens)
         dirs_parser.tokens_parse()
@@ -43,7 +46,7 @@ class QspsPP:
             ast_printer = DirsAstPrinter(dirs_stmts)
             ast_printer.gen_ast()
             ast_tree = ast_printer.get_ast()
-            out = ".\\_test\\dirs_ast.json"
+            out = ".\\_test\\02_dirs_tree.json"
             with open(out, 'w', encoding='utf-8') as fp:
                 json.dump(ast_tree, fp, ensure_ascii=False, indent=2)
 
@@ -53,8 +56,7 @@ class QspsPP:
         marked_lines = dirs_int.get_marked_lines()
 
         if __name__ == "__main__":
-            out = '.\\_test\\dirs_ml.json'
-            l: List[TokenNode] = []
+            out = '.\\_test\\03_dirs_ml.json'
             with open(out, 'w', encoding='utf-8') as fp:
                 json.dump(marked_lines, fp, indent=4, ensure_ascii=False)
 
@@ -64,7 +66,7 @@ class QspsPP:
         pp_tokens = pp_scanner.get_tokens()
 
         if __name__ == "__main__":
-            out = '.\\_test\\pp_tokens.json'
+            out = '.\\_test\\04_pp_tokens.json'
             l: List[TokenNode] = []
             for t in pp_tokens:
                 l.append(t.get_as_node())
@@ -82,7 +84,7 @@ class QspsPP:
             ast_printer = AstPrinter(pp_stmts)
             ast_printer.gen_ast()
             ast_tree = ast_printer.get_ast()
-            out = ".\\_test\\pp_ast.json"
+            out = ".\\_test\\05_pp_ast.json"
             with open(out, 'w', encoding='utf-8') as fp:
                 json.dump(ast_tree, fp, ensure_ascii=False, indent=2)
 
@@ -98,14 +100,6 @@ class QspsPP:
                 fp.write(''.join(output_lines))
 
         return output_lines
-
-
-
-
-
-
-    
-        
 
 if __name__ == "__main__":
     path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"

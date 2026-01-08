@@ -64,7 +64,6 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         # если (препроцессор включён) или (отключен блоком условия и это конец условия)
         sl = (stmt.pref.lexeme_start[0] if stmt.pref else stmt.lexeme.lexeme_start[0])
         el = stmt.end.get_end_pos()[0]
-        print(stmt.lexeme.lexeme, stmt.lexeme.lexeme_start, self._pp_is_on())
         if self._pp_is_on() or self._is_endif(stmt.body):
             stmt.body.accept(self) # выполняем
             self._marked_lines.extend(self._gen_output(sl, el, True))
@@ -109,7 +108,6 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         }[self._is_true]))
 
     def visit_off_dir(self, stmt: dir.OffDir[AstNode]) -> AstNode:
-        print('is_true', self._is_true)
         self._pp(cast(Literal['on', 'off'], {
             None:  'off',
             True:  'off',

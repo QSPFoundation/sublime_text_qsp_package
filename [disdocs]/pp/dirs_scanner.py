@@ -1,6 +1,4 @@
-import json
-
-from typing import Any, List, Dict, Optional, Tuple, Callable
+from typing import List, Dict, Optional, Tuple, Callable
 
 from pp_tokens import PpToken as Tkn
 from pp_tokens import PpTokenType as tt
@@ -18,19 +16,19 @@ class DirsScaner:
     """ Scanner of Pp-Directives and Qsps-Lines tokens. """
 
     _KEYWORDS:Dict[str, tt] = {
-            "var": tt.VAR_STMT,
-            "on": tt.ON_STMT,
-            "if": tt.IF_STMT,
-            "off": tt.OFF_STMT,
-            "savecomm": tt.SAVECOMM_STMT,
-            "nosavecomm": tt.NO_SAVECOMM_STMT,
-            "include": tt.INCLUDE_STMT,
-            "exclude": tt.EXCLUDE_STMT,
-            "and": tt.AND_OPERATOR,
-            "or": tt.OR_OPERATOR,
-            "not": tt.NOT_OPERATOR,
-            "endif": tt.ENDIF_STMT
-        }
+        "var": tt.VAR_STMT,
+        "on": tt.ON_STMT,
+        "if": tt.IF_STMT,
+        "off": tt.OFF_STMT,
+        "savecomm": tt.SAVECOMM_STMT,
+        "nosavecomm": tt.NO_SAVECOMM_STMT,
+        "include": tt.INCLUDE_STMT,
+        "exclude": tt.EXCLUDE_STMT,
+        "and": tt.AND_OPERATOR,
+        "or": tt.OR_OPERATOR,
+        "not": tt.NOT_OPERATOR,
+        "endif": tt.ENDIF_STMT
+    }
 
     def __init__(self, qsps_lines: QspsLines) -> None:
         self._src_lines = qsps_lines
@@ -61,7 +59,7 @@ class DirsScaner:
             self._scan_line(line)
             
         if self._curlexeme and self._scan_funcs:
-            print(self._scan_funcs[-1].__name__)
+            self._logic_error(f'no clean handler stack [{self._scan_funcs[-1].__name__}]')
 
         self._tokens.append(Tkn(tt.EOF, "", (-1, -1)))
 
@@ -126,7 +124,7 @@ class DirsScaner:
             # директива препроцессора закончена
             self._add_token(tt.OPEN_DIRECTIVE_STMT)
             self._scan_funcs.pop() # убираем функцию из стека
-            self._scan_funcs.append(self._scan_pp_dirrective) # добавляем функцию для сканирования директивы
+            self._scan_funcs.append(self._scan_pp_dirrective) # добавляем сканер директивы
 
     def _scan_pp_dirrective(self, c:Char) -> None:
         """ Распознаём внутренние токены директивы """
@@ -258,24 +256,7 @@ class DirsScaner:
 
     # обработчик ошибок. Пока просто выводим в консоль.
     def _error(self, message:str) -> None:
-        print(f"Err. {message}: ({self._line_num}, {self._current}).")
+        print(f"Dirs-Scanner. {message}: ({self._line_num}, {self._current}).")
 
-def _main():
-    import time
-    path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
-    outp = ".\\_test\\dirs-tokens.json"
-    with open(path, 'r', encoding='utf-8') as fp:
-        lines = fp.readlines()
-    old = time.time()
-    scanner = DirsScaner(lines)
-    scanner.scan_tokens()
-    new = time.time()
-    print(['scanner-time', new-old])
-    l: List[Dict[str, Any]] = []
-    for t in scanner.get_tokens():
-        l.append(t.get_as_node())
-    with open(outp, 'w', encoding='utf-8') as fp:
-        json.dump(l, fp, indent=4, ensure_ascii=False)
-
-if __name__ == '__main__':
-    _main()
+    def _logic_error(self, message:str) -> None:
+        print(f"Dirs-Scanner Logic error: {message}. Please, report to the developer.")
