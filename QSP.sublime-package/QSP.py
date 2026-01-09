@@ -18,30 +18,20 @@ from .qSpy import function as qsp
 from .qSpy import const
 
 # My typing
-BuilderArgs = Dict[
-	Literal['build', 'run', 'point_file', 'qgc_path'],
-	Union[bool, str]
-]
-
-
-
-
-
-
-
+import qSpy.plugtypes as ts
 
 class QspBuildCommand(sublime_plugin.WindowCommand):
 	"""
 		QSP-Game Builder. Build and run QSP-game from sources. Need a qsp-project.json.
 	"""
-	def run(self, qsp_mode:str="--br") -> None:
+	def run(self, qsp_mode:str = "--br") -> None:
 		# Three commands from arguments.
 		argv = self.window.extract_variables()
 		if not 'file' in argv:
 			qsp.write_error_log(const.QSP_ERROR_MSG.NEED_SAVE_FILE)
 			return None
 		# -----------------------------------------------------------------------
-		args:BuilderArgs = {}
+		args:ts.BuilderArgs = {}
 
 		args['build'] = (qsp_mode in ('--br', '--build'))  # - command for build the project
 		args['run'] = (qsp_mode in ('--br', '--run'))      # - command for run the project

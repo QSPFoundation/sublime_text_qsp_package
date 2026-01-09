@@ -2,12 +2,54 @@ import os
 import shutil 
 import subprocess
 import json
-from typing import Dict, Union, List, Optional
+from typing import Dict, Optional, Union, List, Literal, cast
 
 # Importing my modules.
 from . import function as qsp
 from .moduleqsp import ModuleQSP
 # import time
+
+Path = str # file or folder path
+FileName = str
+LocName = str
+QspsLine = str
+
+BuilderArgs = Dict[
+	Literal['build', 'run', 'point_file', 'qgc_path'],
+	Union[bool, str]
+]
+
+FolderPath = Dict[Literal['path'], Path]
+FilePath = Dict[Literal['path'], Path]
+QspModule = Dict[
+	Literal['module', 'folders', 'files'],
+	Union[FileName, List[FolderPath], List[FilePath]]
+]
+AssetsConfig = Dict[
+	Literal['output', 'folders', 'files'],
+	Union[Path, List[FolderPath], List[FilePath]]
+]
+ScansConfig = Dict[
+	Literal['location', 'folders', 'files'],
+	Union[LocName, List[Path]]
+]
+QspProject = Dict[
+	Literal[
+		'project', 'start', 'converter', 'player', 'save_temp_files',
+		'preprocessor', 'assets', 'scans'
+	],
+	Union[
+		str,
+		bool,
+		FileName,
+		Path,
+		List[QspModule],
+		List[AssetsConfig],
+		ScansConfig
+	]
+]
+
+
 
 
 class BuildQSP():
@@ -16,27 +58,27 @@ class BuildQSP():
 		If we make the class ex, we can use class instance fields as global name-space.
 		Class BuildQSP — is a name-space for procedure scripts.
 	"""
-	def __init__(self, modes:dict) -> None:
+	def __init__(self, modes:BuilderArgs) -> None:
 		# Init main fields:
-		self.modes:Dict[str, Union[str, bool]] = modes 						 	 # Arguments from sys. Modes of build.
+		self.modes:BuilderArgs = modes										 	 # Arguments from sys. Modes of build.
 		self.converter:str = ('qgc' if modes.get('qgc_path') else 'qsps_to_qsp') # Converter application path (exe in win).
 		self.converter_param:str = ''											 # Converter's parameters (key etc.)
-		self.player:str = 'C:\\Program Files\\QSP Classic 5.9.2\\bin\\qspgui.exe'# Player application path (exe in win)
+		self.player:str = 'C:\\Program Files\\QSP Classic 5.9.4\\bin\\qspgui.exe'# Player application path (exe in win)
 
 		# Default inits.
-		self.root:Dict[str, Union[str, list, dict]] = {}					# qsp-project.json dict
+		self.root:QspProject = {} # qsp-project.json dict
 		self.save_temp_files:bool = False	# save temporary qsps-files or not
-		self.modules_paths:List[str] = []	# Output files' paths (QSP-files, modules)
-		self.start_module_path:str = ''		# File, that start in player.
-		self.work_dir:str = None			# workdir - is dir of qsp-project.json
+		self.modules_paths:List[Path] = []	# Output files' paths (QSP-files, modules)
+		self.start_module_path:Path = ''	# File, that start in player.
+		self.work_dir:Optional[Path] = None	# workdir - is dir of qsp-project.json
 
 		# self.start_time = time.time()
 
-		self.assets:List[Dict[str, Union[str, list]]] = None
+		self.assets:List[AssetsConfig] = []
 		# Scanned files proves location
 		self.scan_the_files:bool = False		# Marker of scanning files
-		self.scan_files_locname:str = None	# location name
-		self.scan_files_locbody:list[str] = []	# location body
+		self.scan_files_locname:Optional[LocName] = None	# location name
+		self.scan_files_locbody:List[QspsLine] = []	# location body
 		self.SCANFILES_LOCNAME = 'prv_file' # constanta of standart locname
 
 		# Init work dir.
@@ -52,8 +94,8 @@ class BuildQSP():
 			workdir sets at dir of point file.
 		"""
 		# start_time = time.time()
-		point_file:str = self.modes['point_file']
-		project_folder:str = qsp.search_project_folder(point_file)
+		point_file = cast(Path, self.modes['point_file'])
+		project_folder:Path = qsp.search_project_folder(point_file)
 
 		if self.project_file_is_need(project_folder, point_file, self.player):
 			# If project_folder is not found, but other
@@ -63,7 +105,7 @@ class BuildQSP():
 
 		self.set_work_dir(project_folder)
 
-	def set_work_dir(self, work_dir:str=None) -> None:
+	def set_work_dir(self, work_dir:Optional[Path]=None) -> None:
 		""" Set self.work_dir and change work dir """
 		self.work_dir = work_dir
 		# Change work dir:

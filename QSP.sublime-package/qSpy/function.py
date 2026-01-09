@@ -38,7 +38,7 @@ def compare_paths(path1:Path, path2:Path) -> Tuple[Path, Path]:
 	path2 = os.path.relpath(path2, start)
 	return path1, path2
 
-def search_project_folder(point_file:Path, project_file:FileName='qsp-project.json') -> str:
+def search_project_folder(point_file:Path, project_file:FileName='qsp-project.json') -> Path:
 	"""
 		Find project-file and return folder path whith project.
 		In other return None.
