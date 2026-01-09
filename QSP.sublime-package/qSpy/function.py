@@ -1,6 +1,6 @@
 import os
 
-from typing import Dict, Literal, Union, List, Tuple, Optional
+from typing import List, Tuple, Optional
 
 
 
@@ -52,7 +52,7 @@ def search_project_folder(point_file:Path, project_file:FileName='qsp-project.js
 	else:
 		return project_folder
 
-def del_first_pref(lines:list) -> list:
+def del_first_pref(lines:List[str]) -> List[str]:
 	"""
 		Delete first preformatted symbols from start of lines
 	"""
@@ -65,16 +65,15 @@ def del_first_pref(lines:list) -> list:
 	if not common: return lines
 	return [line[len(common):] for line in lines]
 
-def is_path_in_project_folders(path:str, project_folders:list) -> bool:
+def is_path_in_project_folders(path:Optional[Path],
+								project_folders:List[Path]) -> bool:
 	"""
 		Prove that path is existed in project_folders.
 	"""
-	all_pathes = project_folders[:]
-	all_pathes.append(path)
-	if None in all_pathes: return False
-	for folder in project_folders:		
+	if path is None: return False
+	for folder in project_folders:
 		try:
-			if os.path.commonpath([path, folder]) == folder:
+			if os.path.commonpath([os.path.abspath(path), os.path.abspath(folder)]):
 				return True
 		except ValueError as e: # если файлы лежат на разных дисках. TODO: убрать вывод в консоль
 			write_error_log(f'[203] Different pathes of folder and file. Error "{str(e)}". path: {path}. folder: {folder}.')

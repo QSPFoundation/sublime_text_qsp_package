@@ -3217,6 +3217,15 @@
                     475
                 ]
             ]
+        ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\expected.qsps": [
+            [
+                "[pp.start] [8]",
+                [
+                    2,
+                    16
+                ]
+            ]
         ]
     },
     "files_paths": {
@@ -3404,6 +3413,7 @@
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\new_grammar test.qsps": "7d390465e9323fab9d6f6cc3770e109c",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\output.qsps": "9dad14ec729f4cb1d0cb8ee5955b0a9e",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\pptest.qsps": "da30bb318c72c269ccc6c857f0f6bc9d",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\for_autotest.qsps": "84fb88c4383b6dc313674e5b749a9741"
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\for_autotest.qsps": "84fb88c4383b6dc313674e5b749a9741",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\expected.qsps": "41a3a507ab615aa06f5db820ef3092ad"
     }
 }

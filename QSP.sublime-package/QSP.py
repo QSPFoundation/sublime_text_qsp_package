@@ -358,7 +358,7 @@ class QspInvalidInput(sublime_plugin.EventListener):
 			input_region = (sr_locname.begin(), sr_locname.end())
 			input_text = view.substr(sr_locname)
 			current_qsps = view.file_name()
-			project_folders = view.window().folders()
+			project_folders = cast(sublime.Window, view.window()).folders()
 			if qsp.is_path_in_project_folders(current_qsps, project_folders):
 				qsps_file_path = current_qsps
 			else:
