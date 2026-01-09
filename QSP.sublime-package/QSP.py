@@ -14,11 +14,13 @@ from .qSpy.qsps_to_qsp import NewQspsFile
 from .qSpy.qsp_splitter import (QspSplitter, FinderSplitter)
 from .qSpy.workspace import QspWorkspace
 from .qSpy import function as qsp
+from .qSpy.project import QspProject
 # Import constants
 from .qSpy import const
 
 # My typing
 import qSpy.plugtypes as ts
+Path = ts.Path
 
 class QspBuildCommand(sublime_plugin.WindowCommand):
 	"""
@@ -27,27 +29,28 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 	def run(self, qsp_mode:str = "--br") -> None:
 		# Three commands from arguments.
 		argv = self.window.extract_variables()
-		if not 'file' in argv:
+		window_folders:List[Path] = self.window.folders()
+
+		if not ('file' in argv or window_folders):
+			# If not point file or opened folder in window (empty window)
 			qsp.write_error_log(const.QSP_ERROR_MSG.NEED_SAVE_FILE)
 			return None
-		# -----------------------------------------------------------------------
-		args:ts.BuilderArgs = {}
 
-		args['build'] = (qsp_mode in ('--br', '--build'))  # - command for build the project
-		args['run'] = (qsp_mode in ('--br', '--run'))      # - command for run the project
-		args['point_file'] = os.path.abspath(argv['file']) # - start point for search `qsp-project.json`
-		args['qgc_path'] = ''                              # - path to win-converter
-
-		if sublime.platform() == 'windows':
-			qgc_path = os.path.join(sublime.packages_path(),
-				'QSP', 'qgc', 'app', 'QGC.exe')
-			if os.path.isfile(qgc_path):
-				args['qgc_path'] = qgc_path
 		# -----------------------------------------------------------------------
-				
+		args:ts.SchemeArgs = {}
+
+		args['point_file'] = os.path.abspath(argv.get('file', '')) # - start point for search `qsp-project.json`
+		args['platform'] = sublime.platform()
+		args['packages_path'] = sublime.packages_path()
+		# -----------------------------------------------------------------------
+
+		qsp_project = QspProject(args, window_folders)
+
+
 		# old_time = time.time()
 		builder = BuildQSP(args) # Initialise of Builder.
-		builder.build_and_run()  # Run the Builder to work.
+		if (qsp_mode in ('--br', '--build')): builder.build_project()
+		if (qsp_mode in ('--br', '--run')): builder.run_game()
 		# new_time = time.time()
 		# print(new_time - old_time)
 

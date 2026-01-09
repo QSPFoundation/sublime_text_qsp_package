@@ -4,7 +4,8 @@ __all__ = [
 	'QSP_PROJECT_JSON',
 	'QSP_SUBLIME_PROJECT',
 	'QSP_MSG',
-	'QSP_ERROR_MSG']
+	'QSP_ERROR_MSG',
+	'PROJECT_FILE_NAME']
 
 from types import MappingProxyType
 
@@ -245,3 +246,5 @@ class _Qsp_Errors_Message:
 		return self._ws_init
 
 QSP_ERROR_MSG = _Qsp_Errors_Message()
+
+PROJECT_FILE_NAME = 'qsp-project.json'

@@ -5,8 +5,11 @@ FileName = str
 LocName = str
 QspsLine = str
 
-BuilderArgs = Dict[
-	Literal['build', 'run', 'point_file', 'qgc_path'],
+SchemeArgs = Dict[
+	Literal[
+		'point_file', 
+		'platform', 'packages_path'
+	],
 	Union[bool, str]
 ]
 
