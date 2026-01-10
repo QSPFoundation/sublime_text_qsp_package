@@ -25,6 +25,7 @@ class QspProject:
         
         self._work_dir_init()
         os.chdir(self._work_dir)
+
         self._project_file:ts.Path = self._project_file_find()
 
         self._fields_init()
@@ -122,6 +123,10 @@ class QspProject:
             self._root['start'] = self._get_first_module()
 
         # SCANS
+        if 'scans' in self._root:
+            self._set_scans()
+
+
         # ASSETS
         ...
 
@@ -131,10 +136,10 @@ class QspProject:
         converter = cast(Union[ts.Path, List[Union[ts.Path, ts.AppParam]]],
             self._root.get('converter', ''))
         if isinstance(converter, ts.Path):
-            c_path = os.path.abspath(converter)
+            c_path = converter
             c_param = ''
         else:
-            c_path = os.path.abspath(converter[0])
+            c_path = converter[0]
             c_param = converter[1]
         if not os.path.isfile(c_path):
             # users converter - not exist
@@ -145,7 +150,7 @@ class QspProject:
                 # preprocessor off/on or qgc not exist
                 self._root['converter'] = ['qsps_to_qsp', '']
         else:
-            self._root['converter'] = [c_path, c_param]
+            self._root['converter'] = [os.path.abspath(c_path), c_param]
 
     def _abs_project(self) -> None:
         """ Absolutize pathes of project modules. """
@@ -172,3 +177,24 @@ class QspProject:
         project = cast(List[ts.QspModule], self._root['project'])
         module = project[0]
         return cast(ts.Path, module['module'])
+
+    def _set_scans(self) -> None:
+        """ Init location with scanned files. """
+
+        scans = cast(ts.ScansConfig, self._root['scans'])
+        folders:List[ts.Path] = []
+        for folder in cast(List[ts.Path], scans['folders']):
+            folders.append(os.path.abspath(folder))
+        scans['folders'] = folders
+
+        files:List[ts.Path] = []
+        for file in cast(List[ts.Path], scans['files']):
+            files.append(os.path.abspath(file))
+        scans['files'] = files
+
+        if not (folders or files):
+            del self._root['scans']
+            return
+        
+        if not 'location' in scans:
+            scans['location'] = self.SCAN_FILES_LOCNAME
