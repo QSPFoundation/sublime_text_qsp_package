@@ -83,29 +83,29 @@ class BuildQSP():
 				self.root = json.load(project_file)
 
 		# Get paths to converter and player (not Default)
-		if 'converter' in self.root:
-			converter = self.root['converter']
-			_is_file = lambda path: os.path.isfile(os.path.abspath(path))
-			if type(converter) == str:
-				if _is_file(converter):
-					self.converter = os.path.abspath(converter)
-				elif converter == 'qsps_to_qsp':
-					self.converter = converter
-				self.converter_param = ''
-			elif type(converter) == list and _is_file(converter[0]):
-				self.converter  = os.path.abspath(converter[0])
-				self.converter_param = (converter[1] if len(converter)>1 else '')
+		# if 'converter' in self.root:
+		# 	converter = self.root['converter']
+		# 	_is_file = lambda path: os.path.isfile(os.path.abspath(path))
+		# 	if type(converter) == str:
+		# 		if _is_file(converter):
+		# 			self.converter = os.path.abspath(converter)
+		# 		elif converter == 'qsps_to_qsp':
+		# 			self.converter = converter
+		# 		self.converter_param = ''
+		# 	elif type(converter) == list and _is_file(converter[0]):
+		# 		self.converter  = os.path.abspath(converter[0])
+		# 		self.converter_param = (converter[1] if len(converter)>1 else '')
 
-		if 'player' in self.root:
-			if os.path.isfile(os.path.abspath(self.root['player'])):
-				self.player = os.path.abspath(self.root['player'])
+		# if 'player' in self.root:
+		# 	if os.path.isfile(os.path.abspath(self.root['player'])):
+		# 		self.player = os.path.abspath(self.root['player'])
 
-		# Save temp-files Mode:
-		if ('save_temp_files' in self.root):
-			self.save_temp_files = self.root['save_temp_files']
+		# # Save temp-files Mode:
+		# if ('save_temp_files' in self.root):
+		# 	self.save_temp_files = self.root['save_temp_files']
 
-		# Preprocessor's mode init.
-		self.root['preprocessor'] = self.root.get('preprocessor', 'Off')
+		# # Preprocessor's mode init.
+		# self.root['preprocessor'] = self.root.get('preprocessor', 'Off')
 
 		if ('assets' in self.root):
 			self.assets = self.root['assets']
@@ -125,9 +125,9 @@ class BuildQSP():
 			# else:
 			# 	self.scanned_files_qsps = None
 
-		if 'start' in self.root:
-			# Start-file defined. Get from define.
-			self.start_module_path = os.path.abspath(self.root['start'])
+		# if 'start' in self.root:
+		# 	# Start-file defined. Get from define.
+		# 	self.start_module_path = os.path.abspath(self.root['start'])
 
 	def build_project(self) -> None:
 		print('Build project.')
