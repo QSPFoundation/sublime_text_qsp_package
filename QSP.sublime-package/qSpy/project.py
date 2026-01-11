@@ -15,7 +15,6 @@ class QspProject:
         self._root:ts.ProjectScheme = {
             'project': [],
             'preprocessor': 'Off',
-            'converter': [],
             'save_temp_files': False
         } # qsp-project.json dict
 
@@ -29,7 +28,6 @@ class QspProject:
         self._project_file:ts.Path = self._project_file_find()
 
         self._fields_init()
-        ...
 
     def get_scheme(self) -> ts.ProjectScheme:
         return self._root
@@ -121,7 +119,6 @@ class QspProject:
 
         # ASSETS
         if 'assets' in self._root: self._set_assets()
-        ...
 
     def _set_player(self) -> None:
         """Set player path"""
@@ -157,13 +154,17 @@ class QspProject:
 
     def _abs_project(self) -> None:
         """ Absolutize pathes of project modules. """
-        for module in cast(List[ts.QspModule], self._root['project']):
+        def _x(c:int) -> str:
+            return '0'*(4-len(str(c)))+str(c)
+        for i, module in enumerate(cast(List[ts.QspModule], self._root['project'])):
             # Make module path absolute
-            module['module'] = os.path.abspath(cast(ts.Path, module['module']))
+            m = cast(ts.Path, module.get('module', ''))
+            if not m: m = os.path.join(self._work_dir, f'game_{_x(i)}.qsp')
+            module['module'] = os.path.abspath(m)
             # Make folder paths absolute
-            for folder in cast(List[ts.FolderPath], module['folders']):
+            for folder in cast(List[ts.FolderPath], module.get('folders', [])):
                 folder['path'] = os.path.abspath(folder['path'])
-            for file in cast(List[ts.FilePath], module['files']):
+            for file in cast(List[ts.FilePath], module.get('files', [])):
                 file['path'] = os.path.abspath(file['path'])
     
     def _single_build_project(self) -> None:
@@ -186,21 +187,21 @@ class QspProject:
 
         scans = cast(ts.ScansConfig, self._root['scans'])
         folders:List[ts.Path] = []
-        for folder in cast(List[ts.Path], scans['folders']):
+        for folder in cast(List[ts.Path], scans.get('folders', [])):
             folders.append(os.path.abspath(folder))
-        scans['folders'] = folders
 
         files:List[ts.Path] = []
-        for file in cast(List[ts.Path], scans['files']):
+        for file in cast(List[ts.Path], scans.get('files', [])):
             files.append(os.path.abspath(file))
-        scans['files'] = files
 
         if not (folders or files):
             del self._root['scans']
             return
         
-        if not 'location' in scans:
-            scans['location'] = self.SCAN_FILES_LOCNAME
+        scans['files'] = files
+        scans['folders'] = folders
+
+        scans['location'] = scans.get('location', self.SCAN_FILES_LOCNAME)
 
     def _set_assets(self) -> None:
         assets = cast(ts.AssetsConfig, self._root['assets'])
@@ -211,14 +212,13 @@ class QspProject:
         folders:List[ts.FolderPath] = []
         for folder in cast(List[ts.Path], assets['folders']):
             folders.append({'path':os.path.abspath(folder)})
-        assets['folders'] = folders
-
         files:List[ts.FilePath] = []
         for file in cast(List[ts.Path], assets['files']):
             files.append({'path':os.path.abspath(file)})
-        assets['files'] = files
-
         if not (folders or files):
             del self._root['assets']
             return
-        
+
+        assets['files'] = files
+        assets['folders'] = folders
+        assets['output'] = os.path.abspath(cast(ts.Path, assets['output']))

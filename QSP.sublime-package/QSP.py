@@ -46,7 +46,6 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 
 		qsp_project = QspProject(args, window_folders)
 
-
 		# old_time = time.time()
 		builder = BuildQSP(args) # Initialise of Builder.
 		if (qsp_mode in ('--br', '--build')): builder.build_project()
