@@ -1,7 +1,7 @@
 import os, json
 from typing import cast, List, Union
 from . import plugtypes as ts
-from .const import PROJECT_FILE_NAME
+from .const import PROJECT_FILE_NAME, PLAYER_PATH
 
 class QspProject:
     """ Prepare project to build """
@@ -29,15 +29,6 @@ class QspProject:
         self._project_file:ts.Path = self._project_file_find()
 
         self._fields_init()
-        # Билдеру для сборки нужна информация
-        # список модулей,
-        # Путь к альтернативному конвертеру
-        # Путь к плееру
-        # перенос ассетов
-        # обработка препроцессором
-        # и другая информация из файла проектов.
-        
-
         ...
 
     def get_scheme(self) -> ts.ProjectScheme:
@@ -101,6 +92,8 @@ class QspProject:
 
         # Set converter path and params
         self._set_converter()
+        # Set player path and params
+        self._set_player()
 
         # Save temp-files Mode
         self._root['save_temp_files'] = self._root.get('save_temp_files', False)
@@ -126,10 +119,20 @@ class QspProject:
         if 'scans' in self._root:
             self._set_scans()
 
-
         # ASSETS
+        if 'assets' in self._root: self._set_assets()
         ...
 
+    def _set_player(self) -> None:
+        """Set player path"""
+        player = cast(ts.Path, self._root.get('player', PLAYER_PATH))
+        
+        if not os.path.isfile(player):
+            # player not exist
+            self._root.pop('player', None)
+            return
+
+        self._root['player'] = os.path.abspath(player)
         
     def _set_converter(self) -> None:
         """Set converter path and params"""
@@ -198,3 +201,24 @@ class QspProject:
         
         if not 'location' in scans:
             scans['location'] = self.SCAN_FILES_LOCNAME
+
+    def _set_assets(self) -> None:
+        assets = cast(ts.AssetsConfig, self._root['assets'])
+        if not 'output' in assets:
+            del self._root['assets']
+            return
+
+        folders:List[ts.FolderPath] = []
+        for folder in cast(List[ts.Path], assets['folders']):
+            folders.append({'path':os.path.abspath(folder)})
+        assets['folders'] = folders
+
+        files:List[ts.FilePath] = []
+        for file in cast(List[ts.Path], assets['files']):
+            files.append({'path':os.path.abspath(file)})
+        assets['files'] = files
+
+        if not (folders or files):
+            del self._root['assets']
+            return
+        

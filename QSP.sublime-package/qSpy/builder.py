@@ -110,16 +110,16 @@ class BuildQSP():
 		if ('assets' in self.root):
 			self.assets = self.root['assets']
 
-		# Location's of scaned files name init.
-		if ('scans' in self.root) and ('start' in self.root):
-			# mode is switchon, if folders or files adding
-			if 'folders'in self.root['scans'] or 'files' in self.root['scans']:
-				self.scan_the_files = True
-			# choose name of location
-			if 'location' in self.root['scans']:
-				self.scan_files_locname = self.root['scans']['location']
-			else:
-				self.scan_files_locname = self.SCANFILES_LOCNAME
+		# # Location's of scaned files name init.
+		# if ('scans' in self.root) and ('start' in self.root):
+		# 	# mode is switchon, if folders or files adding
+		# 	if 'folders'in self.root['scans'] or 'files' in self.root['scans']:
+		# 		self.scan_the_files = True
+		# 	# choose name of location
+		# 	if 'location' in self.root['scans']:
+		# 		self.scan_files_locname = self.root['scans']['location']
+		# 	else:
+		# 		self.scan_files_locname = self.SCANFILES_LOCNAME
 			# if 'destination' in self.root['scans']:
 			# 	self.scanned_files_qsps = self.root['scans']['destination']
 			# else:

@@ -5,7 +5,8 @@ __all__ = [
 	'QSP_SUBLIME_PROJECT',
 	'QSP_MSG',
 	'QSP_ERROR_MSG',
-	'PROJECT_FILE_NAME']
+	'PROJECT_FILE_NAME',
+	'PLAYER_PATH']
 
 from types import MappingProxyType
 
@@ -248,3 +249,5 @@ class _Qsp_Errors_Message:
 QSP_ERROR_MSG = _Qsp_Errors_Message()
 
 PROJECT_FILE_NAME = 'qsp-project.json'
+
+PLAYER_PATH = 'C:\\Program Files\\QSP Classic 5.9.5\\bin\\qspgui.exe'
