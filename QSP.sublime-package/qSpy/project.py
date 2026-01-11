@@ -204,21 +204,35 @@ class QspProject:
         scans['location'] = scans.get('location', self.SCAN_FILES_LOCNAME)
 
     def _set_assets(self) -> None:
-        assets = cast(ts.AssetsConfig, self._root['assets'])
-        if not 'output' in assets:
+        assets = cast(List[ts.AssetsConfig], self._root['assets'])
+
+        out_assets:List[ts.AssetsConfig] = []
+        for resource in assets:
+            r = self._abs_resource(resource)
+            if r: out_assets.append(r)
+
+        if not out_assets:
             del self._root['assets']
             return
+
+        self._root['assets'] = out_assets
+    
+    def _abs_resource(self, res:ts.AssetsConfig) -> ts.AssetsConfig:
+
+        if not 'output' in res:
+            return {}
 
         folders:List[ts.FolderPath] = []
-        for folder in cast(List[ts.Path], assets['folders']):
+        for folder in cast(List[ts.Path], res['folders']):
             folders.append({'path':os.path.abspath(folder)})
         files:List[ts.FilePath] = []
-        for file in cast(List[ts.Path], assets['files']):
+        for file in cast(List[ts.Path], res['files']):
             files.append({'path':os.path.abspath(file)})
         if not (folders or files):
-            del self._root['assets']
-            return
+            return {}
 
-        assets['files'] = files
-        assets['folders'] = folders
-        assets['output'] = os.path.abspath(cast(ts.Path, assets['output']))
+        res['files'] = files
+        res['folders'] = folders
+        res['output'] = os.path.abspath(cast(ts.Path, res['output']))
+
+        return res

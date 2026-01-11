@@ -7,6 +7,7 @@ from typing import Dict, Optional, Union, List, Literal, cast
 # Importing my modules.
 from . import function as qsp
 from .moduleqsp import ModuleQSP
+from .preprocessor import QspsPP
 # import time
 
 import plugtypes as ts
@@ -19,16 +20,17 @@ class BuildQSP():
 		If we make the class ex, we can use class instance fields as global name-space.
 		Class BuildQSP — is a name-space for procedure scripts.
 	"""
-	def __init__(self, modes:ts.BuilderArgs) -> None:
-		# Init main fields:
-		self.modes:ts.BuilderArgs = modes										 	 # Arguments from sys. Modes of build.
-		self.converter:str = ('qgc' if modes.get('qgc_path') else 'qsps_to_qsp') # Converter application path (exe in win).
-		self.converter_param:str = ''											 # Converter's parameters (key etc.)
-		self.player:str = 'C:\\Program Files\\QSP Classic 5.9.4\\bin\\qspgui.exe'# Player application path (exe in win)
+	def __init__(self, project_scheme:ts.ProjectScheme) -> None:
 
 		# Default inits.
-		self.root:ts.ProjectScheme = {} # qsp-project.json dict
-		self.save_temp_files:bool = False	# save temporary qsps-files or not
+		self._root:ts.ProjectScheme = project_scheme # qsp-project.json dict
+
+		if cast(str, self._root.get('preprocessor')) != 'Hard-off':
+			self._preprocessor = QspsPP()
+		else:
+			self._preprocessor = None		
+
+		self._save_temp_files:bool = False	# save temporary qsps-files or not
 		self.modules_paths:List[Path] = []	# Output files' paths (QSP-files, modules)
 		self.start_module_path:Path = ''	# File, that start in player.
 		self.work_dir:Optional[Path] = None	# workdir - is dir of qsp-project.json
@@ -40,103 +42,14 @@ class BuildQSP():
 		self.scan_the_files:bool = False		# Marker of scanning files
 		self.scan_files_locname:Optional[ts.LocName] = None	# location name
 		self.scan_files_locbody:List[ts.QspsLine] = []	# location body
-		self.SCANFILES_LOCNAME = 'prv_file' # constanta of standart locname
-
-		# Init work dir.
-		# self.work_dir_init()
-		
-		if self.work_dir is not None:
-			# Reinit main fields and init other fields.
-			self.fields_init()
-
-	# def work_dir_init(self) -> None:
-	# 	"""
-	# 		Initialise of workdir. If qsp-project.json is not exist,
-	# 		workdir sets at dir of point file.
-	# 	"""
-	# 	# start_time = time.time()
-	# 	point_file = cast(Path, self.modes['point_file'])
-	# 	project_folder:Path = qsp.search_project_folder(point_file)
-
-	# 	if self.project_file_is_need(project_folder, point_file, self.player):
-	# 		# If project_folder is not found, but other
-	# 		# conditional is right, generate the new project-file.
-	# 		project_folder = os.path.split(point_file)[0]
-	# 		self.create_point_project(project_folder, point_file)
-
-	# 	self.set_work_dir(project_folder)
-
-	def set_work_dir(self, work_dir:Optional[Path]=None) -> None:
-		""" Set self.work_dir and change work dir """
-		self.work_dir = work_dir
-		# Change work dir:
-		if self.work_dir is not None:
-			os.chdir(self.work_dir)
-
-	def fields_init(self) -> None:
-		""" Filling the BuildQSP fields from project_file """
-		# start_time = time.time()
-		if not self.root: # self.root is empty
-			# Deserializing project-file:
-			project_json = os.path.join(self.work_dir, 'qsp-project.json')
-			with open(project_json, 'r', encoding='utf-8') as project_file:
-				self.root = json.load(project_file)
-
-		# Get paths to converter and player (not Default)
-		# if 'converter' in self.root:
-		# 	converter = self.root['converter']
-		# 	_is_file = lambda path: os.path.isfile(os.path.abspath(path))
-		# 	if type(converter) == str:
-		# 		if _is_file(converter):
-		# 			self.converter = os.path.abspath(converter)
-		# 		elif converter == 'qsps_to_qsp':
-		# 			self.converter = converter
-		# 		self.converter_param = ''
-		# 	elif type(converter) == list and _is_file(converter[0]):
-		# 		self.converter  = os.path.abspath(converter[0])
-		# 		self.converter_param = (converter[1] if len(converter)>1 else '')
-
-		# if 'player' in self.root:
-		# 	if os.path.isfile(os.path.abspath(self.root['player'])):
-		# 		self.player = os.path.abspath(self.root['player'])
-
-		# # Save temp-files Mode:
-		# if ('save_temp_files' in self.root):
-		# 	self.save_temp_files = self.root['save_temp_files']
-
-		# # Preprocessor's mode init.
-		# self.root['preprocessor'] = self.root.get('preprocessor', 'Off')
-
-		if ('assets' in self.root):
-			self.assets = self.root['assets']
-
-		# # Location's of scaned files name init.
-		# if ('scans' in self.root) and ('start' in self.root):
-		# 	# mode is switchon, if folders or files adding
-		# 	if 'folders'in self.root['scans'] or 'files' in self.root['scans']:
-		# 		self.scan_the_files = True
-		# 	# choose name of location
-		# 	if 'location' in self.root['scans']:
-		# 		self.scan_files_locname = self.root['scans']['location']
-		# 	else:
-		# 		self.scan_files_locname = self.SCANFILES_LOCNAME
-			# if 'destination' in self.root['scans']:
-			# 	self.scanned_files_qsps = self.root['scans']['destination']
-			# else:
-			# 	self.scanned_files_qsps = None
-
-		# if 'start' in self.root:
-		# 	# Start-file defined. Get from define.
-		# 	self.start_module_path = os.path.abspath(self.root['start'])
 
 	def build_project(self) -> None:
 		print('Build project.')
-		if self.assets is not None:
-			self.copy_assets()
+		assets = cast(List[ts.AssetsConfig], self._root.get('assets', []))
+		if assets: self._copy_assets(assets)
 
-		if self.scan_the_files:
-			# Generate location with files-list.
-			self.create_scans_loc()
+		scans = cast(ts.ScansConfig, self._root.get('scans',[]))
+		if scans: self._create_scans_loc()
 		# Build QSP-files.
 		self.build_qsp_files()
 
@@ -157,52 +70,46 @@ class BuildQSP():
 			self.start_module_path = self.modes['point_file']
 		return self.start_module_path
 		
-	def copy_assets(self) -> None:
+	def _copy_assets(self, assets:List[ts.AssetsConfig]) -> None:
 		""" Copy assets from folder and files to output folder """
-		for resource in self.assets:
-			self.copy_res(resource)
+		for resource in assets:
+			self._copy_res(resource)
 		
-	def copy_res(self, resource):
-		if not 'output' in resource:
-			return
-		output = os.path.abspath(resource['output'])
-		if not os.path.isdir(output):
-			qsp.safe_mk_fold(output)
-		if 'folders' in resource:
-			for folder in resource['folders']:
-				old_fold = os.path.abspath(folder['path'])
-				fname = os.path.split(old_fold)[1]
-				new_fold = os.path.join(output, fname)
-				if os.path.isdir(new_fold):
-					shutil.rmtree(new_fold)
-				shutil.copytree(old_fold, new_fold)
-		if 'files' in resource:
-			for file in resource['files']:
-				old_file = os.path.abspath(file['path'])
-				fname = os.path.split(old_file)[1]
-				new_file = os.path.join(output, fname)					
-				shutil.copy2(old_file, new_file)
+	def _copy_res(self, resource:ts.AssetsConfig):
+		""" Copy assets to one output folder """
+		output = cast(ts.Path, resource['output'])
+		if not os.path.isdir(output): qsp.safe_mk_fold(output)
+		for folder in cast(List[ts.FolderPath], resource.get('folders',[])):
+			old_fold = folder['path']
+			fold_name:ts.FolderName = os.path.split(old_fold)[1]
+			new_fold:ts.Path = os.path.join(output, fold_name)
+			if os.path.isdir(new_fold):	shutil.rmtree(new_fold)
+			shutil.copytree(old_fold, new_fold)
+		for file in cast(List[ts.FilePath], resource.get('files', [])):
+			old_file = file['path']
+			file_name:ts.FileName = os.path.split(old_file)[1]
+			new_file:ts.Path = os.path.join(output, file_name)					
+			shutil.copy2(old_file, new_file)
 	
-	
-	def create_scans_loc(self) -> None:
+	def _create_scans_loc(self) -> None:
 		""" Prepare and creation location-function of scanned files """
 		# start_time = time.time()
-		found_files = [] # Absolute files paths.
-		start_file_folder = os.path.split(self.start_module_path)[0]
-		scans = self.root['scans']
-		func_name = self.scan_files_locname
+		found_files:List[ts.Path] = [] # Absolute files paths.
+		start_file = cast(ts.Path, self._root.get('start', ''))
+		start_file_folder:ts.FolderName = os.path.split(start_file)[0]
+		scans = cast(ts.ScansConfig, self._root['scans'])
+		func_name = cast(ts.LocName, scans['location'])
 
-		if 'folders' in scans:
-			for folder in scans['folders']:
-				# Iterate through the folders, comparing the paths with start_file,
-				# to understand if the folder lies deeper relative to it.
-				sf, f = qsp.compare_paths(start_file_folder, os.path.abspath(folder))
-				if sf == '.' or sf == '':
-					# Folder relative to path.
-					found_files.extend(qsp.get_files_list(folder, filters=[]))
-				else:
-					# Folder is not relative to path. Is error.
-					qsp.write_error_log(f'[102] Folder «{folder}» is not in the project.')
+		for folder in cast(List[ts.Path], scans['folders']):
+			# Iterate through the folders, comparing the paths with start_file,
+			# to understand if the folder lies deeper relative to it.
+			sf, f = qsp.compare_paths(start_file_folder, os.path.abspath(folder))
+			if sf == '.' or sf == '':
+				# Folder relative to path.
+				found_files.extend(qsp.get_files_list(folder, filters=[]))
+			else:
+				# Folder is not relative to path. Is error.
+				qsp.write_error_log(f'[102] Folder «{folder}» is not in the project.')
 
 		if 'files' in scans:
 			for file in scans['files']:

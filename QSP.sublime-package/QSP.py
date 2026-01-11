@@ -44,10 +44,10 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 		args['packages_path'] = sublime.packages_path()
 		# -----------------------------------------------------------------------
 
-		qsp_project = QspProject(args, window_folders)
+		qsp_proj = QspProject(args, window_folders)
 
 		# old_time = time.time()
-		builder = BuildQSP(args) # Initialise of Builder.
+		builder = BuildQSP(qsp_proj.get_scheme()) # Initialise of Builder.
 		if (qsp_mode in ('--br', '--build')): builder.build_project()
 		if (qsp_mode in ('--br', '--run')): builder.run_game()
 		# new_time = time.time()

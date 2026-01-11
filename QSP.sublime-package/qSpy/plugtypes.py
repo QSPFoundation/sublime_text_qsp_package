@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple, Literal, Optional, Union
 Path = str # file or folder path
 AppParam = str # parameters for application (ex.: --br, -u, -f)
 FileName = str
+FolderName = str
 LocName = str
 QspsLine = str
 
