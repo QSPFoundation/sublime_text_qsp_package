@@ -10,10 +10,11 @@ PpMode = Literal['Hard-off', 'Off', 'On']
 
 SchemeArgs = Dict[
 	Literal[
-		'point_file', 
-		'platform', 'packages_path'
+		'point_file', # Path
+		'platform', # Literal['windows', 'unix']
+		'packages_path' # Path
 	],
-	Union[bool, str]
+	Union[Path, str]
 ]
 
 FolderPath = Dict[Literal['path'], Path]
@@ -33,7 +34,8 @@ ScansConfig = Dict[
 ProjectScheme = Dict[
 	Literal[
 		'project', 'start', 'converter', 'player', 'save_temp_files',
-		'preprocessor', 'assets', 'scans'
+		'preprocessor', 'assets', 'scans',
+		'qgc'
 	],
 	Union[
 		str,

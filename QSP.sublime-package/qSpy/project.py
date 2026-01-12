@@ -13,12 +13,10 @@ class QspProject:
 
         # Default inits.
         self._root:ts.ProjectScheme = {
-            'project': [],
-            'preprocessor': 'Off',
-            'save_temp_files': False
+            
         } # qsp-project.json dict
 
-        self._qgc_path:ts.Path = self._get_qgc()
+        self._qgc_path:ts.Path = self._get_qgc_path()
         self._work_dir:ts.Path = ''
         self._point_file:ts.Path = ''
         
@@ -27,6 +25,7 @@ class QspProject:
 
         self._project_file:ts.Path = self._project_file_find()
 
+
         self._fields_init()
 
     def get_scheme(self) -> ts.ProjectScheme:
@@ -34,17 +33,16 @@ class QspProject:
 
     def _work_dir_init(self) -> None:
         """ Work Dir - dir of `qsp-project.json` """
-        self._point_file = point_file = cast(ts.Path, self._args.get('point_file', ''))
+        self._point_file = point_file = self._args.get('point_file', '')
 
         if not point_file:
             self._work_dir = self._window_folders[0]
             return
 
-        folder, file = os.path.split(point_file)
+        folder, file_name = os.path.split(point_file)
 
-        if file == PROJECT_FILE_NAME or not self._window_folders:
+        if file_name == PROJECT_FILE_NAME or not self._window_folders:
             # if this - project-file, or not opened folders in window (single file)
-            self._project_file = point_file
             self._work_dir = folder
             return
         
@@ -65,10 +63,10 @@ class QspProject:
         # point-file not in opened windows - this is single file from other project
         self._work_dir = folder    
 
-    def _get_qgc(self) -> ts.Path:
-        """ Fast converter on Windows. """
+    def _get_qgc_path(self) -> ts.Path:
+        """ Fast converter Path on Windows. """
         if self._args.get('platform', '') == 'windows':
-            qgc_path = os.path.join(cast(ts.Path, self._args['packages_path']),
+            qgc_path = os.path.join(self._args['packages_path'],
                 'QSP', 'qgc', 'app', 'QGC.exe')
             if os.path.isfile(qgc_path):
                 return qgc_path
@@ -84,7 +82,7 @@ class QspProject:
         if self._project_file:
             with open(self._project_file, 'r', encoding='utf-8') as fp:
                 self._root = json.load(fp)
-
+        if 'qgc' in self._root: del self._root['qgc']
         # Preprocessor's mode init.
         self._root['preprocessor'] = self._root.get('preprocessor', 'Off')
 
@@ -97,7 +95,9 @@ class QspProject:
         self._root['save_temp_files'] = self._root.get('save_temp_files', False)
 
         if self._root['project']: # Absolutize pathes of Modules
-            self._abs_project()
+            if not self._abs_project():
+                self._root = {}
+                return
         elif self._point_file != self._project_file: # prepare file of project
             # list of modules is empty, build single file:
            self._single_build_project()
@@ -145,6 +145,7 @@ class QspProject:
             # users converter - not exist
             if self._root['preprocessor'] == 'Hard-off' and self._qgc_path:
                 # preprocessor hard-off, qgc exist
+                self._root['qgc'] = True
                 self._root['converter'] = [self._qgc_path, c_param]
             else:
                 # preprocessor off/on or qgc not exist
@@ -152,8 +153,9 @@ class QspProject:
         else:
             self._root['converter'] = [os.path.abspath(c_path), c_param]
 
-    def _abs_project(self) -> None:
+    def _abs_project(self) -> bool:
         """ Absolutize pathes of project modules. """
+        j = 0
         def _x(c:int) -> str:
             return '0'*(4-len(str(c)))+str(c)
         for i, module in enumerate(cast(List[ts.QspModule], self._root['project'])):
@@ -166,8 +168,11 @@ class QspProject:
             # Make folder paths absolute
             for folder in cast(List[ts.FolderPath], module.get('folders', [])):
                 folder['path'] = os.path.abspath(folder['path'])
+                j+=1
             for file in cast(List[ts.FilePath], module.get('files', [])):
+                j+=1
                 file['path'] = os.path.abspath(file['path'])
+        return bool(j)
     
     def _single_build_project(self) -> None:
         """ Create QspModule for building of single file. """

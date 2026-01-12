@@ -2,7 +2,7 @@ import os
 import shutil 
 import subprocess
 import json
-from typing import Union, Tuple, Optional, List, cast
+from typing import Callable, Union, Tuple, Optional, List, cast
 
 # Importing my modules.
 from . import function as qsp
@@ -26,16 +26,26 @@ class BuildQSP():
 		# Default inits.
 		self._root:ts.ProjectScheme = project_scheme # qsp-project.json dict
 
-		pp_switch = cast(ts.PpMode, self._root.get('preprocessor'))
-		if pp_switch != 'Hard-off':
-			self._preprocessor = QspsPP(pp_switch)
-		else:
-			self._preprocessor = None
-
 		_CONV = cast(List[Union[ts.Path, ts.AppParam]],
 					self._root.get('converter', [CONVERTER, '']))
 		self._converter:ts.Path = _CONV[0]
 		self._conv_args:ts.AppParam = _CONV[1]
+		self._qgs_plugin:ts.Path = ''
+
+		qgc = cast(bool, self._root.get('qgc', False))
+		pp_switch = cast(ts.PpMode, self._root.get('preprocessor'))
+		if pp_switch != 'Hard-off':
+			self._preprocessor = QspsPP(pp_switch)
+			qgc = False
+		else:
+			self._preprocessor = None
+
+		self._build_handler:Callable[[ts.QspModule], None] = self._qsps_build
+		if qgc:
+			self._build_handler = self._qgc_build
+			qgc_fold = os.path.split(_CONV[0])[0] # folder of converter
+			root_folder_qgc = os.path.split(qgc_fold)[0]
+			self._qgc_plugin:ts.Path = os.path.join(root_folder_qgc, 'plugins', 'a_txt2gam.dll')
 		
 		# Scanned files proves location
 		self._scans = cast(ts.ScansConfig, self._root.get('scans', {}))
@@ -130,14 +140,14 @@ class BuildQSP():
 
 		self._scan_files_qsps = qsp_file_body
 
-	def _build_qsp_files(self):
+	def _build_qsp_files(self) -> None:
 		# start_time = time.time()
 		project = cast(List[ts.QspModule], self._root['project'])
 		# Get instructions list from 'project'.
 		for instruction in project:
-			self._module_build(instruction)
+			self._build_handler(instruction)
 
-	def _module_build(self, instruction:ts.QspModule) -> None:
+	def _qsps_build(self, instruction:ts.QspModule) -> None:
 		qsp_module = ModuleQSP(instruction)
 		qsp_module.set_converter(self._converter, self._conv_args)
 		qsp_module.set_exit_files(cast(ts.Path, instruction['module']))
@@ -159,12 +169,9 @@ class BuildQSP():
 		if os.path.isfile(qsp_module.output_qsp):
 			self.modules_paths.append(qsp_module.output_qsp)		
 
-	def qgc_build(self, instruction:dict, project:dict) -> None:
+	def _qgc_build(self, instruction:ts.QspModule) -> None:
 		# prepare parameters
-		i = [] # pathes to source files and folders
-		folder_to_conv = os.path.split(self.modes['qgc_path'])[0]
-		root_folder_qgc = os.path.split(folder_to_conv)[0]
-		plugin_path = os.path.join(root_folder_qgc, 'plugins', 'a_txt2gam.dll')
+		i:List[ts.Path] = [] # pathes to source files and folders
 		# cc_path = os.path.join(root_folder_qgc, 'plugins', 'a_remove_comments.dll')
 		start_qsploc_file = None
 		if 'files' in instruction:
