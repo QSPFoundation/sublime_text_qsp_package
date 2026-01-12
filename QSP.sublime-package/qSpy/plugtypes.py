@@ -6,6 +6,7 @@ FileName = str
 FolderName = str
 LocName = str
 QspsLine = str
+PpMode = Literal['Hard-off', 'Off', 'On']
 
 SchemeArgs = Dict[
 	Literal[

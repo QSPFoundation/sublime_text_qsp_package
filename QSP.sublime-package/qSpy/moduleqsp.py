@@ -4,11 +4,12 @@ from typing import (List, Literal, Dict)
 
 from . import function as qsp
 from .qsps_to_qsp import NewQspsFile
+import plugtypes as ts
 # import time
 
 class ModuleQSP():
 
-	def __init__(self) -> None:
+	def __init__(self, scheme:ts.QspModule) -> None:
 
 		self.src_qsps_file:List[NewQspsFile] = []
 
@@ -16,16 +17,16 @@ class ModuleQSP():
 		self.output_txt:str = None		# path of temp file in txt2gam format
 
 		# self.code_system = 'utf-8'
-		self.converter:str = 'qsps_to_qsp' # converter qsps -> QSP
-		self.converter_param:str = ''	# string of parameters for converting
+		self._converter:ts.Path = 'qsps_to_qsp' # converter qsps -> QSP
+		self._conv_args:ts.AppParam = ''	# string of parameters for converting
 
 		self.qsps_code:List[str] = []	# all strings of module code
 		# self.start_time = start_time
 	
-	def set_converter(self, converter:str='qsps_to_qsp', args:str='') -> None:
+	def set_converter(self, conv:ts.Path, args:ts.AppParam) -> None:
 		""" set path to converter, or converter name """
-		self.converter = converter
-		self.converter_param = args
+		self._converter = conv
+		self._conv_args = args
 
 	def extend_by_file(self, file_path:str) -> None: # file_path:abs_path of file
 		""" Add NewQspsFile by file-path """

@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Literal
 
 from pp_environment import PpEnvironment
 from pp_tokens import TokenNode
@@ -14,9 +14,10 @@ from pp_int import PpInt
 
 class QspsPP:
     """ Препроцессор для файлов  """
-    def __init__(self) -> None:
+    def __init__(self, mode:Literal['Off', 'On']) -> None:
         # Препроцессор и окружение для директив общее для всех файлов:
         self._ns = PpEnvironment()
+        self._pp:bool = (mode == 'On') # global switch on of preprocessor
         ...
 
     def pp_this_lines(self, qsps_lines: List[str]) -> List[str]:
@@ -106,7 +107,7 @@ if __name__ == "__main__":
         qsps_lines = fp.readlines()
     import time
     old = time.time()
-    preprocessor = QspsPP()
+    preprocessor = QspsPP('On')
     preprocessor.pp_this_lines(qsps_lines)
     new = time.time()
     print(['all preprocessing', new-old])

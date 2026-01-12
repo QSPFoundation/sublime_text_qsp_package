@@ -2,12 +2,13 @@ import os
 import shutil 
 import subprocess
 import json
-from typing import Dict, Optional, Union, List, Literal, cast
+from typing import Union, Tuple, Optional, List, cast
 
 # Importing my modules.
 from . import function as qsp
 from .moduleqsp import ModuleQSP
 from .preprocessor import QspsPP
+from .const import CONVERTER
 # import time
 
 import plugtypes as ts
@@ -25,33 +26,31 @@ class BuildQSP():
 		# Default inits.
 		self._root:ts.ProjectScheme = project_scheme # qsp-project.json dict
 
-		if cast(str, self._root.get('preprocessor')) != 'Hard-off':
-			self._preprocessor = QspsPP()
+		pp_switch = cast(ts.PpMode, self._root.get('preprocessor'))
+		if pp_switch != 'Hard-off':
+			self._preprocessor = QspsPP(pp_switch)
 		else:
-			self._preprocessor = None		
+			self._preprocessor = None
 
-		self._save_temp_files:bool = False	# save temporary qsps-files or not
-		self.modules_paths:List[Path] = []	# Output files' paths (QSP-files, modules)
-		self.start_module_path:Path = ''	# File, that start in player.
-		self.work_dir:Optional[Path] = None	# workdir - is dir of qsp-project.json
-
-		# self.start_time = time.time()
+		_CONV = cast(List[Union[ts.Path, ts.AppParam]],
+					self._root.get('converter', [CONVERTER, '']))
+		self._converter:ts.Path = _CONV[0]
+		self._conv_args:ts.AppParam = _CONV[1]
+		
+		# Scanned files proves location
+		self._scans = cast(ts.ScansConfig, self._root.get('scans', {}))
+		self._scan_files_qsps:List[ts.QspsLine] = []	# location body
 
 		self.assets:List[ts.AssetsConfig] = []
-		# Scanned files proves location
-		self.scan_the_files:bool = False		# Marker of scanning files
-		self.scan_files_locname:Optional[ts.LocName] = None	# location name
-		self.scan_files_locbody:List[ts.QspsLine] = []	# location body
 
 	def build_project(self) -> None:
 		print('Build project.')
 		assets = cast(List[ts.AssetsConfig], self._root.get('assets', []))
 		if assets: self._copy_assets(assets)
 
-		scans = cast(ts.ScansConfig, self._root.get('scans',[]))
-		if scans: self._create_scans_loc()
+		if self._scans: self._create_scans_loc()
 		# Build QSP-files.
-		self.build_qsp_files()
+		self._build_qsp_files()
 
 	def run_game(self) -> None:
 		print('Run file in player')
@@ -103,78 +102,57 @@ class BuildQSP():
 		for folder in cast(List[ts.Path], scans['folders']):
 			# Iterate through the folders, comparing the paths with start_file,
 			# to understand if the folder lies deeper relative to it.
-			sf, f = qsp.compare_paths(start_file_folder, os.path.abspath(folder))
-			if sf == '.' or sf == '':
+			if os.path.commonpath([start_file_folder, folder]) == start_file_folder:
 				# Folder relative to path.
 				found_files.extend(qsp.get_files_list(folder, filters=[]))
 			else:
 				# Folder is not relative to path. Is error.
 				qsp.write_error_log(f'[102] Folder «{folder}» is not in the project.')
 
-		if 'files' in scans:
-			for file in scans['files']:
-				sf, f = qsp.compare_paths(start_file_folder,os.path.abspath(file))
-				if sf == '':
-					found_files.append(os.path.abspath(file))
-				else:
-					qsp.write_error_log(f'[103] File «{file}» is not in the project.')
+		for file in cast(List[ts.Path], scans['files']):
+			if os.path.commonpath([start_file_folder, file]) == start_file_folder:
+				found_files.append(file)
+			else:
+				qsp.write_error_log(f'[103] File «{file}» is not in the project.')
 
-		qsp_file_body = [
+		qsp_file_body:List[ts.QspsLine] = [
 			f'# {func_name}\n',
 			'$args[0] = $args[0]\n',
 			'$args[1] = "\n']
 
 		for file in found_files:
-			sf, f = qsp.compare_paths(start_file_folder, os.path.abspath(file))
-			qsp_file_body.append(f'[{f}]\n')
+			qsp_file_body.append(f'[{os.path.relpath(file, start_file_folder)}]\n')
 
 		qsp_file_body.extend([
 			'"\n',
 			'result = iif(instr($args[1],"[<<$args[0]>>]")<>0, 1, 0)\n',
 			f'- {func_name}\n'])
 
-		self.scan_files_locbody = qsp_file_body
+		self._scan_files_qsps = qsp_file_body
 
-	def build_qsp_files(self):
+	def _build_qsp_files(self):
 		# start_time = time.time()
-		pp_markers:Dict[str, bool] = {'Initial':True, 'True':True, 'False':False} # Preproc markers, variables.
-		project:List[Dict[str, Union[str, list]]] = self.root['project']
+		project = cast(List[ts.QspModule], self._root['project'])
 		# Get instructions list from 'project'.
-		_CONV:str = self.converter
-		_PPMODE:str = self.root['preprocessor']
 		for instruction in project:
-			if _CONV == 'qgc' and _PPMODE == 'Hard-off':
-				self.qgc_build(instruction, project)
-			elif _CONV == 'qgc':
-				self.converter = 'qsps_to_qsp'
-				self.qsps_build(instruction, pp_markers, project)
-			else:
-				self.qsps_build(instruction, pp_markers, project)
+			self._module_build(instruction)
 
-	def qsps_build(self, instruction:dict, pp_markers:Dict[str, bool], project:dict) -> None:
-		qsp_module = ModuleQSP()
-		qsp_module.set_converter(self.converter, self.converter_param)
-		if 'files' in instruction:
-			for file in instruction['files']:
-				qsp_module.extend_by_file(os.path.abspath(file['path']))
-		if 'folders' in instruction:
-			for path in instruction['folders']:
-				qsp_module.extend_by_folder(os.path.abspath(path['path']))
-		if ('files' not in instruction) and ('folders' not in instruction):
-			qsp_module.extend_by_folder(self.work_dir) # if not pathes, scan all current folder
-		if self.scan_the_files:
-			qsp_module.extend_by_src(self.scan_files_locbody)
-			self.scan_the_files = False
-		if 'module' in instruction:
-			qsp_module.set_exit_files(instruction['module'])
-		else:
-			qsp_module.set_exit_files(f'game{project.index(instruction)}.qsp')
-			qsp.write_error_log(f'[104] Key «module» not found. Choose export name {qsp_module.output_qsp}.')
+	def _module_build(self, instruction:ts.QspModule) -> None:
+		qsp_module = ModuleQSP(instruction)
+		qsp_module.set_converter(self._converter, self._conv_args)
+		qsp_module.set_exit_files(cast(ts.Path, instruction['module']))
+		for file in cast(List[ts.FilePath], instruction['files']):
+			qsp_module.extend_by_file(file['path'])
+		for path in cast(List[ts.FolderPath], instruction['folders']):
+			qsp_module.extend_by_folder(path['path'])
+		if self._scans:
+			qsp_module.extend_by_src(self._scan_files_qsps)
+			self._scans = {}
 
 		# Build TXT2GAM-file
 		# preprocessor work if not Hard-off mode
-		if self.root['preprocessor'] != 'Hard-off':
-			qsp_module.preprocess_qsps(self.root['preprocessor'], pp_markers)
+		if self._preprocessor:
+			qsp_module.preprocess_qsps(self.root['preprocessor'])
 		qsp_module.extract_qsps()
 		# Convert TXT2GAM at `.qsp`
 		qsp_module.convert(self.save_temp_files)

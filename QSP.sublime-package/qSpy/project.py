@@ -1,7 +1,7 @@
 import os, json
 from typing import cast, List, Union
 from . import plugtypes as ts
-from .const import PROJECT_FILE_NAME, PLAYER_PATH
+from .const import CONVERTER, PROJECT_FILE_NAME, PLAYER_PATH
 
 class QspProject:
     """ Prepare project to build """
@@ -148,7 +148,7 @@ class QspProject:
                 self._root['converter'] = [self._qgc_path, c_param]
             else:
                 # preprocessor off/on or qgc not exist
-                self._root['converter'] = ['qsps_to_qsp', '']
+                self._root['converter'] = [CONVERTER, '']
         else:
             self._root['converter'] = [os.path.abspath(c_path), c_param]
 
@@ -159,7 +159,9 @@ class QspProject:
         for i, module in enumerate(cast(List[ts.QspModule], self._root['project'])):
             # Make module path absolute
             m = cast(ts.Path, module.get('module', ''))
-            if not m: m = os.path.join(self._work_dir, f'game_{_x(i)}.qsp')
+            if not m:
+                print(f'Qsp-Project Error: Key «module» not found.')
+                m = os.path.join(self._work_dir, f'game_{_x(i)}.qsp')
             module['module'] = os.path.abspath(m)
             # Make folder paths absolute
             for folder in cast(List[ts.FolderPath], module.get('folders', [])):
