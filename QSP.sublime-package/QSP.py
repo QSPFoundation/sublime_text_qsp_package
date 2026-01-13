@@ -45,6 +45,9 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 		# -----------------------------------------------------------------------
 
 		qsp_proj = QspProject(args, window_folders)
+		if qsp_proj.scheme_is_wrong():
+			qsp.write_error_log(const.QSP_ERROR_MSG.EMPTY_PROJECT)
+			return None
 
 		# old_time = time.time()
 		builder = BuildQSP(qsp_proj.get_scheme()) # Initialise of Builder.
