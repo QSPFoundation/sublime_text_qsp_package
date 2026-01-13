@@ -31,6 +31,9 @@ class QspProject:
     def get_scheme(self) -> ts.ProjectScheme:
         return self._root
 
+    def scheme_is_wrong(self) -> bool:
+        return not bool(self._root)
+
     def _work_dir_init(self) -> None:
         """ Work Dir - dir of `qsp-project.json` """
         self._point_file = point_file = self._args.get('point_file', '')

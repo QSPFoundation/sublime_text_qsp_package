@@ -26,13 +26,18 @@ class BuildQSP():
 		# Default inits.
 		self._root:ts.ProjectScheme = project_scheme # qsp-project.json dict
 
+		# Converter's fields init
 		_CONV = cast(List[Union[ts.Path, ts.AppParam]],
 					self._root.get('converter', [CONVERTER, '']))
 		self._converter:ts.Path = _CONV[0]
 		self._conv_args:ts.AppParam = _CONV[1]
-		self._qgs_plugin:ts.Path = ''
 
+		# QGC settings
+		self._qgc_plugin:ts.Path = ''
+		self._root_folder_qgc:ts.Path = ''
 		qgc = cast(bool, self._root.get('qgc', False))
+
+		# Built-in preprocessor
 		pp_switch = cast(ts.PpMode, self._root.get('preprocessor'))
 		if pp_switch != 'Hard-off':
 			self._preprocessor = QspsPP(pp_switch)
@@ -43,15 +48,17 @@ class BuildQSP():
 		self._build_handler:Callable[[ts.QspModule], None] = self._qsps_build
 		if qgc:
 			self._build_handler = self._qgc_build
-			qgc_fold = os.path.split(_CONV[0])[0] # folder of converter
-			root_folder_qgc = os.path.split(qgc_fold)[0]
-			self._qgc_plugin:ts.Path = os.path.join(root_folder_qgc, 'plugins', 'a_txt2gam.dll')
+			exe_fold = os.path.split(_CONV[0])[0] # folder of converter
+			self._root_folder_qgc = os.path.split(exe_fold)[0]
+			self._qgc_plugin = os.path.join(self._root_folder_qgc, 'plugins', 'a_txt2gam.dll')
 		
 		# Scanned files proves location
 		self._scans = cast(ts.ScansConfig, self._root.get('scans', {}))
 		self._scan_files_qsps:List[ts.QspsLine] = []	# location body
 
 		self.assets:List[ts.AssetsConfig] = []
+
+		self._modules_pathes:List[ts.Path] = []
 
 	def build_project(self) -> None:
 		print('Build project.')
@@ -173,45 +180,38 @@ class BuildQSP():
 		# prepare parameters
 		i:List[ts.Path] = [] # pathes to source files and folders
 		# cc_path = os.path.join(root_folder_qgc, 'plugins', 'a_remove_comments.dll')
-		start_qsploc_file = None
-		if 'files' in instruction:
-			for file in instruction['files']:
-				i.append(os.path.abspath(file['path']))
+		start_qsploc_file:ts.Path = ''
+		for file in cast(List[ts.FilePath], instruction['files']):
+			i.append(os.path.abspath(file['path']))
 		if i: start_qsploc_file = i[0]
-		if 'folders' in instruction:
-			for path in instruction['folders']:
-				i.append(os.path.abspath(path['path']))
-		if ('files' not in instruction) and ('folders' not in instruction):
-			i.append(self.work_dir) # if not pathes, scan all current folder
-		if start_qsploc_file is None: start_qsploc_file = qsp.get_files_list(i[0])[0]
+		for path in cast(List[ts.FolderPath], instruction['folders']):
+			i.append(os.path.abspath(path['path']))
+		if not start_qsploc_file: start_qsploc_file = qsp.get_files_list(i[0])[0]
 
-		if self.scan_the_files:
-			scan_files_path = os.path.join(folder_to_conv, 'prv_file.qsps')
+		if self._scans:
+			scan_files_path = os.path.join(self._root_folder_qgc, 'prv_file.qsps')
 			with open(scan_files_path, 'w', encoding='utf-8') as fp:
-				fp.writelines(self.scan_files_locbody)
+				fp.writelines(self._scan_files_qsps)
 			i.append(scan_files_path)
-			self.scan_the_files = False
+			self._scans = {}
 
-		if 'module' in instruction:
-			module_path = os.path.abspath(instruction['module'])
-		else:
-			module_path = os.path.abspath(f'game{project.index(instruction)}.qsp')
-			qsp.write_error_log(f'[105] Key «module» not found. Choose export name {module_path}.')
-
-		params = '"' +self.modes['qgc_path']+ '"'
-		params += f' -m a -r -p "{plugin_path}" -o "{module_path}" -qp4st'
-		params += ' -e "qsps" -i ' + ' '.join([f'"{i_}"' for i_ in i])
-		if start_qsploc_file is not None: params += f' -im "{start_qsploc_file}"'		
+		module_path:ts.Path = os.path.abspath(cast(ts.Path, instruction['module']))
+		params:List[str] = []
+		params.append(f'"{self._converter}"')
+		params.append(f' -m a -r -p "{self._qgc_plugin}" -o "{module_path}" -qp4st')
+		params.append(' -e "qsps" -i ')
+		params.extend(f'"{i_}"' for i_ in i)
+		if start_qsploc_file: params.append(f' -im "{start_qsploc_file}"')
 
 		# Build TXT2GAM-file
-		proc = subprocess.run(params, stdout=subprocess.PIPE, shell=True)
+		proc = subprocess.run(''.join(params), stdout=subprocess.PIPE, shell=True)
 		if proc.returncode != 0:
 			msg = f'Error of QGC #{proc.returncode}. '
 			msg += 'If this Error will be repeat, change "converter" to "qsps_to_qsp".'
 			qsp.write_error_log(msg)
 
 		if os.path.isfile(module_path):
-			self.modules_paths.append(module_path)
+			self._modules_pathes.append(module_path)
 
 	def run_qsp_files(self) -> None:
 		if not os.path.isfile(self.player):
