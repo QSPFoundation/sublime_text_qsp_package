@@ -25,7 +25,7 @@ def get_files_list(folder:Path, filters:Optional[List[Ext]]=None) -> List[Path]:
 	for abs_path, _, files in os.walk(folder):
 		for file in files:
 			sp = os.path.splitext(file)
-			if not filters or (sp[1] in filters):
+			if (not filters) or (sp[1] in filters):
 				build_files.append(os.path.join(abs_path, file))
 	if not build_files:
 		write_error_log(f'[200] Folder is empty. Prove path «{folder}».')

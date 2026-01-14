@@ -156,12 +156,6 @@ class BuildQSP():
 
 	def _qsps_build(self, instruction:ts.QspModule) -> None:
 		qsp_module = ModuleQSP(instruction)
-		qsp_module.set_converter(self._converter, self._conv_args)
-		qsp_module.set_exit_files(cast(ts.Path, instruction['module']))
-		for file in cast(List[ts.FilePath], instruction['files']):
-			qsp_module.extend_by_file(file['path'])
-		for path in cast(List[ts.FolderPath], instruction['folders']):
-			qsp_module.extend_by_folder(path['path'])
 		if self._scans:
 			qsp_module.extend_by_src(self._scan_files_qsps)
 			self._scans = {}
