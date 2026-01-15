@@ -1,4 +1,5 @@
 from typing import Callable, Dict, List, Tuple
+import json
 
 
 ScanHandler = Callable[[str], None]
@@ -9,8 +10,12 @@ CharsStack = List[Char]
 QspsLine = str
 QspsLines = List[QspsLine]
 
-from .base_tokens import BaseToken as Tkn
-from .base_tokens import BaseTokenType as tt
+if __name__ == "__main__":
+    from base_tokens import BaseToken as Tkn
+    from base_tokens import BaseTokenType as tt
+else:
+    from .base_tokens import BaseToken as Tkn
+    from .base_tokens import BaseTokenType as tt
 
 class BaseScaner:
     """ Scanner of Base block of location. """
@@ -66,6 +71,7 @@ class BaseScaner:
         self._line_len = len(line)
         for i, c in enumerate(line):
             self._current = i
+            print([i,c, self._scan_funcs[-1].__name__],)
             if not self._curlexeme:
                 # если лексема пуста (начало новой лексемы), устанавливаем начало
                 self._set_start_lexeme()
@@ -79,6 +85,8 @@ class BaseScaner:
         if cn == 0 and c in (' ', '\t'):
             # поглощаем токен преформатирования
             self._scan_funcs.append(self._preformatter_expect)
+        elif c in (' ', '\t'):
+            self._curlexeme.clear() # пробелы не учитываем
         elif c == '"':
             # поглощение литерала строки
             self._scan_funcs.append(self._quote_string_literal_expect)
@@ -106,38 +114,37 @@ class BaseScaner:
             self._add_token(tt.EXCLAMATION_SIGN)
         elif c == ":":
             self._add_token(tt.THEN)
-        elif self._cur_line[cn:cn+3].lower() == 'act' and self._word_edges(cn, cn+2):
-            self._add_expected_chars('ct')
-            self._scan_funcs.append(self._stmt_expect)
-        elif self._cur_line[cn:cn+3].lower() == 'end' and self._word_edges(cn, cn+2):
-            self._add_expected_chars('nd')
-            self._scan_funcs.append(self._stmt_expect)
-        elif self._cur_line[cn:cn+2].lower() == 'if' and self._word_edges(cn, cn+2):
-            self._add_expected_chars('f')
-            self._scan_funcs.append(self._stmt_expect)
-        elif self._cur_line[cn:cn+4].lower() == 'loop' and self._word_edges(cn, cn+2):
-            self._add_expected_chars('oop')
-            self._scan_funcs.append(self._stmt_expect)
+
+        # Identifiers    
+        elif self._is_alnum(c):
+            self._scan_funcs.append(self._identifier_expect)
         elif self._cur_line[cn:cn+2].lower() == '*p' and self._word_edges(cn, cn+2):
             self._add_expected_chars('p')
-            self._scan_funcs.append(self._stmt_expect)
+            self._scan_funcs.append(self._identifier_expect)
         elif self._cur_line[cn:cn+3].lower() == '*pl' and self._word_edges(cn, cn+2):
             self._add_expected_chars('pl')
-            self._scan_funcs.append(self._stmt_expect)
+            self._scan_funcs.append(self._identifier_expect)
         elif self._cur_line[cn:cn+3].lower() == '*nl' and self._word_edges(cn, cn+2):
             self._add_expected_chars('nl')
-            self._scan_funcs.append(self._stmt_expect)
-        elif 
+            self._scan_funcs.append(self._identifier_expect)
+        elif c in self._STMT_DELIMITERS:
+            self._add_token(tt.DELIMITER)
+        elif (not self._next_in_line() in self._STMT_DELIMITERS and
+              not self._current_is_last_in_line()):
+            self._scan_funcs.append(self._raw_base_line_expect)
+        else:
+            self._add_token(tt.RAW_TEXT)
+        
 
-    def _stmt_expect(self, c:Char) -> None:
-        need = self._prepend_chars.pop()
-        if need != c.lower():
-            self._error(f"escape_expect: expected '{need}', got '{c}'")
-            self._scan_funcs.pop() # убираем функцию из стека
-            return
-
-        if not self._prepend_chars:
-            self._add_token(self._KEYWORDS[''.join(self._curlexeme).lower()])
+    def _identifier_expect(self, c:Char) -> None:
+        """ Сборка идентификатора директивы препроцессора. """
+        # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
+        next_char = self._next_in_line()
+        print([c, next_char])
+        if not self._is_alnum(next_char):
+            print('\n')
+            ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER)
+            self._add_token(ttype)
             self._scan_funcs.pop()
 
     def _quote_string_literal_expect(self, c:Char) -> None:
@@ -176,10 +183,18 @@ class BaseScaner:
         if not self._prepend_chars:
             self._scan_funcs.pop()
 
+    def _raw_base_line_expect(self, c:str) -> None:
+        """ Получение токена сырого текста в коде основного описания и действий. """
+        # Данная строка оканчивается, когда встречает токен, значимый для локации,
+        # или конец строки, или конец файла
+        if (self._next_in_line() in self._STMT_DELIMITERS):
+            self._add_token(tt.RAW_TEXT)
+            self._scan_funcs.pop()
+
     # вспомогательные методы
     def _is_alnum(self, s:str) -> bool:
         """ is \\w ? """
-        return s.isalnum() or s == '_'
+        return s.isalnum() or s in ('_', '$', '%')
 
     def _current_is_last_in_line(self) -> bool:
         """ Является ли текущий символ последним в строке? """
@@ -251,3 +266,12 @@ class BaseScaner:
 
     def _logic_error(self, message:str) -> None:
         print(f"Dirs-Scanner Logic error: {message}. Please, report to the developer.")
+
+if __name__ == "__main__":
+    with open('base_example.qsps', 'r', encoding='utf-8') as fp:
+        lines = fp.readlines()
+    scanner = BaseScaner(lines)
+    scanner.scan_tokens()
+    tokens = [t.get_as_node() for t in scanner.get_tokens()]
+    with open('base_example.json', 'w', encoding='utf-8') as fp:
+        json.dump(tokens, fp, indent=4, ensure_ascii=False)

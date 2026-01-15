@@ -46,6 +46,8 @@ class BaseTokenType(IntEnum):
     # Raw Lines:
     
     QSPS_LINE = auto()
+    DELIMITER = auto()
+    RAW_TEXT = auto()
 
     # PreProcessors Directives tokens:
 
