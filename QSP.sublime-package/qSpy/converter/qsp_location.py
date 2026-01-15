@@ -36,16 +36,20 @@ class QspLoc():
 
         self._run_on_visit:List[QspsLine] = [] # code of Run-on-visit field of location
 
+        self._extract_base()
+
     def change_name(self, new_name:str) -> None:
         """ Set location name """
         self.name = new_name
 
     def change_code(self, new_code:List[QspsLine]) -> None:
-        """ Set location code. """
-        self._code = new_code
+        """ Set run on visit code. """
+        self._run_on_visit = new_code
 
     def add_code_line(self, code_line:QspsLine) -> None:
-        self._code.append(code_line)
+        """ Append code line to run on visit code"""
+
+        self._run_on_visit.append(code_line)
 
     # def encode(self) -> None:
     #     """ Decode parts of location. """
@@ -73,8 +77,8 @@ class QspLoc():
     #     qsp.extend(self.encode_actions)
     #     return qsp
 
-    def extract_base(self) -> None:
-        """ Extract base from location code """
+    def _extract_base(self) -> None:
+        """ Extract qsps-lines of base from location code """
         mode:BaseFindMode = {
             'open_base': False,
             'quote': [],
@@ -103,212 +107,205 @@ class QspLoc():
         else:
             self._run_on_visit = self._code[:]
 
-    def print_code(self) -> None:
-        print(len(self._code))
-        print('base code')
-        print(len(self._base_code), self._base_code)
-        print('run on visit')
-        print(len(self._run_on_visit),self._run_on_visit)
+    def split_base(self) -> None:
+        """ Split base code to description and actions """
+        def _string_to_desc(line:str, mode:dict, opened:str) -> None:
+            need = ('"', "'") # ожидаем кавчки
+            valid = (" ", "\t") # допустимые символы
+            new_line = '\n' if opened in ('open-pl', 'open-implicit') else ''
+            base_description_chars = []
+            for i, char in enumerate(line):
+                if mode[opened]:
+                    if char != mode['open-string']:
+                        base_description_chars.append(char)
+                    elif (i < len(line)-1 and line[i+1] == mode['open-string']):
+                        continue
+                    elif (i > 0 and line[i-1] == mode['open-string']):
+                        # символ кавычки экранирован,значит его тоже можно в описание
+                        base_description_chars.append(char)
+                    else: # char = open-string и соседние символы другие
+                        # закрываем набранное
+                        base_description_chars.append(new_line)
+                        mode[opened] = False
+                        mode['open-string'] = ''
+                        break
+                else:
+                    # пока не открыт набор в описание
+                    if char in need:
+                        # нашли ожидаемый символ, открываем набор
+                        mode['open-string'] = char
+                        mode[opened] = True
+                    elif not char in valid:
+                        # найден недопустимый символ
+                        break
+            self.base_description += ''.join(base_description_chars)
 
-    # def split_base(self) -> None:
-    #     """ Split base code to description and actions """
-    #     def _string_to_desc(line:str, mode:dict, opened:str) -> None:
-    #         need = ('"', "'") # ожидаем кавчки
-    #         valid = (" ", "\t") # допустимые символы
-    #         new_line = '\n' if opened in ('open-pl', 'open-implicit') else ''
-    #         base_description_chars = []
-    #         for i, char in enumerate(line):
-    #             if mode[opened]:
-    #                 if char != mode['open-string']:
-    #                     base_description_chars.append(char)
-    #                 elif (i < len(line)-1 and line[i+1] == mode['open-string']):
-    #                     continue
-    #                 elif (i > 0 and line[i-1] == mode['open-string']):
-    #                     # символ кавычки экранирован,значит его тоже можно в описание
-    #                     base_description_chars.append(char)
-    #                 else: # char = open-string и соседние символы другие
-    #                     # закрываем набранное
-    #                     base_description_chars.append(new_line)
-    #                     mode[opened] = False
-    #                     mode['open-string'] = ''
-    #                     break
-    #             else:
-    #                 # пока не открыт набор в описание
-    #                 if char in need:
-    #                     # нашли ожидаемый символ, открываем набор
-    #                     mode['open-string'] = char
-    #                     mode[opened] = True
-    #                 elif not char in valid:
-    #                     # найден недопустимый символ
-    #                     break
-    #         self.base_description += ''.join(base_description_chars)
+        def _string_to_act(line:str, mode:dict, base_act_buffer:dict) -> None:
+            need = ('"', "'") # ожидаем кавчки
+            valid = (" ", "\t") # допустимые символы
+            stage = 'need name'
+            for i, char in enumerate(line):
+                if mode['action-name']:
+                    # название найдено, набираем
+                    if char != mode['open-string']:
+                        base_act_buffer['name'] += char
+                    elif (i < len(line)-1 and line[i+1] == mode['open-string']):
+                        continue
+                    elif (i > 0 and line[i-1] == mode['open-string']):
+                        # символ кавычки экранирован,значит его тоже можно в описание
+                        base_act_buffer['name'] += char
+                    else: # char = open-string и соседние символы другие
+                        # закрываем набранное
+                        mode['action-name'] = False
+                        mode['open-string'] = ''
+                        stage = 'need prev image'
+                        need = (",", ':')
+                        valid = (" ", "\t")
+                elif mode['action-image']:
+                    # изображение найдено, набираем
+                    if char != mode['open-string']:
+                        base_act_buffer['image'] += char
+                    elif (i < len(line)-1 and line[i+1] == mode['open-string']):
+                        continue
+                    elif (i > 0 and line[i-1] == mode['open-string']):
+                        # символ кавычки экранирован,значит его тоже можно в описание
+                        base_act_buffer['image'] += char
+                    else: # char = open-string и соседние символы другие
+                        # закрываем набранное
+                        mode['action-image'] = False
+                        mode['open-string'] = ''
+                        stage = 'need code'
+                        need = (':')
+                        valid = (" ", "\t")
+                elif stage == 'need name':
+                    # поиск названия действия
+                    if char in need:
+                        # найдено вхождение строки
+                        mode['open-string'] = char
+                        mode['action-name'] = True
+                    elif not char in valid:
+                        # недопустимый символ, игнорируем действие
+                        break
+                elif stage == 'need prev image':
+                    # ищем запятую перед вторым аргументом
+                    if char == ",":
+                        stage = "need image"
+                        need = ("'", '"')
+                        valid = (" ", "\t")
+                        continue
+                    elif char == ":":
+                        # набор названия и изображения кончился, набираем код
+                        mode['action-code'] = True
+                        break
+                    elif not char in valid:
+                        # действие кривое, прерываем
+                        base_act_buffer = _empty_buffer()
+                        break
+                elif stage == 'need image':
+                    if char in need:
+                        mode['action-image'] = True
+                        mode['open-string'] = char
+                    elif not char in valid:
+                        base_act_buffer = _empty_buffer()
+                        break
+                elif stage == 'need code':
+                    if char == ':':
+                        mode['action-code'] = True
+                        break
+                    elif not char in valid:
+                        mode['action-code'] = False
+                        base_act_buffer = _empty_buffer()
+                        break
 
-    #     def _string_to_act(line:str, mode:dict, base_act_buffer:dict) -> None:
-    #         need = ('"', "'") # ожидаем кавчки
-    #         valid = (" ", "\t") # допустимые символы
-    #         stage = 'need name'
-    #         for i, char in enumerate(line):
-    #             if mode['action-name']:
-    #                 # название найдено, набираем
-    #                 if char != mode['open-string']:
-    #                     base_act_buffer['name'] += char
-    #                 elif (i < len(line)-1 and line[i+1] == mode['open-string']):
-    #                     continue
-    #                 elif (i > 0 and line[i-1] == mode['open-string']):
-    #                     # символ кавычки экранирован,значит его тоже можно в описание
-    #                     base_act_buffer['name'] += char
-    #                 else: # char = open-string и соседние символы другие
-    #                     # закрываем набранное
-    #                     mode['action-name'] = False
-    #                     mode['open-string'] = ''
-    #                     stage = 'need prev image'
-    #                     need = (",", ':')
-    #                     valid = (" ", "\t")
-    #             elif mode['action-image']:
-    #                 # изображение найдено, набираем
-    #                 if char != mode['open-string']:
-    #                     base_act_buffer['image'] += char
-    #                 elif (i < len(line)-1 and line[i+1] == mode['open-string']):
-    #                     continue
-    #                 elif (i > 0 and line[i-1] == mode['open-string']):
-    #                     # символ кавычки экранирован,значит его тоже можно в описание
-    #                     base_act_buffer['image'] += char
-    #                 else: # char = open-string и соседние символы другие
-    #                     # закрываем набранное
-    #                     mode['action-image'] = False
-    #                     mode['open-string'] = ''
-    #                     stage = 'need code'
-    #                     need = (':')
-    #                     valid = (" ", "\t")
-    #             elif stage == 'need name':
-    #                 # поиск названия действия
-    #                 if char in need:
-    #                     # найдено вхождение строки
-    #                     mode['open-string'] = char
-    #                     mode['action-name'] = True
-    #                 elif not char in valid:
-    #                     # недопустимый символ, игнорируем действие
-    #                     break
-    #             elif stage == 'need prev image':
-    #                 # ищем запятую перед вторым аргументом
-    #                 if char == ",":
-    #                     stage = "need image"
-    #                     need = ("'", '"')
-    #                     valid = (" ", "\t")
-    #                     continue
-    #                 elif char == ":":
-    #                     # набор названия и изображения кончился, набираем код
-    #                     mode['action-code'] = True
-    #                     break
-    #                 elif not char in valid:
-    #                     # действие кривое, прерываем
-    #                     base_act_buffer = _empty_buffer()
-    #                     break
-    #             elif stage == 'need image':
-    #                 if char in need:
-    #                     mode['action-image'] = True
-    #                     mode['open-string'] = char
-    #                 elif not char in valid:
-    #                     base_act_buffer = _empty_buffer()
-    #                     break
-    #             elif stage == 'need code':
-    #                 if char == ':':
-    #                     mode['action-code'] = True
-    #                     break
-    #                 elif not char in valid:
-    #                     mode['action-code'] = False
-    #                     base_act_buffer = _empty_buffer()
-    #                     break
+        def _all_modes_off(mode:dict) -> None:
+            return (mode['open-string'] == ''
+                and not mode['open-pl']
+                and not mode['open-p']
+                and not mode['open-implicit']
+                and not mode['action-name']
+                and not mode['action-image']
+                and not mode['action-code'])
 
-    #     def _all_modes_off(mode:dict) -> None:
-    #         return (mode['open-string'] == ''
-    #             and not mode['open-pl']
-    #             and not mode['open-p']
-    #             and not mode['open-implicit']
-    #             and not mode['action-name']
-    #             and not mode['action-image']
-    #             and not mode['action-code'])
-
-    #     def _empty_buffer() -> dict:
-    #         return {
-    #             'name': '',
-    #             'image': '',
-    #             'code': []
-    #         }
+        def _empty_buffer() -> dict:
+            return {
+                'name': '',
+                'image': '',
+                'code': []
+            }
         
-    #     mode = {
-    #         'open-string': '',
-    #         'open-pl': False,
-    #         'open-p': False,
-    #         'open-implicit': False,
-    #         'action-name': False,
-    #         'action-image': False,
-    #         'action-code': False}
+        mode = {
+            'open-string': '',
+            'open-pl': False,
+            'open-p': False,
+            'open-implicit': False,
+            'action-name': False,
+            'action-image': False,
+            'action-code': False}
 
-    #     base_act_buffer = _empty_buffer()
+        base_act_buffer = _empty_buffer()
 
-    #     for line in self.base_code:
-    #         if _all_modes_off(mode):
-    #             if IMPLICIT_OPERATOR.match(line):
-    #                 _string_to_desc(line, mode, 'open-implicit')
-    #             elif PRINT_LINE.match(line):
-    #                 # строка с командой вывода текста
-    #                 _string_to_desc(line[3:], mode, 'open-pl')                    
-    #             elif PRINT_STRING.match(line):
-    #                 _string_to_desc(line[2:], mode, 'open-p')
-    #             elif  ACTION_START.match(line):
-    #                 _string_to_act(line[3:], mode, base_act_buffer)
-    #             else:
-    #                 NewQspsFile.parse_string(line, mode)
-    #         elif mode['open-pl']:
-    #             _string_to_desc(line, mode, 'open-pl')
-    #         elif mode['open-p']:
-    #             _string_to_desc(line, mode, 'open-p')
-    #         elif mode['open-implicit']:
-    #             _string_to_desc(line, mode, 'open-implicit')
-    #         elif mode['action-code']:
-    #             if mode['open-string'] == '' and ACTION_END.match(line):
-    #                 # найдено окончание кода, закрываем
-    #                 mode['action-code'] = False
-    #                 self.base_actions.append(base_act_buffer.copy())
-    #                 base_act_buffer = _empty_buffer()
-    #             else:
-    #                 base_act_buffer['code'].append(line)
-    #                 NewQspsFile.parse_string(line, mode)
-    #         elif mode['action-image'] or mode['action-name']:
-    #             # переносы строк в названиях и изображениях базовых действий недопустимы
-    #             mode['action-name'] = False
-    #             mode['action-image'] = False
-    #             base_act_buffer = _empty_buffer()
-    #             NewQspsFile.parse_string(line, mode)
-    #         elif mode['open-string']:
-    #             NewQspsFile.parse_string(line, mode)
+        for line in self.base_code:
+            if _all_modes_off(mode):
+                if IMPLICIT_OPERATOR.match(line):
+                    _string_to_desc(line, mode, 'open-implicit')
+                elif PRINT_LINE.match(line):
+                    # строка с командой вывода текста
+                    _string_to_desc(line[3:], mode, 'open-pl')                    
+                elif PRINT_STRING.match(line):
+                    _string_to_desc(line[2:], mode, 'open-p')
+                elif  ACTION_START.match(line):
+                    _string_to_act(line[3:], mode, base_act_buffer)
+                else:
+                    NewQspsFile.parse_string(line, mode)
+            elif mode['open-pl']:
+                _string_to_desc(line, mode, 'open-pl')
+            elif mode['open-p']:
+                _string_to_desc(line, mode, 'open-p')
+            elif mode['open-implicit']:
+                _string_to_desc(line, mode, 'open-implicit')
+            elif mode['action-code']:
+                if mode['open-string'] == '' and ACTION_END.match(line):
+                    # найдено окончание кода, закрываем
+                    mode['action-code'] = False
+                    self.base_actions.append(base_act_buffer.copy())
+                    base_act_buffer = _empty_buffer()
+                else:
+                    base_act_buffer['code'].append(line)
+                    NewQspsFile.parse_string(line, mode)
+            elif mode['action-image'] or mode['action-name']:
+                # переносы строк в названиях и изображениях базовых действий недопустимы
+                mode['action-name'] = False
+                mode['action-image'] = False
+                base_act_buffer = _empty_buffer()
+                NewQspsFile.parse_string(line, mode)
+            elif mode['open-string']:
+                NewQspsFile.parse_string(line, mode)
 
-    # def get_sources(self) -> list:
-    #     """ Return qsps-lines of location code, description and actions """
-    #     _eqs = NewQspLocation.escape_qsp_string
-    #     qsps_lines = []
-    #     qsps_lines.append(f"# {self.name}\n")
-    #     if self.base_description or self.base_actions:
-    #         qsps_lines.append("! BASE\n")
-    #         if self.base_description:
-    #             qsps_lines.append(f"*P '{_eqs(self.base_description)}'\n")
-    #         if self.base_actions:
-    #             for action in self.base_actions:
-    #                 open_act = f"ACT '{_eqs(action['name'])}'"
-    #                 open_act += (f", '{_eqs(action['image'])}':" if action['image'] else ':')
-    #                 qsps_lines.append(open_act)
-    #                 qsps_lines.extend(['\n'+line for line in action['code']] if action['code'] else [])
-    #                 qsps_lines.append('END\n')
-    #         qsps_lines.append("! END BASE\n")
-    #     qsps_lines.extend(self.code)
-    #     qsps_lines.append(f"-- {self.name} " + ("-" * 33))
-    #     return qsps_lines
+    def get_sources(self) -> list:
+        """ Return qsps-lines of location code, description and actions """
+        _eqs = NewQspLocation.escape_qsp_string
+        qsps_lines = []
+        qsps_lines.append(f"# {self.name}\n")
+        if self.base_description or self.base_actions:
+            qsps_lines.append("! BASE\n")
+            if self.base_description:
+                qsps_lines.append(f"*P '{_eqs(self.base_description)}'\n")
+            if self.base_actions:
+                for action in self.base_actions:
+                    open_act = f"ACT '{_eqs(action['name'])}'"
+                    open_act += (f", '{_eqs(action['image'])}':" if action['image'] else ':')
+                    qsps_lines.append(open_act)
+                    qsps_lines.extend(['\n'+line for line in action['code']] if action['code'] else [])
+                    qsps_lines.append('END\n')
+            qsps_lines.append("! END BASE\n")
+        qsps_lines.extend(self.code)
+        qsps_lines.append(f"-- {self.name} " + ("-" * 33))
+        return qsps_lines
     
-    # @staticmethod
-    # def escape_qsp_string(qsp_string:str) -> str:
-    #     """ Escape-sequence for qsp-string. """
-    #     return qsp_string.replace("'", "''")
+    @staticmethod
+    def escape_qsp_string(qsp_string:str) -> str:
+        """ Escape-sequence for qsp-string. """
+        return qsp_string.replace("'", "''")
 
 
 if __name__ == "__main__":

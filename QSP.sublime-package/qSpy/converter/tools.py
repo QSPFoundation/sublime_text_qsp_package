@@ -23,6 +23,7 @@ def parse_string(qsps_line:QspsLine, mode:BaseFindMode) -> None:
     
 
 if __name__ == "__main__":
+    import time
     def test_parse_string():
         # Тест 1: Обычные закрытые двойные кавычки
         mode = {'open_base': False, 'quote': []}
@@ -72,7 +73,11 @@ if __name__ == "__main__":
         parse_string('"', mode)
         assert mode['quote'] == [], f"Стек должен быть пуст после закрытия кавычки: {mode['quote']}"
 
-        print("Все тесты parse_string пройдены корректно.")
+        # print("Все тесты parse_string пройдены корректно.")
 
     # Для ручного запуска
-    test_parse_string()
+    old = time.time()
+    for i in range(100):
+        test_parse_string()
+    new = time.time()
+    print(new - old)

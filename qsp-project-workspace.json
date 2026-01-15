@@ -234,15 +234,6 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\обязательные локации\\[diary].qsps": [
-            [
-                "[diary]",
-                [
-                    138,
-                    145
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\разобрать.qsps": [
             [
                 "menu.obj.unmount",
@@ -950,15 +941,6 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\обязательные локации\\[chest].qsps": [
-            [
-                "[chest]",
-                [
-                    185,
-                    192
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\drive\\воспроизведение времени\\календарь и функции времени.qsps": [
             [
                 "int.time.calendar",
@@ -1369,15 +1351,6 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\обязательные локации\\[death].qsps": [
-            [
-                "[death]",
-                [
-                    2,
-                    9
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.tag.num.qsps": [
             [
                 "em.tag.getNum",
@@ -1567,15 +1540,6 @@
                 [
                     2,
                     19
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\местность\\01_моя комната.qsps": [
-            [
-                "[м:1]_моя_комната",
-                [
-                    326,
-                    343
                 ]
             ]
         ],
@@ -1804,22 +1768,6 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\главное меню\\main_screen.qsps": [
-            [
-                "[0.1_game_info]",
-                [
-                    89,
-                    104
-                ]
-            ],
-            [
-                "[0.2_drive_info]",
-                [
-                    4772,
-                    4788
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\bases\\стандартные\\base.img (стандартные изображения).qsps": [
             [
                 "base.img",
@@ -1894,15 +1842,6 @@
                 [
                     202,
                     224
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\обязательные локации\\[help].qsps": [
-            [
-                "[help]",
-                [
-                    499,
-                    505
                 ]
             ]
         ],
@@ -3224,6 +3163,67 @@
                 [
                     2,
                     16
+                ]
+            ]
+        ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\главное меню\\main_screen.qsps": [
+            [
+                "[0.1_game_info]",
+                [
+                    89,
+                    104
+                ]
+            ],
+            [
+                "[0.2_drive_info]",
+                [
+                    4772,
+                    4788
+                ]
+            ]
+        ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\местность\\01_моя комната.qsps": [
+            [
+                "[м:1]_моя_комната",
+                [
+                    326,
+                    343
+                ]
+            ]
+        ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\обязательные локации\\[chest].qsps": [
+            [
+                "[chest]",
+                [
+                    185,
+                    192
+                ]
+            ]
+        ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\обязательные локации\\[death].qsps": [
+            [
+                "[death]",
+                [
+                    2,
+                    9
+                ]
+            ]
+        ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\обязательные локации\\[diary].qsps": [
+            [
+                "[diary]",
+                [
+                    138,
+                    145
+                ]
+            ]
+        ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_project\\main\\обязательные локации\\[help].qsps": [
+            [
+                "[help]",
+                [
+                    499,
+                    505
                 ]
             ]
         ]

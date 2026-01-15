@@ -22,22 +22,6 @@ MarkedLine = Tuple[
 class PpScanner:
     """ Scanner for QspsPP. """
 
-    _KEYWORDS:Dict[str, tt] = {
-            "var": tt.VAR_STMT,
-            "on": tt.ON_STMT,
-            "if": tt.IF_STMT,
-            "off": tt.OFF_STMT,
-            "savecomm": tt.SAVECOMM_STMT,
-            "nosavecomm": tt.NO_SAVECOMM_STMT,
-            # "nopp": tt.NOPP_STMT,
-            "include": tt.INCLUDE_STMT,
-            "exclude": tt.EXCLUDE_STMT,
-            "and": tt.AND_OPERATOR,
-            "or": tt.OR_OPERATOR,
-            "not": tt.NOT_OPERATOR,
-            "endif": tt.ENDIF_STMT
-        }
-
     _LOC_LINE_DELIMITERS = ("\"", "'", "{", "}", "[", "]", "(", ")", "&", "!", '\n')
 
     def __init__(self, marked_lines: List[MarkedLine]) -> None:
