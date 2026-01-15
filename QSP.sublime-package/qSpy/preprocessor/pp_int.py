@@ -55,7 +55,7 @@ class PpInt(stm.PpVisitor[AstNode]):
                  stmts:List[stm.PpStmt[AstNode]],
                  marked_lines:List[MarkedLine]) -> None:
         self._stmts = stmts
-        self._output_lines:List[QspsLine] = []
+        self._prepare_lines:List[QspsLine] = []
         self._marked_lines:List[MarkedLine] = marked_lines
 
         self._temporary:List[str] = []
@@ -70,9 +70,18 @@ class PpInt(stm.PpVisitor[AstNode]):
         for stmt in self._stmts:
             stmt.accept(self)
 
-    def get_output(self) -> List[QspsLine]:
-        return self._output_lines
+    def fast_output(self) -> List[QspsLine] :
+        return self._prepare_lines       
 
+    def get_output(self) -> List[QspsLine]:
+        output_lines:List[QspsLine] = []
+        temporary:List[QspsLine] = []
+        for line in self._prepare_lines:
+            temporary.append(line)
+            if '\n' in line:
+                output_lines.append(''.join(temporary))
+                temporary.clear()
+        return output_lines
     # Statements
 
     def visit_raw_line_dclrt(self, stmt: stm.RawLineStmt[AstNode]) -> AstNode:
@@ -108,7 +117,7 @@ class PpInt(stm.PpVisitor[AstNode]):
             comment_line.extend(t.lexeme for t in comm.value)
         
         
-        self._temporary = []
+        self._temporary.clear()
         if stmt.pref: self._temporary.append(stmt.pref.lexeme)
         for other_stmt in stmt.stmts:
             other_stmt.accept(self)
@@ -116,11 +125,13 @@ class PpInt(stm.PpVisitor[AstNode]):
             self._temporary.extend(comment_line)
         elif comment_validate == 'simple_spec_comm':
             # специальный комментарий не попадёт в выходной файл, но перенос строки надо сохранить
+            print(['ppint,simplespeccom', self._temporary[-2]])
+            if self._temporary[-2].strip() == '': self._temporary.pop(-2)
             self._temporary.append('\n')
         if len(self._temporary) >= 2 and self._temporary[-2].strip() == '&': self._temporary.pop(-2)
         if len(''.join(self._temporary).split()) == 0: return # пропускаем пустые строки
-        self._output_lines.extend(self._temporary)
-        self._temporary = []
+        self._prepare_lines.extend(self._temporary)
+        self._temporary.clear()
 
     def visit_comment_stmt(self, stmt: stm.CommentStmt[AstNode]) -> AstNode:
         # CommentStmt является либо частью OtherStmt, либо самостоятельным оператором
@@ -201,10 +212,10 @@ class PpInt(stm.PpVisitor[AstNode]):
         self._contexts[-1].update(cur)
 
     def _add_qsps_line(self, line_num:LineNum) -> None:
-        self._output_lines.append(self._marked_lines[line_num][0])
+        self._prepare_lines.append(self._marked_lines[line_num][0])
 
     def _extend_qsps_lines(self, start_line:LineNum, end_line:LineNum) -> None:
-        self._output_lines.extend([
+        self._prepare_lines.extend([
             ml[0] for ml in self._marked_lines[start_line:end_line+1]
         ])
 

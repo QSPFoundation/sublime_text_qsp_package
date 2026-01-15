@@ -1,4 +1,4 @@
-from typing import Callable, List, Dict, Tuple, Literal
+from typing import Callable, List, Tuple, Literal
 
 from pp_tokens import PpToken as tkn
 from pp_tokens import PpTokenType as tt
