@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional, Tuple, Callable
+from typing import List, Dict, Tuple, Callable
 
 from pp_tokens import PpToken as Tkn
 from pp_tokens import PpTokenType as tt
@@ -153,7 +153,11 @@ class DirsScaner:
         elif self._is_alnum(c):
             # если это \w, ожидается, что мы имеем дело с идентификатором
             # ключевым словом и т.п.
-            self._scan_funcs.append(self._identifier_expect)
+            if self._is_alnum(self._next_in_line()):
+                self._scan_funcs.append(self._identifier_expect)
+            else:
+                ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER)
+                self._add_token(ttype)
         else:
             # любой другой символ включает выборку сырого текста до конца строки
             self._scan_funcs.append(self._raw_text_expect)
@@ -182,8 +186,7 @@ class DirsScaner:
         # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
         next_char = self._next_in_line()
         if not self._is_alnum(next_char):
-            ttype:Optional[tt] = self._KEYWORDS.get(''.join(self._curlexeme), None)
-            if ttype == None: ttype = tt.IDENTIFIER
+            ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER)
             self._add_token(ttype)
             self._scan_funcs.pop()
 

@@ -1,5 +1,5 @@
 import json
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from pp_environment import PpEnvironment
 from pp_tokens import TokenNode
@@ -18,6 +18,13 @@ class QspsPP:
         # Препроцессор и окружение для директив общее для всех файлов:
         self._ns = PpEnvironment()
         self._pp:bool = (mode == 'On') # global switch on of preprocessor
+
+        self._dirs_scanner:Optional[DirsScaner] = None
+        self._dirs_scanner:Optional[DirsScaner] = None
+        self._dirs_scanner:Optional[DirsScaner] = None
+        self._dirs_scanner:Optional[DirsScaner] = None
+        self._dirs_scanner:Optional[DirsScaner] = None
+        self._dirs_scanner:Optional[DirsScaner] = None
         ...
 
     def pp_this_lines(self, qsps_lines: List[str]) -> List[str]:
@@ -29,7 +36,7 @@ class QspsPP:
         dirs_tokens = dirs_scanner.get_tokens()
 
         if __name__ == "__main__":
-            out = '.\\_test\\01_dirs_tokens.json'
+            out = '..\\..\\..\\[examples]\\example_preprocessor\\_test\\01_dirs_tokens.json'
             out_l: List[TokenNode] = []
             for t in dirs_tokens:
                 out_l.append(t.get_as_node())
@@ -46,7 +53,7 @@ class QspsPP:
             ast_printer = DirsAstPrinter(dirs_stmts)
             ast_printer.gen_ast()
             ast_tree = ast_printer.get_ast()
-            out = ".\\_test\\02_dirs_tree.json"
+            out = "..\\..\\..\\[examples]\\example_preprocessor\\_test\\02_dirs_tree.json"
             with open(out, 'w', encoding='utf-8') as fp:
                 json.dump(ast_tree, fp, ensure_ascii=False, indent=2)
 
@@ -56,7 +63,7 @@ class QspsPP:
         marked_lines = dirs_int.get_marked_lines()
 
         if __name__ == "__main__":
-            out = '.\\_test\\03_dirs_ml.json'
+            out = '..\\..\\..\\[examples]\\example_preprocessor\\_test\\03_dirs_ml.json'
             with open(out, 'w', encoding='utf-8') as fp:
                 json.dump(marked_lines, fp, indent=4, ensure_ascii=False)
 
@@ -66,7 +73,7 @@ class QspsPP:
         pp_tokens = pp_scanner.get_tokens()
 
         if __name__ == "__main__":
-            out = '.\\_test\\04_pp_tokens.json'
+            out = '..\\..\\..\\[examples]\\example_preprocessor\\_test\\04_pp_tokens.json'
             l: List[TokenNode] = []
             for t in pp_tokens:
                 l.append(t.get_as_node())
@@ -84,7 +91,7 @@ class QspsPP:
             ast_printer = AstPrinter(pp_stmts)
             ast_printer.gen_ast()
             ast_tree = ast_printer.get_ast()
-            out = ".\\_test\\05_pp_ast.json"
+            out = "..\\..\\..\\[examples]\\example_preprocessor\\_test\\05_pp_ast.json"
             with open(out, 'w', encoding='utf-8') as fp:
                 json.dump(ast_tree, fp, ensure_ascii=False, indent=2)
 
@@ -95,19 +102,36 @@ class QspsPP:
         output_lines = pp_int.get_output()
 
         if __name__ == "__main__":
-            out = ".\\_test\\output.qsps"
+            print(pp_int.fast_output())
+            out = "..\\..\\..\\[examples]\\example_preprocessor\\_test\\output.qsps"
             with open(out, 'w', encoding='utf-8') as fp:
                 fp.write(''.join(output_lines))
 
         return output_lines
 
 if __name__ == "__main__":
-    path = "..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
+    path = "..\\..\\..\\[examples]\\example_preprocessor\\pptest.qsps"
     with open(path, 'r', encoding='utf-8') as fp:
         qsps_lines = fp.readlines()
     import time
     old = time.time()
     preprocessor = QspsPP('On')
-    preprocessor.pp_this_lines(qsps_lines)
+    new_lines = preprocessor.pp_this_lines(qsps_lines)
     new = time.time()
     print(['all preprocessing', new-old])
+    expected = "..\\..\\..\\[examples]\\example_preprocessor\\expected.qsps"
+    with open(expected, 'r', encoding='utf-8') as fp:
+        expected_lines = fp.readlines()
+    if len(expected_lines) == len(new_lines):
+        stop = False
+        for i, line in enumerate(expected_lines):
+            for j, char in enumerate(line):
+                if new_lines[i][j] != char:
+                    stop = True
+                    print(f'chars not equal {i}, {j}', ['expected', line[0:j+1], 'getted', new_lines[i][0:j+1]])
+                    break
+            if stop: break
+        print(new_lines)
+    else:
+        print(f'Strings counts not equal. Expected {len(expected_lines)}, geted {len(new_lines)}')
+    
