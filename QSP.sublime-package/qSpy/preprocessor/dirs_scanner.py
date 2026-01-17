@@ -1,6 +1,6 @@
 from typing import List, Dict, Tuple, Callable
 
-from pp_tokens import PpToken as Tkn
+from pp_tokens import PpToken as Tkn, TokenNode
 from pp_tokens import PpTokenType as tt
 
 ScanHandler = Callable[[str], None]
@@ -50,6 +50,12 @@ class DirsScaner:
 
     def get_tokens(self) -> List[Tkn]:
         return self._tokens
+
+    def get_token_nodes(self) -> List[TokenNode]:
+        out_l: List[TokenNode] = []
+        for t in self._tokens:
+            out_l.append(t.get_as_node())
+        return out_l
 
     def scan_tokens(self) -> None:
         """ Find all dir-tokens in the file. """

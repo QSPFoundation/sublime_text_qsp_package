@@ -1,6 +1,6 @@
 from typing import Callable, List, Tuple, Literal
 
-from pp_tokens import PpToken as tkn
+from pp_tokens import PpToken as tkn, TokenNode
 from pp_tokens import PpTokenType as tt
 
 LineNum = int
@@ -57,6 +57,12 @@ class PpScanner:
 
     def get_tokens(self) -> List[tkn]:
         return self._tokens
+
+    def get_token_nodes(self) -> List[TokenNode]:
+        out_l: List[TokenNode] = []
+        for t in self._tokens:
+            out_l.append(t.get_as_node())
+        return out_l
 
     def _scan_line(self, line:MarkedLine) -> None:
         """ Find all tokens in the line. """
