@@ -1,7 +1,6 @@
 from typing import Callable, Dict, List, Tuple
 import json
 
-
 ScanHandler = Callable[[str], None]
 HandlerStack = List[ScanHandler]
 
@@ -11,11 +10,9 @@ QspsLine = str
 QspsLines = List[QspsLine]
 
 if __name__ == "__main__":
-    from base_tokens import BaseToken as Tkn
-    from base_tokens import BaseTokenType as tt
+    from base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
 else:
-    from .base_tokens import BaseToken as Tkn
-    from .base_tokens import BaseTokenType as tt
+    from .base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
 
 class BaseScaner:
     """ Scanner of Base block of location. """
@@ -54,6 +51,12 @@ class BaseScaner:
     def get_tokens(self) -> List[Tkn]:
         return self._tokens
 
+    def get_token_nodes(self) -> List[TokenNode]:
+        out_n:List[TokenNode] = []
+        for t in self._tokens:
+            out_n.append(t.get_as_node())
+        return out_n
+
     def scan_tokens(self) -> None:
         """ Find all dir-tokens in the file. """
         for j, line in enumerate(self._src_lines):
@@ -84,7 +87,10 @@ class BaseScaner:
         cn = self._current
         if cn == 0 and c in (' ', '\t'):
             # поглощаем токен преформатирования
-            self._scan_funcs.append(self._preformatter_expect)
+            if self._next_in_line() in (' ', '\t'):
+                self._scan_funcs.append(self._preformatter_expect)
+            else:
+                self._add_token(tt.PREFORMATTER)
         elif c in (' ', '\t'):
             self._curlexeme.clear() # пробелы не учитываем
         elif c == '"':
@@ -117,7 +123,10 @@ class BaseScaner:
 
         # Identifiers    
         elif self._is_alnum(c):
-            self._scan_funcs.append(self._identifier_expect)
+            if self._is_alnum(self._next_in_line()):
+                self._scan_funcs.append(self._identifier_expect)
+            else:
+                self._add_token(self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER))
         elif self._cur_line[cn:cn+2].lower() == '*p' and self._word_edges(cn, cn+2):
             self._add_expected_chars('p')
             self._scan_funcs.append(self._identifier_expect)
@@ -132,6 +141,8 @@ class BaseScaner:
         elif (not self._next_in_line() in self._STMT_DELIMITERS and
               not self._current_is_last_in_line()):
             self._scan_funcs.append(self._raw_base_line_expect)
+        elif c in self._STMT_DELIMITERS:
+            self._add_token(tt.RAW_TEXT)
         else:
             self._add_token(tt.RAW_TEXT)
         
@@ -151,21 +162,21 @@ class BaseScaner:
         """Поглощение литерала строки"""
         if c == '"':
             if self._next() == c:
-                # Если за текущим символом идёт символ конца строки, поглощаем escape последовательность
                 self._add_expected_chars('"')
                 self._scan_funcs.append(self._escape_expect)
                 return
             self._add_token(tt.QUOTE_STRING)
+            self._scan_funcs.pop()
     
     def _apostrophe_string_literal_expect(self, c:Char) -> None:
         """Поглощение литерала строки"""
         if c == "'":
             if self._next() == c:
-                # Если за текущим символом идёт символ конца строки, поглощаем escape последовательность
                 self._add_expected_chars("'")
                 self._scan_funcs.append(self._escape_expect)
                 return
             self._add_token(tt.APOSTROPHE_STRING)
+            self._scan_funcs.pop()
 
     def _preformatter_expect(self, c:Char) -> None:
         """ Поглощение пробелов в начале строки """

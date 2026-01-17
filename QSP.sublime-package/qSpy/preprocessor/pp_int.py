@@ -125,7 +125,6 @@ class PpInt(stm.PpVisitor[AstNode]):
             self._temporary.extend(comment_line)
         elif comment_validate == 'simple_spec_comm':
             # специальный комментарий не попадёт в выходной файл, но перенос строки надо сохранить
-            print(['ppint,simplespeccom', self._temporary[-2]])
             if self._temporary[-2].strip() == '': self._temporary.pop(-2)
             self._temporary.append('\n')
         if len(self._temporary) >= 2 and self._temporary[-2].strip() == '&': self._temporary.pop(-2)

@@ -51,7 +51,7 @@ class PpScanner:
             self._scan_line(line)
             
         if self._curlexeme and self._scan_funcs:
-            print(['Pp-Scanner', ''.join(self._curlexeme), self._scan_funcs[-1].__name__])
+            print(['Pp-Scanner:', ''.join(self._curlexeme), self._scan_funcs[-1].__name__])
 
         self._tokens.append(tkn(tt.EOF, "", (-1, -1)))
 
