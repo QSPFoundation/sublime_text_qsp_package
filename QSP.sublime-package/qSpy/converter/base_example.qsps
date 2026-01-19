@@ -1,3 +1,4 @@
+# loc
 if $args[0] = '[м:1]_моя_комната':
 	if help[$args[0]]=0:
 		*p '<font color=#ff4444>Добро пожаловать в безграничный мир Асгар.
@@ -15,7 +16,7 @@ if $args[0] = '[м:1]_моя_комната':
 				$cvar['loc_id'+$cvar['chest']]	=	$args[0]
 				$cvar['manage'+$cvar['chest']]	=	$args[1]
 			end
-		end
+		end 
 	end
 end
 if $args[0] = '':	killvar '$help'

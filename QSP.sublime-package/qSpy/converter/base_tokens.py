@@ -19,12 +19,15 @@ class BaseTokenType(IntEnum):
 
     # One char tokens:
     AMPERSAND = auto()
+
     LEFT_PAREN = auto()
     RIGHT_PAREN = auto()
     LEFT_BRACE = auto()
+
     RIGHT_BRACE = auto()
     LEFT_BRACKET = auto()
     RIGHT_BRACKET = auto()
+
     APOSTROPHE_STRING = auto()
     QUOTE_STRING = auto()
 
@@ -40,13 +43,16 @@ class BaseTokenType(IntEnum):
     STAR_PL_STMT = auto()
     STAR_NL_STMT = auto()
     LOOP_STMT = auto()
+    WHILE_STMT = auto()
+    STEP_STMT = auto()
 
     IDENTIFIER = auto()
+    DELIMITER = auto()
+    COMMA = auto()
 
     # Raw Lines:
     
     QSPS_LINE = auto()
-    DELIMITER = auto()
     RAW_TEXT = auto()
 
     # PreProcessors Directives tokens:

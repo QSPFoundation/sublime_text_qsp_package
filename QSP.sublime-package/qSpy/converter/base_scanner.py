@@ -29,6 +29,8 @@ class BaseScaner:
         "*pl": tt.STAR_PL_STMT,
         "*nl": tt.STAR_NL_STMT,
         "loop": tt.LOOP_STMT,
+        "while": tt.WHILE_STMT,
+        "step": tt.STEP_STMT
     }
     def __init__(self, qsps_lines: List[QspsLine]) -> None:
         self._src_lines = qsps_lines
@@ -112,6 +114,8 @@ class BaseScaner:
             self._add_token(tt.RIGHT_PAREN)
         elif c == "&":
             self._add_token(tt.AMPERSAND)
+        elif c == ",":
+            self._add_token(tt.COMMA)
         elif c == '\n':
             self._add_token(tt.NEWLINE)
         elif c in (' ', '\t'):
@@ -141,8 +145,6 @@ class BaseScaner:
         elif (not self._next_in_line() in self._STMT_DELIMITERS and
               not self._current_is_last_in_line()):
             self._scan_funcs.append(self._raw_base_line_expect)
-        elif c in self._STMT_DELIMITERS:
-            self._add_token(tt.RAW_TEXT)
         else:
             self._add_token(tt.RAW_TEXT)
         
