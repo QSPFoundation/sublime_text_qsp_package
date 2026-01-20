@@ -7,7 +7,15 @@ import base_stmt as stm
 
 BaseStmt = stm.BaseStmt[Any]
 
+from error import ParserError
+
 class BaseParser:
+
+    _EXPRESSION_START = (
+        tt.APOSTROPHE_STRING, tt.QUOTE_STRING,
+        tt.LEFT_BRACE, tt.LEFT_BRACKET, tt.LEFT_PAREN,
+        tt.IDENTIFIER, tt.RAW_TEXT
+    )
 
     def __init__(self, tokens:List[Tkn]) -> None:
         self._tokens:List[Tkn] = tokens
@@ -33,7 +41,7 @@ class BaseParser:
     def get_statements(self) -> List[BaseStmt]:
         return self._statements
 
-    def tokens_parse(self) -> None:
+    def parse(self) -> None:
         """ Публичная функция вызова парсера. """
         # разбиваем файл на операторы. При этом операторы могут быть блочные
         while not self._is_eof():
@@ -53,8 +61,10 @@ class BaseParser:
             return self._condition()
         if self._check_type(tt.LOOP_STMT):
             return self._loop()
-        if self._check_type(tt.IDENTIFIER):
+        if self._check_type(tt.IDENTIFIER) and self._next_peek().ttype in self._EXPRESSION_START:
             return self._unknown_stmt()
+        if self._check_type(tt.EXCLAMATION_SIGN):
+            return self._comment()
         return self._expression()
 
     def _unknown_stmt(self) -> stm.Unknown[None]:
@@ -64,9 +74,24 @@ class BaseParser:
         stmt = self._curtok # фиксируем оператор
         self._eat_tokens(1)
 
-        expression = self._expression()
+        args:List[stm.Expression[None]] = []
+        while not self._is_eof():
+            if self._check_type(tt.COMMA):
+                # разделитель между выражениями
+                self._eat_tokens(1) # просто пожираем токен
+                continue
+            if self._match(tt.AMPERSAND, tt.NEWLINE):
+                # если при парсинге неизвестного оператора мы встречаем конец строки или амперсанд
+                self._eat_tokens(1) # пожираем токен
+                break # прерываем цикл
+            if self._match(tt.WHILE_STMT, tt.THEN):
+                # если неизвестный оператор парсился перед WHILE или THEN,                
+                break # не пожираем токен, он нам нужен
+            args.append(self._expression())
+        # else: # оператор может окончиться и на конце файла: не пожираем токен
+        #     raise ParserError(self._curtok, 'Unexpectable EOF!')
 
-        return stm.Unknown(pref, stmt, expression)
+        return stm.Unknown(pref, stmt, args)
 
     def _loop(self) -> stm.Loop[None]:
         pref, self._tbuffer = self._tbuffer, None
@@ -255,15 +280,20 @@ class BaseParser:
 
         expression = self._expression()
 
+        if self._match(tt.AMPERSAND, tt.NEWLINE): self._eat_tokens(1)
+        # tt.WHILE_STMT, tt.THEN означают, что оператор внутри LOOP или STEP
+
         return stm.PrintTextStmt(pref, stmt, expression)
         
     def _expression(self, *pop:tt) -> stm.Expression[None]:
         """ Выражение, передаваемое оператору. """
         pref, self._tbuffer = self._tbuffer, None
-        if not pop: pop = (tt.EOF, tt.NEWLINE, tt.AMPERSAND, tt.WHILE_STMT, tt.STEP_STMT)
+        if not pop: pop = (tt.NEWLINE, tt.AMPERSAND, tt.WHILE_STMT, tt.STEP_STMT)
         
         chain:List[BaseStmt] = []
-        while not self._match(*pop):
+        while not self._is_eof():
+            if self._match(*pop):
+                break # выражение закрывается, но токен не поглощаем
             if self._check_type(tt.LEFT_PAREN):
                 chain.append(self._parens())
                 continue
@@ -275,6 +305,9 @@ class BaseParser:
                 continue
             chain.append(stm.Literal(self._curtok))
             self._eat_tokens(1)
+        else:
+            # выражение может окончиться с концом файла
+            pass
             
         return stm.Expression(pref, chain)
 
@@ -283,10 +316,11 @@ class BaseParser:
         left = self._curtok # получаем и поглощаем левую скобку
         self._eat_tokens(1)
         
-        content = self._expression(tt.RIGHT_PAREN)
+        content = self._expression(tt.RIGHT_PAREN, )
 
         if not self._check_type(tt.RIGHT_PAREN):
-            self._error('Expected RIGHT PAREN. Getted')
+            raise ParserError(self._curtok, 'Expected RIGHT_PAREN.')
+
         right = self._curtok # поглощение правой скобки
         self._eat_tokens(1)
 
@@ -297,10 +331,11 @@ class BaseParser:
         left = self._curtok # получаем и поглощаем левую скобку
         self._eat_tokens(1)
         
-        content = self._expression(tt.RIGHT_BRACKET)
+        content = self._expression(tt.RIGHT_BRACKET, )
 
         if not self._check_type(tt.RIGHT_BRACKET):
-            self._error('Expected RIGHT BRACKET. Getted')
+            raise ParserError(self._curtok, 'Expected RIGHT_BRACKET.')
+
         right = self._curtok # поглощение правой скобки
         self._eat_tokens(1)
 
@@ -312,16 +347,20 @@ class BaseParser:
         self._eat_tokens(1)
         
         chain:List[BaseStmt] = []
-        while not self._check_type(tt.RIGHT_BRACE):
+        while not self._is_eof():
+            if self._check_type(tt.RIGHT_BRACE):
+                right = self._curtok # поглощение правой скобки
+                self._eat_tokens(1)
+                break
+
             if self._check_type(tt.LEFT_BRACE):
                 chain.append(self._braces())
+
             chain.append(stm.Literal(self._curtok))
             self._eat_tokens(1)
-
-        if not self._check_type(tt.RIGHT_BRACE):
-            self._error('Expected RIGHT BRACE. Getted')
-        right = self._curtok # поглощение правой скобки
-        self._eat_tokens(1)
+        else:
+            # фигурная скобка не может закончиться до конца файла
+            raise ParserError(self._curtok, 'Unexpectable EOF in braces!')      
 
         return stm.Braces(left, chain, right)
 
@@ -332,7 +371,7 @@ class BaseParser:
         self._eat_tokens(1)
 
         chain:List[BaseStmt] = []
-        while not self._check_type(tt.EOF):
+        while not self._is_eof():
             if self._check_type(tt.NEWLINE):
                 chain.append(stm.Literal(self._curtok))
                 self._eat_tokens(1)
@@ -365,8 +404,10 @@ class BaseParser:
 
     def _eat_tokens(self, count:int) -> None:
         """ Поглощает токен. Т.е. передвигает указатель на следующий. """
-        self._curtok_num += count # токены передвигаются лишь до EOF, поэтому выход за пределы невозможен
-        self._curtok = self._tokens[self._curtok_num]
+        # запрещаем поглощать EOF
+        if self._curtok_num + count < len(self._tokens) - 1:
+            self._curtok_num += count
+            self._curtok = self._tokens[self._curtok_num]
 
     def _reset_curtok(self, start_declaration:int) -> None:
         """ Сброс начала обработки токенов до указанного """

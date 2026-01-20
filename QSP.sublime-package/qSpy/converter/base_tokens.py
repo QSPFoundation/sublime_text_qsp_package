@@ -47,6 +47,7 @@ class BaseTokenType(IntEnum):
     STEP_STMT = auto()
 
     IDENTIFIER = auto()
+    
     DELIMITER = auto()
     COMMA = auto()
 

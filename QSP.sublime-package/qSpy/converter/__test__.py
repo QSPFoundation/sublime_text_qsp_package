@@ -5,7 +5,7 @@ from base_parser import BaseParser
 from base_printer import BasePrinter
 
 if __name__ == "__main__":
-    with open('base_example.qsps', 'r', encoding='utf-8') as fp:
+    with open('.\\base_example.qsps', 'r', encoding='utf-8') as fp:
         lines = fp.readlines()
     
     scanner = BaseScaner(lines)
@@ -17,7 +17,7 @@ if __name__ == "__main__":
         json.dump(nodes, fp, indent=4, ensure_ascii=False)
 
     parser = BaseParser(tokens)
-    parser.tokens_parse()
+    parser.parse()
     statements = parser.get_statements()
 
     printer = BasePrinter(statements)

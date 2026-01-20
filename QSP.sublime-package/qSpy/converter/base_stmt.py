@@ -155,6 +155,6 @@ class Comment(BaseStmt[R]):
 class Unknown(BaseStmt[R]):
     pref:Optional[BaseToken]
     open:BaseToken
-    expression:Optional[Expression[R]]
+    args:List[Expression[R]]
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_unknown(self)
