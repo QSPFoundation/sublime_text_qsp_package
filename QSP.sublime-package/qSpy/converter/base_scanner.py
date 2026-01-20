@@ -11,7 +11,7 @@ QspsLines = List[QspsLine]
 if __name__ == "__main__":
     from base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
 else:
-    from .base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
+    from base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
 
 class BaseScaner:
     """ Scanner of Base block of location. """
@@ -75,12 +75,10 @@ class BaseScaner:
         self._line_len = len(line)
         for i, c in enumerate(line):
             self._current = i
-            print([i,c, self._scan_funcs[-1].__name__],)
             if not self._curlexeme:
                 # если лексема пуста (начало новой лексемы), устанавливаем начало
                 self._set_start_lexeme()
             self._curlexeme.append(c)
-            # print(c, self._scan_funcs[-1].__name__)
             self._scan_funcs[-1](c)
 
     def _base_scan(self, c:Char) -> None:
@@ -152,9 +150,7 @@ class BaseScaner:
         """ Сборка идентификатора директивы препроцессора. """
         # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
         next_char = self._next_in_line()
-        print([c, next_char])
         if not self._is_alnum(next_char):
-            print('\n')
             ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER)
             self._add_token(ttype)
             self._scan_funcs.pop()
@@ -206,7 +202,7 @@ class BaseScaner:
     # вспомогательные методы
     def _is_alnum(self, s:str) -> bool:
         """ is \\w ? """
-        return s.isalnum() or s in ('_', '$', '%')
+        return s.isalnum() or s in ('_', '$', '%', '.', '#')
 
     def _current_is_last_in_line(self) -> bool:
         """ Является ли текущий символ последним в строке? """
