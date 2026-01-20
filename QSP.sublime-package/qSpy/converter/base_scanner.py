@@ -1,5 +1,4 @@
 from typing import Callable, Dict, List, Tuple
-import json
 
 ScanHandler = Callable[[str], None]
 HandlerStack = List[ScanHandler]
@@ -280,11 +279,3 @@ class BaseScaner:
     def _logic_error(self, message:str) -> None:
         print(f"Dirs-Scanner Logic error: {message}. Please, report to the developer.")
 
-if __name__ == "__main__":
-    with open('base_example.qsps', 'r', encoding='utf-8') as fp:
-        lines = fp.readlines()
-    scanner = BaseScaner(lines)
-    scanner.scan_tokens()
-    tokens = [t.get_as_node() for t in scanner.get_tokens()]
-    with open('base_example.json', 'w', encoding='utf-8') as fp:
-        json.dump(tokens, fp, indent=4, ensure_ascii=False)
