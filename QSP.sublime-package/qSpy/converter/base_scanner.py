@@ -128,7 +128,7 @@ class BaseScaner:
                 self._scan_funcs.append(self._identifier_expect)
             else:
                 self._add_token(self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER))
-        elif self._cur_line[cn:cn+2].lower() == '*p' and self._word_edges(cn, cn+2):
+        elif self._cur_line[cn:cn+2].lower() == '*p' and self._word_edges(cn, cn+1):
             self._add_expected_chars('p')
             self._scan_funcs.append(self._identifier_expect)
         elif self._cur_line[cn:cn+3].lower() == '*pl' and self._word_edges(cn, cn+2):
