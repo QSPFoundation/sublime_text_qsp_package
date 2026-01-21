@@ -419,89 +419,87 @@
                     },
                     {
                         "type": "stm",
-                        "class": "Unknown",
+                        "class": "ExpressionStmt",
                         "pref": {
                             "type": "tkn",
                             "sub": "PREFORMATTER",
                             "value": "\t\t"
                         },
-                        "sub": {
-                            "type": "tkn",
-                            "sub": "IDENTIFIER",
-                            "value": "$args"
-                        },
-                        "value": [
-                            {
-                                "type": "stmt",
-                                "class": "Expression",
-                                "value": [
-                                    {
-                                        "type": "stm",
-                                        "class": "Brackets",
-                                        "sub": [
-                                            {
-                                                "type": "tkn",
-                                                "sub": "LEFT_BRACKET",
-                                                "value": "["
-                                            },
-                                            {
-                                                "type": "tkn",
-                                                "sub": "RIGHT_BRACKET",
-                                                "value": "]"
-                                            }
-                                        ],
-                                        "value": {
-                                            "type": "stmt",
-                                            "class": "Expression",
-                                            "value": [
-                                                {
-                                                    "type": "stm",
-                                                    "class": "Literal",
-                                                    "value": "'result.help'"
-                                                }
-                                            ]
+                        "value": {
+                            "type": "stmt",
+                            "class": "Expression",
+                            "value": [
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "$args"
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Brackets",
+                                    "sub": [
+                                        {
+                                            "type": "tkn",
+                                            "sub": "LEFT_BRACKET",
+                                            "value": "["
+                                        },
+                                        {
+                                            "type": "tkn",
+                                            "sub": "RIGHT_BRACKET",
+                                            "value": "]"
                                         }
-                                    },
-                                    {
-                                        "type": "stm",
-                                        "class": "Literal",
-                                        "value": "="
-                                    },
-                                    {
-                                        "type": "stm",
-                                        "class": "Literal",
-                                        "value": "@int.din.text"
-                                    },
-                                    {
-                                        "type": "stm",
-                                        "class": "Parens",
-                                        "sub": [
+                                    ],
+                                    "value": {
+                                        "type": "stmt",
+                                        "class": "Expression",
+                                        "value": [
                                             {
-                                                "type": "tkn",
-                                                "sub": "LEFT_PAREN",
-                                                "value": "("
-                                            },
-                                            {
-                                                "type": "tkn",
-                                                "sub": "RIGHT_PAREN",
-                                                "value": ")"
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "'result.help'"
                                             }
-                                        ],
-                                        "value": {
-                                            "type": "stmt",
-                                            "class": "Expression",
-                                            "value": [
-                                                {
-                                                    "type": "stm",
-                                                    "class": "Literal",
-                                                    "value": "'<font color=#ff4444>В кошельке пока что нет денег, да и рюкзак совершенно пуст, но в замке Академии, в укромных уголках, в сундуках и ящичках, скрытых от посторонних глаз, наверняка завалялось что-нибудь интересное. Может и пара монет найдётся. Однако, бродить по замку в (одних кальсонах//ночной рубашке) не принято. Пришло время заглянуть в шкаф - одеться и вооружиться. Для того, чтобы открыть шкаф, или выдвижной ящик, просто щёлкни по его названию прямо в тексте описания локации.</font>'"
-                                                }
-                                            ]
-                                        }
+                                        ]
                                     }
-                                ]
-                            }
-                        ]
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "="
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "@int.din.text"
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Parens",
+                                    "sub": [
+                                        {
+                                            "type": "tkn",
+                                            "sub": "LEFT_PAREN",
+                                            "value": "("
+                                        },
+                                        {
+                                            "type": "tkn",
+                                            "sub": "RIGHT_PAREN",
+                                            "value": ")"
+                                        }
+                                    ],
+                                    "value": {
+                                        "type": "stmt",
+                                        "class": "Expression",
+                                        "value": [
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "'<font color=#ff4444>В кошельке пока что нет денег, да и рюкзак совершенно пуст, но в замке Академии, в укромных уголках, в сундуках и ящичках, скрытых от посторонних глаз, наверняка завалялось что-нибудь интересное. Может и пара монет найдётся. Однако, бродить по замку в (одних кальсонах//ночной рубашке) не принято. Пришло время заглянуть в шкаф - одеться и вооружиться. Для того, чтобы открыть шкаф, или выдвижной ящик, просто щёлкни по его названию прямо в тексте описания локации.</font>'"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
                     },
                     {
                         "type": "stm",
@@ -786,485 +784,477 @@
                                     },
                                     {
                                         "type": "stm",
-                                        "class": "Unknown",
+                                        "class": "ExpressionStmt",
                                         "pref": {
                                             "type": "tkn",
                                             "sub": "PREFORMATTER",
                                             "value": "\t\t\t\t"
                                         },
-                                        "sub": {
-                                            "type": "tkn",
-                                            "sub": "IDENTIFIER",
-                                            "value": "$cvar"
-                                        },
-                                        "value": [
-                                            {
-                                                "type": "stmt",
-                                                "class": "Expression",
-                                                "value": [
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Brackets",
-                                                        "sub": [
+                                        "value": {
+                                            "type": "stmt",
+                                            "class": "Expression",
+                                            "value": [
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "$cvar"
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Brackets",
+                                                    "sub": [
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "LEFT_BRACKET",
+                                                            "value": "["
+                                                        },
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "RIGHT_BRACKET",
+                                                            "value": "]"
+                                                        }
+                                                    ],
+                                                    "value": {
+                                                        "type": "stmt",
+                                                        "class": "Expression",
+                                                        "value": [
                                                             {
-                                                                "type": "tkn",
-                                                                "sub": "LEFT_BRACKET",
-                                                                "value": "["
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "$cvar"
                                                             },
                                                             {
-                                                                "type": "tkn",
-                                                                "sub": "RIGHT_BRACKET",
-                                                                "value": "]"
-                                                            }
-                                                        ],
-                                                        "value": {
-                                                            "type": "stmt",
-                                                            "class": "Expression",
-                                                            "value": [
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "$cvar"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Brackets",
-                                                                    "sub": [
-                                                                        {
-                                                                            "type": "tkn",
-                                                                            "sub": "LEFT_BRACKET",
-                                                                            "value": "["
-                                                                        },
-                                                                        {
-                                                                            "type": "tkn",
-                                                                            "sub": "RIGHT_BRACKET",
-                                                                            "value": "]"
-                                                                        }
-                                                                    ],
-                                                                    "value": {
-                                                                        "type": "stmt",
-                                                                        "class": "Expression",
-                                                                        "value": [
-                                                                            {
-                                                                                "type": "stm",
-                                                                                "class": "Literal",
-                                                                                "value": "'chest'"
-                                                                            }
-                                                                        ]
+                                                                "type": "stm",
+                                                                "class": "Brackets",
+                                                                "sub": [
+                                                                    {
+                                                                        "type": "tkn",
+                                                                        "sub": "LEFT_BRACKET",
+                                                                        "value": "["
+                                                                    },
+                                                                    {
+                                                                        "type": "tkn",
+                                                                        "sub": "RIGHT_BRACKET",
+                                                                        "value": "]"
                                                                     }
+                                                                ],
+                                                                "value": {
+                                                                    "type": "stmt",
+                                                                    "class": "Expression",
+                                                                    "value": [
+                                                                        {
+                                                                            "type": "stm",
+                                                                            "class": "Literal",
+                                                                            "value": "'chest'"
+                                                                        }
+                                                                    ]
                                                                 }
-                                                            ]
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "="
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "$args"
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Brackets",
-                                                        "sub": [
-                                                            {
-                                                                "type": "tkn",
-                                                                "sub": "LEFT_BRACKET",
-                                                                "value": "["
-                                                            },
-                                                            {
-                                                                "type": "tkn",
-                                                                "sub": "RIGHT_BRACKET",
-                                                                "value": "]"
                                                             }
-                                                        ],
-                                                        "value": {
-                                                            "type": "stmt",
-                                                            "class": "Expression",
-                                                            "value": [
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "0"
-                                                                }
-                                                            ]
-                                                        }
+                                                        ]
                                                     }
-                                                ]
-                                            }
-                                        ]
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "="
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "$args"
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Brackets",
+                                                    "sub": [
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "LEFT_BRACKET",
+                                                            "value": "["
+                                                        },
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "RIGHT_BRACKET",
+                                                            "value": "]"
+                                                        }
+                                                    ],
+                                                    "value": {
+                                                        "type": "stmt",
+                                                        "class": "Expression",
+                                                        "value": [
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "0"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        }
                                     },
                                     {
                                         "type": "stm",
-                                        "class": "Unknown",
+                                        "class": "ExpressionStmt",
                                         "pref": {
                                             "type": "tkn",
                                             "sub": "PREFORMATTER",
                                             "value": "\t\t\t\t"
                                         },
-                                        "sub": {
-                                            "type": "tkn",
-                                            "sub": "IDENTIFIER",
-                                            "value": "$cvar"
-                                        },
-                                        "value": [
-                                            {
-                                                "type": "stmt",
-                                                "class": "Expression",
-                                                "value": [
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Brackets",
-                                                        "sub": [
+                                        "value": {
+                                            "type": "stmt",
+                                            "class": "Expression",
+                                            "value": [
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "$cvar"
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Brackets",
+                                                    "sub": [
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "LEFT_BRACKET",
+                                                            "value": "["
+                                                        },
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "RIGHT_BRACKET",
+                                                            "value": "]"
+                                                        }
+                                                    ],
+                                                    "value": {
+                                                        "type": "stmt",
+                                                        "class": "Expression",
+                                                        "value": [
                                                             {
-                                                                "type": "tkn",
-                                                                "sub": "LEFT_BRACKET",
-                                                                "value": "["
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "'back'"
                                                             },
                                                             {
-                                                                "type": "tkn",
-                                                                "sub": "RIGHT_BRACKET",
-                                                                "value": "]"
-                                                            }
-                                                        ],
-                                                        "value": {
-                                                            "type": "stmt",
-                                                            "class": "Expression",
-                                                            "value": [
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "'back'"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "+"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "$cvar"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Brackets",
-                                                                    "sub": [
-                                                                        {
-                                                                            "type": "tkn",
-                                                                            "sub": "LEFT_BRACKET",
-                                                                            "value": "["
-                                                                        },
-                                                                        {
-                                                                            "type": "tkn",
-                                                                            "sub": "RIGHT_BRACKET",
-                                                                            "value": "]"
-                                                                        }
-                                                                    ],
-                                                                    "value": {
-                                                                        "type": "stmt",
-                                                                        "class": "Expression",
-                                                                        "value": [
-                                                                            {
-                                                                                "type": "stm",
-                                                                                "class": "Literal",
-                                                                                "value": "'chest'"
-                                                                            }
-                                                                        ]
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "+"
+                                                            },
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "$cvar"
+                                                            },
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Brackets",
+                                                                "sub": [
+                                                                    {
+                                                                        "type": "tkn",
+                                                                        "sub": "LEFT_BRACKET",
+                                                                        "value": "["
+                                                                    },
+                                                                    {
+                                                                        "type": "tkn",
+                                                                        "sub": "RIGHT_BRACKET",
+                                                                        "value": "]"
                                                                     }
+                                                                ],
+                                                                "value": {
+                                                                    "type": "stmt",
+                                                                    "class": "Expression",
+                                                                    "value": [
+                                                                        {
+                                                                            "type": "stm",
+                                                                            "class": "Literal",
+                                                                            "value": "'chest'"
+                                                                        }
+                                                                    ]
                                                                 }
-                                                            ]
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "="
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "$args"
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Brackets",
-                                                        "sub": [
-                                                            {
-                                                                "type": "tkn",
-                                                                "sub": "LEFT_BRACKET",
-                                                                "value": "["
-                                                            },
-                                                            {
-                                                                "type": "tkn",
-                                                                "sub": "RIGHT_BRACKET",
-                                                                "value": "]"
                                                             }
-                                                        ],
-                                                        "value": {
-                                                            "type": "stmt",
-                                                            "class": "Expression",
-                                                            "value": [
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "2"
-                                                                }
-                                                            ]
-                                                        }
+                                                        ]
                                                     }
-                                                ]
-                                            }
-                                        ]
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "="
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "$args"
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Brackets",
+                                                    "sub": [
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "LEFT_BRACKET",
+                                                            "value": "["
+                                                        },
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "RIGHT_BRACKET",
+                                                            "value": "]"
+                                                        }
+                                                    ],
+                                                    "value": {
+                                                        "type": "stmt",
+                                                        "class": "Expression",
+                                                        "value": [
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "2"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        }
                                     },
                                     {
                                         "type": "stm",
-                                        "class": "Unknown",
+                                        "class": "ExpressionStmt",
                                         "pref": {
                                             "type": "tkn",
                                             "sub": "PREFORMATTER",
                                             "value": "\t\t\t\t"
                                         },
-                                        "sub": {
-                                            "type": "tkn",
-                                            "sub": "IDENTIFIER",
-                                            "value": "$cvar"
-                                        },
-                                        "value": [
-                                            {
-                                                "type": "stmt",
-                                                "class": "Expression",
-                                                "value": [
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Brackets",
-                                                        "sub": [
+                                        "value": {
+                                            "type": "stmt",
+                                            "class": "Expression",
+                                            "value": [
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "$cvar"
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Brackets",
+                                                    "sub": [
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "LEFT_BRACKET",
+                                                            "value": "["
+                                                        },
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "RIGHT_BRACKET",
+                                                            "value": "]"
+                                                        }
+                                                    ],
+                                                    "value": {
+                                                        "type": "stmt",
+                                                        "class": "Expression",
+                                                        "value": [
                                                             {
-                                                                "type": "tkn",
-                                                                "sub": "LEFT_BRACKET",
-                                                                "value": "["
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "'loc_id'"
                                                             },
                                                             {
-                                                                "type": "tkn",
-                                                                "sub": "RIGHT_BRACKET",
-                                                                "value": "]"
-                                                            }
-                                                        ],
-                                                        "value": {
-                                                            "type": "stmt",
-                                                            "class": "Expression",
-                                                            "value": [
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "'loc_id'"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "+"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "$cvar"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Brackets",
-                                                                    "sub": [
-                                                                        {
-                                                                            "type": "tkn",
-                                                                            "sub": "LEFT_BRACKET",
-                                                                            "value": "["
-                                                                        },
-                                                                        {
-                                                                            "type": "tkn",
-                                                                            "sub": "RIGHT_BRACKET",
-                                                                            "value": "]"
-                                                                        }
-                                                                    ],
-                                                                    "value": {
-                                                                        "type": "stmt",
-                                                                        "class": "Expression",
-                                                                        "value": [
-                                                                            {
-                                                                                "type": "stm",
-                                                                                "class": "Literal",
-                                                                                "value": "'chest'"
-                                                                            }
-                                                                        ]
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "+"
+                                                            },
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "$cvar"
+                                                            },
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Brackets",
+                                                                "sub": [
+                                                                    {
+                                                                        "type": "tkn",
+                                                                        "sub": "LEFT_BRACKET",
+                                                                        "value": "["
+                                                                    },
+                                                                    {
+                                                                        "type": "tkn",
+                                                                        "sub": "RIGHT_BRACKET",
+                                                                        "value": "]"
                                                                     }
+                                                                ],
+                                                                "value": {
+                                                                    "type": "stmt",
+                                                                    "class": "Expression",
+                                                                    "value": [
+                                                                        {
+                                                                            "type": "stm",
+                                                                            "class": "Literal",
+                                                                            "value": "'chest'"
+                                                                        }
+                                                                    ]
                                                                 }
-                                                            ]
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "="
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "$args"
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Brackets",
-                                                        "sub": [
-                                                            {
-                                                                "type": "tkn",
-                                                                "sub": "LEFT_BRACKET",
-                                                                "value": "["
-                                                            },
-                                                            {
-                                                                "type": "tkn",
-                                                                "sub": "RIGHT_BRACKET",
-                                                                "value": "]"
                                                             }
-                                                        ],
-                                                        "value": {
-                                                            "type": "stmt",
-                                                            "class": "Expression",
-                                                            "value": [
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "0"
-                                                                }
-                                                            ]
-                                                        }
+                                                        ]
                                                     }
-                                                ]
-                                            }
-                                        ]
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "="
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "$args"
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Brackets",
+                                                    "sub": [
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "LEFT_BRACKET",
+                                                            "value": "["
+                                                        },
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "RIGHT_BRACKET",
+                                                            "value": "]"
+                                                        }
+                                                    ],
+                                                    "value": {
+                                                        "type": "stmt",
+                                                        "class": "Expression",
+                                                        "value": [
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "0"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        }
                                     },
                                     {
                                         "type": "stm",
-                                        "class": "Unknown",
+                                        "class": "ExpressionStmt",
                                         "pref": {
                                             "type": "tkn",
                                             "sub": "PREFORMATTER",
                                             "value": "\t\t\t\t"
                                         },
-                                        "sub": {
-                                            "type": "tkn",
-                                            "sub": "IDENTIFIER",
-                                            "value": "$cvar"
-                                        },
-                                        "value": [
-                                            {
-                                                "type": "stmt",
-                                                "class": "Expression",
-                                                "value": [
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Brackets",
-                                                        "sub": [
+                                        "value": {
+                                            "type": "stmt",
+                                            "class": "Expression",
+                                            "value": [
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "$cvar"
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Brackets",
+                                                    "sub": [
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "LEFT_BRACKET",
+                                                            "value": "["
+                                                        },
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "RIGHT_BRACKET",
+                                                            "value": "]"
+                                                        }
+                                                    ],
+                                                    "value": {
+                                                        "type": "stmt",
+                                                        "class": "Expression",
+                                                        "value": [
                                                             {
-                                                                "type": "tkn",
-                                                                "sub": "LEFT_BRACKET",
-                                                                "value": "["
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "'manage'"
                                                             },
                                                             {
-                                                                "type": "tkn",
-                                                                "sub": "RIGHT_BRACKET",
-                                                                "value": "]"
-                                                            }
-                                                        ],
-                                                        "value": {
-                                                            "type": "stmt",
-                                                            "class": "Expression",
-                                                            "value": [
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "'manage'"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "+"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "$cvar"
-                                                                },
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Brackets",
-                                                                    "sub": [
-                                                                        {
-                                                                            "type": "tkn",
-                                                                            "sub": "LEFT_BRACKET",
-                                                                            "value": "["
-                                                                        },
-                                                                        {
-                                                                            "type": "tkn",
-                                                                            "sub": "RIGHT_BRACKET",
-                                                                            "value": "]"
-                                                                        }
-                                                                    ],
-                                                                    "value": {
-                                                                        "type": "stmt",
-                                                                        "class": "Expression",
-                                                                        "value": [
-                                                                            {
-                                                                                "type": "stm",
-                                                                                "class": "Literal",
-                                                                                "value": "'chest'"
-                                                                            }
-                                                                        ]
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "+"
+                                                            },
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "$cvar"
+                                                            },
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Brackets",
+                                                                "sub": [
+                                                                    {
+                                                                        "type": "tkn",
+                                                                        "sub": "LEFT_BRACKET",
+                                                                        "value": "["
+                                                                    },
+                                                                    {
+                                                                        "type": "tkn",
+                                                                        "sub": "RIGHT_BRACKET",
+                                                                        "value": "]"
                                                                     }
+                                                                ],
+                                                                "value": {
+                                                                    "type": "stmt",
+                                                                    "class": "Expression",
+                                                                    "value": [
+                                                                        {
+                                                                            "type": "stm",
+                                                                            "class": "Literal",
+                                                                            "value": "'chest'"
+                                                                        }
+                                                                    ]
                                                                 }
-                                                            ]
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "="
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "$args"
-                                                    },
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Brackets",
-                                                        "sub": [
-                                                            {
-                                                                "type": "tkn",
-                                                                "sub": "LEFT_BRACKET",
-                                                                "value": "["
-                                                            },
-                                                            {
-                                                                "type": "tkn",
-                                                                "sub": "RIGHT_BRACKET",
-                                                                "value": "]"
                                                             }
-                                                        ],
-                                                        "value": {
-                                                            "type": "stmt",
-                                                            "class": "Expression",
-                                                            "value": [
-                                                                {
-                                                                    "type": "stm",
-                                                                    "class": "Literal",
-                                                                    "value": "1"
-                                                                }
-                                                            ]
-                                                        }
+                                                        ]
                                                     }
-                                                ]
-                                            }
-                                        ]
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "="
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Literal",
+                                                    "value": "$args"
+                                                },
+                                                {
+                                                    "type": "stm",
+                                                    "class": "Brackets",
+                                                    "sub": [
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "LEFT_BRACKET",
+                                                            "value": "["
+                                                        },
+                                                        {
+                                                            "type": "tkn",
+                                                            "sub": "RIGHT_BRACKET",
+                                                            "value": "]"
+                                                        }
+                                                    ],
+                                                    "value": {
+                                                        "type": "stmt",
+                                                        "class": "Expression",
+                                                        "value": [
+                                                            {
+                                                                "type": "stm",
+                                                                "class": "Literal",
+                                                                "value": "1"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        }
                                     }
                                 ],
                                 "end": {
@@ -1398,43 +1388,18 @@
             "type": "stm",
             "class": "End",
             "pref": null,
-            "value": "act"
+            "value": "\n"
         }
     },
     {
         "type": "stm",
-        "class": "ExpressionStmt",
+        "class": "Action",
         "pref": null,
-        "value": {
-            "type": "stmt",
-            "class": "Expression",
-            "value": [
-                {
-                    "type": "stm",
-                    "class": "Literal",
-                    "value": "'Великолепно'"
-                },
-                {
-                    "type": "stm",
-                    "class": "Literal",
-                    "value": ":"
-                }
-            ]
-        }
-    },
-    {
-        "type": "stm",
-        "class": "Condition",
-        "pref": {
-            "type": "tkn",
-            "sub": "PREFORMATTER",
-            "value": " \t"
-        },
         "sub": [
             {
                 "type": "tkn",
-                "sub": "IF_STMT",
-                "value": "if"
+                "sub": "ACT_STMT",
+                "value": "act"
             },
             {
                 "type": "stmt",
@@ -1443,23 +1408,178 @@
                     {
                         "type": "stm",
                         "class": "Literal",
-                        "value": "$cvar"
+                        "value": "'Великолепно'"
+                    }
+                ]
+            },
+            {}
+        ],
+        "value": [
+            {
+                "type": "stm",
+                "class": "Condition",
+                "pref": {
+                    "type": "tkn",
+                    "sub": "PREFORMATTER",
+                    "value": " \t"
+                },
+                "sub": [
+                    {
+                        "type": "tkn",
+                        "sub": "IF_STMT",
+                        "value": "if"
+                    },
+                    {
+                        "type": "stmt",
+                        "class": "Expression",
+                        "value": [
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "$cvar"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Brackets",
+                                "sub": [
+                                    {
+                                        "type": "tkn",
+                                        "sub": "LEFT_BRACKET",
+                                        "value": "["
+                                    },
+                                    {
+                                        "type": "tkn",
+                                        "sub": "RIGHT_BRACKET",
+                                        "value": "]"
+                                    }
+                                ],
+                                "value": {
+                                    "type": "stmt",
+                                    "class": "Expression",
+                                    "value": [
+                                        {
+                                            "type": "stm",
+                                            "class": "Literal",
+                                            "value": "$cvar"
+                                        },
+                                        {
+                                            "type": "stm",
+                                            "class": "Brackets",
+                                            "sub": [
+                                                {
+                                                    "type": "tkn",
+                                                    "sub": "LEFT_BRACKET",
+                                                    "value": "["
+                                                },
+                                                {
+                                                    "type": "tkn",
+                                                    "sub": "RIGHT_BRACKET",
+                                                    "value": "]"
+                                                }
+                                            ],
+                                            "value": {
+                                                "type": "stmt",
+                                                "class": "Expression",
+                                                "value": [
+                                                    {
+                                                        "type": "stm",
+                                                        "class": "Literal",
+                                                        "value": "'chest'"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "="
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "''"
+                            }
+                        ]
+                    }
+                ],
+                "value": [
+                    {
+                        "type": "stm",
+                        "class": "Comment",
+                        "pref": {
+                            "type": "tkn",
+                            "sub": "PREFORMATTER",
+                            "value": "\t"
+                        },
+                        "sub": {
+                            "type": "tkn",
+                            "sub": "EXCLAMATION_SIGN",
+                            "value": "!"
+                        },
+                        "value": [
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "@"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "$cvar"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "удаляется"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "только"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "когда"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "закрывается"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "первый"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "открытый"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "сундук"
+                            },
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "\n"
+                            }
+                        ]
                     },
                     {
                         "type": "stm",
-                        "class": "Brackets",
-                        "sub": [
-                            {
-                                "type": "tkn",
-                                "sub": "LEFT_BRACKET",
-                                "value": "["
-                            },
-                            {
-                                "type": "tkn",
-                                "sub": "RIGHT_BRACKET",
-                                "value": "]"
-                            }
-                        ],
+                        "class": "ExpressionStmt",
+                        "pref": {
+                            "type": "tkn",
+                            "sub": "PREFORMATTER",
+                            "value": "\t\t"
+                        },
                         "value": {
                             "type": "stmt",
                             "class": "Expression",
@@ -1491,7 +1611,71 @@
                                             {
                                                 "type": "stm",
                                                 "class": "Literal",
-                                                "value": "'chest'"
+                                                "value": "$cvar"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Brackets",
+                                                "sub": [
+                                                    {
+                                                        "type": "tkn",
+                                                        "sub": "LEFT_BRACKET",
+                                                        "value": "["
+                                                    },
+                                                    {
+                                                        "type": "tkn",
+                                                        "sub": "RIGHT_BRACKET",
+                                                        "value": "]"
+                                                    }
+                                                ],
+                                                "value": {
+                                                    "type": "stmt",
+                                                    "class": "Expression",
+                                                    "value": [
+                                                        {
+                                                            "type": "stm",
+                                                            "class": "Literal",
+                                                            "value": "'chest'"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "="
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "$args"
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Brackets",
+                                    "sub": [
+                                        {
+                                            "type": "tkn",
+                                            "sub": "LEFT_BRACKET",
+                                            "value": "["
+                                        },
+                                        {
+                                            "type": "tkn",
+                                            "sub": "RIGHT_BRACKET",
+                                            "value": "]"
+                                        }
+                                    ],
+                                    "value": {
+                                        "type": "stmt",
+                                        "class": "Expression",
+                                        "value": [
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "0"
                                             }
                                         ]
                                     }
@@ -1501,705 +1685,502 @@
                     },
                     {
                         "type": "stm",
-                        "class": "Literal",
-                        "value": "="
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "''"
-                    }
-                ]
-            }
-        ],
-        "value": [
-            {
-                "type": "stm",
-                "class": "Comment",
-                "pref": {
-                    "type": "tkn",
-                    "sub": "PREFORMATTER",
-                    "value": "\t"
-                },
-                "sub": {
-                    "type": "tkn",
-                    "sub": "EXCLAMATION_SIGN",
-                    "value": "!"
-                },
-                "value": [
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "@"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "$cvar"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "удаляется"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "только"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "когда"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "закрывается"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "первый"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "открытый"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "сундук"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "\n"
-                    }
-                ]
-            },
-            {
-                "type": "stm",
-                "class": "Unknown",
-                "pref": {
-                    "type": "tkn",
-                    "sub": "PREFORMATTER",
-                    "value": "\t\t"
-                },
-                "sub": {
-                    "type": "tkn",
-                    "sub": "IDENTIFIER",
-                    "value": "$cvar"
-                },
-                "value": [
-                    {
-                        "type": "stmt",
-                        "class": "Expression",
-                        "value": [
-                            {
-                                "type": "stm",
-                                "class": "Brackets",
-                                "sub": [
-                                    {
-                                        "type": "tkn",
-                                        "sub": "LEFT_BRACKET",
-                                        "value": "["
-                                    },
-                                    {
-                                        "type": "tkn",
-                                        "sub": "RIGHT_BRACKET",
-                                        "value": "]"
-                                    }
-                                ],
-                                "value": {
-                                    "type": "stmt",
-                                    "class": "Expression",
-                                    "value": [
+                        "class": "ExpressionStmt",
+                        "pref": {
+                            "type": "tkn",
+                            "sub": "PREFORMATTER",
+                            "value": "\t\t"
+                        },
+                        "value": {
+                            "type": "stmt",
+                            "class": "Expression",
+                            "value": [
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "$cvar"
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Brackets",
+                                    "sub": [
                                         {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "$cvar"
+                                            "type": "tkn",
+                                            "sub": "LEFT_BRACKET",
+                                            "value": "["
                                         },
                                         {
-                                            "type": "stm",
-                                            "class": "Brackets",
-                                            "sub": [
-                                                {
-                                                    "type": "tkn",
-                                                    "sub": "LEFT_BRACKET",
-                                                    "value": "["
-                                                },
-                                                {
-                                                    "type": "tkn",
-                                                    "sub": "RIGHT_BRACKET",
-                                                    "value": "]"
-                                                }
-                                            ],
-                                            "value": {
-                                                "type": "stmt",
-                                                "class": "Expression",
-                                                "value": [
+                                            "type": "tkn",
+                                            "sub": "RIGHT_BRACKET",
+                                            "value": "]"
+                                        }
+                                    ],
+                                    "value": {
+                                        "type": "stmt",
+                                        "class": "Expression",
+                                        "value": [
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "'back'"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "+"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "$cvar"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Brackets",
+                                                "sub": [
                                                     {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "'chest'"
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Literal",
-                                "value": "="
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Literal",
-                                "value": "$args"
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Brackets",
-                                "sub": [
-                                    {
-                                        "type": "tkn",
-                                        "sub": "LEFT_BRACKET",
-                                        "value": "["
-                                    },
-                                    {
-                                        "type": "tkn",
-                                        "sub": "RIGHT_BRACKET",
-                                        "value": "]"
-                                    }
-                                ],
-                                "value": {
-                                    "type": "stmt",
-                                    "class": "Expression",
-                                    "value": [
-                                        {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "0"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "stm",
-                "class": "Unknown",
-                "pref": {
-                    "type": "tkn",
-                    "sub": "PREFORMATTER",
-                    "value": "\t\t"
-                },
-                "sub": {
-                    "type": "tkn",
-                    "sub": "IDENTIFIER",
-                    "value": "$cvar"
-                },
-                "value": [
-                    {
-                        "type": "stmt",
-                        "class": "Expression",
-                        "value": [
-                            {
-                                "type": "stm",
-                                "class": "Brackets",
-                                "sub": [
-                                    {
-                                        "type": "tkn",
-                                        "sub": "LEFT_BRACKET",
-                                        "value": "["
-                                    },
-                                    {
-                                        "type": "tkn",
-                                        "sub": "RIGHT_BRACKET",
-                                        "value": "]"
-                                    }
-                                ],
-                                "value": {
-                                    "type": "stmt",
-                                    "class": "Expression",
-                                    "value": [
-                                        {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "'back'"
-                                        },
-                                        {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "+"
-                                        },
-                                        {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "$cvar"
-                                        },
-                                        {
-                                            "type": "stm",
-                                            "class": "Brackets",
-                                            "sub": [
-                                                {
-                                                    "type": "tkn",
-                                                    "sub": "LEFT_BRACKET",
-                                                    "value": "["
-                                                },
-                                                {
-                                                    "type": "tkn",
-                                                    "sub": "RIGHT_BRACKET",
-                                                    "value": "]"
-                                                }
-                                            ],
-                                            "value": {
-                                                "type": "stmt",
-                                                "class": "Expression",
-                                                "value": [
+                                                        "type": "tkn",
+                                                        "sub": "LEFT_BRACKET",
+                                                        "value": "["
+                                                    },
                                                     {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "'chest'"
+                                                        "type": "tkn",
+                                                        "sub": "RIGHT_BRACKET",
+                                                        "value": "]"
                                                     }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Literal",
-                                "value": "="
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Literal",
-                                "value": "$args"
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Brackets",
-                                "sub": [
-                                    {
-                                        "type": "tkn",
-                                        "sub": "LEFT_BRACKET",
-                                        "value": "["
-                                    },
-                                    {
-                                        "type": "tkn",
-                                        "sub": "RIGHT_BRACKET",
-                                        "value": "]"
-                                    }
-                                ],
-                                "value": {
-                                    "type": "stmt",
-                                    "class": "Expression",
-                                    "value": [
-                                        {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "2"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "stm",
-                "class": "Unknown",
-                "pref": {
-                    "type": "tkn",
-                    "sub": "PREFORMATTER",
-                    "value": "\t\t"
-                },
-                "sub": {
-                    "type": "tkn",
-                    "sub": "IDENTIFIER",
-                    "value": "$cvar"
-                },
-                "value": [
-                    {
-                        "type": "stmt",
-                        "class": "Expression",
-                        "value": [
-                            {
-                                "type": "stm",
-                                "class": "Brackets",
-                                "sub": [
-                                    {
-                                        "type": "tkn",
-                                        "sub": "LEFT_BRACKET",
-                                        "value": "["
-                                    },
-                                    {
-                                        "type": "tkn",
-                                        "sub": "RIGHT_BRACKET",
-                                        "value": "]"
-                                    }
-                                ],
-                                "value": {
-                                    "type": "stmt",
-                                    "class": "Expression",
-                                    "value": [
-                                        {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "'loc_id'"
-                                        },
-                                        {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "+"
-                                        },
-                                        {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "$cvar"
-                                        },
-                                        {
-                                            "type": "stm",
-                                            "class": "Brackets",
-                                            "sub": [
-                                                {
-                                                    "type": "tkn",
-                                                    "sub": "LEFT_BRACKET",
-                                                    "value": "["
-                                                },
-                                                {
-                                                    "type": "tkn",
-                                                    "sub": "RIGHT_BRACKET",
-                                                    "value": "]"
+                                                ],
+                                                "value": {
+                                                    "type": "stmt",
+                                                    "class": "Expression",
+                                                    "value": [
+                                                        {
+                                                            "type": "stm",
+                                                            "class": "Literal",
+                                                            "value": "'chest'"
+                                                        }
+                                                    ]
                                                 }
-                                            ],
-                                            "value": {
-                                                "type": "stmt",
-                                                "class": "Expression",
-                                                "value": [
-                                                    {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "'chest'"
-                                                    }
-                                                ]
                                             }
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Literal",
-                                "value": "="
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Literal",
-                                "value": "$args"
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Brackets",
-                                "sub": [
-                                    {
-                                        "type": "tkn",
-                                        "sub": "LEFT_BRACKET",
-                                        "value": "["
-                                    },
-                                    {
-                                        "type": "tkn",
-                                        "sub": "RIGHT_BRACKET",
-                                        "value": "]"
+                                        ]
                                     }
-                                ],
-                                "value": {
-                                    "type": "stmt",
-                                    "class": "Expression",
-                                    "value": [
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "="
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "$args"
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Brackets",
+                                    "sub": [
                                         {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "0"
+                                            "type": "tkn",
+                                            "sub": "LEFT_BRACKET",
+                                            "value": "["
+                                        },
+                                        {
+                                            "type": "tkn",
+                                            "sub": "RIGHT_BRACKET",
+                                            "value": "]"
                                         }
-                                    ]
+                                    ],
+                                    "value": {
+                                        "type": "stmt",
+                                        "class": "Expression",
+                                        "value": [
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "2"
+                                            }
+                                        ]
+                                    }
                                 }
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "stm",
-                "class": "Unknown",
-                "pref": {
-                    "type": "tkn",
-                    "sub": "PREFORMATTER",
-                    "value": "\t\t"
-                },
-                "sub": {
-                    "type": "tkn",
-                    "sub": "IDENTIFIER",
-                    "value": "$cvar"
-                },
-                "value": [
+                            ]
+                        }
+                    },
                     {
-                        "type": "stmt",
-                        "class": "Expression",
-                        "value": [
-                            {
-                                "type": "stm",
-                                "class": "Brackets",
-                                "sub": [
-                                    {
-                                        "type": "tkn",
-                                        "sub": "LEFT_BRACKET",
-                                        "value": "["
-                                    },
-                                    {
-                                        "type": "tkn",
-                                        "sub": "RIGHT_BRACKET",
-                                        "value": "]"
-                                    }
-                                ],
-                                "value": {
-                                    "type": "stmt",
-                                    "class": "Expression",
-                                    "value": [
+                        "type": "stm",
+                        "class": "ExpressionStmt",
+                        "pref": {
+                            "type": "tkn",
+                            "sub": "PREFORMATTER",
+                            "value": "\t\t"
+                        },
+                        "value": {
+                            "type": "stmt",
+                            "class": "Expression",
+                            "value": [
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "$cvar"
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Brackets",
+                                    "sub": [
                                         {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "'manage'"
+                                            "type": "tkn",
+                                            "sub": "LEFT_BRACKET",
+                                            "value": "["
                                         },
                                         {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "+"
-                                        },
-                                        {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "$cvar"
-                                        },
-                                        {
-                                            "type": "stm",
-                                            "class": "Brackets",
-                                            "sub": [
-                                                {
-                                                    "type": "tkn",
-                                                    "sub": "LEFT_BRACKET",
-                                                    "value": "["
-                                                },
-                                                {
-                                                    "type": "tkn",
-                                                    "sub": "RIGHT_BRACKET",
-                                                    "value": "]"
-                                                }
-                                            ],
-                                            "value": {
-                                                "type": "stmt",
-                                                "class": "Expression",
-                                                "value": [
+                                            "type": "tkn",
+                                            "sub": "RIGHT_BRACKET",
+                                            "value": "]"
+                                        }
+                                    ],
+                                    "value": {
+                                        "type": "stmt",
+                                        "class": "Expression",
+                                        "value": [
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "'loc_id'"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "+"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "$cvar"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Brackets",
+                                                "sub": [
                                                     {
-                                                        "type": "stm",
-                                                        "class": "Literal",
-                                                        "value": "'chest'"
+                                                        "type": "tkn",
+                                                        "sub": "LEFT_BRACKET",
+                                                        "value": "["
+                                                    },
+                                                    {
+                                                        "type": "tkn",
+                                                        "sub": "RIGHT_BRACKET",
+                                                        "value": "]"
                                                     }
-                                                ]
+                                                ],
+                                                "value": {
+                                                    "type": "stmt",
+                                                    "class": "Expression",
+                                                    "value": [
+                                                        {
+                                                            "type": "stm",
+                                                            "class": "Literal",
+                                                            "value": "'chest'"
+                                                        }
+                                                    ]
+                                                }
                                             }
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Literal",
-                                "value": "="
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Literal",
-                                "value": "$args"
-                            },
-                            {
-                                "type": "stm",
-                                "class": "Brackets",
-                                "sub": [
-                                    {
-                                        "type": "tkn",
-                                        "sub": "LEFT_BRACKET",
-                                        "value": "["
-                                    },
-                                    {
-                                        "type": "tkn",
-                                        "sub": "RIGHT_BRACKET",
-                                        "value": "]"
+                                        ]
                                     }
-                                ],
-                                "value": {
-                                    "type": "stmt",
-                                    "class": "Expression",
-                                    "value": [
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "="
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "$args"
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Brackets",
+                                    "sub": [
                                         {
-                                            "type": "stm",
-                                            "class": "Literal",
-                                            "value": "1"
+                                            "type": "tkn",
+                                            "sub": "LEFT_BRACKET",
+                                            "value": "["
+                                        },
+                                        {
+                                            "type": "tkn",
+                                            "sub": "RIGHT_BRACKET",
+                                            "value": "]"
                                         }
-                                    ]
+                                    ],
+                                    "value": {
+                                        "type": "stmt",
+                                        "class": "Expression",
+                                        "value": [
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "0"
+                                            }
+                                        ]
+                                    }
                                 }
-                            }
-                        ]
+                            ]
+                        }
+                    },
+                    {
+                        "type": "stm",
+                        "class": "ExpressionStmt",
+                        "pref": {
+                            "type": "tkn",
+                            "sub": "PREFORMATTER",
+                            "value": "\t\t"
+                        },
+                        "value": {
+                            "type": "stmt",
+                            "class": "Expression",
+                            "value": [
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "$cvar"
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Brackets",
+                                    "sub": [
+                                        {
+                                            "type": "tkn",
+                                            "sub": "LEFT_BRACKET",
+                                            "value": "["
+                                        },
+                                        {
+                                            "type": "tkn",
+                                            "sub": "RIGHT_BRACKET",
+                                            "value": "]"
+                                        }
+                                    ],
+                                    "value": {
+                                        "type": "stmt",
+                                        "class": "Expression",
+                                        "value": [
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "'manage'"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "+"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "$cvar"
+                                            },
+                                            {
+                                                "type": "stm",
+                                                "class": "Brackets",
+                                                "sub": [
+                                                    {
+                                                        "type": "tkn",
+                                                        "sub": "LEFT_BRACKET",
+                                                        "value": "["
+                                                    },
+                                                    {
+                                                        "type": "tkn",
+                                                        "sub": "RIGHT_BRACKET",
+                                                        "value": "]"
+                                                    }
+                                                ],
+                                                "value": {
+                                                    "type": "stmt",
+                                                    "class": "Expression",
+                                                    "value": [
+                                                        {
+                                                            "type": "stm",
+                                                            "class": "Literal",
+                                                            "value": "'chest'"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "="
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Literal",
+                                    "value": "$args"
+                                },
+                                {
+                                    "type": "stm",
+                                    "class": "Brackets",
+                                    "sub": [
+                                        {
+                                            "type": "tkn",
+                                            "sub": "LEFT_BRACKET",
+                                            "value": "["
+                                        },
+                                        {
+                                            "type": "tkn",
+                                            "sub": "RIGHT_BRACKET",
+                                            "value": "]"
+                                        }
+                                    ],
+                                    "value": {
+                                        "type": "stmt",
+                                        "class": "Expression",
+                                        "value": [
+                                            {
+                                                "type": "stm",
+                                                "class": "Literal",
+                                                "value": "1"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
                     }
-                ]
+                ],
+                "end": {
+                    "type": "stm",
+                    "class": "End",
+                    "pref": {
+                        "type": "tkn",
+                        "sub": "PREFORMATTER",
+                        "value": "\t"
+                    },
+                    "value": "end"
+                }
             }
         ],
         "end": {
             "type": "stm",
             "class": "End",
-            "pref": {
-                "type": "tkn",
-                "sub": "PREFORMATTER",
-                "value": "\t"
-            },
+            "pref": null,
             "value": "end"
         }
     },
     {
         "type": "stm",
-        "class": "Literal",
-        "value": "end"
-    },
-    {
-        "type": "stm",
-        "class": "Literal",
-        "value": "\n"
-    },
-    {
-        "type": "stm",
-        "class": "Unknown",
+        "class": "ExpressionStmt",
         "pref": null,
-        "sub": {
-            "type": "tkn",
-            "sub": "IDENTIFIER",
-            "value": "$result"
-        },
-        "value": [
-            {
-                "type": "stmt",
-                "class": "Expression",
-                "value": [
-                    {
-                        "type": "stm",
-                        "class": "Brackets",
-                        "sub": [
-                            {
-                                "type": "tkn",
-                                "sub": "LEFT_BRACKET",
-                                "value": "["
-                            },
-                            {
-                                "type": "tkn",
-                                "sub": "RIGHT_BRACKET",
-                                "value": "]"
-                            }
-                        ],
-                        "value": {
-                            "type": "stmt",
-                            "class": "Expression",
-                            "value": [
-                                {
-                                    "type": "stm",
-                                    "class": "Literal",
-                                    "value": "'[help]'"
-                                }
-                            ]
+        "value": {
+            "type": "stmt",
+            "class": "Expression",
+            "value": [
+                {
+                    "type": "stm",
+                    "class": "Literal",
+                    "value": "$result"
+                },
+                {
+                    "type": "stm",
+                    "class": "Brackets",
+                    "sub": [
+                        {
+                            "type": "tkn",
+                            "sub": "LEFT_BRACKET",
+                            "value": "["
+                        },
+                        {
+                            "type": "tkn",
+                            "sub": "RIGHT_BRACKET",
+                            "value": "]"
                         }
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "="
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "$args"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Brackets",
-                        "sub": [
+                    ],
+                    "value": {
+                        "type": "stmt",
+                        "class": "Expression",
+                        "value": [
                             {
-                                "type": "tkn",
-                                "sub": "LEFT_BRACKET",
-                                "value": "["
-                            },
-                            {
-                                "type": "tkn",
-                                "sub": "RIGHT_BRACKET",
-                                "value": "]"
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "'[help]'"
                             }
-                        ],
-                        "value": {
-                            "type": "stmt",
-                            "class": "Expression",
-                            "value": [
-                                {
-                                    "type": "stm",
-                                    "class": "Literal",
-                                    "value": "'result.help'"
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "+"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Literal",
-                        "value": "@b.w.s"
-                    },
-                    {
-                        "type": "stm",
-                        "class": "Parens",
-                        "sub": [
-                            {
-                                "type": "tkn",
-                                "sub": "LEFT_PAREN",
-                                "value": "("
-                            },
-                            {
-                                "type": "tkn",
-                                "sub": "RIGHT_PAREN",
-                                "value": ")"
-                            }
-                        ],
-                        "value": {
-                            "type": "stmt",
-                            "class": "Expression",
-                            "value": [
-                                {
-                                    "type": "stm",
-                                    "class": "Literal",
-                                    "value": "'help'"
-                                }
-                            ]
-                        }
+                        ]
                     }
-                ]
-            }
-        ]
+                },
+                {
+                    "type": "stm",
+                    "class": "Literal",
+                    "value": "="
+                },
+                {
+                    "type": "stm",
+                    "class": "Literal",
+                    "value": "$args"
+                },
+                {
+                    "type": "stm",
+                    "class": "Brackets",
+                    "sub": [
+                        {
+                            "type": "tkn",
+                            "sub": "LEFT_BRACKET",
+                            "value": "["
+                        },
+                        {
+                            "type": "tkn",
+                            "sub": "RIGHT_BRACKET",
+                            "value": "]"
+                        }
+                    ],
+                    "value": {
+                        "type": "stmt",
+                        "class": "Expression",
+                        "value": [
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "'result.help'"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "stm",
+                    "class": "Literal",
+                    "value": "+"
+                },
+                {
+                    "type": "stm",
+                    "class": "Literal",
+                    "value": "@b.w.s"
+                },
+                {
+                    "type": "stm",
+                    "class": "Parens",
+                    "sub": [
+                        {
+                            "type": "tkn",
+                            "sub": "LEFT_PAREN",
+                            "value": "("
+                        },
+                        {
+                            "type": "tkn",
+                            "sub": "RIGHT_PAREN",
+                            "value": ")"
+                        }
+                    ],
+                    "value": {
+                        "type": "stmt",
+                        "class": "Expression",
+                        "value": [
+                            {
+                                "type": "stm",
+                                "class": "Literal",
+                                "value": "'help'"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
     }
 ]

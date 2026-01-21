@@ -61,13 +61,18 @@ class BaseParser:
             return self._condition()
         if self._check_type(tt.LOOP_STMT):
             return self._loop()
-        if self._check_type(tt.IDENTIFIER) and self._next_peek().ttype in self._EXPRESSION_START:
+        if self._is_unknown_stmt():
             return self._unknown_stmt()
         if self._check_type(tt.EXCLAMATION_SIGN):
             return self._comment()
         if self._curtok.ttype in self._EXPRESSION_START:
             return self._expression_stmt()
         return self._literal()
+
+    def _is_unknown_stmt(self) -> bool:
+        """ True if unknown stmt, False if expression stmt """
+        # идентификатор должен быть отделён хотя бы одним пробелом от токена подходящего к началу
+        return self._check_type(tt.IDENTIFIER) and self._next_peek().ttype in self._EXPRESSION_START and not self._are_adjacent()
 
     def _unknown_stmt(self) -> stm.Unknown[None]:
         """ Неизвестный оператор! """
@@ -149,9 +154,7 @@ class BaseParser:
         else:
             # в той же строке идут другие токены. Это однострочное действие
             content = self._extract_line()
-            # токен новой строки не поглощён. Поглощаем
-            close = stm.End[None](None, self._curtok)
-            if not self._is_eof(): self._eat_tokens(1)
+            close = stm.End[None](None, self._prev_peek())
 
         return stm.Loop(pref, open_, defines,
                         while_stmt, condition, step_stmt, steps, content, close)
@@ -182,9 +185,10 @@ class BaseParser:
         else:
             # в той же строке идут другие токены. Это однострочное действие
             content = self._extract_line()
-            # токен новой строки не поглощён. Поглощаем
-            close = stm.End[None](None, self._curtok)
-            if not self._is_eof(): self._eat_tokens(1)
+            # токен новой строки должен быть поглощён оператором, который мы парсили
+            # это значит, что это предыдущий токен
+            close = stm.End[None](None, self._prev_peek())
+
 
         return stm.Condition(pref, open_, condition, content, close)
 
@@ -221,9 +225,7 @@ class BaseParser:
         else:
             # в той же строке идут другие токены. Это однострочное действие
             content = self._extract_line()
-            # токен новой строки не поглощён. Поглощаем
-            close = stm.End[None](None, self._curtok)
-            if not self._is_eof(): self._eat_tokens(1)
+            close = stm.End[None](None, self._prev_peek())
 
         return stm.Action(pref, open_, name, image, content, close)
 
@@ -433,7 +435,17 @@ class BaseParser:
     def _next_peek(self) -> Tkn:
         """ Возващает следующий токен. """
         sk = self._curtok_num
-        return self._tokens[sk + 1] 
+        return self._tokens[sk + 1]
+
+    def _prev_peek(self) -> Tkn:
+        """ Возващает предыдущий токен. """
+        sk = self._curtok_num
+        return self._tokens[sk - 1]
+
+    def _are_adjacent(self) -> bool:
+        """ Проверяет, являются ли текущий и следующий токен смежными. (одна строка, соседние символы)"""
+        cs, ns = self._curtok.lexeme_start, self._next_peek().lexeme_start
+        return cs[0] == ns[0] and self._curtok.get_end_pos()[1] == ns[1]
 
     def _eat_tokens(self, count:int) -> None:
         """ Поглощает токен. Т.е. передвигает указатель на следующий. """

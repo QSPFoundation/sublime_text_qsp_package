@@ -76,5 +76,6 @@ class BaseToken:
         }
 
     def get_end_pos(self) -> Point:
+        """ line_num, char_num after last"""
         line, char = self.lexeme_start
         return (line, char + len(self.lexeme))
