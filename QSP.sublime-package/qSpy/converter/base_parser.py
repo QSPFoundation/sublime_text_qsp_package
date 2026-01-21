@@ -26,7 +26,7 @@ class BaseParser:
             return None
         if self._tokens and self._tokens[-1].ttype != tt.EOF:
             self._logic_error(f'There is not EOF in tokens-chain on initial stage')
-            self._tokens.append(Tkn(tt.EOF, '', (-1,-1)))        
+            self._tokens.append(Tkn(tt.EOF, '', (-1,-1)))       
 
         self._curtok_num:int = 0
         self._curtok:Tkn = self._tokens[0]
@@ -65,7 +65,9 @@ class BaseParser:
             return self._unknown_stmt()
         if self._check_type(tt.EXCLAMATION_SIGN):
             return self._comment()
-        return self._expression()
+        if self._curtok.ttype in self._EXPRESSION_START:
+            return self._expression_stmt()
+        return self._literal()
 
     def _unknown_stmt(self) -> stm.Unknown[None]:
         """ Неизвестный оператор! """
@@ -148,8 +150,8 @@ class BaseParser:
             # в той же строке идут другие токены. Это однострочное действие
             content = self._extract_line()
             # токен новой строки не поглощён. Поглощаем
-            close = self._curtok
-            self._eat_tokens(1)
+            close = stm.End[None](None, self._curtok)
+            if not self._is_eof(): self._eat_tokens(1)
 
         return stm.Loop(pref, open_, defines,
                         while_stmt, condition, step_stmt, steps, content, close)
@@ -181,8 +183,8 @@ class BaseParser:
             # в той же строке идут другие токены. Это однострочное действие
             content = self._extract_line()
             # токен новой строки не поглощён. Поглощаем
-            close = self._curtok
-            self._eat_tokens(1)
+            close = stm.End[None](None, self._curtok)
+            if not self._is_eof(): self._eat_tokens(1)
 
         return stm.Condition(pref, open_, condition, content, close)
 
@@ -220,8 +222,8 @@ class BaseParser:
             # в той же строке идут другие токены. Это однострочное действие
             content = self._extract_line()
             # токен новой строки не поглощён. Поглощаем
-            close = self._curtok
-            self._eat_tokens(1)
+            close = stm.End[None](None, self._curtok)
+            if not self._is_eof(): self._eat_tokens(1)
 
         return stm.Action(pref, open_, name, image, content, close)
 
@@ -230,7 +232,7 @@ class BaseParser:
         chain:List[BaseStmt] = []
 
         while not self._is_eof():
-            if self._check_type(tt.END_STMT):
+            if self._check_type(tt.END_STMT) or (self._check_type(tt.PREFORMATTER) and self._next_is_type(tt.END_STMT)):
                 # end stmt not eating
                 return chain
             if self._check_type(tt.PREFORMATTER):
@@ -239,26 +241,36 @@ class BaseParser:
             chain.append(self._statement())
             self._tbuffer = None
         else:
-            self._error('Unexpectable EOF in multiline block')
-            return chain
+            raise ParserError(self._curtok, 'Unexpectable EOF in multiline block')
 
     def _extract_line(self, *pop:tt) -> List[BaseStmt]:
         """ извлекает строку операторов через амперсанд """
-        if not pop: pop = (tt.NEWLINE, )
+        # if not pop: pop = (tt.NEWLINE, )
+        start_line = self._curtok.lexeme_start[0]
         chain:List[BaseStmt] = []
         while not self._is_eof():
-            if self._match(*pop):
+            if not self._is_line_num(start_line):
+                # если текущий токен содержит иной номер строки, прерываем извлечение строки операторов
                 return chain
             chain.append(self._statement())
-        else:
-            self._error('Unexpectable EOF in single line block')
-            return chain
+        # строка может окончиться 
+        return chain
 
-    def _end(self) -> Tkn:
+    def _end(self) -> stm.End[None]:
         """ Возвращает токен END и поглощает комментарий за ним """
+        if self._check_type(tt.PREFORMATTER):
+            pref = self._curtok
+            self._eat_tokens(1)
+        else:
+            pref = None
+
+        if not self._check_type(tt.END_STMT):
+            raise ParserError(self._curtok, 'Expected END_STMT.')
+
         close = self._curtok # поглощаем токен END
         self._eat_tokens(1)
-        while not self._check_type(tt.EOF):
+
+        while not self._is_eof():
             if self._match(tt.AMPERSAND, tt.NEWLINE):
                 # комментарий после енда оканчивается с новой строкой или на амперсанде
                 self._eat_tokens(1)
@@ -267,9 +279,10 @@ class BaseParser:
                 self._braces()
                 continue
             self._eat_tokens(1)
-        else:
-            self._error('Unexpectable EOF in comment after END')
-        return close  
+        # else:
+        #     self._error('Unexpectable EOF in comment after END')
+
+        return stm.End(pref, close) 
             
     def _print_text(self) -> stm.PrintTextStmt[None]:
         """ Оператор вывода текста """
@@ -287,7 +300,7 @@ class BaseParser:
         
     def _expression(self, *pop:tt) -> stm.Expression[None]:
         """ Выражение, передаваемое оператору. """
-        pref, self._tbuffer = self._tbuffer, None
+
         if not pop: pop = (tt.NEWLINE, tt.AMPERSAND, tt.WHILE_STMT, tt.STEP_STMT)
         
         chain:List[BaseStmt] = []
@@ -309,7 +322,17 @@ class BaseParser:
             # выражение может окончиться с концом файла
             pass
             
-        return stm.Expression(pref, chain)
+        return stm.Expression(chain)
+
+    def _expression_stmt(self) -> stm.ExpressionStmt[None]:
+        pref, self._tbuffer = self._tbuffer, None
+
+        expr = self._expression()
+
+        if self._match(tt.AMPERSAND, tt.NEWLINE): self._eat_tokens(1)
+        # tt.WHILE_STMT, tt.THEN означают, что оператор внутри LOOP или STEP
+
+        return stm.ExpressionStmt(pref, expr)
 
     def _parens(self) -> stm.Parens[None]:
         """ Круглые скобки и их содержимое """
@@ -384,10 +407,20 @@ class BaseParser:
 
         return stm.Comment(pref, open_, chain)
 
+    def _literal(self) -> stm.Literal[None]:
+        value = self._curtok
+        self._eat_tokens(1)
+        return stm.Literal(value)
+
     # aux operations
     def _is_eof(self) -> bool:
         """ Является ли токен концом файла. """
         return self._curtok.ttype == tt.EOF
+
+    def _next_is_type(self, t:tt) -> bool:
+        if self._curtok_num+1 < len(self._tokens):
+            return self._tokens[self._curtok_num+1].ttype == t
+        return False
 
     def _check_type(self, t:tt) -> bool:
         """ Сравнивает тип текущего токена с переданным. """
@@ -404,15 +437,19 @@ class BaseParser:
 
     def _eat_tokens(self, count:int) -> None:
         """ Поглощает токен. Т.е. передвигает указатель на следующий. """
-        # запрещаем поглощать EOF
-        if self._curtok_num + count < len(self._tokens) - 1:
-            self._curtok_num += count
-            self._curtok = self._tokens[self._curtok_num]
+        # # запрещаем поглощать EOF
+        # if self._curtok_num + count < len(self._tokens) - 1:
+        self._curtok_num += count
+        self._curtok = self._tokens[self._curtok_num]
 
     def _reset_curtok(self, start_declaration:int) -> None:
         """ Сброс начала обработки токенов до указанного """
         self._curtok_num = start_declaration
         self._curtok = self._tokens[self._curtok_num]
+
+    def _is_line_num(self, line_num:int) -> bool:
+        """Проверяет, является ли указанный номер строки текущим"""
+        return line_num == self._curtok.lexeme_start[0]
 
     # обработчик ошибок. Пока просто выводим в консоль.
     def _error(self, message:str) -> None:

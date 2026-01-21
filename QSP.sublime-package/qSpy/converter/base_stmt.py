@@ -26,6 +26,10 @@ class PpVisitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
+    def visit_expression_stmt(self, stmt:'ExpressionStmt[R]') -> R:
+        ...
+
+    @abstractmethod
     def visit_literal(self, stmt:'Literal[R]') -> R:
         ...
 
@@ -61,14 +65,24 @@ class PpVisitor(ABC, Generic[R]):
     def visit_unknown(self, stmt:'Unknown[R]') -> R:
         ...
 
+    @abstractmethod
+    def visit_end(self, stmt:'End[R]') -> R:
+        ...
+
 
 
 @dataclass(eq=False)
 class Expression(BaseStmt[R]):
-    pref:Optional[BaseToken]
     chain:List[BaseStmt[R]]
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_expression(self)
+
+@dataclass(eq=False)
+class ExpressionStmt(BaseStmt[R]):
+    pref:Optional[BaseToken]
+    expression:Expression[R]
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_expression_stmt(self)
 
 @dataclass(eq=False)
 class PrintTextStmt(BaseStmt[R]):
@@ -115,7 +129,7 @@ class Action(BaseStmt[R]):
     name:Expression[R]
     image:Optional[Expression[R]]
     content:List[BaseStmt[R]]
-    close:BaseToken
+    close:'End[R]'
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_action(self)
 
@@ -125,7 +139,7 @@ class Condition(BaseStmt[R]):
     open:BaseToken # if
     condition:Expression[R]
     content:List[BaseStmt[R]]
-    close:BaseToken
+    close:'End[R]'
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_condition(self)
 
@@ -139,7 +153,7 @@ class Loop(BaseStmt[R]):
     step_stmt:Optional[BaseToken]
     steps:List[BaseStmt[R]]
     content:List[BaseStmt[R]]
-    close:BaseToken
+    close:'End[R]'
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_loop(self)
 
@@ -158,3 +172,10 @@ class Unknown(BaseStmt[R]):
     args:List[Expression[R]]
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_unknown(self)
+
+@dataclass(eq=False)
+class End(BaseStmt[R]):
+    pref:Optional[BaseToken]
+    name:BaseToken
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_end(self)

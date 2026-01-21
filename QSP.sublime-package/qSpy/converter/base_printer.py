@@ -50,7 +50,6 @@ class BasePrinter(stm.PpVisitor[AstNode]):
         return {
             'type': 'stmt',
             'class': stmt.__class__.__name__,
-            'pref': self._token(stmt.pref) if stmt.pref else None,
             'value': [s.accept(self) for s in stmt.chain]
         }
 
@@ -105,7 +104,7 @@ class BasePrinter(stm.PpVisitor[AstNode]):
                 stmt.image.accept(self) if stmt.image else {},
             ],
             'value': [s.accept(self) for s in stmt.content],
-            'end': self._token(stmt.close)
+            'end': stmt.close.accept(self)
         }
         
     def visit_condition(self, stmt: stm.Condition[AstNode]) -> AstNode:
@@ -118,7 +117,7 @@ class BasePrinter(stm.PpVisitor[AstNode]):
                 stmt.condition.accept(self),
             ],
             'value': [s.accept(self) for s in stmt.content],
-            'end': self._token(stmt.close)
+            'end': stmt.close.accept(self)
         }
 
     def visit_loop(self, stmt: stm.Loop[AstNode]) -> AstNode:
@@ -131,7 +130,7 @@ class BasePrinter(stm.PpVisitor[AstNode]):
             stmt.condition.accept(self)] + ([self._token(stmt.step_stmt)] if stmt.step_stmt else []) +
             [s.accept(self) for s in stmt.steps],
             'value': [s.accept(self) for s in stmt.content],
-            'end': self._token(stmt.close)
+            'end': stmt.close.accept(self)
         }
         
     def visit_comment(self, stmt: stm.Comment[AstNode]) -> AstNode:
@@ -149,6 +148,21 @@ class BasePrinter(stm.PpVisitor[AstNode]):
             'class': stmt.__class__.__name__,
             'pref': self._token(stmt.pref) if stmt.pref else None,
             'sub': self._token(stmt.open),
-            'value': stmt.expression.accept(self) if stmt.expression else None
+            'value': [e.accept(self) for e in stmt.args]
         }
 
+    def visit_expression_stmt(self, stmt: stm.ExpressionStmt[AstNode]) -> AstNode:
+        return {
+            'type': 'stm',
+            'class': stmt.__class__.__name__,
+            'pref': self._token(stmt.pref) if stmt.pref else None,
+            'value': stmt.expression.accept(self)
+        }
+
+    def visit_end(self, stmt: stm.End[AstNode]) -> AstNode:
+        return {
+            'type': 'stm',
+            'class': stmt.__class__.__name__,
+            'pref': self._token(stmt.pref) if stmt.pref else None,
+            'value': stmt.name.lexeme
+        }
