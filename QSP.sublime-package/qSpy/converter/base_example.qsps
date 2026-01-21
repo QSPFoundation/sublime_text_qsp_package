@@ -1,4 +1,7 @@
 # loc
+*p 'Проверка-проверка'
+*pl 'Yt hf,jnftn'
+*p {ksfmsmfgsoadmfosadmfsadm ndfoanvdogvod}
 if $args[0] = '[м:1]_моя_комната':
 	if help[$args[0]]=0:
 		*p '<font color=#ff4444>Добро пожаловать в безграничный мир Асгар.

@@ -3,6 +3,7 @@ import json, os
 from base_scanner import BaseScaner
 from base_parser import BaseParser
 from base_printer import BasePrinter
+from base_int import BaseInt
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(__file__))
@@ -34,3 +35,17 @@ if __name__ == "__main__":
 
     with open('base_parser.json', 'w', encoding='utf-8') as fp:
         json.dump(ast, fp, indent=4, ensure_ascii=False)
+
+    interpreter = BaseInt(statements, lines)
+    interpreter.run()
+
+    elements = {'base-description': interpreter.desc(), 'actions':[]}
+
+    for a in interpreter.actions():
+        elements['actions'].append({'image': a['image'],
+        'name': a['name'], 'code': a['code']})
+
+    print('interpreter is over')
+
+    with open('output.json', 'w', encoding='utf-8') as fp:
+        json.dump(elements, fp, indent=4, ensure_ascii=False)

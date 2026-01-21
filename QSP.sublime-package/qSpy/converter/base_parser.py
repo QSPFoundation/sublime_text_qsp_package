@@ -77,7 +77,7 @@ class BaseParser:
     def _unknown_stmt(self) -> stm.Unknown[None]:
         """ Неизвестный оператор! """
         pref, self._tbuffer = self._tbuffer, None
-        
+        line = self._curtok.lexeme_start[0]
         stmt = self._curtok # фиксируем оператор
         self._eat_tokens(1)
 
@@ -98,11 +98,11 @@ class BaseParser:
         # else: # оператор может окончиться и на конце файла: не пожираем токен
         #     raise ParserError(self._curtok, 'Unexpectable EOF!')
 
-        return stm.Unknown(pref, stmt, args)
+        return stm.Unknown(pref, stmt, args, line)
 
     def _loop(self) -> stm.Loop[None]:
         pref, self._tbuffer = self._tbuffer, None
-
+        line = self._curtok.lexeme_start[0]
         open_ = self._curtok
         self._eat_tokens(1)
 
@@ -157,11 +157,11 @@ class BaseParser:
             close = stm.End[None](None, self._prev_peek())
 
         return stm.Loop(pref, open_, defines,
-                        while_stmt, condition, step_stmt, steps, content, close)
+                        while_stmt, condition, step_stmt, steps, content, close, line)
 
     def _condition(self) -> stm.Condition[None]:
         pref, self._tbuffer = self._tbuffer, None
-
+        line = self._curtok.lexeme_start[0]
         open_ = self._curtok
         self._eat_tokens(1)
 
@@ -190,12 +190,12 @@ class BaseParser:
             close = stm.End[None](None, self._prev_peek())
 
 
-        return stm.Condition(pref, open_, condition, content, close)
+        return stm.Condition(pref, open_, condition, content, close, line)
 
     def _action(self) -> stm.Action[None]:
         """ Поиск действия """
         pref, self._tbuffer = self._tbuffer, None
-
+        line = self._curtok.lexeme_start[0]
         open_ = self._curtok
         self._eat_tokens(1)
 
@@ -227,7 +227,7 @@ class BaseParser:
             content = self._extract_line()
             close = stm.End[None](None, self._prev_peek())
 
-        return stm.Action(pref, open_, name, image, content, close)
+        return stm.Action(pref, open_, name, image, content, close, line)
 
     def _extract_block(self) -> List[BaseStmt]:
         """ извлекает блок операторов до end """
@@ -268,7 +268,7 @@ class BaseParser:
 
         if not self._check_type(tt.END_STMT):
             raise ParserError(self._curtok, 'Expected END_STMT.')
-
+        line = self._curtok.lexeme_start[0]
         close = self._curtok # поглощаем токен END
         self._eat_tokens(1)
 
@@ -284,12 +284,12 @@ class BaseParser:
         # else:
         #     self._error('Unexpectable EOF in comment after END')
 
-        return stm.End(pref, close) 
+        return stm.End(pref, close, line) 
             
     def _print_text(self) -> stm.PrintTextStmt[None]:
         """ Оператор вывода текста """
         pref, self._tbuffer = self._tbuffer, None
-        
+        line = self._curtok.lexeme_start[0]
         stmt = self._curtok # фиксируем оператор
         self._eat_tokens(1)
 
@@ -298,13 +298,13 @@ class BaseParser:
         if self._match(tt.AMPERSAND, tt.NEWLINE): self._eat_tokens(1)
         # tt.WHILE_STMT, tt.THEN означают, что оператор внутри LOOP или STEP
 
-        return stm.PrintTextStmt(pref, stmt, expression)
+        return stm.PrintTextStmt(pref, stmt, expression, line)
         
     def _expression(self, *pop:tt) -> stm.Expression[None]:
         """ Выражение, передаваемое оператору. """
 
         if not pop: pop = (tt.NEWLINE, tt.AMPERSAND, tt.WHILE_STMT, tt.STEP_STMT)
-        
+        line_num  = self._curtok.lexeme_start[0]
         chain:List[BaseStmt] = []
         while not self._is_eof():
             if self._match(*pop):
@@ -324,17 +324,17 @@ class BaseParser:
             # выражение может окончиться с концом файла
             pass
             
-        return stm.Expression(chain)
+        return stm.Expression(chain, line_num)
 
     def _expression_stmt(self) -> stm.ExpressionStmt[None]:
         pref, self._tbuffer = self._tbuffer, None
-
+        line_num = self._curtok.lexeme_start[0]
         expr = self._expression()
 
         if self._match(tt.AMPERSAND, tt.NEWLINE): self._eat_tokens(1)
         # tt.WHILE_STMT, tt.THEN означают, что оператор внутри LOOP или STEP
 
-        return stm.ExpressionStmt(pref, expr)
+        return stm.ExpressionStmt(pref, expr, line_num)
 
     def _parens(self) -> stm.Parens[None]:
         """ Круглые скобки и их содержимое """
@@ -391,7 +391,7 @@ class BaseParser:
 
     def _comment(self) -> stm.Comment[None]:
         pref, self._tbuffer = self._tbuffer, None
-
+        line = self._curtok.lexeme_start[0]
         open_ = self._curtok
         self._eat_tokens(1)
 
@@ -407,7 +407,7 @@ class BaseParser:
             chain.append(stm.Literal(self._curtok))
             self._eat_tokens(1)
 
-        return stm.Comment(pref, open_, chain)
+        return stm.Comment(pref, open_, chain, line)
 
     def _literal(self) -> stm.Literal[None]:
         value = self._curtok

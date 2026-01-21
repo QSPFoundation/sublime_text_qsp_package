@@ -26,7 +26,7 @@ AstNode = Dict[
 
 Stmts = List[stm.BaseStmt[AstNode]]
 
-class BasePrinter(stm.PpVisitor[AstNode]):
+class BasePrinter(stm.BaseVisitor[AstNode]):
 
     def __init__(self, stmts:Stmts) -> None:
         self._stmts = stmts

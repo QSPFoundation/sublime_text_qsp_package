@@ -8,13 +8,12 @@ R = TypeVar("R")
 
 class BaseStmt(ABC, Generic[R]):
     """ Класс поддержки операторов базового описания и базовых действий. """
-    index:int = -1
     @abstractmethod # обязательный метод для всех операторов
-    def accept(self, visitor:'PpVisitor[R]') -> R:
+    def accept(self, visitor:'BaseVisitor[R]') -> R:
         """ Принимает объект, реализующий набор поведений в виде методов. """
         ...
 
-class PpVisitor(ABC, Generic[R]):
+class BaseVisitor(ABC, Generic[R]):
     """ Интерфейс для всех реализаций поведения операторов препроцессинга. """
 
     @abstractmethod
@@ -74,14 +73,16 @@ class PpVisitor(ABC, Generic[R]):
 @dataclass(eq=False)
 class Expression(BaseStmt[R]):
     chain:List[BaseStmt[R]]
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_expression(self)
 
 @dataclass(eq=False)
 class ExpressionStmt(BaseStmt[R]):
     pref:Optional[BaseToken]
     expression:Expression[R]
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_expression_stmt(self)
 
 @dataclass(eq=False)
@@ -89,13 +90,15 @@ class PrintTextStmt(BaseStmt[R]):
     pref:Optional[BaseToken]
     stmt:BaseToken
     expression:Optional['Expression[R]']
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_print_text_stmt(self)
 
 @dataclass(eq=False)
 class Literal(BaseStmt[R]):
     value:BaseToken
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_literal(self)
 
 @dataclass(eq=False)
@@ -103,7 +106,8 @@ class Parens(BaseStmt[R]):
     left:BaseToken
     content:Expression[R]
     right:BaseToken
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_parens(self)
 
 @dataclass(eq=False)
@@ -111,7 +115,8 @@ class Brackets(BaseStmt[R]):
     left:BaseToken
     content:Expression[R]
     right:BaseToken
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_brackets(self)
 
 @dataclass(eq=False)
@@ -119,7 +124,8 @@ class Braces(BaseStmt[R]):
     left:BaseToken
     content:List[BaseStmt[R]]
     right:BaseToken
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_braces(self)
 
 @dataclass(eq=False)
@@ -130,7 +136,8 @@ class Action(BaseStmt[R]):
     image:Optional[Expression[R]]
     content:List[BaseStmt[R]]
     close:'End[R]'
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_action(self)
 
 @dataclass(eq=False)
@@ -140,7 +147,8 @@ class Condition(BaseStmt[R]):
     condition:Expression[R]
     content:List[BaseStmt[R]]
     close:'End[R]'
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_condition(self)
 
 @dataclass(eq=False)
@@ -154,7 +162,8 @@ class Loop(BaseStmt[R]):
     steps:List[BaseStmt[R]]
     content:List[BaseStmt[R]]
     close:'End[R]'
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_loop(self)
 
 @dataclass(eq=False)
@@ -162,7 +171,8 @@ class Comment(BaseStmt[R]):
     pref:Optional[BaseToken]
     open:BaseToken
     chain:List[BaseStmt[R]]
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_comment(self)
 
 @dataclass(eq=False)
@@ -170,12 +180,14 @@ class Unknown(BaseStmt[R]):
     pref:Optional[BaseToken]
     open:BaseToken
     args:List[Expression[R]]
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_unknown(self)
 
 @dataclass(eq=False)
 class End(BaseStmt[R]):
     pref:Optional[BaseToken]
     name:BaseToken
-    def accept(self, visitor: 'PpVisitor[R]') -> R:
+    line: int = -1
+    def accept(self, visitor: 'BaseVisitor[R]') -> R:
         return visitor.visit_end(self)

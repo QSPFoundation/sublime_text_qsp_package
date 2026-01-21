@@ -24,187 +24,51 @@
         ]
     },
     {
-        "token-type": "IF_STMT",
-        "lexeme": "if",
+        "token-type": "STAR_P_STMT",
+        "lexeme": "*p",
         "lexeme_start": [
             1,
             0
         ]
     },
     {
-        "token-type": "IDENTIFIER",
-        "lexeme": "$args",
+        "token-type": "APOSTROPHE_STRING",
+        "lexeme": "'Проверка-проверка'",
         "lexeme_start": [
             1,
             3
         ]
     },
     {
-        "token-type": "LEFT_BRACKET",
-        "lexeme": "[",
-        "lexeme_start": [
-            1,
-            8
-        ]
-    },
-    {
-        "token-type": "IDENTIFIER",
-        "lexeme": "0",
-        "lexeme_start": [
-            1,
-            9
-        ]
-    },
-    {
-        "token-type": "RIGHT_BRACKET",
-        "lexeme": "]",
-        "lexeme_start": [
-            1,
-            10
-        ]
-    },
-    {
-        "token-type": "DELIMITER",
-        "lexeme": "=",
-        "lexeme_start": [
-            1,
-            12
-        ]
-    },
-    {
-        "token-type": "APOSTROPHE_STRING",
-        "lexeme": "'[м:1]_моя_комната'",
-        "lexeme_start": [
-            1,
-            14
-        ]
-    },
-    {
-        "token-type": "THEN",
-        "lexeme": ":",
-        "lexeme_start": [
-            1,
-            33
-        ]
-    },
-    {
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
             1,
-            34
+            22
         ]
     },
     {
-        "token-type": "PREFORMATTER",
-        "lexeme": "\t",
+        "token-type": "STAR_PL_STMT",
+        "lexeme": "*pl",
         "lexeme_start": [
             2,
             0
         ]
     },
     {
-        "token-type": "IF_STMT",
-        "lexeme": "if",
-        "lexeme_start": [
-            2,
-            1
-        ]
-    },
-    {
-        "token-type": "IDENTIFIER",
-        "lexeme": "help",
+        "token-type": "APOSTROPHE_STRING",
+        "lexeme": "'Yt hf,jnftn'",
         "lexeme_start": [
             2,
             4
         ]
     },
     {
-        "token-type": "LEFT_BRACKET",
-        "lexeme": "[",
-        "lexeme_start": [
-            2,
-            8
-        ]
-    },
-    {
-        "token-type": "IDENTIFIER",
-        "lexeme": "$args",
-        "lexeme_start": [
-            2,
-            9
-        ]
-    },
-    {
-        "token-type": "LEFT_BRACKET",
-        "lexeme": "[",
-        "lexeme_start": [
-            2,
-            14
-        ]
-    },
-    {
-        "token-type": "IDENTIFIER",
-        "lexeme": "0",
-        "lexeme_start": [
-            2,
-            15
-        ]
-    },
-    {
-        "token-type": "RIGHT_BRACKET",
-        "lexeme": "]",
-        "lexeme_start": [
-            2,
-            16
-        ]
-    },
-    {
-        "token-type": "RIGHT_BRACKET",
-        "lexeme": "]",
-        "lexeme_start": [
-            2,
-            17
-        ]
-    },
-    {
-        "token-type": "DELIMITER",
-        "lexeme": "=",
-        "lexeme_start": [
-            2,
-            18
-        ]
-    },
-    {
-        "token-type": "IDENTIFIER",
-        "lexeme": "0",
-        "lexeme_start": [
-            2,
-            19
-        ]
-    },
-    {
-        "token-type": "THEN",
-        "lexeme": ":",
-        "lexeme_start": [
-            2,
-            20
-        ]
-    },
-    {
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
             2,
-            21
-        ]
-    },
-    {
-        "token-type": "PREFORMATTER",
-        "lexeme": "\t\t",
-        "lexeme_start": [
-            3,
-            0
+            17
         ]
     },
     {
@@ -212,23 +76,111 @@
         "lexeme": "*p",
         "lexeme_start": [
             3,
-            2
+            0
+        ]
+    },
+    {
+        "token-type": "LEFT_BRACE",
+        "lexeme": "{",
+        "lexeme_start": [
+            3,
+            3
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "ksfmsmfgsoadmfosadmfsadm",
+        "lexeme_start": [
+            3,
+            4
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "ndfoanvdogvod",
+        "lexeme_start": [
+            3,
+            29
+        ]
+    },
+    {
+        "token-type": "RIGHT_BRACE",
+        "lexeme": "}",
+        "lexeme_start": [
+            3,
+            42
+        ]
+    },
+    {
+        "token-type": "NEWLINE",
+        "lexeme": "\n",
+        "lexeme_start": [
+            3,
+            43
+        ]
+    },
+    {
+        "token-type": "IF_STMT",
+        "lexeme": "if",
+        "lexeme_start": [
+            4,
+            0
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "$args",
+        "lexeme_start": [
+            4,
+            3
+        ]
+    },
+    {
+        "token-type": "LEFT_BRACKET",
+        "lexeme": "[",
+        "lexeme_start": [
+            4,
+            8
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "0",
+        "lexeme_start": [
+            4,
+            9
+        ]
+    },
+    {
+        "token-type": "RIGHT_BRACKET",
+        "lexeme": "]",
+        "lexeme_start": [
+            4,
+            10
+        ]
+    },
+    {
+        "token-type": "DELIMITER",
+        "lexeme": "=",
+        "lexeme_start": [
+            4,
+            12
         ]
     },
     {
         "token-type": "APOSTROPHE_STRING",
-        "lexeme": "'<font color=#ff4444>Добро пожаловать в безграничный мир Асгар.\nСейчас ты находишься в Академии Боевых Магов в собственной комнате, и Азарулус дал тебе задание: выбраться из замка. Однако, как ты наверное догадываешься, для начала неплохо было бы просто выбраться из комнаты. Сейчас в комнате темно, и ты не можешь увидеть ни дверь, ни вещи. Чтобы осветить комнату, следует воспользоваться заклинанием \"Перст Гемеры\", оно находится в меню инвентаря \"Изученные заклинания\".</font>'",
+        "lexeme": "'[м:1]_моя_комната'",
         "lexeme_start": [
-            3,
-            5
+            4,
+            14
         ]
     },
     {
-        "token-type": "RIGHT_PAREN",
-        "lexeme": ")",
+        "token-type": "THEN",
+        "lexeme": ":",
         "lexeme_start": [
             4,
-            416
+            33
         ]
     },
     {
@@ -236,7 +188,7 @@
         "lexeme": "\n",
         "lexeme_start": [
             4,
-            417
+            34
         ]
     },
     {
@@ -248,8 +200,8 @@
         ]
     },
     {
-        "token-type": "IDENTIFIER",
-        "lexeme": "elseif",
+        "token-type": "IF_STMT",
+        "lexeme": "if",
         "lexeme_start": [
             5,
             1
@@ -260,7 +212,7 @@
         "lexeme": "help",
         "lexeme_start": [
             5,
-            8
+            4
         ]
     },
     {
@@ -268,7 +220,7 @@
         "lexeme": "[",
         "lexeme_start": [
             5,
-            12
+            8
         ]
     },
     {
@@ -276,12 +228,44 @@
         "lexeme": "$args",
         "lexeme_start": [
             5,
-            13
+            9
         ]
     },
     {
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
+        "lexeme_start": [
+            5,
+            14
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "0",
+        "lexeme_start": [
+            5,
+            15
+        ]
+    },
+    {
+        "token-type": "RIGHT_BRACKET",
+        "lexeme": "]",
+        "lexeme_start": [
+            5,
+            16
+        ]
+    },
+    {
+        "token-type": "RIGHT_BRACKET",
+        "lexeme": "]",
+        "lexeme_start": [
+            5,
+            17
+        ]
+    },
+    {
+        "token-type": "DELIMITER",
+        "lexeme": "=",
         "lexeme_start": [
             5,
             18
@@ -296,43 +280,11 @@
         ]
     },
     {
-        "token-type": "RIGHT_BRACKET",
-        "lexeme": "]",
-        "lexeme_start": [
-            5,
-            20
-        ]
-    },
-    {
-        "token-type": "RIGHT_BRACKET",
-        "lexeme": "]",
-        "lexeme_start": [
-            5,
-            21
-        ]
-    },
-    {
-        "token-type": "DELIMITER",
-        "lexeme": "=",
-        "lexeme_start": [
-            5,
-            22
-        ]
-    },
-    {
-        "token-type": "IDENTIFIER",
-        "lexeme": "1",
-        "lexeme_start": [
-            5,
-            23
-        ]
-    },
-    {
         "token-type": "THEN",
         "lexeme": ":",
         "lexeme_start": [
             5,
-            24
+            20
         ]
     },
     {
@@ -340,7 +292,7 @@
         "lexeme": "\n",
         "lexeme_start": [
             5,
-            25
+            21
         ]
     },
     {
@@ -348,6 +300,150 @@
         "lexeme": "\t\t",
         "lexeme_start": [
             6,
+            0
+        ]
+    },
+    {
+        "token-type": "STAR_P_STMT",
+        "lexeme": "*p",
+        "lexeme_start": [
+            6,
+            2
+        ]
+    },
+    {
+        "token-type": "APOSTROPHE_STRING",
+        "lexeme": "'<font color=#ff4444>Добро пожаловать в безграничный мир Асгар.\n\tСейчас ты находишься в Академии Боевых Магов в собственной комнате, и Азарулус дал тебе задание: выбраться из замка. Однако, как ты наверное догадываешься, для начала неплохо было бы просто выбраться из комнаты. Сейчас в комнате темно, и ты не можешь увидеть ни дверь, ни вещи. Чтобы осветить комнату, следует воспользоваться заклинанием \"Перст Гемеры\", оно находится в меню инвентаря \"Изученные заклинания\".</font>'",
+        "lexeme_start": [
+            6,
+            5
+        ]
+    },
+    {
+        "token-type": "RIGHT_PAREN",
+        "lexeme": ")",
+        "lexeme_start": [
+            7,
+            417
+        ]
+    },
+    {
+        "token-type": "NEWLINE",
+        "lexeme": "\n",
+        "lexeme_start": [
+            7,
+            418
+        ]
+    },
+    {
+        "token-type": "PREFORMATTER",
+        "lexeme": "\t",
+        "lexeme_start": [
+            8,
+            0
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "elseif",
+        "lexeme_start": [
+            8,
+            1
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "help",
+        "lexeme_start": [
+            8,
+            8
+        ]
+    },
+    {
+        "token-type": "LEFT_BRACKET",
+        "lexeme": "[",
+        "lexeme_start": [
+            8,
+            12
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "$args",
+        "lexeme_start": [
+            8,
+            13
+        ]
+    },
+    {
+        "token-type": "LEFT_BRACKET",
+        "lexeme": "[",
+        "lexeme_start": [
+            8,
+            18
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "0",
+        "lexeme_start": [
+            8,
+            19
+        ]
+    },
+    {
+        "token-type": "RIGHT_BRACKET",
+        "lexeme": "]",
+        "lexeme_start": [
+            8,
+            20
+        ]
+    },
+    {
+        "token-type": "RIGHT_BRACKET",
+        "lexeme": "]",
+        "lexeme_start": [
+            8,
+            21
+        ]
+    },
+    {
+        "token-type": "DELIMITER",
+        "lexeme": "=",
+        "lexeme_start": [
+            8,
+            22
+        ]
+    },
+    {
+        "token-type": "IDENTIFIER",
+        "lexeme": "1",
+        "lexeme_start": [
+            8,
+            23
+        ]
+    },
+    {
+        "token-type": "THEN",
+        "lexeme": ":",
+        "lexeme_start": [
+            8,
+            24
+        ]
+    },
+    {
+        "token-type": "NEWLINE",
+        "lexeme": "\n",
+        "lexeme_start": [
+            8,
+            25
+        ]
+    },
+    {
+        "token-type": "PREFORMATTER",
+        "lexeme": "\t\t",
+        "lexeme_start": [
+            9,
             0
         ]
     },
@@ -355,7 +451,7 @@
         "token-type": "STAR_PL_STMT",
         "lexeme": "*pl",
         "lexeme_start": [
-            6,
+            9,
             2
         ]
     },
@@ -363,7 +459,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'<font color=#ff4444>Отлично. Теперь ты видишь всё, что находится в комнате, и можешь взять кошелёк и рюкзак. Если ты действительно собра(лся//лась) отправиться в путешествие, без этих важных в дороге вещей не обойтись. Чтобы поднять предмет, достаточно щёлкнуть по соответствующему действию или ссылке. Добавленные предметы появляются в меню \"Инвентарь\", или во вложенных меню.</font>'",
         "lexeme_start": [
-            6,
+            9,
             6
         ]
     },
@@ -371,7 +467,7 @@
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
         "lexeme_start": [
-            6,
+            9,
             392
         ]
     },
@@ -379,7 +475,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            6,
+            9,
             393
         ]
     },
@@ -387,7 +483,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t",
         "lexeme_start": [
-            7,
+            10,
             0
         ]
     },
@@ -395,7 +491,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "elseif",
         "lexeme_start": [
-            7,
+            10,
             1
         ]
     },
@@ -403,7 +499,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "help",
         "lexeme_start": [
-            7,
+            10,
             8
         ]
     },
@@ -411,7 +507,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            7,
+            10,
             12
         ]
     },
@@ -419,7 +515,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            7,
+            10,
             13
         ]
     },
@@ -427,7 +523,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            7,
+            10,
             18
         ]
     },
@@ -435,7 +531,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "0",
         "lexeme_start": [
-            7,
+            10,
             19
         ]
     },
@@ -443,7 +539,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            7,
+            10,
             20
         ]
     },
@@ -451,7 +547,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            7,
+            10,
             21
         ]
     },
@@ -459,7 +555,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            7,
+            10,
             22
         ]
     },
@@ -467,7 +563,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "2",
         "lexeme_start": [
-            7,
+            10,
             23
         ]
     },
@@ -475,7 +571,7 @@
         "token-type": "THEN",
         "lexeme": ":",
         "lexeme_start": [
-            7,
+            10,
             24
         ]
     },
@@ -483,7 +579,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            7,
+            10,
             25
         ]
     },
@@ -491,7 +587,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t",
         "lexeme_start": [
-            8,
+            11,
             0
         ]
     },
@@ -499,7 +595,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            8,
+            11,
             2
         ]
     },
@@ -507,7 +603,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            8,
+            11,
             7
         ]
     },
@@ -515,7 +611,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'result.help'",
         "lexeme_start": [
-            8,
+            11,
             8
         ]
     },
@@ -523,7 +619,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            8,
+            11,
             21
         ]
     },
@@ -531,7 +627,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            8,
+            11,
             22
         ]
     },
@@ -539,7 +635,7 @@
         "token-type": "RAW_TEXT",
         "lexeme": "@int.din.text",
         "lexeme_start": [
-            8,
+            11,
             23
         ]
     },
@@ -547,7 +643,7 @@
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
         "lexeme_start": [
-            8,
+            11,
             36
         ]
     },
@@ -555,7 +651,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'<font color=#ff4444>В кошельке пока что нет денег, да и рюкзак совершенно пуст, но в замке Академии, в укромных уголках, в сундуках и ящичках, скрытых от посторонних глаз, наверняка завалялось что-нибудь интересное. Может и пара монет найдётся. Однако, бродить по замку в (одних кальсонах//ночной рубашке) не принято. Пришло время заглянуть в шкаф - одеться и вооружиться. Для того, чтобы открыть шкаф, или выдвижной ящик, просто щёлкни по его названию прямо в тексте описания локации.</font>'",
         "lexeme_start": [
-            8,
+            11,
             37
         ]
     },
@@ -563,7 +659,7 @@
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
         "lexeme_start": [
-            8,
+            11,
             531
         ]
     },
@@ -571,7 +667,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            8,
+            11,
             532
         ]
     },
@@ -579,7 +675,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t",
         "lexeme_start": [
-            9,
+            12,
             0
         ]
     },
@@ -587,7 +683,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "elseif",
         "lexeme_start": [
-            9,
+            12,
             1
         ]
     },
@@ -595,7 +691,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "help",
         "lexeme_start": [
-            9,
+            12,
             8
         ]
     },
@@ -603,7 +699,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            9,
+            12,
             12
         ]
     },
@@ -611,7 +707,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            9,
+            12,
             13
         ]
     },
@@ -619,7 +715,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            9,
+            12,
             18
         ]
     },
@@ -627,7 +723,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "0",
         "lexeme_start": [
-            9,
+            12,
             19
         ]
     },
@@ -635,7 +731,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            9,
+            12,
             20
         ]
     },
@@ -643,7 +739,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            9,
+            12,
             21
         ]
     },
@@ -651,7 +747,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            9,
+            12,
             22
         ]
     },
@@ -659,7 +755,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "3",
         "lexeme_start": [
-            9,
+            12,
             23
         ]
     },
@@ -667,7 +763,7 @@
         "token-type": "THEN",
         "lexeme": ":",
         "lexeme_start": [
-            9,
+            12,
             24
         ]
     },
@@ -675,7 +771,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            9,
+            12,
             25
         ]
     },
@@ -683,7 +779,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t",
         "lexeme_start": [
-            10,
+            13,
             0
         ]
     },
@@ -691,7 +787,7 @@
         "token-type": "ACT_STMT",
         "lexeme": "act",
         "lexeme_start": [
-            10,
+            13,
             2
         ]
     },
@@ -699,7 +795,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'<font color=#ff4444>Великолепно. Ткомнаты.</font>'",
         "lexeme_start": [
-            10,
+            13,
             6
         ]
     },
@@ -707,7 +803,7 @@
         "token-type": "THEN",
         "lexeme": ":",
         "lexeme_start": [
-            10,
+            13,
             57
         ]
     },
@@ -715,7 +811,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            10,
+            13,
             58
         ]
     },
@@ -723,7 +819,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t \t",
         "lexeme_start": [
-            11,
+            14,
             0
         ]
     },
@@ -731,7 +827,7 @@
         "token-type": "IF_STMT",
         "lexeme": "if",
         "lexeme_start": [
-            11,
+            14,
             4
         ]
     },
@@ -739,7 +835,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            11,
+            14,
             7
         ]
     },
@@ -747,7 +843,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            11,
+            14,
             12
         ]
     },
@@ -755,7 +851,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            11,
+            14,
             13
         ]
     },
@@ -763,7 +859,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            11,
+            14,
             18
         ]
     },
@@ -771,7 +867,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            11,
+            14,
             19
         ]
     },
@@ -779,7 +875,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            11,
+            14,
             26
         ]
     },
@@ -787,7 +883,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            11,
+            14,
             27
         ]
     },
@@ -795,7 +891,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            11,
+            14,
             28
         ]
     },
@@ -803,7 +899,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "''",
         "lexeme_start": [
-            11,
+            14,
             29
         ]
     },
@@ -811,7 +907,7 @@
         "token-type": "THEN",
         "lexeme": ":",
         "lexeme_start": [
-            11,
+            14,
             31
         ]
     },
@@ -819,7 +915,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            11,
+            14,
             32
         ]
     },
@@ -827,7 +923,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t\t",
         "lexeme_start": [
-            12,
+            15,
             0
         ]
     },
@@ -835,7 +931,7 @@
         "token-type": "EXCLAMATION_SIGN",
         "lexeme": "!",
         "lexeme_start": [
-            12,
+            15,
             3
         ]
     },
@@ -843,7 +939,7 @@
         "token-type": "RAW_TEXT",
         "lexeme": "@",
         "lexeme_start": [
-            12,
+            15,
             4
         ]
     },
@@ -851,7 +947,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            12,
+            15,
             6
         ]
     },
@@ -859,7 +955,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "удаляется",
         "lexeme_start": [
-            12,
+            15,
             12
         ]
     },
@@ -867,7 +963,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "только",
         "lexeme_start": [
-            12,
+            15,
             22
         ]
     },
@@ -875,7 +971,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "когда",
         "lexeme_start": [
-            12,
+            15,
             29
         ]
     },
@@ -883,7 +979,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "закрывается",
         "lexeme_start": [
-            12,
+            15,
             35
         ]
     },
@@ -891,7 +987,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "первый",
         "lexeme_start": [
-            12,
+            15,
             47
         ]
     },
@@ -899,7 +995,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "открытый",
         "lexeme_start": [
-            12,
+            15,
             54
         ]
     },
@@ -907,7 +1003,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "сундук",
         "lexeme_start": [
-            12,
+            15,
             63
         ]
     },
@@ -915,7 +1011,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            12,
+            15,
             69
         ]
     },
@@ -923,7 +1019,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t\t\t",
         "lexeme_start": [
-            13,
+            16,
             0
         ]
     },
@@ -931,7 +1027,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            13,
+            16,
             4
         ]
     },
@@ -939,7 +1035,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            13,
+            16,
             9
         ]
     },
@@ -947,7 +1043,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            13,
+            16,
             10
         ]
     },
@@ -955,7 +1051,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            13,
+            16,
             15
         ]
     },
@@ -963,7 +1059,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            13,
+            16,
             16
         ]
     },
@@ -971,7 +1067,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            13,
+            16,
             23
         ]
     },
@@ -979,7 +1075,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            13,
+            16,
             24
         ]
     },
@@ -987,7 +1083,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            13,
+            16,
             26
         ]
     },
@@ -995,7 +1091,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            13,
+            16,
             28
         ]
     },
@@ -1003,7 +1099,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            13,
+            16,
             33
         ]
     },
@@ -1011,7 +1107,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "0",
         "lexeme_start": [
-            13,
+            16,
             34
         ]
     },
@@ -1019,7 +1115,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            13,
+            16,
             35
         ]
     },
@@ -1027,7 +1123,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            13,
+            16,
             36
         ]
     },
@@ -1035,7 +1131,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t\t\t",
         "lexeme_start": [
-            14,
+            17,
             0
         ]
     },
@@ -1043,7 +1139,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            14,
+            17,
             4
         ]
     },
@@ -1051,7 +1147,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            14,
+            17,
             9
         ]
     },
@@ -1059,7 +1155,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'back'",
         "lexeme_start": [
-            14,
+            17,
             10
         ]
     },
@@ -1067,7 +1163,7 @@
         "token-type": "DELIMITER",
         "lexeme": "+",
         "lexeme_start": [
-            14,
+            17,
             16
         ]
     },
@@ -1075,7 +1171,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            14,
+            17,
             17
         ]
     },
@@ -1083,7 +1179,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            14,
+            17,
             22
         ]
     },
@@ -1091,7 +1187,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            14,
+            17,
             23
         ]
     },
@@ -1099,7 +1195,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            14,
+            17,
             30
         ]
     },
@@ -1107,7 +1203,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            14,
+            17,
             31
         ]
     },
@@ -1115,7 +1211,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            14,
+            17,
             33
         ]
     },
@@ -1123,7 +1219,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            14,
+            17,
             35
         ]
     },
@@ -1131,7 +1227,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            14,
+            17,
             40
         ]
     },
@@ -1139,7 +1235,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "2",
         "lexeme_start": [
-            14,
+            17,
             41
         ]
     },
@@ -1147,7 +1243,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            14,
+            17,
             42
         ]
     },
@@ -1155,7 +1251,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            14,
+            17,
             43
         ]
     },
@@ -1163,7 +1259,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t\t\t",
         "lexeme_start": [
-            15,
+            18,
             0
         ]
     },
@@ -1171,7 +1267,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            15,
+            18,
             4
         ]
     },
@@ -1179,7 +1275,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            15,
+            18,
             9
         ]
     },
@@ -1187,7 +1283,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'loc_id'",
         "lexeme_start": [
-            15,
+            18,
             10
         ]
     },
@@ -1195,7 +1291,7 @@
         "token-type": "DELIMITER",
         "lexeme": "+",
         "lexeme_start": [
-            15,
+            18,
             18
         ]
     },
@@ -1203,7 +1299,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            15,
+            18,
             19
         ]
     },
@@ -1211,7 +1307,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            15,
+            18,
             24
         ]
     },
@@ -1219,7 +1315,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            15,
+            18,
             25
         ]
     },
@@ -1227,7 +1323,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            15,
+            18,
             32
         ]
     },
@@ -1235,7 +1331,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            15,
+            18,
             33
         ]
     },
@@ -1243,7 +1339,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            15,
+            18,
             35
         ]
     },
@@ -1251,7 +1347,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            15,
+            18,
             37
         ]
     },
@@ -1259,7 +1355,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            15,
+            18,
             42
         ]
     },
@@ -1267,7 +1363,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "0",
         "lexeme_start": [
-            15,
+            18,
             43
         ]
     },
@@ -1275,7 +1371,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            15,
+            18,
             44
         ]
     },
@@ -1283,7 +1379,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            15,
+            18,
             45
         ]
     },
@@ -1291,7 +1387,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t\t\t",
         "lexeme_start": [
-            16,
+            19,
             0
         ]
     },
@@ -1299,7 +1395,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            16,
+            19,
             4
         ]
     },
@@ -1307,7 +1403,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            16,
+            19,
             9
         ]
     },
@@ -1315,7 +1411,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'manage'",
         "lexeme_start": [
-            16,
+            19,
             10
         ]
     },
@@ -1323,7 +1419,7 @@
         "token-type": "DELIMITER",
         "lexeme": "+",
         "lexeme_start": [
-            16,
+            19,
             18
         ]
     },
@@ -1331,7 +1427,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            16,
+            19,
             19
         ]
     },
@@ -1339,7 +1435,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            16,
+            19,
             24
         ]
     },
@@ -1347,7 +1443,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            16,
+            19,
             25
         ]
     },
@@ -1355,7 +1451,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            16,
+            19,
             32
         ]
     },
@@ -1363,7 +1459,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            16,
+            19,
             33
         ]
     },
@@ -1371,7 +1467,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            16,
+            19,
             35
         ]
     },
@@ -1379,7 +1475,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            16,
+            19,
             37
         ]
     },
@@ -1387,7 +1483,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            16,
+            19,
             42
         ]
     },
@@ -1395,7 +1491,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "1",
         "lexeme_start": [
-            16,
+            19,
             43
         ]
     },
@@ -1403,7 +1499,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            16,
+            19,
             44
         ]
     },
@@ -1411,7 +1507,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            16,
+            19,
             45
         ]
     },
@@ -1419,7 +1515,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t\t",
         "lexeme_start": [
-            17,
+            20,
             0
         ]
     },
@@ -1427,7 +1523,7 @@
         "token-type": "END_STMT",
         "lexeme": "end",
         "lexeme_start": [
-            17,
+            20,
             3
         ]
     },
@@ -1435,7 +1531,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            17,
+            20,
             6
         ]
     },
@@ -1443,7 +1539,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t",
         "lexeme_start": [
-            18,
+            21,
             0
         ]
     },
@@ -1451,7 +1547,7 @@
         "token-type": "END_STMT",
         "lexeme": "end",
         "lexeme_start": [
-            18,
+            21,
             2
         ]
     },
@@ -1459,7 +1555,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            18,
+            21,
             6
         ]
     },
@@ -1467,7 +1563,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t",
         "lexeme_start": [
-            19,
+            22,
             0
         ]
     },
@@ -1475,7 +1571,7 @@
         "token-type": "END_STMT",
         "lexeme": "end",
         "lexeme_start": [
-            19,
+            22,
             1
         ]
     },
@@ -1483,7 +1579,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            19,
+            22,
             4
         ]
     },
@@ -1491,7 +1587,7 @@
         "token-type": "END_STMT",
         "lexeme": "end",
         "lexeme_start": [
-            20,
+            23,
             0
         ]
     },
@@ -1499,7 +1595,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            20,
+            23,
             3
         ]
     },
@@ -1507,7 +1603,7 @@
         "token-type": "IF_STMT",
         "lexeme": "if",
         "lexeme_start": [
-            21,
+            24,
             0
         ]
     },
@@ -1515,7 +1611,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            21,
+            24,
             3
         ]
     },
@@ -1523,7 +1619,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            21,
+            24,
             8
         ]
     },
@@ -1531,7 +1627,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "0",
         "lexeme_start": [
-            21,
+            24,
             9
         ]
     },
@@ -1539,7 +1635,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            21,
+            24,
             10
         ]
     },
@@ -1547,7 +1643,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            21,
+            24,
             12
         ]
     },
@@ -1555,7 +1651,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "''",
         "lexeme_start": [
-            21,
+            24,
             14
         ]
     },
@@ -1563,7 +1659,7 @@
         "token-type": "THEN",
         "lexeme": ":",
         "lexeme_start": [
-            21,
+            24,
             16
         ]
     },
@@ -1571,7 +1667,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "killvar",
         "lexeme_start": [
-            21,
+            24,
             18
         ]
     },
@@ -1579,7 +1675,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'$help'",
         "lexeme_start": [
-            21,
+            24,
             26
         ]
     },
@@ -1587,7 +1683,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            21,
+            24,
             33
         ]
     },
@@ -1595,7 +1691,7 @@
         "token-type": "ACT_STMT",
         "lexeme": "act",
         "lexeme_start": [
-            22,
+            25,
             0
         ]
     },
@@ -1603,7 +1699,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'Великолепно'",
         "lexeme_start": [
-            22,
+            25,
             4
         ]
     },
@@ -1611,7 +1707,7 @@
         "token-type": "THEN",
         "lexeme": ":",
         "lexeme_start": [
-            22,
+            25,
             17
         ]
     },
@@ -1619,7 +1715,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            22,
+            25,
             18
         ]
     },
@@ -1627,7 +1723,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": " \t",
         "lexeme_start": [
-            23,
+            26,
             0
         ]
     },
@@ -1635,7 +1731,7 @@
         "token-type": "IF_STMT",
         "lexeme": "if",
         "lexeme_start": [
-            23,
+            26,
             2
         ]
     },
@@ -1643,7 +1739,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            23,
+            26,
             5
         ]
     },
@@ -1651,7 +1747,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            23,
+            26,
             10
         ]
     },
@@ -1659,7 +1755,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            23,
+            26,
             11
         ]
     },
@@ -1667,7 +1763,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            23,
+            26,
             16
         ]
     },
@@ -1675,7 +1771,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            23,
+            26,
             17
         ]
     },
@@ -1683,7 +1779,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            23,
+            26,
             24
         ]
     },
@@ -1691,7 +1787,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            23,
+            26,
             25
         ]
     },
@@ -1699,7 +1795,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            23,
+            26,
             26
         ]
     },
@@ -1707,7 +1803,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "''",
         "lexeme_start": [
-            23,
+            26,
             27
         ]
     },
@@ -1715,7 +1811,7 @@
         "token-type": "THEN",
         "lexeme": ":",
         "lexeme_start": [
-            23,
+            26,
             29
         ]
     },
@@ -1723,7 +1819,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            23,
+            26,
             30
         ]
     },
@@ -1731,7 +1827,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t",
         "lexeme_start": [
-            24,
+            27,
             0
         ]
     },
@@ -1739,7 +1835,7 @@
         "token-type": "EXCLAMATION_SIGN",
         "lexeme": "!",
         "lexeme_start": [
-            24,
+            27,
             1
         ]
     },
@@ -1747,7 +1843,7 @@
         "token-type": "RAW_TEXT",
         "lexeme": "@",
         "lexeme_start": [
-            24,
+            27,
             2
         ]
     },
@@ -1755,7 +1851,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            24,
+            27,
             4
         ]
     },
@@ -1763,7 +1859,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "удаляется",
         "lexeme_start": [
-            24,
+            27,
             10
         ]
     },
@@ -1771,7 +1867,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "только",
         "lexeme_start": [
-            24,
+            27,
             20
         ]
     },
@@ -1779,7 +1875,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "когда",
         "lexeme_start": [
-            24,
+            27,
             27
         ]
     },
@@ -1787,7 +1883,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "закрывается",
         "lexeme_start": [
-            24,
+            27,
             33
         ]
     },
@@ -1795,7 +1891,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "первый",
         "lexeme_start": [
-            24,
+            27,
             45
         ]
     },
@@ -1803,7 +1899,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "открытый",
         "lexeme_start": [
-            24,
+            27,
             52
         ]
     },
@@ -1811,7 +1907,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "сундук",
         "lexeme_start": [
-            24,
+            27,
             61
         ]
     },
@@ -1819,7 +1915,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            24,
+            27,
             67
         ]
     },
@@ -1827,7 +1923,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t",
         "lexeme_start": [
-            25,
+            28,
             0
         ]
     },
@@ -1835,7 +1931,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            25,
+            28,
             2
         ]
     },
@@ -1843,7 +1939,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            25,
+            28,
             7
         ]
     },
@@ -1851,7 +1947,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            25,
+            28,
             8
         ]
     },
@@ -1859,7 +1955,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            25,
+            28,
             13
         ]
     },
@@ -1867,7 +1963,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            25,
+            28,
             14
         ]
     },
@@ -1875,7 +1971,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            25,
+            28,
             21
         ]
     },
@@ -1883,7 +1979,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            25,
+            28,
             22
         ]
     },
@@ -1891,7 +1987,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            25,
+            28,
             24
         ]
     },
@@ -1899,7 +1995,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            25,
+            28,
             26
         ]
     },
@@ -1907,7 +2003,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            25,
+            28,
             31
         ]
     },
@@ -1915,7 +2011,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "0",
         "lexeme_start": [
-            25,
+            28,
             32
         ]
     },
@@ -1923,7 +2019,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            25,
+            28,
             33
         ]
     },
@@ -1931,7 +2027,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            25,
+            28,
             34
         ]
     },
@@ -1939,7 +2035,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t",
         "lexeme_start": [
-            26,
+            29,
             0
         ]
     },
@@ -1947,7 +2043,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            26,
+            29,
             2
         ]
     },
@@ -1955,7 +2051,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            26,
+            29,
             7
         ]
     },
@@ -1963,7 +2059,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'back'",
         "lexeme_start": [
-            26,
+            29,
             8
         ]
     },
@@ -1971,7 +2067,7 @@
         "token-type": "DELIMITER",
         "lexeme": "+",
         "lexeme_start": [
-            26,
+            29,
             14
         ]
     },
@@ -1979,7 +2075,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            26,
+            29,
             15
         ]
     },
@@ -1987,7 +2083,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            26,
+            29,
             20
         ]
     },
@@ -1995,7 +2091,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            26,
+            29,
             21
         ]
     },
@@ -2003,7 +2099,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            26,
+            29,
             28
         ]
     },
@@ -2011,7 +2107,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            26,
+            29,
             29
         ]
     },
@@ -2019,7 +2115,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            26,
+            29,
             31
         ]
     },
@@ -2027,7 +2123,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            26,
+            29,
             33
         ]
     },
@@ -2035,7 +2131,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            26,
+            29,
             38
         ]
     },
@@ -2043,7 +2139,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "2",
         "lexeme_start": [
-            26,
+            29,
             39
         ]
     },
@@ -2051,7 +2147,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            26,
+            29,
             40
         ]
     },
@@ -2059,7 +2155,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            26,
+            29,
             41
         ]
     },
@@ -2067,7 +2163,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t",
         "lexeme_start": [
-            27,
+            30,
             0
         ]
     },
@@ -2075,7 +2171,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            27,
+            30,
             2
         ]
     },
@@ -2083,7 +2179,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            27,
+            30,
             7
         ]
     },
@@ -2091,7 +2187,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'loc_id'",
         "lexeme_start": [
-            27,
+            30,
             8
         ]
     },
@@ -2099,7 +2195,7 @@
         "token-type": "DELIMITER",
         "lexeme": "+",
         "lexeme_start": [
-            27,
+            30,
             16
         ]
     },
@@ -2107,7 +2203,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            27,
+            30,
             17
         ]
     },
@@ -2115,7 +2211,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            27,
+            30,
             22
         ]
     },
@@ -2123,7 +2219,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            27,
+            30,
             23
         ]
     },
@@ -2131,7 +2227,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            27,
+            30,
             30
         ]
     },
@@ -2139,7 +2235,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            27,
+            30,
             31
         ]
     },
@@ -2147,7 +2243,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            27,
+            30,
             33
         ]
     },
@@ -2155,7 +2251,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            27,
+            30,
             35
         ]
     },
@@ -2163,7 +2259,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            27,
+            30,
             40
         ]
     },
@@ -2171,7 +2267,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "0",
         "lexeme_start": [
-            27,
+            30,
             41
         ]
     },
@@ -2179,7 +2275,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            27,
+            30,
             42
         ]
     },
@@ -2187,7 +2283,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            27,
+            30,
             43
         ]
     },
@@ -2195,7 +2291,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t\t",
         "lexeme_start": [
-            28,
+            31,
             0
         ]
     },
@@ -2203,7 +2299,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            28,
+            31,
             2
         ]
     },
@@ -2211,7 +2307,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            28,
+            31,
             7
         ]
     },
@@ -2219,7 +2315,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'manage'",
         "lexeme_start": [
-            28,
+            31,
             8
         ]
     },
@@ -2227,7 +2323,7 @@
         "token-type": "DELIMITER",
         "lexeme": "+",
         "lexeme_start": [
-            28,
+            31,
             16
         ]
     },
@@ -2235,7 +2331,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$cvar",
         "lexeme_start": [
-            28,
+            31,
             17
         ]
     },
@@ -2243,7 +2339,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            28,
+            31,
             22
         ]
     },
@@ -2251,7 +2347,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'chest'",
         "lexeme_start": [
-            28,
+            31,
             23
         ]
     },
@@ -2259,7 +2355,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            28,
+            31,
             30
         ]
     },
@@ -2267,7 +2363,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            28,
+            31,
             31
         ]
     },
@@ -2275,7 +2371,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            28,
+            31,
             33
         ]
     },
@@ -2283,7 +2379,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            28,
+            31,
             35
         ]
     },
@@ -2291,7 +2387,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            28,
+            31,
             40
         ]
     },
@@ -2299,7 +2395,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "1",
         "lexeme_start": [
-            28,
+            31,
             41
         ]
     },
@@ -2307,7 +2403,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            28,
+            31,
             42
         ]
     },
@@ -2315,7 +2411,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            28,
+            31,
             43
         ]
     },
@@ -2323,7 +2419,7 @@
         "token-type": "PREFORMATTER",
         "lexeme": "\t",
         "lexeme_start": [
-            29,
+            32,
             0
         ]
     },
@@ -2331,7 +2427,7 @@
         "token-type": "END_STMT",
         "lexeme": "end",
         "lexeme_start": [
-            29,
+            32,
             1
         ]
     },
@@ -2339,7 +2435,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            29,
+            32,
             4
         ]
     },
@@ -2347,7 +2443,7 @@
         "token-type": "END_STMT",
         "lexeme": "end",
         "lexeme_start": [
-            30,
+            33,
             0
         ]
     },
@@ -2355,7 +2451,7 @@
         "token-type": "NEWLINE",
         "lexeme": "\n",
         "lexeme_start": [
-            30,
+            33,
             3
         ]
     },
@@ -2363,7 +2459,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$result",
         "lexeme_start": [
-            31,
+            34,
             0
         ]
     },
@@ -2371,7 +2467,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            31,
+            34,
             7
         ]
     },
@@ -2379,7 +2475,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'[help]'",
         "lexeme_start": [
-            31,
+            34,
             8
         ]
     },
@@ -2387,7 +2483,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            31,
+            34,
             16
         ]
     },
@@ -2395,7 +2491,7 @@
         "token-type": "DELIMITER",
         "lexeme": "=",
         "lexeme_start": [
-            31,
+            34,
             18
         ]
     },
@@ -2403,7 +2499,7 @@
         "token-type": "IDENTIFIER",
         "lexeme": "$args",
         "lexeme_start": [
-            31,
+            34,
             20
         ]
     },
@@ -2411,7 +2507,7 @@
         "token-type": "LEFT_BRACKET",
         "lexeme": "[",
         "lexeme_start": [
-            31,
+            34,
             25
         ]
     },
@@ -2419,7 +2515,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'result.help'",
         "lexeme_start": [
-            31,
+            34,
             26
         ]
     },
@@ -2427,7 +2523,7 @@
         "token-type": "RIGHT_BRACKET",
         "lexeme": "]",
         "lexeme_start": [
-            31,
+            34,
             39
         ]
     },
@@ -2435,7 +2531,7 @@
         "token-type": "DELIMITER",
         "lexeme": "+",
         "lexeme_start": [
-            31,
+            34,
             41
         ]
     },
@@ -2443,7 +2539,7 @@
         "token-type": "RAW_TEXT",
         "lexeme": "@b.w.s",
         "lexeme_start": [
-            31,
+            34,
             43
         ]
     },
@@ -2451,7 +2547,7 @@
         "token-type": "LEFT_PAREN",
         "lexeme": "(",
         "lexeme_start": [
-            31,
+            34,
             49
         ]
     },
@@ -2459,7 +2555,7 @@
         "token-type": "APOSTROPHE_STRING",
         "lexeme": "'help'",
         "lexeme_start": [
-            31,
+            34,
             50
         ]
     },
@@ -2467,7 +2563,7 @@
         "token-type": "RIGHT_PAREN",
         "lexeme": ")",
         "lexeme_start": [
-            31,
+            34,
             56
         ]
     },
