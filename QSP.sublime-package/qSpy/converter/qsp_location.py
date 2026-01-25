@@ -2,12 +2,12 @@ import re
 from typing import List
 
 from .tps import (
-    QspsLine, MultilineDesc, Action, LocName, LocCode)
+    QspsLine, MultilineDesc, Action, LocName, LocCode, BaseFindMode)
 from . import base_scanner as scn
 from . import base_parser as psr
 from . import base_int as bint
 
-from .tools import BaseFindMode, parse_string
+from .tools import parse_string
 
 # const
 _BASE_OPEN = re.compile(r'^\! BASE\s*$')
@@ -30,6 +30,18 @@ class QspLoc():
         self._run_on_visit:List[QspsLine] = [] # code of Run-on-visit field of location
 
         self._extract_base()
+
+    def name(self) -> LocName:
+        return self._name
+
+    def actions(self) -> List[Action]:
+        return self._base_actions
+
+    def desc(self) -> MultilineDesc:
+        return self._base_desc
+
+    def run_on_visit(self) -> List[QspsLine]:
+        return self._run_on_visit
 
     def change_name(self, new_name:str) -> None:
         """ Set location name """
@@ -72,6 +84,8 @@ class QspLoc():
             self._run_on_visit = self._code[0:start]+self._code[end+1:]
         else:
             self._run_on_visit = self._code[:]
+
+        print('loc', len(self._base_code))
 
     def split_base(self) -> None:
         """ Split base code to description and actions """

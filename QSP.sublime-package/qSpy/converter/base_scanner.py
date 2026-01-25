@@ -122,12 +122,7 @@ class BaseScanner:
         elif c == ":":
             self._add_token(tt.THEN)
 
-        # Identifiers    
-        elif self._is_alnum(c):
-            if self._is_alnum(self._next_in_line()):
-                self._scan_funcs.append(self._identifier_expect)
-            else:
-                self._add_token(self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER))
+        
         elif self._cur_line[cn:cn+2].lower() == '*p' and self._word_edges(cn, cn+1):
             self._add_expected_chars('p')
             self._scan_funcs.append(self._identifier_expect)
@@ -137,6 +132,12 @@ class BaseScanner:
         elif self._cur_line[cn:cn+3].lower() == '*nl' and self._word_edges(cn, cn+2):
             self._add_expected_chars('nl')
             self._scan_funcs.append(self._identifier_expect)
+        # Identifiers    
+        elif self._is_alnum(c):
+            if self._is_alnum(self._next_in_line()):
+                self._scan_funcs.append(self._identifier_expect)
+            else:
+                self._add_token(self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER))
         elif c in self._STMT_DELIMITERS:
             self._add_token(tt.DELIMITER)
         elif (not self._next_in_line() in self._STMT_DELIMITERS and
@@ -151,7 +152,7 @@ class BaseScanner:
         # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
         next_char = self._next_in_line()
         if not self._is_alnum(next_char):
-            ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER)
+            ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme).lower(), tt.IDENTIFIER)
             self._add_token(ttype)
             self._scan_funcs.pop()
 

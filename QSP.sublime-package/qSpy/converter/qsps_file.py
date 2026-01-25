@@ -25,7 +25,7 @@ ACTION_END = re.compile(r'^END\b')
 IMPLICIT_OPERATOR = re.compile(r'^("|\')')
 
 class QspsFile():
-	"""	qsps-file, separated in locations """
+	"""	qsps-file entity, separated in locations """
 	def __init__(self, qsps_line:Optional[List[QspsLine]] = None) -> None:
 		# main fields:
 		self._locations:List[QspLoc] = []

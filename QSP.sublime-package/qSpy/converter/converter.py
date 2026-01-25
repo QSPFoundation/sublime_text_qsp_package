@@ -1,17 +1,21 @@
 import os
-import re
 import concurrent.futures
 
-from typing import List, Dict, cast
+from typing import List, Dict, Optional
 
-AppPath = str
+from .tps import (
+    QspsLine, Path
+)
+from .qsps_file import QspsFile
+from .qsp_location import QspLoc
+
+AppPath = Path
 AppParam = str
 
 QspsChar = str
 GameChar = str
 CharCache = Dict[QspsChar, GameChar]
 
-QspsLine = str
 GameLine = str # QSP-line string
 
 # constants:
@@ -25,44 +29,69 @@ class QspsToQspConverter:
         self._converter = converter
         self._conv_args = conv_args
 
+        self._qsps_file:Optional[QspsFile] = None
         self._game_lines:List[GameLine] = []
 
-
-    def to_qsp(self) -> None:
-        """ Convert NewQspsFile to QSP-format """
-        if self._game_lines:
-            print('[301] Already converted.')
-            raise Exception('[301] Already converted.')
+    def _qsps_entity_to_game_lines(self, qsps_file:QspsFile) -> List[GameLine]:
+        """ Convert QspsFile to QSP-format """
+        self._qsps_file = qsps_file
+        locs = qsps_file.get_locations()
         # header of qsp-file
         self._game_lines.append('QSPGAME\n')
-        self._game_lines.append('qsps_to_qsp SublimeText QSP Package\n')
+        self._game_lines.append('SublimeText QSP-Package\n')
         self._game_lines.append(self.encode_qsps_line('No')+'\n')
-        self._game_lines.append(self.encode_qsps_line(str(len(self.locations)))+'\n')
+        self._game_lines.append(self.encode_qsps_line(str(len(locs)))+'\n')
         # decode locations
-        _decode_location = lambda l: l.encode()
+        def _encode_location(loc:QspLoc) -> None:
+            loc.split_base()
+            name = loc.name()
+            desc = loc.desc()
+            actions = loc.actions()
+            code_lines = ''.join(loc.run_on_visit()).replace('\n', '\r\n')
+            self._game_lines.append(QspsToQspConverter.encode_qsps_line(name))
+            self._game_lines.append('\n')
+            self._game_lines.append(QspsToQspConverter.encode_qsps_line(desc))
+            self._game_lines.append('\n')
+            self._game_lines.append(QspsToQspConverter.encode_qsps_line(code_lines))
+            self._game_lines.append('\n')
+            self._game_lines.append(QspsToQspConverter.encode_qsps_line(str(len(actions))))
+            self._game_lines.append('\n')
+            for act in actions:
+                self._game_lines.append(QspsToQspConverter.encode_qsps_line(act['image']))
+                self._game_lines.append('\n')
+                self._game_lines.append(QspsToQspConverter.encode_qsps_line(act['name']))
+                self._game_lines.append('\n')
+                self._game_lines.append(QspsToQspConverter.encode_qsps_line(''.join(act['code']).replace('\n', '\r\n')))
+                self._game_lines.append('\n')
         with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
-            for location in self.locations:
-                executor.submit(_decode_location, location)
-        for location in self.locations:
-            self._game_lines.extend(location.get_qsp())
+            for location in locs:
+                executor.submit(_encode_location, location)
+        # for location in locs:
+        #     _encode_location(location)
+        return self._game_lines
 
-    def convert_file(self, input_file:str) -> None:
+    def covert_lines(self, qsps_lines:List[QspsLine]) -> List[GameLine]:
+        qsps_file = self._qsps_file = QspsFile(qsps_lines)
+        qsps_file.split_to_locations()
+        return self._qsps_entity_to_game_lines(qsps_file)
+
+    def convert_file(self, input_file:str, output_file:str) -> None:
         """ Convert qsps-file to qsp-file """
         if not os.path.isfile(input_file): return
-        
-        self.read_from_file(input_file)
-        self.split_to_locations()
-        self.to_qsp()
-        self.save_to_file()
-        
+        qsps_file = QspsFile()
+        qsps_file.read_from_file(input_file)
+        qsps_file.split_to_locations()
+        self._qsps_entity_to_game_lines(qsps_file)
+        self.save_to_file(output_file)
 
-
-    def save_to_file(self, output_file:str=None) -> None:
-        """ Save qsps-text to file. """
-        if not output_file:
-            output_file = self.output_file
+    def save_to_file(self, output_file:Path) -> None:
         with open(output_file, 'w', encoding='utf-16le') as file:
-            file.writelines(self._game_strings)
+            file.writelines(self._game_lines)
+
+    def save_temp_file(self, output_file:Path) -> None:
+        if not self._qsps_file: return
+        with open(output_file, 'w', encoding='utf-8-sig') as file:
+            file.writelines(self._qsps_file.get_src())
 
     @staticmethod
     def encode_char(point:QspsChar) -> GameChar:
