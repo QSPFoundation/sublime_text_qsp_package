@@ -1,9 +1,10 @@
 import json, os
+from typing import Dict, List, Union, cast
 
-from base_scanner import BaseScaner
+from base_scanner import BaseScanner
 from base_parser import BaseParser
 from base_printer import BasePrinter
-from base_int import BaseInt
+from base_int import Action, BaseInt
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(__file__))
@@ -11,10 +12,10 @@ if __name__ == "__main__":
     with open('.\\base_example.qsps', 'r', encoding='utf-8') as fp:
         lines = fp.readlines()
     
-    scanner = BaseScaner(lines)
+    scanner = BaseScanner(lines)
     scanner.scan_tokens()
     tokens = scanner.get_tokens()
-    nodes = [t.get_as_node() for t in tokens]
+    nodes = scanner.get_token_nodes()
 
     print('scanner is over')
 
@@ -39,13 +40,13 @@ if __name__ == "__main__":
     interpreter = BaseInt(statements, lines)
     interpreter.run()
 
-    elements = {'base-description': interpreter.desc(), 'actions':[]}
+    elements:Dict[str, Union[str, List[Action]]] = {'base-description': interpreter.desc(), 'actions':[]}
 
     for a in interpreter.actions():
-        elements['actions'].append({'image': a['image'],
+        cast(List[Action], elements['actions']).append({'image': a['image'],
         'name': a['name'], 'code': a['code']})
 
     print('interpreter is over')
 
-    with open('output.json', 'w', encoding='utf-8') as fp:
+    with open('base_output.json', 'w', encoding='utf-8') as fp:
         json.dump(elements, fp, indent=4, ensure_ascii=False)

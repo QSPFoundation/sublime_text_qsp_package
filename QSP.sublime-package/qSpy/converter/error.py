@@ -1,5 +1,5 @@
 from typing import Tuple
-from base_tokens import BaseToken
+from .base_tokens import BaseToken
 
 Line = str
 Num = int

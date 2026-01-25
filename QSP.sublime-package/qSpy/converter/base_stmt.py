@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, Optional, TypeVar, List
 
-from base_tokens import BaseToken
+from .base_tokens import BaseToken
 
 R = TypeVar("R")
 

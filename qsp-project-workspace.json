@@ -3200,15 +3200,6 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\_test\\output.qsps": [
-            [
-                "[pp.start] [8]",
-                [
-                    2,
-                    16
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\pptest.qsps": [
             [
                 "[pp.start] [8]",
@@ -3224,6 +3215,15 @@
                 [
                     2,
                     16
+                ]
+            ]
+        ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package\\qSpy\\converter\\base_example.qsps": [
+            [
+                "loc",
+                [
+                    2,
+                    5
                 ]
             ]
         ]
@@ -3414,7 +3414,6 @@
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\pptest.qsps": "81ba50279b394039199e53d2cda98a6e",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\for_autotest.qsps": "84fb88c4383b6dc313674e5b749a9741",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\expected.qsps": "41a3a507ab615aa06f5db820ef3092ad",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\[examples]\\example_preprocessor\\_test\\output.qsps": "41a3a507ab615aa06f5db820ef3092ad",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package\\qSpy\\converter\\base_example.qsps": "5a1f261ea4a50d7d947ee362f261b5b1"
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package\\qSpy\\converter\\base_example.qsps": "9b7ccc06ba4ca85ab09200c86751abbc"
     }
 }

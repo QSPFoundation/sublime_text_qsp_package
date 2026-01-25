@@ -1,4 +1,4 @@
-# loc
+! BASE
 *p 'Проверка-проверка'
 *pl 'Yt hf,jnftn'
 *p {ksfmsmfgsoadmfosadmfsadm ndfoanvdogvod}
@@ -32,4 +32,5 @@ act 'Великолепно':
 		$cvar['manage'+$cvar['chest']]	=	$args[1]
 	end
 end
+! END BASE
 $result['[help]'] = $args['result.help'] + @b.w.s('help')

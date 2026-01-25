@@ -1,23 +1,15 @@
-from typing import List, Union, cast, TypedDict
+from typing import List, Union, cast
 
-from base_tokens import BaseToken, BaseTokenType as tt
+from .tps import (
+    Path,
+    QspsLine,
+    Action, ActionName,
+    MultilineDesc
+)
 
-import base_stmt as stm
-
-from error import RuntimeIntError
-
-Path = str
-
-LocName = str
-QspsLine = str
-
-MultilineDesc = str
-
-ActionName = str
-class Action(TypedDict):
-    image: Path
-    name: ActionName
-    code: List[QspsLine]
+from .base_tokens import BaseToken, BaseTokenType as tt
+from . import base_stmt as stm
+from .error import RuntimeIntError
 
 AstNode = Union[None, bool, str, BaseToken]
 
@@ -28,8 +20,6 @@ class BaseInt(stm.BaseVisitor[AstNode]):
                  qsps_lines:List[QspsLine]) -> None:
         self._stmts = stmts
         self._src_lines:List[QspsLine] = qsps_lines
-
-        self._temporary:List[str] = []
 
         self._actions:List[Action] = []
         self._desc_lines:List[str] = []
@@ -45,7 +35,7 @@ class BaseInt(stm.BaseVisitor[AstNode]):
     def actions(self) -> List[Action]:
         return self._actions
 
-    def desc(self) -> str:
+    def desc(self) -> MultilineDesc:
         return ''.join(self._desc_lines)
 
 

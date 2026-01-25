@@ -1,19 +1,19 @@
 from typing import Callable, Dict, List, Tuple
 
+from .tps import (
+    QspsLine,
+    Char, CharsStack
+)
+
 ScanHandler = Callable[[str], None]
 HandlerStack = List[ScanHandler]
-
-Char = str
-CharsStack = List[Char]
-QspsLine = str
-QspsLines = List[QspsLine]
 
 if __name__ == "__main__":
     from base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
 else:
-    from base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
+    from .base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
 
-class BaseScaner:
+class BaseScanner:
     """ Scanner of Base block of location. """
     _STMT_DELIMITERS = (
         "\"", "'", "{", "}", "[", "]", "(", ")",

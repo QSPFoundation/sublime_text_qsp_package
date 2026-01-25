@@ -1,13 +1,13 @@
 # from tracemalloc import start
 from typing import List, Optional, Any
 
-from base_tokens import BaseToken as Tkn, BaseTokenType as tt
+from .base_tokens import BaseToken as Tkn, BaseTokenType as tt
 
-import base_stmt as stm
+from . import base_stmt as stm
 
 BaseStmt = stm.BaseStmt[Any]
 
-from error import ParserError
+from .error import ParserError
 
 class BaseParser:
 
