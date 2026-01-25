@@ -42,30 +42,35 @@ class QspsToQspConverter:
         self._game_lines.append(self.encode_qsps_line('No')+'\n')
         self._game_lines.append(self.encode_qsps_line(str(len(locs)))+'\n')
         # decode locations
-        def _encode_location(loc:QspLoc) -> None:
+        def _encode_location(loc:QspLoc) -> List[GameLine]:
             loc.split_base()
             name = loc.name()
             desc = loc.desc()
             actions = loc.actions()
             code_lines = ''.join(loc.run_on_visit()).replace('\n', '\r\n')
-            self._game_lines.append(QspsToQspConverter.encode_qsps_line(name))
-            self._game_lines.append('\n')
-            self._game_lines.append(QspsToQspConverter.encode_qsps_line(desc))
-            self._game_lines.append('\n')
-            self._game_lines.append(QspsToQspConverter.encode_qsps_line(code_lines))
-            self._game_lines.append('\n')
-            self._game_lines.append(QspsToQspConverter.encode_qsps_line(str(len(actions))))
-            self._game_lines.append('\n')
+            out_lines:List[GameLine] = []
+            out_lines.append(QspsToQspConverter.encode_qsps_line(name))
+            out_lines.append('\n')
+            out_lines.append(QspsToQspConverter.encode_qsps_line(desc))
+            out_lines.append('\n')
+            out_lines.append(QspsToQspConverter.encode_qsps_line(code_lines))
+            out_lines.append('\n')
+            out_lines.append(QspsToQspConverter.encode_qsps_line(str(len(actions))))
+            out_lines.append('\n')
             for act in actions:
-                self._game_lines.append(QspsToQspConverter.encode_qsps_line(act['image']))
-                self._game_lines.append('\n')
-                self._game_lines.append(QspsToQspConverter.encode_qsps_line(act['name']))
-                self._game_lines.append('\n')
-                self._game_lines.append(QspsToQspConverter.encode_qsps_line(''.join(act['code']).replace('\n', '\r\n')))
-                self._game_lines.append('\n')
+                out_lines.append(QspsToQspConverter.encode_qsps_line(act['image']))
+                out_lines.append('\n')
+                out_lines.append(QspsToQspConverter.encode_qsps_line(act['name']))
+                out_lines.append('\n')
+                out_lines.append(QspsToQspConverter.encode_qsps_line(''.join(act['code']).replace('\n', '\r\n')))
+                out_lines.append('\n')
+            return out_lines
         with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
-            for location in locs:
-                executor.submit(_encode_location, location)
+            # Используем executor.map для получения результатов в порядке отправки задач
+            # Если _encode_location возвращает список строк для каждой локации
+            results = executor.map(_encode_location, locs)
+            for encoded_lines in results:
+                self._game_lines.extend(encoded_lines)
         # for location in locs:
         #     _encode_location(location)
         return self._game_lines
