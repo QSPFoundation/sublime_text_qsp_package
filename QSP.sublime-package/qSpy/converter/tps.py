@@ -1,4 +1,4 @@
-from typing import List, Literal, TypedDict
+from typing import List, Literal, TypedDict, Union
 
 Path = str
 
@@ -8,6 +8,13 @@ QspsLine = str
 
 LocName = str
 LocCode = List[QspsLine]
+
+# location finds
+
+class LocFindMode(TypedDict):
+    loc_name: LocName
+    quote: List[Literal['"', "'", "{"]]
+    src_lines: List[QspsLine]
 
 # base description
 MultilineDesc = str
@@ -22,3 +29,5 @@ class Action(TypedDict):
     image: Path
     name: ActionName
     code: List[QspsLine]
+
+ParseStringMode = Union[BaseFindMode, LocFindMode]

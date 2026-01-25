@@ -1,10 +1,10 @@
 # auxiable tools
 from .tps import (
     QspsLine,
-    BaseFindMode
+    ParseStringMode
 )
 
-def parse_string(qsps_line:QspsLine, mode:BaseFindMode) -> None:
+def parse_string(qsps_line:QspsLine, mode:ParseStringMode) -> None:
     """ Parse opened string for location code and return open string chars """
     for char in qsps_line:
         if not mode['quote']:
@@ -22,7 +22,7 @@ def parse_string(qsps_line:QspsLine, mode:BaseFindMode) -> None:
 if __name__ == "__main__":
     import time
     def test_parse_string():
-        mode:BaseFindMode = {'open_base': False, 'quote': []}
+        mode:ParseStringMode = {'open_base': False, 'quote': []}
         # Тест 1: Обычные закрытые двойные кавычки
         mode = {'open_base': False, 'quote': []}
         parse_string('print("Hello, world")', mode)
