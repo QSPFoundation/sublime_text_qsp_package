@@ -56,10 +56,10 @@ def del_first_pref(lines:List[str]) -> List[str]:
 	"""
 		Delete first preformatted symbols from start of lines
 	"""
-	common = ''
+	common:List[str] = []
 	for chars in zip(*lines):
 		if len(set(chars)) == 1 and chars[0] in (' ', '\t'):
-			common += chars[0]
+			common.append(chars[0])
 		else:
 			break
 	if not common: return lines

@@ -9,6 +9,8 @@ from .tps import (
 from .qsps_file import QspsFile
 from .qsp_location import QspLoc
 
+from .tools import del_first_pref
+
 AppPath = Path
 AppParam = str
 
@@ -23,6 +25,11 @@ QSP_CODREMOV = 5 # const of cyphering
 
 class QspsToQspConverter:
     """ Converting QspsLine-s to QSP-format. """
+    # По сути нам нужны три режима работы:
+    #   - Получить строки, сконвертировать, вернуть сконвертированные: .convert_lines()
+    #   - Получить файл, сконвертировать сохранить: .convert_file()
+    #   - Получить строки, сконвертировать, сохранить: .convert_lines() + .save_to_file()
+
     _char_cache:CharCache = {}
 
     def __init__(self, converter:AppPath, conv_args:AppParam) -> None:
@@ -47,7 +54,7 @@ class QspsToQspConverter:
             name = loc.name()
             desc = loc.desc()
             actions = loc.actions()
-            code_lines = ''.join(loc.run_on_visit()).replace('\n', '\r\n')
+            code_lines = ''.join(loc.run_on_visit())#.replace('\n', '\r\n')
             out_lines:List[GameLine] = []
             out_lines.append(QspsToQspConverter.encode_qsps_line(name))
             out_lines.append('\n')
@@ -62,7 +69,7 @@ class QspsToQspConverter:
                 out_lines.append('\n')
                 out_lines.append(QspsToQspConverter.encode_qsps_line(act['name']))
                 out_lines.append('\n')
-                out_lines.append(QspsToQspConverter.encode_qsps_line(''.join(act['code']).replace('\n', '\r\n')))
+                out_lines.append(QspsToQspConverter.encode_qsps_line(''.join(del_first_pref(act['code']))))#.replace('\n', '\r\n')))
                 out_lines.append('\n')
             return out_lines
         with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:

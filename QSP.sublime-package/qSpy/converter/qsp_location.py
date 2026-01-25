@@ -85,8 +85,6 @@ class QspLoc():
         else:
             self._run_on_visit = self._code[:]
 
-        print('loc', len(self._base_code))
-
     def split_base(self) -> None:
         """ Split base code to description and actions """
         if not self._base_code: return # базового описания или действий нет
