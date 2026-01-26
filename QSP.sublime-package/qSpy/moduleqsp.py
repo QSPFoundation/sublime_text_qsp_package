@@ -3,7 +3,10 @@ import subprocess
 from typing import List, Literal, Dict, cast
 
 from . import function as qsp
-from .qsps_to_qsp import NewQspsFile
+from .converter.qsps_file import QspsFile
+from .converter.tps import (
+    QspsLine
+)
 import plugtypes as ts
 # import time
 
@@ -18,7 +21,7 @@ class ModuleQSP():
         self._output_txt:ts.Path = ''        # path of temp file in txt2gam format
         self._set_output_files()
 
-        self._src_qsps_files:List[NewQspsFile] = []
+        self._src_qsps_files:List[QspsFile] = []
         self._extends_by_scheme()
 
         # self.code_system = 'utf-8'
@@ -27,9 +30,9 @@ class ModuleQSP():
         # self.start_time = start_time
     
     def extend_by_file(self, file_path:str) -> None: # file_path:abs_path of file
-        """ Add NewQspsFile by file-path """
+        """ Add QspsFile by file-path """
         if os.path.isfile(file_path):
-            src = NewQspsFile()
+            src = QspsFile()
             src.read_from_file(file_path)
             self._src_qsps_files.append(src)
         else:
@@ -41,13 +44,11 @@ class ModuleQSP():
             qsp.write_error_log(f'[ModuleQSP:002] Folder don\'t exist. Prove path {folder_path}.')
             return None
         for el in qsp.get_files_list(folder_path):
-            file_path = os.path.abspath(el) # TODO: if el is abspath - del absing path of el
-            self.extend_by_file(file_path)
+            self.extend_by_file(el)
 
-    def extend_by_src(self, qsps_lines:List[ts.QspsLine]) -> None:
-        """ Add NewQspsFile by qsps-src-code strings """
-        src = NewQspsFile()
-        src.set_file_source(qsps_lines)
+    def extend_by_src(self, qsps_lines:List[QspsLine]) -> None:
+        """ Add QspsFile by qsps-src-code strings """
+        src = QspsFile(qsps_lines)
         self._src_qsps_files.append(src)
 
     def _set_output_files(self) -> None:
@@ -65,16 +66,16 @@ class ModuleQSP():
         for path in cast(List[ts.FolderPath], self._scheme['folders']):
             self.extend_by_folder(path['path'])
 
-    def choose_code_system(self) -> str:
-        """ utf-8 for built-in converter, utf-16-le for txt2gam """
-        # TODO: txt2gam поддерживает utf-8. Можно убрать выбор кодировки.
-        return ('utf-8' if self.converter == 'qsps_to_qsp' else 'utf-16-le')
+    # def choose_code_system(self) -> str:
+    #     """ utf-8 for built-in converter, utf-16-le for txt2gam """
+    #     # TODO: txt2gam поддерживает utf-8. Можно убрать выбор кодировки.
+    #     return ('utf-8' if self.converter == 'qsps_to_qsp' else 'utf-16-le')
 
 
     def preprocess_qsps(self, pponoff:Literal['Hard-off', 'Off', 'On'],
                         pp_markers:Dict[str, bool]) -> None:
         """ 
-            На данном этапе у нас есть объекты класса NewQspsFile, которые включают в себя список
+            На данном этапе у нас есть объекты класса QspsFile, которые включают в себя список
             строк для каждого файла, т.е. цикл чтения уже завершён. Теперь мы можем обработать эти
             виртуальные файлы, прогнав их через препроцессор.
 
@@ -124,7 +125,7 @@ class ModuleQSP():
 
         # start_time = time.time()
         if self.converter == 'qsps_to_qsp':
-            qsps_file = NewQspsFile()
+            qsps_file = QspsFile()
             qsps_file.set_file_source(self.qsps_code)
             # print(f'Module.newqsps {time.time() - start_time}, {time.time() - self.start_time}')
             qsps_file.split_to_locations()
