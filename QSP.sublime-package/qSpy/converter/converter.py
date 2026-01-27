@@ -32,9 +32,7 @@ class QspsToQspConverter:
 
     _char_cache:CharCache = {}
 
-    def __init__(self, converter:AppPath, conv_args:AppParam) -> None:
-        self._converter = converter
-        self._conv_args = conv_args
+    def __init__(self) -> None:
 
         self._qsps_file:Optional[QspsFile] = None
         self._game_lines:List[GameLine] = []
@@ -82,7 +80,7 @@ class QspsToQspConverter:
         #     _encode_location(location)
         return self._game_lines
 
-    def covert_lines(self, qsps_lines:List[QspsLine]) -> List[GameLine]:
+    def convert_lines(self, qsps_lines:List[QspsLine]) -> List[GameLine]:
         qsps_file = self._qsps_file = QspsFile(qsps_lines)
         qsps_file.split_to_locations()
         return self._qsps_entity_to_game_lines(qsps_file)

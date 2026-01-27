@@ -47,7 +47,7 @@ class QspsPP:
     def pp_fastlines(self) -> List[QspsLine]:
         return self._pp_int.fast_output() if self._pp_int else []
 
-    def pp_this_lines(self, qsps_lines: List[str]) -> List[str]:
+    def pp_this_lines(self, qsps_lines: List[QspsLine]) -> List[QspsLine]:
         """ Preprocess the list of lines. """
 
         # 1. Scan by directives

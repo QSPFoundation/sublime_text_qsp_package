@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Literal, Optional, Union
+from typing import Dict, List, Literal, Union, TypedDict
 
 Path = str # file or folder path
 AppParam = str # parameters for application (ex.: --br, -u, -f)
@@ -9,43 +9,52 @@ QspsLine = str
 GameLine = str
 PpMode = Literal['Hard-off', 'Off', 'On']
 
-SchemeArgs = Dict[
-	Literal[
-		'point_file', # Path
-		'platform', # Literal['windows', 'unix']
-		'packages_path' # Path
-	],
-	Union[Path, str]
-]
+class SchemeArgs(TypedDict, total=False):
+	point_file: Path
+	platform: Literal['windows', 'linux', 'osx']
+	packages_path: Path
 
 FolderPath = Dict[Literal['path'], Path]
 FilePath = Dict[Literal['path'], Path]
-QspModule = Dict[
-	Literal['module', 'folders', 'files'],
-	Union[FileName, List[FolderPath], List[FilePath]]
-]
-AssetsConfig = Dict[
-	Literal['output', 'folders', 'files'],
-	Union[Path, List[FolderPath], List[FilePath]]
-]
-ScansConfig = Dict[
-	Literal['location', 'folders', 'files'],
-	Union[LocName, List[Path]]
-]
-ProjectScheme = Dict[
-	Literal[
-		'project', 'start', 'converter', 'player', 'save_temp_files',
-		'preprocessor', 'assets', 'scans',
-		'qgc'
-	],
-	Union[
-		str,
-		bool,
-		FileName,
-		Path,
-		List[QspModule],
-		List[AssetsConfig],
-		ScansConfig,
-		List[Union[Path, AppParam]]
-	]
-]
+
+class QspModule(TypedDict, total=False):
+	module: Path
+	folders: List[FolderPath]
+	files: List[FilePath]
+
+class AssetsConfig(TypedDict, total=False):
+	output:Path
+	folders:List[FolderPath]
+	files:List[FilePath]
+
+class ScansConfig(TypedDict, total=False):
+	location:LocName
+	folders:List[Path]
+	files:List[Path]
+
+class ConverterConfig(TypedDict):
+	capi: Literal['qgc', 'builtin', 'outer']
+	path: Path
+	args: AppParam
+
+class JsonScheme(TypedDict, total=False):
+	""" Source Project Scheme aka json-file """
+	project: List[QspModule]
+	start: Path
+	converter: Union[Path, List[Union[Path, AppParam]]]
+	player: Path
+	save_temp_files: bool
+	preprocessor: PpMode
+	assets: List[AssetsConfig]
+	scans: ScansConfig
+
+class ProjectScheme(TypedDict):
+	""" Correct Project Scheme for builder """
+	project: List[QspModule]
+	start: Path
+	converter: ConverterConfig
+	player: Path
+	save_temp_files: bool
+	preprocessor: PpMode
+	assets: List[AssetsConfig]
+	scans: ScansConfig

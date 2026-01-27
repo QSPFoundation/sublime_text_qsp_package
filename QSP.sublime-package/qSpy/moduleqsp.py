@@ -21,12 +21,12 @@ class ModuleQSP():
         self._output_txt:ts.Path = ''        # path of temp file in txt2gam format
         self._set_output_files()
 
-        self._src_qsps_files:List[QspsFile] = []
+        self._src_files:List[QspsFile] = []
         self._extends_by_scheme()
 
         # self.code_system = 'utf-8'
 
-        self.qsps_code:List[str] = []    # all strings of module code
+        self._src_lines:List[QspsLine] = []    # all strings of module code
         # self.start_time = start_time
     
     def extend_by_file(self, file_path:str) -> None: # file_path:abs_path of file
@@ -34,7 +34,7 @@ class ModuleQSP():
         if os.path.isfile(file_path):
             src = QspsFile()
             src.read_from_file(file_path)
-            self._src_qsps_files.append(src)
+            self._src_files.append(src)
         else:
             qsp.write_error_log(f'[ModuleQSP:001] File don\'t exist. Prove path {file_path}.')
 
@@ -49,12 +49,11 @@ class ModuleQSP():
     def extend_by_src(self, qsps_lines:List[QspsLine]) -> None:
         """ Add QspsFile by qsps-src-code strings """
         src = QspsFile(qsps_lines)
-        self._src_qsps_files.append(src)
+        self._src_files.append(src)
 
     def _set_output_files(self) -> None:
         """
-            On input QSP-file's path,
-            on output QSP-file's abs.path and temporary txt-file's abs path.
+            Set output module (game) file path and temp-file (txt) path.
         """
         self._output_qsp = cast(ts.Path, self._scheme['module'])
         self._output_txt = os.path.splitext(self._output_qsp)[0]+".txt"
@@ -71,25 +70,9 @@ class ModuleQSP():
     #     # TODO: txt2gam поддерживает utf-8. Можно убрать выбор кодировки.
     #     return ('utf-8' if self.converter == 'qsps_to_qsp' else 'utf-16-le')
 
-
-    def preprocess_qsps(self, pponoff:Literal['Hard-off', 'Off', 'On'],
-                        pp_markers:Dict[str, bool]) -> None:
-        """ 
-            На данном этапе у нас есть объекты класса QspsFile, которые включают в себя список
-            строк для каждого файла, т.е. цикл чтения уже завершён. Теперь мы можем обработать эти
-            виртуальные файлы, прогнав их через препроцессор.
-
-            pponoff — управление препроцессором main
-            pp_markers — переменные и метки
-        """
-        if pponoff == 'Hard-off':
-            return None
-        _met_condition = (lambda f, s:
-            (f == 'Off' and  "!@pp:on\n" in s) or (f == 'On' and not "!@pp:off\n" in s))
-        for src in self.src_qsps_file:
-            if _met_condition(pponoff, (src.get_qsps_line(0), src.get_qsps_line(1))):
-                arguments:Dict[str, bool] = {"include":True, "pp":True, "savecomm": False}
-                src.preprocess(arguments, pp_markers)
+    def qsps_files(self) -> List[QspsFile]:
+        """ Return list of all Qsps-Files. """
+        return self._src_files
 
     def src_to_text(self) -> str:
         """ Get outer text of module """
@@ -111,10 +94,16 @@ class ModuleQSP():
         with open(self.output_txt, 'w', encoding=code_system) as file:
             file.write(text)
 
-    def extract_qsps(self) -> None:
-        """ From qsps-files extract sources lines and add to module source """
-        for src in self.src_qsps_file:
-            self.qsps_code.extend(src.get_source())
+    def src_lines(self) -> List[QspsLine]:
+        """ From qsps-files return sources lines and add to module source """
+        self._src_lines.clear()
+        for src in self._src_files:
+            self._src_lines.extend(src.get_src())
+        return self._src_lines
+
+    def set_src_lines(self, qsps_lines:List[QspsLine]) -> None:
+        if not qsps_lines: return
+        self._src_lines = qsps_lines
 
     def convert(self, save_temp_file:bool) -> None:
         """ Convert sources and save module to file """

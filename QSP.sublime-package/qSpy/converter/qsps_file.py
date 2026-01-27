@@ -29,7 +29,7 @@ class QspsFile():
 	def __init__(self, qsps_line:Optional[List[QspsLine]] = None) -> None:
 		# main fields:
 		self._locations:List[QspLoc] = []
-		self._qsps_strings:List[QspsLine] = qsps_line if qsps_line else []				# all strings of file
+		self._src_lines:List[QspsLine] = qsps_line if qsps_line else []				# all strings of file
 
 		# files fields
 		self._input_file:Path = ''	# abspath of qsps-file
@@ -37,7 +37,12 @@ class QspsFile():
 	def add_src_lines(self, file_strings:List[QspsLine]) -> None:
 		""" Add source-lines at end of QspsFile. """
 		if not file_strings: return
-		self._qsps_strings.extend(file_strings)
+		self._src_lines.extend(file_strings)
+
+	def set_src_lines(self, file_strings:List[QspsLine]) -> None:
+		""" Add source-lines at end of QspsFile. """
+		if not file_strings: return
+		self._src_lines = file_strings
 
 	def read_from_file(self, input_file:Path) -> None:
 		""" Read qsps-file and set source strings """
@@ -47,18 +52,18 @@ class QspsFile():
 			print(f'[801] File {input_file} is not exist.')
 			return
 		with open(self._input_file, 'r', encoding='utf-8-sig') as fp:
-			for line in fp:	self._qsps_strings.append(line)
+			for line in fp:	self._src_lines.append(line)
 
 	def get_src(self) -> List[QspsLine]:
 		""" Return sources qsps-lines """
-		return self._qsps_strings
+		return self._src_lines
 
 	def get_src_line(self, qsps_line_number:int) -> QspsLine:
 		""" Return one line from source qsps-line """
-		return self._qsps_strings[qsps_line_number]
+		return self._src_lines[qsps_line_number]
 
 	def get_src_lines(self, qsps_line_start:int, qsps_line_end:int) -> List[QspsLine]:
-		return self._qsps_strings[qsps_line_start:qsps_line_end]
+		return self._src_lines[qsps_line_start:qsps_line_end]
 
 	def split_to_locations(self) -> None:
 		""" Split source strings to locations """
@@ -66,7 +71,7 @@ class QspsFile():
 			'loc_name': '',
 			'quote': [],
 			'src_lines': []}
-		for qsps_line in self._qsps_strings:
+		for qsps_line in self._src_lines:
 			if mode['loc_name'] == '': # open string work only in open location
 				match = LOCATION_START.search(qsps_line)
 				if match:
