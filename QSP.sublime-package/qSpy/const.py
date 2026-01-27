@@ -7,7 +7,8 @@ __all__ = [
 	'QSP_ERROR_MSG',
 	'PROJECT_FILE_NAME',
 	'PLAYER_PATH',
-	'CONVERTER']
+	'CONVERTER',
+	'SCAN_FILES_LOCNAME']
 
 from types import MappingProxyType
 
@@ -259,3 +260,5 @@ PROJECT_FILE_NAME = 'qsp-project.json'
 PLAYER_PATH = 'C:\\Program Files\\QSP Classic 5.9.5\\bin\\qspgui.exe'
 
 CONVERTER = 'qsps_to_qsp'
+
+SCAN_FILES_LOCNAME = 'prv_file'

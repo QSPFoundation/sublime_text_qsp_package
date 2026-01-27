@@ -1,38 +1,76 @@
 import os, json
-from typing import cast, List, Union
+from typing import List
 from . import plugtypes as ts
-from .const import CONVERTER, PROJECT_FILE_NAME, PLAYER_PATH
+from .const import PROJECT_FILE_NAME, PLAYER_PATH, SCAN_FILES_LOCNAME
+
+class _SchemeProvingError(Exception):
+    
+    def __init__(self, message: str, *args:object) -> None:
+        super().__init__(message, *args)
+        self._message = message
+        
+    def __str__(self) -> str:
+        return f"QspProject Error! {self._message}"
+
 
 class QspProject:
     """ Prepare project to build """
-    SCAN_FILES_LOCNAME = 'prv_file'
+    
 
     def __init__(self, args:ts.SchemeArgs, window_folders:List[ts.Path]) -> None:
         self._args:ts.SchemeArgs = args
         self._window_folders:List[ts.Path] = window_folders
 
         # Default inits.
-        self._root:ts.ProjectScheme = {
+        self._json:ts.JsonScheme = {} # qsp-project.json dict
+        self._root:ts.ProjectScheme = { # hard scheme of project
+            'project': [],
+            'start': '',
+            'player': '',
+            'converter': {
+                'capi': 'builtin',
+                'path': '',
+                'args': ''
+            },
+            'save_temp_files': False,
+            'preprocessor': 'Off',
+            'assets': [],
+            'scans': {}
+        }
+        self._scheme_is_right:bool = False
+
+        try:
+            # prove qgc in system
+
+            self._qgc_path:ts.Path = self._get_qgc_path()
+
+            self._work_dir:ts.Path = ''
+            self._point_file:ts.Path = ''
             
-        } # qsp-project.json dict
+            self._work_dir_init()
+            os.chdir(self._work_dir)
 
-        self._qgc_path:ts.Path = self._get_qgc_path()
-        self._work_dir:ts.Path = ''
-        self._point_file:ts.Path = ''
-        
-        self._work_dir_init()
-        os.chdir(self._work_dir)
+            self._project_file:ts.Path = self._project_file_find()
 
-        self._project_file:ts.Path = self._project_file_find()
-
-
-        self._fields_init()
+            self._fields_init()
+            self._scheme_is_right = True
+        except _SchemeProvingError as e:
+            print(str(e))
 
     def get_scheme(self) -> ts.ProjectScheme:
         return self._root
 
     def scheme_is_wrong(self) -> bool:
-        return not bool(self._root)
+        return not self._scheme_is_right
+
+    def _get_qgc_path(self) -> ts.Path:
+        """ Fast converter Path on Windows. """
+        if self._args.get('platform') == 'windows':
+            qgc_path = os.path.join(self._args.get('packages_path',''),
+                'QSP', 'qgc', 'app', 'QGC.exe')
+            if os.path.isfile(qgc_path):
+                return qgc_path
+        return ''
 
     def _work_dir_init(self) -> None:
         """ Work Dir - dir of `qsp-project.json` """
@@ -63,17 +101,8 @@ class QspProject:
                       f'Error "{str(e)}". path: {point_file}. folder: {f}.')
                 continue
 
-        # point-file not in opened windows - this is single file from other project
-        self._work_dir = folder    
-
-    def _get_qgc_path(self) -> ts.Path:
-        """ Fast converter Path on Windows. """
-        if self._args.get('platform', '') == 'windows':
-            qgc_path = os.path.join(self._args['packages_path'],
-                'QSP', 'qgc', 'app', 'QGC.exe')
-            if os.path.isfile(qgc_path):
-                return qgc_path
-        return ''
+        # point-file not in opened folders - this is single file from other project
+        self._work_dir = folder
 
     def _project_file_find(self) -> ts.Path:
         project_file:ts.Path = os.path.join(self._work_dir, PROJECT_FILE_NAME)
@@ -84,10 +113,9 @@ class QspProject:
         """ Filling the BuildQSP fields from project_file """
         if self._project_file:
             with open(self._project_file, 'r', encoding='utf-8') as fp:
-                self._root = json.load(fp)
-        if 'qgc' in self._root: del self._root['qgc']
+                self._json = json.load(fp)
         # Preprocessor's mode init.
-        self._root['preprocessor'] = self._root.get('preprocessor', 'Off')
+        self._root['preprocessor'] = self._json.get('preprocessor', 'Off')
 
         # Set converter path and params
         self._set_converter()
@@ -95,154 +123,183 @@ class QspProject:
         self._set_player()
 
         # Save temp-files Mode
-        self._root['save_temp_files'] = self._root.get('save_temp_files', False)
+        self._root['save_temp_files'] = self._json.get('save_temp_files', False)
 
-        if self._root['project']: # Absolutize pathes of Modules
-            if not self._abs_project():
-                self._root = {}
-                return
-        elif self._point_file != self._project_file: # prepare file of project
-            # list of modules is empty, build single file:
-           self._single_build_project()
+        project = self._json.get('project', [])
+        if not project:
+            # not exist scheme for building
+            if self._project_file:
+                # project file is broken!
+                raise _SchemeProvingError('qsp-project.json is broken. Not found key "project"!')
+            elif self._project_file == self._point_file:
+                # folders opened, and point and project are not exist.
+                self._work_dir_project()
+            else:
+                # point file exist, project file not exist
+                self._single_build_project()
         else:
-            # point file is project file, but list of modules is empty
-            # Project Error
-            print('QspProject-Error: Not define any QspModule in project.')
-            self._root = {}
-            return
+            # scheme of building is exist. Absing path of modules:
+            self._abs_project_pathes(project)
 
-        if 'start' in self._root:
-            self._root['start'] = os.path.abspath(cast(ts.Path, self._root['start']))
+        start = self._json.get('start', '')
+        if start:
+            self._root['start'] = os.path.abspath(start)
         else:
             self._root['start'] = self._get_first_module()
+            self._json['start'] = os.path.relpath(self._root['start'], self._work_dir)
 
         # SCANS
-        if 'scans' in self._root:
-            self._set_scans()
+        if 'scans' in self._json: self._set_scans()
 
         # ASSETS
-        if 'assets' in self._root: self._set_assets()
+        if 'assets' in self._json: self._set_assets()
+
+    def _set_converter(self) -> None:
+        """Set converter path and params"""
+        raw_converter = self._json.get('converter', '')
+        c_path, c_param = '', ''
+        if isinstance(raw_converter, ts.Path): # ts.Path is str
+            c_path = raw_converter
+            c_param = ''
+        else:
+            # Проверяем, что это список как минимум с двумя строковыми элементами
+            try:
+                if len(raw_converter) >= 2:
+                    try:
+                        c_path = str(raw_converter[0])
+                        c_param = str(raw_converter[1])
+                    except KeyError:
+                        raise _SchemeProvingError('Wrong define converter in qsp-projet.json')
+            except TypeError:
+                raise _SchemeProvingError('Wrong define converter in qsp-projet.json')
+        conv = self._root['converter']
+        if not os.path.isfile(c_path):
+            # users converter - not exist
+            if c_path == 'qsps_to_qsp': return # Force the built-in player. It's already installed.                
+            if c_path == 'qgc' or (self._root['preprocessor'] == 'Hard-off' and self._qgc_path):
+                # preprocessor hard-off, qgc exist
+                conv['capi'] = 'qgc'
+                conv['path'] = self._qgc_path
+                conv['args'] = c_param
+            # else:  preprocessor off/on or qgc not exist, builtin conv - already stand
+        else:
+            conv['capi'] = 'outer'
+            conv['path'] = os.path.abspath(c_path)
+            conv['args'] = c_param
 
     def _set_player(self) -> None:
         """Set player path"""
-        player = cast(ts.Path, self._root.get('player', PLAYER_PATH))
-        
-        if not os.path.isfile(player):
-            # player not exist
-            self._root.pop('player', None)
-            return
-
+        player = self._json.get('player', PLAYER_PATH)
+        if not os.path.isfile(player): return # player not exist
         self._root['player'] = os.path.abspath(player)
-        
-    def _set_converter(self) -> None:
-        """Set converter path and params"""
-        converter = cast(Union[ts.Path, List[Union[ts.Path, ts.AppParam]]],
-            self._root.get('converter', ''))
-        if isinstance(converter, ts.Path):
-            c_path = converter
-            c_param = ''
-        else:
-            c_path = converter[0]
-            c_param = converter[1]
-        if not os.path.isfile(c_path):
-            # users converter - not exist
-            if self._root['preprocessor'] == 'Hard-off' and self._qgc_path:
-                # preprocessor hard-off, qgc exist
-                self._root['qgc'] = True
-                self._root['converter'] = [self._qgc_path, c_param]
-            else:
-                # preprocessor off/on or qgc not exist
-                self._root['converter'] = [CONVERTER, '']
-        else:
-            self._root['converter'] = [os.path.abspath(c_path), c_param]
 
-    def _abs_project(self) -> bool:
+    def _abs_project_pathes(self, json_proj:List[ts.QspModule]) -> None:
         """ Absolutize pathes of project modules. """
-        j = 0
+        files_or_folders:bool = False
+        r = self._root['project'] = []
         def _x(c:int) -> str:
             return '0'*(4-len(str(c)))+str(c)
-        for i, module in enumerate(cast(List[ts.QspModule], self._root['project'])):
+        for i, module in enumerate(json_proj):
             # Make module path absolute
-            m = cast(ts.Path, module.get('module', ''))
-            if not m:
-                print(f'Qsp-Project Error: Key «module» not found.')
-                m = os.path.join(self._work_dir, f'game_{_x(i)}.qsp')
-            module['module'] = os.path.abspath(m)
+            module_name = module.get('module', '')
+            if not module_name:
+                module_name = f'game_{_x(i)}.qsp'
+                print(f'QspProject Error: Key "module" not found. Choose module name "{module_name}".')
+            module['module'] = os.path.relpath(module_name, self._work_dir) # relative in json struct
+            rm:ts.QspModule = {
+                'module': os.path.abspath(module_name),
+                'folders': [],
+                'files': []
+            }
+            r.append(rm)
             # Make folder paths absolute
-            for folder in cast(List[ts.FolderPath], module.get('folders', [])):
-                folder['path'] = os.path.abspath(folder['path'])
-                j+=1
-            for file in cast(List[ts.FilePath], module.get('files', [])):
-                j+=1
-                file['path'] = os.path.abspath(file['path'])
-        return bool(j)
-    
+            for folder in module.get('folders', []):
+                rm['folders'].append({'path': os.path.abspath(folder['path'])})
+                files_or_folders = True
+            for file in module.get('files', []):
+                rm['files'].append({'path': os.path.abspath(file['path'])})
+                files_or_folders = True
+
+        if not files_or_folders:
+            raise _SchemeProvingError('Not Qsp-module\'s schemes in qsp-project.json.')
+
     def _single_build_project(self) -> None:
         """ Create QspModule for building of single file. """
-        game_name:ts.FileName = os.path.splitext(os.path.split(self._point_file)[1])[0]
-        module_path:ts.Path = os.path.join(self._work_dir, f'{game_name}.qsp')
+        game_name:ts.FileName = os.path.splitext(os.path.basename(self._point_file))[0]
         self._root['project'] = [{
-            'module': module_path,
+            'module': os.path.join(self._work_dir, f'{game_name}.qsp'),
+            'files': [{'path': self._point_file}]
+        }]
+        self._json['project'] = [{
+            'module': os.path.join('.', f'{game_name}.qsp'),
+            'files': [{'path': os.path.relpath(self._point_file, self._work_dir)}]
+        }]
+
+    def _work_dir_project(self) -> None:
+        """ Project build from all work dir. """
+        self._root['project'] = [{
+            'module': os.path.join(self._work_dir, 'game.qsp'),
             'folders': [{'path': self._work_dir}]
+        }]
+        self._json['project'] = [{
+            'module': os.path.join('.', 'game.qsp'),
+            'folders': [{'path': '.'}]
         }]
 
     def _get_first_module(self) -> ts.Path:
         """Get first game Path in project. """
-        project = cast(List[ts.QspModule], self._root['project'])
-        module = project[0]
-        return cast(ts.Path, module['module'])
+        return self._root['project'][0].get('module', '') # impossible return empty str
 
     def _set_scans(self) -> None:
         """ Init location with scanned files. """
+        scans = self._json.get('scans', {})
+        root_scans = self._root['scans']
 
-        scans = cast(ts.ScansConfig, self._root['scans'])
         folders:List[ts.Path] = []
-        for folder in cast(List[ts.Path], scans.get('folders', [])):
+        for folder in scans.get('folders', []):
             folders.append(os.path.abspath(folder))
 
         files:List[ts.Path] = []
-        for file in cast(List[ts.Path], scans.get('files', [])):
+        for file in scans.get('files', []):
             files.append(os.path.abspath(file))
 
-        if not (folders or files):
-            del self._root['scans']
-            return
+        if not (folders or files): return # not folder and files for scan
         
-        scans['files'] = files
-        scans['folders'] = folders
+        root_scans['files'] = files
+        root_scans['folders'] = folders
 
-        scans['location'] = scans.get('location', self.SCAN_FILES_LOCNAME)
+        root_scans['location'] = scans.get('location', SCAN_FILES_LOCNAME)
 
     def _set_assets(self) -> None:
-        assets = cast(List[ts.AssetsConfig], self._root['assets'])
+        assets = self._json.get('assets', [])
 
         out_assets:List[ts.AssetsConfig] = []
         for resource in assets:
             r = self._abs_resource(resource)
             if r: out_assets.append(r)
 
-        if not out_assets:
-            del self._root['assets']
-            return
+        if not out_assets: return
 
         self._root['assets'] = out_assets
-    
+
     def _abs_resource(self, res:ts.AssetsConfig) -> ts.AssetsConfig:
 
-        if not 'output' in res:
-            return {}
+        if not 'output' in res: return {}
 
         folders:List[ts.FolderPath] = []
-        for folder in cast(List[ts.Path], res['folders']):
-            folders.append({'path':os.path.abspath(folder)})
+        for folder in res.get('folders', []):
+            folders.append({'path': os.path.abspath(folder['path'])})
+
         files:List[ts.FilePath] = []
-        for file in cast(List[ts.Path], res['files']):
-            files.append({'path':os.path.abspath(file)})
-        if not (folders or files):
-            return {}
+        for file in res.get('files', []):
+            files.append({'path':os.path.abspath(file['path'])})
 
-        res['files'] = files
-        res['folders'] = folders
-        res['output'] = os.path.abspath(cast(ts.Path, res['output']))
+        if not (folders or files): return {}
 
-        return res
+        out_res:ts.AssetsConfig = {}
+
+        out_res['files'] = files
+        out_res['folders'] = folders
+        out_res['output'] = os.path.abspath(res['output'])
+
+        return out_res
