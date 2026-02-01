@@ -53,6 +53,9 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 		builder = BuildQSP(qsp_proj.get_scheme()) # Initialise of Builder.
 		if (qsp_mode in ('--br', '--build')): builder.build_project()
 		if (qsp_mode in ('--br', '--run')): builder.run_game()
+
+		if not os.path.isfile(qsp_proj.get_project_file()):
+			qsp_proj.save_json()
 		# new_time = time.time()
 		# print(new_time - old_time)
 

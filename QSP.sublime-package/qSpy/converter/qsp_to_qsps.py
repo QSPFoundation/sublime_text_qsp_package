@@ -214,4 +214,4 @@ if __name__ == "__main__":
 	# 
 	main()
 	# if you need choose converter for decode gamepass:
-	print(QspToQsps.decode_string(f'2230/4.31'))
+	print(QspToQsps.decode_string(f',0/-\n.2\nh`ip'))

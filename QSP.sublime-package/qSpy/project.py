@@ -11,7 +11,7 @@ class _SchemeProvingError(Exception):
         
     def __str__(self) -> str:
         return f"QspProject Error! {self._message}"
-
+# TODO: QspProject -> ProjectValidator????
 
 class QspProject:
     """ Prepare project to build """
@@ -56,6 +56,20 @@ class QspProject:
             self._scheme_is_right = True
         except _SchemeProvingError as e:
             print(str(e))
+
+    def get_project_file(self) -> ts.Path:
+        """Project file path"""
+        return self._project_file
+
+    def get_work_dir(self) -> ts.Path:
+        return self._work_dir
+
+    def get_json(self) -> ts.JsonScheme:
+        return self._json
+
+    def save_json(self) -> None:
+        with open(self._project_file, 'w', encoding='utf-8') as fp:
+            json.dump(self._json, fp, ensure_ascii=False, indent=4)
 
     def get_scheme(self) -> ts.ProjectScheme:
         return self._root
