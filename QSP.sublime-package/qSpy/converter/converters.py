@@ -71,7 +71,12 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
             name = loc.name()
             desc = loc.desc()
             actions = loc.actions()
-            code_lines = ''.join(loc.run_on_visit())#.replace('\n', '\r\n')
+            run_on_visit = loc.run_on_visit()
+            if run_on_visit:
+                run_on_visit[-1] = run_on_visit[-1][:-1] # crunch for extra \n-char in end lines
+                code_lines = ''.join(run_on_visit).replace('\n', '\r\n')
+            else:
+                code_lines = ''
             out_lines:List[GameLine] = []
             out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(name))
             out_lines.append('\n')
@@ -86,7 +91,9 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
                 out_lines.append('\n')
                 out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(act['name']))
                 out_lines.append('\n')
-                out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(''.join(del_first_pref(act['code']))))#.replace('\n', '\r\n')))
+                act_code = del_first_pref(act['code'])
+                act_code[-1] = act_code[-1][:-1]
+                out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(''.join(act_code).replace('\n', '\r\n')))#))
                 out_lines.append('\n')
             return out_lines
         with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:

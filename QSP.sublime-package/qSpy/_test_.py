@@ -15,9 +15,9 @@ def loc_test():
     print(time.time()-old, ''.join(loc.get_sources()))
 
 def qsps_to_qsp_test():
-    conv = QspsToQspBuiltinConv('..\\..\\[examples]\\ukuzya.qsp', True)
-    conv.convert_file('..\\..\\[examples]\\ukuzya.qsps_',
-    '..\\..\\[examples]\\ukuzya.qsp')
+    conv = QspsToQspBuiltinConv('..\\..\\[examples]\\examples_qsps_to_qsp\\ukuzya_conv.qsp', True)
+    conv.convert_file('..\\..\\[examples]\\examples_qsps_to_qsp\\ukuzya_old.qsps',
+    '..\\..\\[examples]\\examples_qsps_to_qsp\\ukuzya_conv.qsp')
     conv.handle_temp_file()
 
         
@@ -33,5 +33,5 @@ def qsp_to_qsps_test():
     print(QspToQsps.decode_string(f',0/-\n.2\nh`ip'))
 
 if __name__ == "__main__":
-    # qsps_to_qsp_test()
-    qsp_to_qsps_test()
+    qsps_to_qsp_test()
+    # qsp_to_qsps_test()
