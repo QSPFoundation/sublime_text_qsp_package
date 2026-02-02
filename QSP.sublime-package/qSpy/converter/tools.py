@@ -5,6 +5,9 @@ from .tps import (
     ParseStringMode, Char
 )
 
+# constants:
+QSP_CODREMOV = 5 # const of cyphering
+
 def parse_string(qsps_line:QspsLine, mode:ParseStringMode) -> None:
     """ Parse opened string for location code and return open string chars """
     for char in qsps_line:

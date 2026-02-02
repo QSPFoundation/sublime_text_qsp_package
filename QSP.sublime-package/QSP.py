@@ -10,7 +10,7 @@ from typing import Union, List, Tuple, cast
 # Importing my modules from qSpy package.
 from .qSpy.builder import BuildQSP
 from .qSpy.qsp_to_qsps import QspToQsps
-from .qSpy.converter import QspsFile
+from .qSpy.converter import QspsFile, QspToQspsBuiltinConv
 from .qSpy.qsp_splitter import (QspSplitter, FinderSplitter)
 from .qSpy.workspace import QspWorkspace
 from .qSpy import function as qsp
@@ -63,12 +63,15 @@ class QspToQspsCommand(sublime_plugin.WindowCommand):
 	""" Command to start converting QSP-Game to qsps """
 	def run(self) -> None:
 		argv = self.window.extract_variables()
-		file = argv['file']
-		if argv['file_extension'] == 'qsp':
-			qsp_to_qsps = QspToQsps()
-			qsp_to_qsps.convert_file(file)
-		else:
+		if not 'file' in argv:
+			qsp.write_error_log(const.QSP_ERROR_MSG.NOT_CHOOSING_FILE)
+			return
+		if argv['file_extension'] != 'qsp':
 			qsp.write_error_log(const.QSP_ERROR_MSG.WRONG_EXTENSION_QSP)
+			return
+		qsp_to_qsps = QspToQspsBuiltinConv()
+		qsp_to_qsps.convert_file(argv['file'])
+			
 
 class QspsToQspCommand(sublime_plugin.WindowCommand):
 	""" Comand to start converting qsps-file to QSP-Game """

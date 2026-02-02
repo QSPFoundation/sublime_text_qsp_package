@@ -222,12 +222,13 @@ class _Qsp_Errors_Message:
 	def __init__(self):
 		# messages for QSP.py
 		self._need_save = "[0] Save file before building!"
-		self._wrong_extension_qsp = "[1] Wrong extension of file. Need 'qsp'. Can not convert."
-		self._wrong_extension_qsps = "[2] Wrong extension of file. Need 'qsps'. Can not convert."
+		self._wrong_extension_qsp = "[1] Wrong extension of file. Need '.qsp'. Can not convert."
+		self._wrong_extension_qsps = "[2] Wrong extension of file. Need '.qsps'. Can not convert."
 		self._wrong_extension_splitter = "[3] QSP-Splitter: Wrong extension of file. Can not convert."
 		# messages for workspace.py
 		self._ws_init = '[4] QSP WORKSPACE already initialised!!!'
 		self._empty_project = "[5] The project is empty, or not exist!"
+		self._not_choosing_file = "[6] Choose file with '.qsp' extension before converting."
 
 	@property
 	def NEED_SAVE_FILE(self):
@@ -252,6 +253,10 @@ class _Qsp_Errors_Message:
 	@property
 	def EMPTY_PROJECT(self):
 		return self._empty_project
+
+	@property
+	def NOT_CHOOSING_FILE(self):
+		return self._not_choosing_file
 
 QSP_ERROR_MSG = _Qsp_Errors_Message()
 

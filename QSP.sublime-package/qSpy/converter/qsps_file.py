@@ -11,7 +11,7 @@ from .tps import (
 	QspsLine,
 	LocFindMode
 )
-from .qsp_location import QspLoc
+from .qsp_location import QspsLoc
 from .tools import parse_string
 
 # regexps:
@@ -28,7 +28,7 @@ class QspsFile():
 	"""	qsps-file entity, separated in locations """
 	def __init__(self, qsps_line:Optional[List[QspsLine]] = None) -> None:
 		# main fields:
-		self._locations:List[QspLoc] = []
+		self._locations:List[QspsLoc] = []
 		self._src_lines:List[QspsLine] = qsps_line if qsps_line else []				# all strings of file
 
 		# files fields
@@ -82,17 +82,17 @@ class QspsFile():
 					pass
 			elif not mode['quote'] and LOCATION_END.search(qsps_line):
 				# close location
-				self._locations.append(QspLoc(mode['loc_name'], mode['src_lines']))
+				self._locations.append(QspsLoc(mode['loc_name'], mode['src_lines']))
 				mode['loc_name'] = ''
 				mode['src_lines'].clear()
 			else:
 				parse_string(qsps_line, mode)
 				mode['src_lines'].append(qsps_line)
 
-	def append_location(self, location:QspLoc) -> None:
+	def append_location(self, location:QspsLoc) -> None:
 		""" Add location in QspsFile """
 		self._locations.append(location)
 
-	def get_locations(self) -> List[QspLoc]:
+	def get_locations(self) -> List[QspsLoc]:
 		""" Return list of locaions """
 		return self._locations

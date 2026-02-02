@@ -13,7 +13,7 @@ from .tools import parse_string
 _BASE_OPEN = re.compile(r'^\! BASE\s*$')
 _BASE_CLOSE = re.compile(r'^\! END BASE\s*$')
 
-class QspLoc():
+class QspsLoc():
     """
         qsp-locations from qsps-file
     """

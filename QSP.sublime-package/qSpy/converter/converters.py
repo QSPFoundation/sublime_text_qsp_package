@@ -2,27 +2,20 @@ from abc import ABC, abstractmethod
 import os, subprocess
 import concurrent.futures
 
-from typing import List, Dict, Optional
+from typing import List, Optional
 
 from .tps import (
-    QspsLine, Path
+    QspsLine, Path, GameChar, QspsChar, CharCache
 )
 from .qsps_file import QspsFile
-from .qsp_location import QspLoc
+from .qsp_location import QspsLoc
 
-from .tools import del_first_pref
+from .tools import del_first_pref, QSP_CODREMOV
 
 AppPath = Path
 AppParam = str
 
-QspsChar = str
-GameChar = str
-CharCache = Dict[QspsChar, GameChar]
-
 GameLine = str # QSP-line string
-
-# constants:
-QSP_CODREMOV = 5 # const of cyphering
 
 class QspsToQspConverter(ABC):
 
@@ -73,7 +66,7 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
         self._game_lines.append(self.encode_qsps_line('No')+'\n')
         self._game_lines.append(self.encode_qsps_line(str(len(locs)))+'\n')
         # decode locations
-        def _encode_location(loc:QspLoc) -> List[GameLine]:
+        def _encode_location(loc:QspsLoc) -> List[GameLine]:
             loc.split_base()
             name = loc.name()
             desc = loc.desc()
@@ -127,7 +120,7 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
 
     def handle_temp_file(self) -> None:
         if not (self._qsps_file and self._save_temp_files): return
-        with open(self._temp_file_path, 'w', encoding='utf-8-sig') as file:
+        with open(self._temp_file_path, 'w', encoding='utf-8') as file:
             file.writelines(self._qsps_file.get_src())
 
     @staticmethod
@@ -159,7 +152,7 @@ class QspsToQspOuterConv(QspsToQspConverter):
     def convert_lines(self, qsps_lines:List[QspsLine]) -> List[GameLine]:
         """ Convert lines to game file by outer converter """
         os.makedirs(os.path.split(self._temp_file_path)[0], exist_ok=True)
-        with open(self._temp_file_path, 'w', encoding='utf-8-sig') as file:
+        with open(self._temp_file_path, 'w', encoding='utf-8') as file:
             file.writelines(qsps_lines)
         _run = [self._conv_path, self._temp_file_path, self._module_path,
                 self._conv_args]
