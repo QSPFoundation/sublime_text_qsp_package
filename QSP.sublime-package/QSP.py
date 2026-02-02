@@ -4,13 +4,13 @@ import sublime_plugin
 import os
 import re
 import json
-from typing import Union, List, Tuple, cast, Dict, Literal
+from typing import Union, List, Tuple, cast
 # import time
 
 # Importing my modules from qSpy package.
 from .qSpy.builder import BuildQSP
 from .qSpy.qsp_to_qsps import QspToQsps
-from .qSpy.qsps_to_qsp import NewQspsFile
+from .qSpy.converter import QspsFile
 from .qSpy.qsp_splitter import (QspSplitter, FinderSplitter)
 from .qSpy.workspace import QspWorkspace
 from .qSpy import function as qsp

@@ -1,11 +1,11 @@
 # file __init__.py
-from .converter import QspsToQspConverter, OuterConverter
+from .converters import QspsToQspBuiltinConv, QspsToQspOuterConv
 from .qsp_location import QspLoc
 from .qsps_file import QspsFile
 
 __all__ = [
-    'QspsToQspConverter',
+    'QspsToQspBuiltinConv',
     'QspLoc',
-    'OuterConverter',
+    'QspsToQspOuterConv',
     'QspsFile'
 ]

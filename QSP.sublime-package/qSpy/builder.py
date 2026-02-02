@@ -7,7 +7,7 @@ from typing import Callable, List, Optional
 from . import function as qsp
 from .moduleqsp import ModuleQSP
 from .preprocessor import QspsPP
-from .converter import QspsToQspConverter, OuterConverter, QspsFile
+from .converter import QspsToQspBuiltinConv, QspsToQspOuterConv, QspsFile
 from .const import SCAN_FILES_LOCNAME
 # import time
 
@@ -46,7 +46,7 @@ class BuildQSP():
 			self._root_folder_qgc = os.path.split(exe_fold)[0]
 			self._qgc_plugin = os.path.join(self._root_folder_qgc, 'plugins', 'a_txt2gam.dll')
 
-		self._converter = {'builting': QspsToQspConverter}.get(self._conv_api, OuterConverter)
+		self._converter = {'builting': QspsToQspBuiltinConv}.get(self._conv_api, QspsToQspOuterConv)
 
 		# Built-in preprocessor
 		pp_switch = self._root['preprocessor']

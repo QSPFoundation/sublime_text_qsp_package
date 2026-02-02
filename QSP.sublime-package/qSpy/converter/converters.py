@@ -24,7 +24,7 @@ GameLine = str # QSP-line string
 # constants:
 QSP_CODREMOV = 5 # const of cyphering
 
-class Converter(ABC):
+class QspsToQspConverter(ABC):
 
     def __init__(self, output_file:Path, save_temp_files:bool, *args:str) -> None:
         self._save_temp_files:bool = save_temp_files
@@ -48,7 +48,7 @@ class Converter(ABC):
     def save_to_file(self, output_file:Path = '') -> None:
         ...
 
-class QspsToQspConverter(Converter):
+class QspsToQspBuiltinConv(QspsToQspConverter):
     """ Converting QspsLine-s to QSP-format. """
     # По сути нам нужны три режима работы:
     #   - Получить строки, сконвертировать, вернуть сконвертированные: .convert_lines()
@@ -80,20 +80,20 @@ class QspsToQspConverter(Converter):
             actions = loc.actions()
             code_lines = ''.join(loc.run_on_visit())#.replace('\n', '\r\n')
             out_lines:List[GameLine] = []
-            out_lines.append(QspsToQspConverter.encode_qsps_line(name))
+            out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(name))
             out_lines.append('\n')
-            out_lines.append(QspsToQspConverter.encode_qsps_line(desc))
+            out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(desc))
             out_lines.append('\n')
-            out_lines.append(QspsToQspConverter.encode_qsps_line(code_lines))
+            out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(code_lines))
             out_lines.append('\n')
-            out_lines.append(QspsToQspConverter.encode_qsps_line(str(len(actions))))
+            out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(str(len(actions))))
             out_lines.append('\n')
             for act in actions:
-                out_lines.append(QspsToQspConverter.encode_qsps_line(act['image']))
+                out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(act['image']))
                 out_lines.append('\n')
-                out_lines.append(QspsToQspConverter.encode_qsps_line(act['name']))
+                out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(act['name']))
                 out_lines.append('\n')
-                out_lines.append(QspsToQspConverter.encode_qsps_line(''.join(del_first_pref(act['code']))))#.replace('\n', '\r\n')))
+                out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(''.join(del_first_pref(act['code']))))#.replace('\n', '\r\n')))
                 out_lines.append('\n')
             return out_lines
         with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
@@ -138,8 +138,8 @@ class QspsToQspConverter(Converter):
     @staticmethod
     def encode_qsps_line(qsps_line:QspsLine) -> GameLine:
         """ Decode qsps_line to qsp_coded_line """
-        cache = QspsToQspConverter._char_cache
-        encode_char = QspsToQspConverter.encode_char
+        cache = QspsToQspBuiltinConv._char_cache
+        encode_char = QspsToQspBuiltinConv.encode_char
 
         exit_line:List[GameChar] = []
         for point in qsps_line:
@@ -148,7 +148,7 @@ class QspsToQspConverter(Converter):
             exit_line.append(cache[point])
         return ''.join(exit_line)
 
-class OuterConverter(Converter):
+class QspsToQspOuterConv(QspsToQspConverter):
     """ Обёртка для запуска внешнего конвертера, с ориентированием на txt2gam """
     def __init__(self, output_file:Path, save_temp_files:bool, *args:str) -> None:
          super().__init__(output_file, save_temp_files)
