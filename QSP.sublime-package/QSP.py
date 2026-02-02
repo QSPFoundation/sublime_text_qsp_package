@@ -9,9 +9,10 @@ from typing import Union, List, Tuple, cast
 
 # Importing my modules from qSpy package.
 from .qSpy.builder import BuildQSP
-from .qSpy.qsp_to_qsps import QspToQsps
-from .qSpy.converter import QspsFile, QspToQspsBuiltinConv
-from .qSpy.qsp_splitter import (QspSplitter, FinderSplitter)
+from .qSpy.converter import (
+	QspsFile, QspToQspsBuiltinConv, QspsToQspBuiltinConv,
+	QspSplitter, FinderSplitter
+)
 from .qSpy.workspace import QspWorkspace
 from .qSpy import function as qsp
 from .qSpy.project import QspProject
@@ -74,14 +75,20 @@ class QspToQspsCommand(sublime_plugin.WindowCommand):
 			
 
 class QspsToQspCommand(sublime_plugin.WindowCommand):
-	""" Comand to start converting qsps-file to QSP-Game """
+	""" Comand of converting qsps-file to QSP-Game """
 	def run(self) -> None:
 		argv = self.window.extract_variables()
-		if argv['file_extension'] in ('qsps', 'qsp-txt', 'txt-qsp'):
-			qsps_file = NewQspsFile()
-			qsps_file.convert_file(argv['file'])
-		else:
+		if not 'file' in argv:
+			qsp.write_error_log(const.QSP_ERROR_MSG.NOT_CHOOSING_FILE)
+			return
+		if not argv.get('file_extension', '') in ('qsps', 'qsp-txt', 'txt-qsp'):
 			qsp.write_error_log(const.QSP_ERROR_MSG.WRONG_EXTENSION_QSPS)
+			return
+
+		output_file = os.path.splitext(argv['file'])[0]+'.qsp'
+		qsps_to_qsp= QspsToQspBuiltinConv(output_file, False)
+		qsps_to_qsp.convert_file(argv['file'], output_file) # TODO: extras output_path
+			
 
 class QspSplitterCommand(sublime_plugin.WindowCommand):
 	"""
@@ -91,9 +98,9 @@ class QspSplitterCommand(sublime_plugin.WindowCommand):
 	def run(self) -> None:
 		argv = self.window.extract_variables()
 		if argv['file_extension'] in ('qsps', 'qsp-txt', 'txt-qsp'):
-			QspSplitter().split_file(argv['file'], mode='txt')
+			QspSplitter('txt').split_file(argv['file'])
 		elif argv['file_extension'] == 'qsp':
-			QspSplitter().split_file(argv['file'], mode='game')
+			QspSplitter('game').split_file(argv['file'])
 		else:
 			qsp.write_error_log(const.QSP_ERROR_MSG.WRONG_EXTENSION_SPLITTER)
 
@@ -101,6 +108,7 @@ class QspSplitProjectCommand(sublime_plugin.WindowCommand):
 	""" Start command of convert and split QSP-pproject """
 	def run(self) -> None:
 		argv = self.window.extract_variables()
+		# argv['file_path'] - is folder of file, abspath
 		FinderSplitter().search_n_split(folder_path = argv['file_path'])
 
 class QspNewProjectCommand(sublime_plugin.WindowCommand):

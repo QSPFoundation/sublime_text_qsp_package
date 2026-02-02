@@ -15,6 +15,9 @@ LocName = str
 LocCode = List[QspsLine]
 
 FileName = str
+FileExt = str
+
+FolderName = str
 
 GamePassword = str
 GameLine = str

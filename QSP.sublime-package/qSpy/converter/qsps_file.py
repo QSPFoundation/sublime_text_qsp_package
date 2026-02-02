@@ -46,11 +46,10 @@ class QspsFile():
 
 	def read_from_file(self, input_file:Path) -> None:
 		""" Read qsps-file and set source strings """
-		if os.path.isfile(input_file):
-			self._input_file = input_file
-		else:
-			print(f'[801] File {input_file} is not exist.')
+		if not os.path.isfile(input_file):
+			print(f'[801] File {input_file} is not exist.') # TODO: Set ERror
 			return
+		self._input_file = input_file
 		with open(self._input_file, 'r', encoding='utf-8-sig') as fp:
 			for line in fp:	self._src_lines.append(line)
 

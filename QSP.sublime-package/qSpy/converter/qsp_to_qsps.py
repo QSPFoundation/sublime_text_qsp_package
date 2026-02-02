@@ -9,7 +9,7 @@ from .tps import (
 )
 CharCache = Dict[GameChar, QspsChar]
 
-class QspToQsps():
+class QspToQspsBuiltinConv():
 	"""Converter ".qsp" game files into qsps-files. Based on converter by Werewolf in JS.
 	stand `game-file` and run script for getting qsps-format file"""
 
@@ -78,21 +78,21 @@ class QspToQsps():
 			return
 		
 		if qsp_lines[-1].strip() == '': qsp_lines.pop()
-		self._password = QspToQsps.decode_string(qsp_lines[2][:-1])
-		self._location_count = QspToQsps.decode_int(qsp_lines[3][:-1])
+		self._password = QspToQspsBuiltinConv.decode_string(qsp_lines[2][:-1])
+		self._location_count = QspToQspsBuiltinConv.decode_int(qsp_lines[3][:-1])
 		i = 4
 		while (i < len(qsp_lines)):
-			location_name = QspToQsps.decode_string(qsp_lines[i][:-1])
-			location_desc = QspToQsps.decode_string(qsp_lines[i+1][:-1])
-			location_code = QspToQsps.decode_string(qsp_lines[i+2][:-1])
+			location_name = QspToQspsBuiltinConv.decode_string(qsp_lines[i][:-1])
+			location_desc = QspToQspsBuiltinConv.decode_string(qsp_lines[i+1][:-1])
+			location_code = QspToQspsBuiltinConv.decode_string(qsp_lines[i+2][:-1])
 			i += 3
 			actions:List[Action] = []
-			actions_count = QspToQsps.decode_int(qsp_lines[i][:-1])
+			actions_count = QspToQspsBuiltinConv.decode_int(qsp_lines[i][:-1])
 			i += 1
 			for _ in range(actions_count):
-				action_image = QspToQsps.decode_string(qsp_lines[i][:-1])
-				action_name = QspToQsps.decode_string(qsp_lines[i+1][:-1])
-				action_code = QspToQsps.decode_string(qsp_lines[i+2][:-1])
+				action_image = QspToQspsBuiltinConv.decode_string(qsp_lines[i][:-1])
+				action_name = QspToQspsBuiltinConv.decode_string(qsp_lines[i+1][:-1])
+				action_code = QspToQspsBuiltinConv.decode_string(qsp_lines[i+2][:-1])
 				actions.append({
 					"image": action_image,
 					"name": action_name,
@@ -105,7 +105,6 @@ class QspToQsps():
 				"run_to_visit": location_code.splitlines(keepends=True),
 				"actions": actions
 			})
-			...
 
 	def to_qsps(self) -> List[QspsLine]:
 		""" Convert all game's locations to qsps-format. """
@@ -113,13 +112,13 @@ class QspToQsps():
 			print('QSP-Game is not formed. Prove QSP-file.') # TODO: Error
 			return []
 
-		_cl = QspToQsps.convert_location
+		_cl = QspToQspsBuiltinConv.convert_location
 		self._qsps_lines.append(f"QSP-Game {self._file_name}\n")
 		self._qsps_lines.append(f"Число локаций: {self._location_count}\n")
 		self._qsps_lines.append(f"Пароль на исходном файле: {self._password}\n")
 		self._qsps_lines.append('\n')
 		for loc in self._locations:
-			self._qsps_lines.extend(QspToQsps.convert_location(loc))
+			self._qsps_lines.extend(QspToQspsBuiltinConv.convert_location(loc))
 		return self._qsps_lines
 		
 	def get_locations(self) -> List[QspLocation]:
@@ -149,8 +148,8 @@ class QspToQsps():
 		qsps_lines.append(f"# {location['name']}\n")
 		if bool(location['actions'] or location['desc']):
 			qsps_lines.append("! BASE\n")
-			qsps_lines.extend(QspToQsps.convert_description(location['desc']))
-			qsps_lines.extend(QspToQsps.convert_actions(location['actions']))
+			qsps_lines.extend(QspToQspsBuiltinConv.convert_description(location['desc']))
+			qsps_lines.extend(QspToQspsBuiltinConv.convert_actions(location['actions']))
 			qsps_lines.append("! END BASE\n")
 		if location['run_to_visit']:
 			loc_code = ''.join(location['run_to_visit']).replace('\r\n','\n')
@@ -163,7 +162,7 @@ class QspToQsps():
 		""" Convert base description to qsps-format. """
 		if not description:
 			return []
-		_eqs = QspToQsps.escape_qsp_string
+		_eqs = QspToQspsBuiltinConv.escape_qsp_string
 
 		# TODO: replace \r\n by \n, replace ' by '', wrap to *p '...'
 		desc_lines = description.split('\r\n')
@@ -181,7 +180,7 @@ class QspToQsps():
 		try:
 			qsps_lines:List[QspsLine] = []
 			for action in actions:
-				qsps_lines.extend(QspToQsps.convert_action(action))
+				qsps_lines.extend(QspToQspsBuiltinConv.convert_action(action))
 			return qsps_lines
 		except:
 			print(actions)
@@ -191,7 +190,7 @@ class QspToQsps():
 	def convert_action(action:Action) -> List[QspsLine]:
 		""" Convert base action to qsps-format. """
 		qsps_lines:List[QspsLine] = []
-		_eqs = QspToQsps.escape_qsp_string
+		_eqs = QspToQspsBuiltinConv.escape_qsp_string
 		indent = '\t'
 		name = _eqs(action['name'])
 		image = (f", '{_eqs(action['image'])}':" if action['image'] else ':')
@@ -211,19 +210,19 @@ class QspToQsps():
 	@staticmethod
 	def decode_int(qsp_line:str) -> int:
 		""" Decode qsp-line to int. """
-		return int(QspToQsps.decode_qsp_line(qsp_line))
+		return int(QspToQspsBuiltinConv.decode_qsp_line(qsp_line))
 
 	@staticmethod
 	def decode_string(qsp_line:str) -> str:
 		""" Decode qsp-line to string. """
-		return QspToQsps.decode_qsp_line(qsp_line)
+		return QspToQspsBuiltinConv.decode_qsp_line(qsp_line)
 	
 	@staticmethod
 	def decode_qsp_line(qsp_line:GameLine) -> QspsLine:
 		""" Decode qsp-line. """
-		cache = QspToQsps._char_cache
+		cache = QspToQspsBuiltinConv._char_cache
 		exit_lines:List[QspsLine] = []
-		_decode_char = QspToQsps.decode_char
+		_decode_char = QspToQspsBuiltinConv.decode_char
 
 		for char in qsp_line:
 			if char not in cache:

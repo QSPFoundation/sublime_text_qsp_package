@@ -2,12 +2,48 @@
 import os
 import re
 
-if __name__=="__main__":
-	from qsp_to_qsps import QspToQsps
-	from qsps_to_qsp import NewQspsFile
-else:
-	from .qsp_to_qsps import QspToQsps
-	from .qsps_to_qsp import NewQspsFile
+from typing import Dict, List, Literal, Tuple
+
+from .qsp_to_qsps import QspToQspsBuiltinConv
+from .qsps_file import QspsFile
+
+from .tps import (
+	FileName,
+	FolderName,
+	LocName,
+	Path,
+	QspsLine
+)
+
+SplitterMode = Literal[
+	'game', # QSP-Game format
+	'txt'	# qsps-format (txt2gam text-file)
+]
+FinderMode = Tuple[Literal['game', 'txt'], ...]
+
+PlacementFolder = Path
+
+QProjData = Dict[
+	LocName,
+	Tuple[PlacementFolder, FileName]
+]
+
+_jont = os.path.join
+_norm = os.path.normpath
+
+# regexps
+OPEN_LOCATION = re.compile(r'\s*?<Location name="(.*?)"/>\s*')
+OPEN_FOLDER = re.compile(r'\s*?<Folder name="(.*?)">\s*')
+CLOSE_FOLDER = re.compile(r'\s*?<\/Folder>\s*')
+COM = re.compile(r'COM\d+')
+LPT = re.compile(r'LPT\d+')
+BAD_CHARS = re.compile(r'(&lt;|&gt;|&quot;|[<>*"\\\/:\?\|\'])')
+
+# const
+RESERVE_FILE_NAMES = (
+	'CON', 'PRN', 'AUX', 'NUL', 'CLOCK$', '_',
+)
+
 
 class QspSplitter():
 	"""
@@ -15,208 +51,167 @@ class QspSplitter():
 		and split qsps in many files, and replace them
 		in other folders by .qproj-file mapping.
 	"""
-	def __init__(self) -> None:
-		self.mode:str = 'game' # Literally 'game' or 'txt' (QSP or qsps -files)
+	def __init__(self, mode:SplitterMode = 'game') -> None:
+		self._mode:SplitterMode = mode
 
 		# pathes fields:
-		self.qsp_game_path:str = '' # abs path to QSP-file
-		self.root_folder_path:str = '' # abs path to folder where sources are lies
-		self.file_name:str = '' # QSP or qsps -file name without extension
-		self.file_ext:str = '' # QSP or qsps -file extension
-		self.qsp_project_file:str = '' # path to .qproj-file for QSP-file
-		self.output_folder:str = '' # abs path of output folder for splited files (root fold + file_name)
+		self._input_file:Path = ''
+		# self.qsp_game_path:Path = '' # abs path to QSP-file
+		self._root_folder:Path = '' # abs path to folder where sources are lies
+		# self._file_name:FileName = '' # QSP or qsps -file name without extension
+		# self._file_ext:FileExt = '' # QSP or qsps -file extension
+		self._qproj_file:Path = '' # path to .qproj-file for QSP-file
+		self._output_folder:Path = '' # abs path of output folder for splited files (root fold + file_name)
 
-		self.qsps_file:str = '' # abs path to qsps-file
+		# self.qsps_file:Path = '' # abs path to qsps-file
 		
 		# data fields:
-		self.qsp_to_qsps:QspToQsps = None # object for converting game to qsps
-		self.qproj_data:dict = {} # dict[location_name: (placement_folder, file_name)]
+		# self.qsp_to_qsps:QspToQspsBuiltinConv = None # object for converting game to qsps
+		self._qproj_data:QProjData = {}
+	
+	def split_file(self, input_file:str) -> None:
+		""" Split the common file into separate location-files. """
+		if not os.path.isfile(input_file):
+			print(f'[400] QspSplitter: File {input_file} is not exist.') # TODO: make error
+			return
 
-	def set_mode(self, new_mode:str) -> None:
-		""" Set mode of splitting """
-		self.mode = new_mode
+		self._set_pathes(input_file)	
+		os.makedirs(self._output_folder, exist_ok=True)
 
-	def choose_mode(self, file_ext:str=None) -> None:
-		""" Choose mode by extension of file """
-		if file_ext: self.file_ext = file_ext
-		if self.file_ext in ('.qsp'):
-			self.mode = 'game'
-		elif self.file_ext in ('.qsps', '.qsp-txt', '.txt-qsp'):
-			self.mode = 'txt'
+		self._read_qproj() # get output pathes for location placements
 
-	def set_input_file(self, input_file:str) -> None:
+		if self._mode == 'game':
+			self._split_game()
+		else:
+			self._split_qsps()
+
+	def _set_pathes(self, input_file:str) -> None:
 		""" Set pathes of files by mode """
 		input_file = os.path.abspath(input_file)
-		self.root_folder_path, full_file_name = os.path.split(input_file)
-		self.file_name, self.file_ext = os.path.splitext(full_file_name)
-		self.output_folder = os.path.join(self.root_folder_path, self.file_name)
-		self.qsp_project_file = os.path.join(self.root_folder_path, self.file_name+".qproj")
-		if self.mode == 'game':
-			self.qsp_game_path = input_file
-		elif self.mode == 'txt':
-			self.qsps_file = input_file
-	
-	def split_file(self, input_file:str, mode:str='game') -> None:
-		""" Split the common file into separate location-files. """
-		if os.path.isfile(input_file):
-			self.set_mode(mode)
-			self.set_input_file(input_file)
-		else:
-			print(f'[400] QspSplitter: File {input_file} is not exist.')
-			return None
-		if self.mode in ('game', 'txt'):
-			os.makedirs(self.output_folder, exist_ok=True)
-			self.read_qproj() # get output pathes for location placements
-			if self.mode == 'game':
-				self.split_game()
-			else:
-				self.split_qsps()
-		else:
-			print(f'[401] QspSplitter: mode is not setted.')
+		self._root_folder, full_file_name = os.path.split(input_file)
+		file_name = os.path.splitext(full_file_name)[0]
+		self._output_folder = os.path.join(self._root_folder, file_name)
+		self._qproj_file = os.path.join(self._root_folder, f"{file_name}.qproj")
+		self._input_file = input_file
 
-	@staticmethod
-	def replace_bad_symbols(file_name:str) -> str:
-		""" Replace invalid symbols in file name. """
-		regex = re.compile(r'(&lt;|&gt;|&quot;|[<>*"\\\/:\?|\'])')
-		return regex.sub('_', file_name)
-
-	def read_qproj(self) -> None:
+	def _read_qproj(self) -> None:
 		""" Read qproj file and fill dict by folders for locations """
-		OPEN_LOCATION = re.compile(r'\s*?<Location name="(.*?)"/>')
-		OPEN_FOLDER = re.compile(r'\s*?<Folder name="(.*?)">')
-		CLOSE_FOLDER = re.compile(r'\s*?<\/Folder>')
-		if not os.path.isfile(self.qsp_project_file):
+		if not os.path.isfile(self._qproj_file):
 			return None
-		with open(self.qsp_project_file,"r",encoding='utf-8-sig') as fp:
+		with open(self._qproj_file,"r",encoding='utf-8-sig') as fp:
 			proj_lines = fp.readlines()
-		current_folder = ''
+		current_folder:FolderName = ''
 		for line in proj_lines:
 			location = OPEN_LOCATION.match(line)
-			folder = OPEN_FOLDER.match(line)
 			if location:
-				loc_name = location.group(1)
-				loc_file_name = self.replace_bad_symbols(loc_name)
-				if not current_folder:
-					output_folder = self.output_folder
-				else:
-					output_folder = os.path.join(self.output_folder, current_folder)
-				self.qproj_data[loc_name] = (output_folder, loc_file_name)
-			elif folder:
+				loc_name:LocName = location.group(1)
+				loc_file_name = self.correct_file_name(loc_name)
+				output_folder = _norm(_jont(self._output_folder, current_folder))
+				self._qproj_data[loc_name] = (output_folder, loc_file_name)
+				continue
+			folder = OPEN_FOLDER.match(line)
+			if folder:
 				fold_name = folder.group(1)
-				current_folder = self.replace_bad_symbols(fold_name)
-			elif CLOSE_FOLDER.match(line):
+				current_folder = self.correct_file_name(fold_name)
+				continue
+			if CLOSE_FOLDER.match(line):
 				current_folder = ''
 
-	def split_game(self) -> None:
+	# TODO: May be MERGE _split_game and _split_qsps???
+
+	def _split_game(self) -> None:
 		""" Split QSP-file, convert it, and write locations as files """
-		if self.mode != 'game' or not os.path.isfile(self.qsp_game_path):
-			return None
-		q = self.qsp_to_qsps = QspToQsps()
-		q.read_from_file(self.qsp_game_path)
+		q = QspToQspsBuiltinConv()
+		q.read_from_file(self._input_file)
 		q.split_qsp()
-		count = {}
+
+		count:Dict[Path, int] = {}
+
 		for location in q.get_locations():
-			output_lines = []
+			output_lines:List[QspsLine] = []
 			loc_name = location['name']
 			output_lines.append(f'QSP-Game {loc_name}\n\n')
-			if loc_name in self.qproj_data:
-				fold, file = self.qproj_data[loc_name]
+			if loc_name in self._qproj_data:
+				fold, file = self._qproj_data[loc_name]
 			else:
-				fold, file = self.output_folder, loc_name
-			file = self.replace_bad_symbols(file)
-			output_path = os.path.join(fold, file + '.qsps')
+				fold, file = self._output_folder, self.correct_file_name(loc_name)
+			output_path = _jont(fold, f'{file}.qsps')
 			if not output_path in count: count[output_path] = 0
 			if os.path.isfile(output_path):
 				count[output_path] += 1
-				output_path = os.path.join(fold, f'{file}_{count[output_path]}.qsps')
+				output_path = _jont(fold, f'{file}_{count[output_path]}.qsps')
 			os.makedirs(fold, exist_ok=True)
-			output_lines.extend(QspToQsps.convert_location(location))
+			output_lines.extend(QspToQspsBuiltinConv.convert_location(location))
 			with open(output_path, 'w', encoding='utf-8') as fp:
 				fp.writelines(output_lines)
 
-	def split_qsps(self) -> None:
+	def _split_qsps(self) -> None:
 		""" Split qsps-file and write locations as files """
-		if self.mode != 'txt' or not os.path.isfile(self.qsps_file):
-			return None
-		q = NewQspsFile()
-		q.read_from_file(self.qsps_file)
+		q = QspsFile()
+		q.read_from_file(self._input_file)
 		q.split_to_locations()
-		count = {}
+
+		count:Dict[Path, int]  = {}
+
 		for location in q.get_locations():
-			output_lines = []
-			loc_name = location.name
+			output_lines:List[QspsLine] = []
+			loc_name = location.name()
 			output_lines.append(f'QSP-Game {loc_name}\n\n')
-			if loc_name in self.qproj_data:
-				fold, file = self.qproj_data[loc_name]
+			if loc_name in self._qproj_data:
+				fold, file = self._qproj_data[loc_name]
 			else:
-				fold, file = self.output_folder, loc_name
-			output_path = os.path.join(fold, file + '.qsps')
+				fold, file = self._output_folder, self.correct_file_name(loc_name)
+			output_path = _jont(fold, f'{file}.qsps')
 			if not output_path in count: count[output_path] = 0
 			if os.path.isfile(output_path):
 				count[output_path] += 1
-				output_path = os.path.join(fold, f'{file}_{count[output_path]}.qsps')
+				output_path = _jont(fold, f'{file}_{count[output_path]}.qsps')
 			os.makedirs(fold, exist_ok=True)
 			output_lines.extend(location.get_sources())
 			with open(output_path, 'w', encoding='utf-8') as fp:
 				fp.writelines(output_lines)
 
+	@staticmethod
+	def correct_file_name(file_name:str) -> str:
+		""" Replace invalid symbols in file name. """
+		if (file_name in RESERVE_FILE_NAMES or
+			COM.match(file_name) or LPT.match(file_name)):
+			return f'_{file_name}'
+		return BAD_CHARS.sub('_', file_name)
+
+	# def choose_mode(self, file_ext:str='') -> None: # TODO: delete???
+	# 	""" Choose mode by extension of file """
+	# 	if file_ext: self._file_ext = file_ext
+	# 	if self._file_ext in ('.qsp'):
+	# 		self._mode = 'game'
+	# 	elif self._file_ext in ('.qsps', '.qsp-txt', '.txt-qsp'):
+	# 		self._mode = 'txt'
+
 class FinderSplitter():
 	"""
 		Search and convert n split QSP-files, and/or split qsps-files.
 	"""
-	def __init__(self):
-		self.folder_path = ''
-		self.mode = 'both' # 'game', 'txt' or 'both' mode
+	def __init__(self, mode:FinderMode = ('game', 'txt')):
+		self._folder_path = ''
+		self._mode = mode
 
-	def search_n_split(self, folder_path:str, mode='both'):
-		self.folder_path = os.path.abspath(folder_path)
-		self.mode = mode
-		qsp_files_list = []
-		qsps_files_list = []
-		for fold_or_file in os.listdir(self.folder_path):
-			path = os.path.join(self.folder_path, fold_or_file)
+	def search_n_split(self, folder_path:Path):
+		self._folder_path = os.path.abspath(folder_path)
+		qsp_files_list:List[Path] = []
+		qsps_files_list:List[Path] = []
+		for fold_or_file in os.listdir(self._folder_path):
+			path = _jont(self._folder_path, fold_or_file)
 			if os.path.isfile(path):
 				_, file_ext = os.path.splitext(fold_or_file)
 				if file_ext in ('.qsp'):
 					qsp_files_list.append(path)
 				elif file_ext in ('.qsps', '.qsp-txt', '.txt-qsp'):
 					qsps_files_list.append(path)
-		if self.mode in ('game', 'both') and qsp_files_list:
+		if 'game' in self._mode and qsp_files_list:
 			for file in qsp_files_list:
-				QspSplitter().split_file(file, mode='game')
-		if self.mode in ('txt', 'both') and qsps_files_list:
+				QspSplitter('game').split_file(file)
+		if 'txt' in self._mode and qsps_files_list:
 			for file in qsps_files_list:
-				QspSplitter().split_file(file, mode='txt')
-	
-	def change_mode(self, new_mode:str) -> None:
-		""" Change mode of find and split  """
-		self.mode = new_mode
+				QspSplitter('txt').split_file(file)
 
 
-# functions for testing
-def main():
-	import time
-	old_time = time.time()
-
-	QspSplitter().split_file('..\\..\\[examples]\\examples_splitter\\driveex.qsp')
-
-	new_time = time.time()
-	print(new_time - old_time)
-
-	QspSplitter().split_file('..\\..\\[examples]\\examples_splitter\\basesex.qsps', mode='txt')
-
-	old_time = time.time()
-	print(old_time - new_time)
-
-def find_n_split():
-	import time
-	old_time = time.time()
-
-	FinderSplitter().search_n_split('..\\..\\[examples]\\examples_finder', mode='game')
-
-	new_time = time.time()
-	print(new_time - old_time)
-
-if __name__=="__main__":
-	# local start of script
-	find_n_split()
