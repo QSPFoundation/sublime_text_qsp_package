@@ -115,15 +115,15 @@ class QspNewProjectCommand(sublime_plugin.WindowCommand):
 	""" Create New Standart QSP-project """
 	def run(self) -> None:
 		argv = self.window.extract_variables()
-		if not 'folder' in argv: return None
+		if not 'folder' in argv: return None # argv['folder'] - folder of ST-project
 		_jont = os.path.join
-		qsp.safe_mk_fold(_jont(argv['folder'],'_disdocs'))
+		os.makedirs(_jont(argv['folder'],'_disdocs'), exist_ok=True)
 		assets_folder = _jont(argv['folder'], '_output_game', 'assets')
-		qsp.safe_mk_fold(_jont(assets_folder, 'img'))
-		qsp.safe_mk_fold(_jont(assets_folder, 'snd'))
-		qsp.safe_mk_fold(_jont(assets_folder, 'vid'))
-		qsp.safe_mk_fold(_jont(argv['folder'], '_output_game', 'lib'))
-		qsp.safe_mk_fold(_jont(argv['folder'], '_src'))
+		os.makedirs(_jont(assets_folder, 'img'), exist_ok=True)
+		os.makedirs(_jont(assets_folder, 'snd'), exist_ok=True)
+		os.makedirs(_jont(assets_folder, 'vid'), exist_ok=True)
+		os.makedirs(_jont(argv['folder'], '_output_game', 'lib'), exist_ok=True)
+		os.makedirs(_jont(argv['folder'], '_src'), exist_ok=True)
 		# crete qsp-project.json
 		project_json_path = _jont(argv['folder'], '_src', 'qsp-project.json')
 		if not os.path.isfile(project_json_path):

@@ -9,8 +9,18 @@ __all__ = [
 	'PLAYER_PATH',
 	'CONVERTER',
 	'SCAN_FILES_LOCNAME']
-
+import os
 from types import MappingProxyType
+from .plugtypes import JsonScheme
+
+PROJECT_FILE_NAME = 'qsp-project.json'
+
+# TODO: player-path only fo windows. Make for other OS.
+PLAYER_PATH = os.path.join('C:", "Program Files", "QSP Classic 5.9.5", "bin", "qspgui.exe')
+
+CONVERTER = 'qsps_to_qsp'
+
+SCAN_FILES_LOCNAME = 'prv_file'
 
 # No changable dict for tips in statusbar
 
@@ -177,21 +187,22 @@ QSP_START_TEMPLATE = (
 
 # No changable dict for qsp-project.json simple file
 
-_t = {
-		"project":
-		[
-			{
-				"module": "..\\_output_game\\game_start.qsp",
-				"folders":
-				[
-					{"path": "."}
-				]
-			}
-		],
-		"start": "..\\_output_game\\game_start.qsp",
-		"player": "C:\\Program Files\\QSP Classic 5.9.2\\bin\\qspgui.exe"}
+_j:JsonScheme = {
+	"project":
+	[
+		{
+			"module": os.path.join("..", "_output_game", "game_start.qsp"),
+			"folders":
+			[
+				{"path": "."}
+			]
+		}
+	],
+	"start": os.path.join("..", "_output_game", "game_start.qsp"),
+	"player": PLAYER_PATH
+}
 
-QSP_PROJECT_JSON = MappingProxyType(_t)
+QSP_PROJECT_JSON = MappingProxyType(_j)
 
 # No changable dict for sublimetext-project file
 
@@ -259,11 +270,3 @@ class _Qsp_Errors_Message:
 		return self._not_choosing_file
 
 QSP_ERROR_MSG = _Qsp_Errors_Message()
-
-PROJECT_FILE_NAME = 'qsp-project.json'
-
-PLAYER_PATH = 'C:\\Program Files\\QSP Classic 5.9.5\\bin\\qspgui.exe'
-
-CONVERTER = 'qsps_to_qsp'
-
-SCAN_FILES_LOCNAME = 'prv_file'

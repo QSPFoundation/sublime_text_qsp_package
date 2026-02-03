@@ -1,0 +1,37 @@
+{
+	"file": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package\\qSpy\\_test_.py",
+	"file_base_name": "_test_",
+	"file_extension": "py",
+	"file_name": "_test_.py",
+	"file_path": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package\\qSpy",
+
+	"folder": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD", // первая папка в списке папок проекта
+
+	"packages": "C:\\Users\\aleks\\AppData\\Roaming\\Sublime Text\\Packages",
+	"platform": "Windows",
+
+	"project": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\JAD.sublime-project",
+	"project_base_name": "JAD",
+	"project_extension": "sublime-project",
+	"project_name": "JAD.sublime-project",
+	"project_path": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD" // папка, содержащая файл проекта
+}
+
+{
+	"file": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\JAD.sublime-project",
+	"file_base_name": "JAD",
+	"file_extension": "sublime-project",
+	"file_name": "JAD.sublime-project",
+	"file_path": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD",
+
+	"folder": "C:\\Users\\aleks\\Downloads\\Telegram Desktop",
+
+	"packages": "C:\\Users\\aleks\\AppData\\Roaming\\Sublime Text\\Packages",
+	"platform": "Windows",
+
+	"project": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\JAD.sublime-project",
+	"project_base_name": "JAD",
+	"project_extension": "sublime-project",
+	"project_name": "JAD.sublime-project",
+	"project_path": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD"
+}
