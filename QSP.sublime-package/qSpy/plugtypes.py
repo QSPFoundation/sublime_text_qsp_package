@@ -1,6 +1,7 @@
 from typing import Dict, List, Literal, Union, TypedDict
 
 Path = str # file or folder path
+AbsPath = str # absolute path of file or folder
 AppParam = str # parameters for application (ex.: --br, -u, -f)
 FileName = str
 FolderName = str
@@ -8,6 +9,7 @@ LocName = str
 QspsLine = str
 GameLine = str
 PpMode = Literal['Hard-off', 'Off', 'On']
+QspMode = Literal['--br', '--build', '--run']
 
 class SchemeArgs(TypedDict, total=False):
 	point_file: Path

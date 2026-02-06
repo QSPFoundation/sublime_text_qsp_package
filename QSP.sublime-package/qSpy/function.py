@@ -2,11 +2,10 @@ import os
 
 from typing import List, Tuple, Optional
 
-
-
-Path = str
 Ext = str
-FileName = str
+from plugtypes import (
+	Path, FileName
+)
 
 # standart funcs for
 

@@ -27,7 +27,7 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 	"""
 		QSP-Game Builder. Build and run QSP-game from sources. Need a qsp-project.json.
 	"""
-	def run(self, qsp_mode:str = "--br") -> None:
+	def run(self, qsp_mode:ts.QspMode = "--br") -> None:
 		# Three commands from arguments.
 		argv = self.window.extract_variables()
 		window_folders:List[Path] = self.window.folders()

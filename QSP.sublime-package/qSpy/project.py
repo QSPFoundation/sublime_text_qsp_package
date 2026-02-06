@@ -108,10 +108,18 @@ class QspProject:
                     os.path.abspath(point_file),
                     os.path.abspath(f)
                 ]):
-                    self._work_dir = f
-                    return
+                    if os.path.isfile(os.path.join(f, PROJECT_FILE_NAME)):
+                        self._work_dir = f
+                        return
+                    else:
+                        # если файл проекта не найден в папке, в которой лежит поинт-файл,
+                        # ищем вверх от поинт-файла. Это костыль для старых реализаций.
+                        f = self.search_project_folder(point_file, f)
+                        if f:
+                            self._work_dir = f
+                            return
             except ValueError as e: # если файлы лежат на разных дисках. TODO: убрать вывод в консоль
-                print(f'[203] Different pathes of folder and file. '+
+                print(f'QspProject Error! [203] Different pathes of folder and file. '+
                       f'Error "{str(e)}". path: {point_file}. folder: {f}.')
                 continue
 
@@ -317,3 +325,18 @@ class QspProject:
         out_res['output'] = os.path.abspath(res['output'])
 
         return out_res
+
+    @staticmethod
+    def search_project_folder(point_file:ts.AbsPath, edge_folder:ts.AbsPath) -> ts.AbsPath:
+        """
+            Find project-file and return folder path whith project.
+            In other return None.
+        """
+        if not os.path.isfile(point_file): raise _SchemeProvingError(f'File "{point_file} is not exist.')
+        pf = os.path.split(point_file)[0]
+        while not os.path.isfile(os.path.join(pf, PROJECT_FILE_NAME)):
+            if os.path.abspath(pf) == os.path.abspath(edge_folder) or os.path.ismount(pf):
+                raise _SchemeProvingError(f'"{PROJECT_FILE_NAME}" not found. Prove path "{point_file}".')
+            pf = os.path.split(pf)[0]
+        else:
+            return pf
