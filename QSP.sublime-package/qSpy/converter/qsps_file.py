@@ -4,12 +4,14 @@
 import os
 import re
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from .tps import (
+	LocName,
 	Path,
 	QspsLine,
-	LocFindMode
+	LocFindMode,
+	ViewRegion
 )
 from .qsp_location import QspsLoc
 from .tools import parse_string
@@ -29,6 +31,7 @@ class QspsFile():
 	def __init__(self, qsps_line:Optional[List[QspsLine]] = None) -> None:
 		# main fields:
 		self._locations:List[QspsLoc] = []
+		self._loc_symbols:List[Tuple[LocName, ViewRegion]] = []
 		self._src_lines:List[QspsLine] = qsps_line if qsps_line else []				# all strings of file
 
 		# files fields
@@ -68,25 +71,30 @@ class QspsFile():
 		""" Split source strings to locations """
 		mode:LocFindMode = {
 			'loc_name': '',
+			'region': (-1, -1),
 			'quote': [],
 			'src_lines': []}
+		offset: int = 0
 		for qsps_line in self._src_lines:
 			if mode['loc_name'] == '': # open string work only in open location
 				match = LOCATION_START.search(qsps_line)
 				if match:
 					# open location
 					mode['loc_name'] = match.group(1).replace('\r', '')
+					mode['region'] = (offset + match.start(1), offset + match.end(1))
 				else:
 					# если локация ещё не открыта, пропускаем строки
 					pass
 			elif not mode['quote'] and LOCATION_END.search(qsps_line):
 				# close location
-				self._locations.append(QspsLoc(mode['loc_name'], mode['src_lines']))
+				self._locations.append(QspsLoc(mode['loc_name'], mode['src_lines'], mode['region']))
+				self._loc_symbols.append((mode['loc_name'], mode['region']))
 				mode['loc_name'] = ''
 				mode['src_lines'].clear()
 			else:
 				parse_string(qsps_line, mode)
 				mode['src_lines'].append(qsps_line)
+			offset += len(qsps_line)
 
 	def append_location(self, location:QspsLoc) -> None:
 		""" Add location in QspsFile """
@@ -95,3 +103,6 @@ class QspsFile():
 	def get_locations(self) -> List[QspsLoc]:
 		""" Return list of locaions """
 		return self._locations
+
+	def get_loc_symbols(self) -> List[Tuple[LocName, ViewRegion]]:
+		return self._loc_symbols

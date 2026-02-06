@@ -80,6 +80,7 @@ def is_path_in_project_folders(path:Optional[Path],
 	return False
 
 def log(string:str,) -> None:
+	"""Write log-messages to log-file."""
 	log_file_path = 'D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\qsp-workspace-log.log'
 	with open(log_file_path, 'a', encoding='utf-8') as fp:
 		fp.write(string + '\n')

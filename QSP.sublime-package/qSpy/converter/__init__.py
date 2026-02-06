@@ -4,6 +4,7 @@ from .qsp_to_qsps import QspToQspsBuiltinConv
 from .qsp_location import QspsLoc
 from .qsps_file import QspsFile
 from .qsp_splitter import FinderSplitter, QspSplitter
+from .tps import ViewRegion
 
 __all__ = [
     'QspsToQspBuiltinConv',
@@ -12,5 +13,6 @@ __all__ = [
     'QspsFile',
     'QspToQspsBuiltinConv',
     'FinderSplitter',
-    'QspSplitter'
+    'QspSplitter',
+    'ViewRegion'
 ]

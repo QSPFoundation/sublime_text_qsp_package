@@ -1,18 +1,77 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple, Literal
+from dataclasses import dataclass
+from enum import IntEnum, IntFlag
+from typing import Any, Callable, Dict, List, Optional, Tuple, Literal, Union
+
+Point = int
+
+class FindFlags(IntFlag):
+    NONE = 0
+    LITERAL = 1    # Whether the find pattern should be matched literally or as a regex.
+    IGNORECASE = 2 # Whether case should be considered when matching the find pattern.
+    WHOLEWORD = 4  # Whether to only match whole words.
+    REVERSE = 8    # Whether to search backwards.
+    WRAP = 16      # Whether to wrap around once the end is reached.
+
+class KindId(IntEnum):
+    AMBIGUOUS = 0
+    KEYWORD = 1
+    TYPE = 2
+    FUNCTION = 3
+    NAMESPACE = 4
+    NAVIGATION = 5
+    MARKUP = 6
+    VARIABLE = 7
+    SNIPPET = 8
+    COLOR_REDISH = 9
+    COLOR_ORANGISH = 10
+    COLOR_YELLOWISH = 11
+    COLOR_GREENISH = 12
+    COLOR_CYANISH = 13
+    COLOR_BLUISH = 14
+    COLOR_PURPLISH = 15
+    COLOR_PINKISH = 16
+    COLOR_DARK = 17
+    COLOR_LIGHT = 18
+
+Kind = Tuple[KindId, str, str]
 
 # Classes
 class Edit:
     pass
 
+class SymbolType(IntEnum):
+    ANY = 0 # Any symbol type - both definitions and references.
+    DEFINITION = 1 # Only definitions.
+    REFERENCE = 2 # Only references.
+
+@dataclass
+class SymbolRegion:
+    name:str
+    region: Region
+    syntax: str
+    type: SymbolType
+    kind: Kind
+
+@dataclass
+class Syntax:
+    path: str # The packages path to the syntax file.
+    name: str #The name of the syntax.
+    hidden: bool # If the syntax is hidden from the user.
+    scope: str
+
+Value = Union[bool, str, int, float, list[Value], dict[str, Value], None]
+
+CommandArgs = Optional[Dict[str, Value]]
+
 class View:
-    def substr(self, region: Region) -> str: ...
+    def substr(self, x: Union[Region, Point]) -> str: ...
     def size(self) -> int: ...
     def sel(self) -> Selection: ...
     def window(self) -> Optional[Window]: ...
     def match_selector(self, point: int, selector: str) -> bool: ...
-    def expand_to_scope(self, point: int, selector: str) -> Region: ...
-    def add_regions(self, key: str, regions: List[Region], scope: str, flags: int = 0) -> None: ...
-    def show_popup(self, content: str, flags: int = 0, location: int = -1, max_width: int = 320) -> None: ...
+    def expand_to_scope(self, point: int, selector: str) -> Optional[Region]: ...
+    def add_regions(self, key: str, regions: List[Region], scope: str, flags: int = 0, annotations: list[str] = []) -> None: ...
+    def show_popup(self, content: str, flags: int = 0, location: int = -1, max_width: int = 320, on_navigate: Optional[Callable[[str], None]] = None, on_hide: Optional[Callable[[], None]] = None) -> None: ...
     def erase_regions(self, key: str) -> None: ...
     def add_phantom(self, key: str, region: Region, content: str, layout: int, annotations: Optional[List[str]] = None, flags: int = 0) -> None: ...
     def insert(self, edit: Edit, point: int, text: str) -> None: ...
@@ -26,6 +85,14 @@ class View:
     def word(self, point: int) -> Region: ...
     def set_syntax_file(self, syntax_file: str) -> None: ...
     def run_command(self, command: str, args: Optional[Dict[str, Any]] = None) -> None: ...
+    def symbol_regions(self) -> list[SymbolRegion]: ...
+    def syntax(self) -> Optional[Syntax]: ...
+    def find(self, pattern:str, start_pt: Point, flags:int=FindFlags.NONE) -> Region:
+        """The first Region matching the provided pattern."""
+        ...
+    def find_all(self, pattern: str, flags:int=FindFlags.NONE, fmt: Optional[str] = None, extractions: Optional[List[str]] = None, within: Optional[Union[Region, List[Region]]] = None) -> List[Region]: ...
+    def line(self, x:Union[Region, Point]) -> Region: ...
+
 
 class Window:
     def extract_variables(self) -> Dict[str, str]: ...
@@ -39,7 +106,10 @@ class Window:
     def create_output_panel(self, name: str) -> View: ...
 
 class Buffer:
-    pass
+    def id(self) -> int: ... # Returns a number that uniquely identifies this buffer.
+    def file_name(self) -> Optional[str]: ... # The full name file the file associated with the buffer, or None if it doesn’t exist on disk.
+    def views(self) -> list[View]: ... # Returns a list of all views that are associated with this buffer.  def
+    def primary_view(self) -> View: ...
 
 class Region:
     def __init__(self, a: int, b: int) -> None: ...

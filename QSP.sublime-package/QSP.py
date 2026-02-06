@@ -1,19 +1,19 @@
-import sublime		
-import sublime_plugin
+import sublime		# type: ignore
+import sublime_plugin # type: ignore
 
 import os
 import re
 import json
-from typing import Union, List, Tuple, cast
+from typing import Optional, Union, List, Tuple, cast
 # import time
 
 # Importing my modules from qSpy package.
 from .qSpy.builder import BuildQSP
 from .qSpy.converter import (
-	QspsFile, QspToQspsBuiltinConv, QspsToQspBuiltinConv,
+	QspToQspsBuiltinConv, QspsToQspBuiltinConv,
 	QspSplitter, FinderSplitter
 )
-from .qSpy.workspace import QspWorkspace
+from .qSpy.workspace import LocHash, QspWorkspace, WorkspacesPlaces
 from .qSpy import function as qsp
 from .qSpy.project import QspProject
 # Import constants
@@ -115,28 +115,29 @@ class QspNewProjectCommand(sublime_plugin.WindowCommand):
 	""" Create New Standart QSP-project """
 	def run(self) -> None:
 		argv = self.window.extract_variables()
-		if not 'folder' in argv: return None # argv['folder'] - folder of ST-project
+		if not 'folder' in argv: return None # нет папок в проекте
+		first_folder = argv['folder']
 		_jont = os.path.join
-		os.makedirs(_jont(argv['folder'],'_disdocs'), exist_ok=True)
-		assets_folder = _jont(argv['folder'], '_output_game', 'assets')
+		os.makedirs(_jont(first_folder,'_disdocs'), exist_ok=True)
+		assets_folder = _jont(first_folder, '_output_game', 'assets')
 		os.makedirs(_jont(assets_folder, 'img'), exist_ok=True)
 		os.makedirs(_jont(assets_folder, 'snd'), exist_ok=True)
 		os.makedirs(_jont(assets_folder, 'vid'), exist_ok=True)
-		os.makedirs(_jont(argv['folder'], '_output_game', 'lib'), exist_ok=True)
-		os.makedirs(_jont(argv['folder'], '_src'), exist_ok=True)
+		os.makedirs(_jont(first_folder, '_output_game', 'lib'), exist_ok=True)
+		os.makedirs(_jont(first_folder, '_src'), exist_ok=True)
 		# crete qsp-project.json
-		project_json_path = _jont(argv['folder'], '_src', 'qsp-project.json')
+		project_json_path = _jont(first_folder, 'qsp-project.json')
 		if not os.path.isfile(project_json_path):
 			with open(project_json_path, 'w', encoding='utf-8') as file:
 				json.dump(dict(const.QSP_PROJECT_JSON), file, indent=4)
 		# create sublime-project
-		_, fname = os.path.split(argv['folder'])
-		sublproj_path = _jont(argv['folder'], fname + '.sublime-project')
+		_, fname = os.path.split(first_folder)
+		sublproj_path = _jont(first_folder, fname + '.sublime-project')
 		if not os.path.isfile(sublproj_path):
 			with open(sublproj_path, 'w', encoding='utf-8') as file:
 				json.dump(dict(const.QSP_SUBLIME_PROJECT), file, indent=4)
 		# create startfile
-		start_file_path = _jont(argv['folder'], '_src', '00_start.qsps')
+		start_file_path = _jont(first_folder, '_src', '00_start.qsps')
 		if not os.path.isfile(start_file_path):
 			with open(start_file_path, 'w', encoding='utf-8') as file:
 				file.writelines(const.QSP_START_TEMPLATE)
@@ -158,79 +159,80 @@ class QspNewGameCommand(sublime_plugin.WindowCommand):
 class QspAnalyzerCommand(sublime_plugin.WindowCommand):
 	""" Analyse of code, and search errors, locations names, varnames etc. """
 	def run(self) -> None:
-		window = self.window
-		view = window.active_view()
-		if view is None: return None
-		if QspWorkspace.view_syntax_is_wrong(view): return None
-		text = view.substr(sublime.Region(0, view.size()))
-		masked = _mask_strings_and_braces(text)
-		g = _read_grammar_keywords()
-		print(g)
-		# Extract locations and labels (by convention and grammar respectively)
-		loc_names = []
-		for m in re.finditer(r'(?mi)^\#\s*([^\r\n]+?)\s*$', text):
-			loc_names.append(m.group(1))
-		labels = []
-		for m in re.finditer(r'(?mi)^\:\s*([^\r\n&]+?)\s*$', masked):
-			labels.append(m.group(1))
-		# User calls
-		user_statements = re.findall(r'(?mi)@@([A-Za-z_][A-Za-z0-9_]*)', masked)
-		user_functions = re.findall(r'(?mi)(?<!@)@([A-Za-z_][A-Za-z0-9_]*)', masked)
-		# Statements and functions
-		stmts = {}
-		if len(g['statements']) > 0:
-			stmts_alt = '|'.join(sorted(map(re.escape, g['statements']), key=len, reverse=True))
-			pattern_stmt = re.compile(rf'(?mi)(?<![\w])(?:{stmts_alt})(?=(?:\s|[&\'\"\(\)\[\]=!<>+\-\/*:,\{{\}}]|$))')
-			for m in pattern_stmt.finditer(masked):
-				name = m.group(0).lower()
-				stmts[name] = stmts.get(name, 0) + 1
-		funcs = {}
-		if len(g['functions']) > 0:
-			funcs_alt = '|'.join(sorted(map(re.escape, g['functions']), key=len, reverse=True))
-			pattern_func = re.compile(rf'(?mi)(?<![\w])[#\$%]?((?:{funcs_alt}))\b')
-			for m in pattern_func.finditer(masked):
-				name = m.group(1).lower()
-				funcs[name] = funcs.get(name, 0) + 1
-		# Variables (rough extraction: identifiers not in keywords)
-		keywords = set().union(g['functions'], g['statements'], g['markers'])
-		vars_found = set()
-		for m in re.finditer(r'(?mi)(?<![\w])[#\$%]?[A-Za-z_][\w\.]*', masked):
-			name = m.group(0)
-			root = name.lstrip('#$%').split('.')[0].lower()
-			if root not in keywords and not root.startswith('_'):
-				vars_found.add(name)
-		# Blocks: if/act/loop ... end (approximate)
-		line_starts = _pos_to_line_index_map(text)
-		blocks = []
-		stack = []
-		for m in re.finditer(r'(?mi)(?<![\w])(if|act|loop|end)\b', masked):
-			tok = m.group(1).lower()
-			ln = _line_number_at(m.start(), line_starts)
-			if tok in ('if', 'act', 'loop'):
-				stack.append((tok, ln))
-			elif tok == 'end' and len(stack) > 0:
-				start_tok, start_ln = stack.pop()
-				blocks.append({'type': start_tok, 'start_line': start_ln, 'end_line': ln})
-		# Prepare output
-		data = {
-			'file': (view.file_name() or f'untitled:{view.id()}'),
-			'locations': sorted(loc_names),
-			'labels': sorted(labels),
-			'user_calls': {
-				'statements': sorted(user_statements),
-				'functions': sorted(user_functions)
-			},
-			'counts': {
-				'statements': stmts,
-				'functions': funcs
-			},
-			'variables': sorted(vars_found),
-			'blocks': blocks
-		}
-		panel = window.create_output_panel('qsp_analyzer')
-		panel.set_syntax_file('Packages/JavaScript/JSON.sublime-syntax')
-		panel.run_command('append', {'characters': json.dumps(data, indent=2, ensure_ascii=False)})
-		window.run_command('show_panel', {'panel': 'output.qsp_analyzer'})
+		# window = self.window
+		# view = window.active_view()
+		# if view is None: return None
+		# if QspWorkspace.view_syntax_is_wrong(view): return None
+		# text = view.substr(sublime.Region(0, view.size()))
+		# masked = _mask_strings_and_braces(text)
+		# g = _read_grammar_keywords()
+		# print(g)
+		# # Extract locations and labels (by convention and grammar respectively)
+		# loc_names = []
+		# for m in re.finditer(r'(?mi)^\#\s*([^\r\n]+?)\s*$', text):
+		# 	loc_names.append(m.group(1))
+		# labels = []
+		# for m in re.finditer(r'(?mi)^\:\s*([^\r\n&]+?)\s*$', masked):
+		# 	labels.append(m.group(1))
+		# # User calls
+		# user_statements = re.findall(r'(?mi)@@([A-Za-z_][A-Za-z0-9_]*)', masked)
+		# user_functions = re.findall(r'(?mi)(?<!@)@([A-Za-z_][A-Za-z0-9_]*)', masked)
+		# # Statements and functions
+		# stmts = {}
+		# if len(g['statements']) > 0:
+		# 	stmts_alt = '|'.join(sorted(map(re.escape, g['statements']), key=len, reverse=True))
+		# 	pattern_stmt = re.compile(rf'(?mi)(?<![\w])(?:{stmts_alt})(?=(?:\s|[&\'\"\(\)\[\]=!<>+\-\/*:,\{{\}}]|$))')
+		# 	for m in pattern_stmt.finditer(masked):
+		# 		name = m.group(0).lower()
+		# 		stmts[name] = stmts.get(name, 0) + 1
+		# funcs = {}
+		# if len(g['functions']) > 0:
+		# 	funcs_alt = '|'.join(sorted(map(re.escape, g['functions']), key=len, reverse=True))
+		# 	pattern_func = re.compile(rf'(?mi)(?<![\w])[#\$%]?((?:{funcs_alt}))\b')
+		# 	for m in pattern_func.finditer(masked):
+		# 		name = m.group(1).lower()
+		# 		funcs[name] = funcs.get(name, 0) + 1
+		# # Variables (rough extraction: identifiers not in keywords)
+		# keywords = set().union(g['functions'], g['statements'], g['markers'])
+		# vars_found = set()
+		# for m in re.finditer(r'(?mi)(?<![\w])[#\$%]?[A-Za-z_][\w\.]*', masked):
+		# 	name = m.group(0)
+		# 	root = name.lstrip('#$%').split('.')[0].lower()
+		# 	if root not in keywords and not root.startswith('_'):
+		# 		vars_found.add(name)
+		# # Blocks: if/act/loop ... end (approximate)
+		# line_starts = _pos_to_line_index_map(text)
+		# blocks = []
+		# stack = []
+		# for m in re.finditer(r'(?mi)(?<![\w])(if|act|loop|end)\b', masked):
+		# 	tok = m.group(1).lower()
+		# 	ln = _line_number_at(m.start(), line_starts)
+		# 	if tok in ('if', 'act', 'loop'):
+		# 		stack.append((tok, ln))
+		# 	elif tok == 'end' and len(stack) > 0:
+		# 		start_tok, start_ln = stack.pop()
+		# 		blocks.append({'type': start_tok, 'start_line': start_ln, 'end_line': ln})
+		# # Prepare output
+		# data = {
+		# 	'file': (view.file_name() or f'untitled:{view.id()}'),
+		# 	'locations': sorted(loc_names),
+		# 	'labels': sorted(labels),
+		# 	'user_calls': {
+		# 		'statements': sorted(user_statements),
+		# 		'functions': sorted(user_functions)
+		# 	},
+		# 	'counts': {
+		# 		'statements': stmts,
+		# 		'functions': funcs
+		# 	},
+		# 	'variables': sorted(vars_found),
+		# 	'blocks': blocks
+		# }
+		# panel = window.create_output_panel('qsp_analyzer')
+		# panel.set_syntax_file('Packages/JavaScript/JSON.sublime-syntax')
+		# panel.run_command('append', {'characters': json.dumps(data, indent=2, ensure_ascii=False)})
+		# window.run_command('show_panel', {'panel': 'output.qsp_analyzer'})
+		...
 
 class QspReplicStructCommand(sublime_plugin.WindowCommand):
 	""" Generate folder with md-files as links structure """
@@ -238,13 +240,17 @@ class QspReplicStructCommand(sublime_plugin.WindowCommand):
 		...
 
 class QspLocalVarsHighlightCommand(sublime_plugin.TextCommand):
-	""" Find and high light local variables command """
+	""" Find and highlight local variables command """
 
 	def run(self, edit:sublime.Edit) -> None:
 		view = self.view
+		# if not view: return
 		if QspWorkspace.view_syntax_is_wrong(view):	return None
 		project_folder = QspWorkspace.project_folder(view)
-		qsp_ws = QSP_WORKSPACES.get(project_folder) or QspWorkspace(QSP_WORKSPACES)
+		if project_folder and project_folder in QSP_WORKSPACES:
+			qsp_ws = cast(QspWorkspace, QSP_WORKSPACES.get(project_folder))
+		else:
+			qsp_ws  = QspWorkspace(QSP_WORKSPACES)
 		qsp_ws.refresh_vars(view)
 		view.run_command('qsp_hide_highlight')
 		view.add_regions('local_vars', qsp_ws.get_local_vars(), 'region.orangish', flags=256)
@@ -256,7 +262,10 @@ class QspGlobalVarsHighlightCommand(sublime_plugin.TextCommand):
 		view = self.view
 		if QspWorkspace.view_syntax_is_wrong(view):	return None
 		project_folder = QspWorkspace.project_folder(view)
-		qsp_ws = QSP_WORKSPACES.get(project_folder) or QspWorkspace(QSP_WORKSPACES)
+		if project_folder and project_folder in QSP_WORKSPACES:
+			qsp_ws = cast(QspWorkspace, QSP_WORKSPACES.get(project_folder))
+		else:
+			qsp_ws  = QspWorkspace(QSP_WORKSPACES)
 		qsp_ws.refresh_vars(view)
 		view.run_command('qsp_hide_highlight')
 		view.add_regions('global_vars', qsp_ws.get_global_vars(), 'region.yellowish', flags=256)
@@ -276,9 +285,10 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 		del edit
 		view = self.view
 		window = view.window()
+		if not window: return
 		all_views = window.views()
 		project_folders = window.folders()
-		project_folder = (project_folders[0] if project_folders else None)
+		project_folder = (project_folders[0] if project_folders else '')
 		qsp_ws = (QSP_WORKSPACES.get(project_folder) or QspWorkspace(QSP_WORKSPACES))
 		qsp_ws.refresh_from_views(all_views, project_folders)
 		qsp_locs = qsp_ws.locs_dupl()
@@ -306,12 +316,13 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 						popup_msg += f'{i+1}. {qsp_loc_name}. <a href="v:{v.id()}?'
 						popup_msg += f'{qsp_loc_region[0]}">untitled ({v.id()})</a><br>'
 						break
-		w = view.viewport_extent()[0]/1.5
+		w = int(view.viewport_extent()[0]/1.5)
 		vr = view.visible_region().begin()
 		view.show_popup(popup_msg, max_width=w, location=vr, on_navigate=self.on_navigate)
 
 	def on_navigate(self, link:str) -> None: # link - relpath or abspath
 		window = self.view.window()
+		if not window: return
 		current_view = window.active_view()
 		if link.startswith('f:'):
 			link = link[2:]
@@ -372,12 +383,10 @@ class QspInvalidInput(sublime_plugin.EventListener):
 				qsps_file_path = current_qsps
 			else:
 				qsps_file_path = view.id()
-			_filting_qsplocs = (lambda qsp_loc:
-				qsp_loc[1] != input_region or qsp_loc[2] != qsps_file_path)
+			def _filting_qsplocs(qsp_loc:LocHash) -> bool:
+				return qsp_loc[1] != input_region or qsp_loc[2] != qsps_file_path
 			all_locations = qsp_ws.get_locs()
-			all_locations = list(filter(_filting_qsplocs, all_locations))
-			loc_names, _, _ = zip(*all_locations) if len(all_locations)>0 else ([], [], [])
-			loc_names = list(loc_names)
+			loc_names = [loc[0] for loc in filter(_filting_qsplocs, all_locations)]
 			if not input_text in loc_names:
 				return None
 			content = sublime.expand_variables(const.QSP_MSG.WRONG_LOC, {"input_text": input_text})
@@ -402,21 +411,24 @@ class QspAutocomplete(sublime_plugin.EventListener):
 	""" Autocomplete and helptips. """
 
 	def on_query_completions(self,
-		view:sublime.View,
-		prefix:str,
-		locations:List[int]) -> Tuple[List[sublime.CompletionItem], sublime.AutoCompleteFlags]:
+			view:sublime.View,
+			prefix:str,
+			locations:List[int]
+		) -> Optional[Tuple[List[sublime.CompletionItem], sublime.AutoCompleteFlags]]:
 		""" Append completions in editor."""
 		if locations[0]-1 < 0: return None
 		if QspWorkspace.view_syntax_is_wrong(view):	return None
-		project_folders = view.window().folders()
+		window = view.window()
+		if not window: return
+		project_folders = window.folders()
 		project_folder = (project_folders[0] if project_folders else None)
 		if project_folder is None: return None # If project is not exist -> completions not work.
 		qsp_ws = QSP_WORKSPACES.get(project_folder, None)
 		if qsp_ws is None: return None
-		qsp_completions = []
+		qsp_completions:List[sublime.CompletionItem] = []
 		# if syntshugarfunc
 		if view.match_selector(locations[0]-1, 'variable.function.qsp'):
-			qsp_ws.refresh_from_views(view.window().views(), project_folders)
+			qsp_ws.refresh_from_views(window.views(), project_folders)
 			qsp_loc_names = qsp_ws.get_locs_names() # -> list of loc names
 			for loc_name in qsp_loc_names:
 				if prefix.lower() in loc_name.lower():
@@ -431,9 +443,10 @@ class QspAutocomplete(sublime_plugin.EventListener):
 			return (qsp_completions, 24)
 		# if calable operator call location
 		elif view.match_selector(locations[0]-1, 'callable_locs.qsp'):
-			qsp_ws.refresh_from_views(view.window().views(), project_folders)
+			qsp_ws.refresh_from_views(window.views(), project_folders)
 			qsp_loc_names = qsp_ws.get_locs_names() # -> list of loc names
 			scope_region = view.expand_to_scope(locations[0]-1, 'callable_locs.qsp')
+			if not scope_region: return
 			input_text = view.substr(scope_region)
 			for loc_name in qsp_loc_names:
 				if str(input_text[1:-1].lower()) in loc_name.lower():
@@ -449,6 +462,7 @@ class QspAutocomplete(sublime_plugin.EventListener):
 		elif view.match_selector(locations[0]-1, 'label_to_jump.qsp'):
 			qsp_all_lbls = QspWorkspace.get_qsplbls(view)
 			scope_region = view.expand_to_scope(locations[0]-1, 'label_to_jump.qsp')
+			if not scope_region: return
 			input_text = view.substr(scope_region)
 			for qsp_lb in qsp_all_lbls:
 				if str(input_text[1:-1].lower()) in qsp_lb.lower():
@@ -509,7 +523,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			qsp_ws = QSP_WORKSPACES[project_folder] = QspWorkspace(QSP_WORKSPACES)
 		return qsp_ws
 
-	def _extract_qsp_ws(self, project_folder:str=None) -> Union[QspWorkspace, None]:
+	def _extract_qsp_ws(self, project_folder:Optional[Path]=None) -> Union[QspWorkspace, None]:
 		""" extract ws from file if file is exist, and load in ram """
 		self._log('try extract WS from file')
 		project_folder = (project_folder or QspWorkspace.current_project_folder())
@@ -556,10 +570,8 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 			Event of pre closing the project.
 		"""
-		project_folder = window.folders()[0]
-		if project_folder is None: return None
+		project_folder = window.extract_variables().get('folder', '')
 		qsp_ws = self._get_qsp_ws(project_folder)
-		if qsp_ws is None: return None
 		qsp_ws.close_project() # set WS in closing project status
 		qsp_ws.save_to_file(project_folder) # сохранение при закрытии проекта обязательно
 
@@ -575,11 +587,13 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			When file is loading, refresh vars and locs in ws.
 		"""
 		if QspWorkspace.view_syntax_is_wrong(view): return None
+		window = view.window()
+		if not window: return
 		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
 		if None in (current_qsps, project_folder): return None
-		if not qsp.is_path_in_project_folders(current_qsps, view.window().folders()):
+		if not qsp.is_path_in_project_folders(current_qsps, window.folders()):
 			return None
-		qsp_ws = self._get_qsp_ws(project_folder)
+		qsp_ws = self._get_qsp_ws(cast(Path, project_folder))
 		qsp_ws.refresh_qsplocs(view, current_qsps)
 		qsp_ws.refresh_vars(view)
 
@@ -590,11 +604,13 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 		# TODO: почему-то выполняется после закрывания окна!
 		if QspWorkspace.view_syntax_is_wrong(view): return None
+		window = view.window()
+		if not window: return
 		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
 		if project_folder is None: return None
 		qsp_ws = self._get_qsp_ws(project_folder)
-		if qsp_ws is None or qsp_ws.project_is_closing(): return None # if not WS or project closing!
-		folders = view.window().folders()
+		if qsp_ws.project_is_closing(): return None # if not WS or project closing!
+		folders = window.folders()
 		# close the untitled view
 		if current_qsps is None:
 			qsp_ws.del_all_locs_by_place(view.id())
@@ -613,14 +629,17 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		self._log('on_post_save_async')
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
-		if None in (current_qsps, project_folder): return None
+		if not project_folder: return None
+		if not current_qsps: return None
 		qsp_ws = self._get_qsp_ws(project_folder)
 		qsp_ws.refresh_qsplocs(view, current_qsps) # TODO: возможно стоит удалить
 		if qsp_ws.qsps_file_is_exist(current_qsps):
 			qsp_ws.refresh_md5(current_qsps)
 		else:
 			qsp_ws.add_qsps_file(current_qsps, qsp_ws.get_hash(current_qsps))
-		qsp_ws.refresh_from_views(view.window().views(), view.window().folders())
+		window = view.window()
+		if not window: return
+		qsp_ws.refresh_from_views(window.views(), window.folders())
 
 	def on_associate_buffer_async(self, buffer:sublime.Buffer) -> None:
 		"""
@@ -629,6 +648,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 		if QSP_MARKERS['rename_path']:
 			window = buffer.primary_view().window()
+			if not window: return
 			folders = window.folders()
 			project_folder = folders[0]
 			qsp_ws = self._get_qsp_ws(project_folder)
@@ -640,18 +660,19 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 
 # ---------------------------------- Events for action recognition ----------------------------------
 
-	def on_window_command(self, window:sublime.Window, command_name:str, args:dict) -> None:
+	def on_window_command(self, window:sublime.Window, command_name:str,
+																args:sublime.CommandArgs) -> None:
 		if command_name in ('rename_path'):
 			QSP_MARKERS[command_name] = True
-		elif command_name in ('delete_file'):
-			QSP_MARKERS['delete_files'] = args['files']
+		elif command_name in ('delete_file') and args:
+			QSP_MARKERS['delete_files'] = cast(List[Path], args.get('files',[]))
 
 # ---------------------------------- Events for action recognition ----------------------------------
 
 
 # variables
-QSP_WORKSPACES = {} # all qsp WSs add to this dict, if you open project
-QSP_MARKERS = {
+QSP_WORKSPACES:WorkspacesPlaces = {} # all qsp WSs add to this dict, if you open project
+QSP_MARKERS:ts.QspPluginCommandMarkers = {
 	# editing files commands and events
 	'rename_path': False,
 	'delete_files': [],

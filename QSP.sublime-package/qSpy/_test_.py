@@ -14,7 +14,7 @@ def loc_test():
     with open('converter\\base_example.qsps', 'r', encoding='utf-8') as fp:
         code = fp.readlines()
     old = time.time()
-    loc = QspsLoc('start', code)
+    loc = QspsLoc('start', code, (2, 2+5))
     loc.split_base()
     print(time.time()-old, ''.join(loc.get_sources()))
 

@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, TypedDict, Union
+from typing import Dict, List, Literal, Tuple, TypedDict, Union
 
 Path = str
 
@@ -14,6 +14,10 @@ QspsLine = str
 LocName = str
 LocCode = List[QspsLine]
 
+Start = int
+End = int
+ViewRegion = Tuple[Start, End]
+
 FileName = str
 FileExt = str
 
@@ -26,6 +30,7 @@ GameLine = str
 
 class LocFindMode(TypedDict):
     loc_name: LocName
+    region: ViewRegion
     quote: List[Literal['"', "'", "{"]]
     src_lines: List[QspsLine]
 

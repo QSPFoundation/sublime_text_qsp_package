@@ -8,6 +8,8 @@ FolderName = str
 LocName = str
 QspsLine = str
 GameLine = str
+
+HashMD5 = str
 PpMode = Literal['Hard-off', 'Off', 'On']
 QspMode = Literal['--br', '--build', '--run']
 
@@ -60,3 +62,10 @@ class ProjectScheme(TypedDict):
 	preprocessor: PpMode
 	assets: List[AssetsConfig]
 	scans: ScansConfig
+
+class QspPluginCommandMarkers(TypedDict):
+	rename_path: bool
+	delete_files:List[Path]
+	save_log_file: bool
+
+ViewId = int

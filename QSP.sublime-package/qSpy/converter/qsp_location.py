@@ -2,7 +2,7 @@ import re
 from typing import List
 
 from .tps import (
-    QspsLine, MultilineDesc, Action, LocName, LocCode, BaseFindMode)
+    QspsLine, MultilineDesc, Action, LocName, LocCode, BaseFindMode, ViewRegion)
 from . import base_scanner as scn
 from . import base_parser as psr
 from . import base_int as bint
@@ -17,9 +17,10 @@ class QspsLoc():
     """
         qsp-locations from qsps-file
     """
-    def __init__(self, name:LocName, code:LocCode) -> None:
+    def __init__(self, name:LocName, code:LocCode, region:ViewRegion) -> None:
         """ Initialise QSP-location """
         self._name:LocName = name                            # location name qsps
+        self._region:ViewRegion = region
 
         self._code:LocCode = code    # all location in code qsps view
 

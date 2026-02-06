@@ -183,7 +183,7 @@ QSP_START_TEMPLATE = (
 	'*pl "Quick project start location. Edit this file, and appending new."\n',
 	'*pl "Стартовая локация быстрого проекта. ',
 	'Отредактируйте этот файл и добавьте новые."\n',
-	'--- game.start ---\n')
+	f'--- game.start {"-"*33}\n')
 
 # No changable dict for qsp-project.json simple file
 
@@ -191,14 +191,14 @@ _j:JsonScheme = {
 	"project":
 	[
 		{
-			"module": os.path.join("..", "_output_game", "game_start.qsp"),
+			"module": os.path.join(".", "_output_game", "game_start.qsp"),
 			"folders":
 			[
-				{"path": "."}
+				{"path": os.path.join(".", "_src")}
 			]
 		}
 	],
-	"start": os.path.join("..", "_output_game", "game_start.qsp"),
+	"start": os.path.join(".", "_output_game", "game_start.qsp"),
 	"player": PLAYER_PATH
 }
 

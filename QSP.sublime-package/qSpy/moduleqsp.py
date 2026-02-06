@@ -76,7 +76,7 @@ class ModuleQSP():
 
     def src_to_text(self) -> str:
         """ Get outer text of module """
-        text:List[str] = []
+        text:List[QspsLine] = []
         for src in self._src_files:
             text.extend(src.get_src())
             text.append('\n')

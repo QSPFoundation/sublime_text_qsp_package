@@ -2,92 +2,118 @@ import sublime			# type: ignore
 
 import os
 import json
-from typing import (Union, List, Tuple)
+from typing import (Dict, Literal, Optional, Set, TypedDict, Union, List, Tuple, cast)
 import hashlib
 
-from .qsps_to_qsp import NewQspsFile
+from .converter import QspsFile
 from . import function as qsp
 from . import const as const
+from .plugtypes import (AbsPath, LocName, Path, ViewId, HashMD5)
+from .converter import ViewRegion
+
+WorkspacesPlaces = Dict[Path, 'QspWorkspace']
+LocHash = Tuple[LocName, ViewRegion, Union[Path, ViewId]]
+
+class QspLocsMb(TypedDict):
+	names:List[LocName]
+	regions:List[ViewRegion]
+	places:List[Union[Path, ViewId]]
+	hashes:List[LocHash]
+
+class QspsFilesMb(TypedDict):
+	pathes:List[AbsPath]
+	hashes:List[HashMD5]
+
+class WsJson(TypedDict):
+	locations: Dict[
+		Path, List[Tuple[AbsPath, ViewRegion]]
+	]
+	files_paths: Dict[Path, HashMD5]
+
+class FindOverlapMb(TypedDict):
+	separator_name: List[Literal['assign', 'while', 'brace']]
+	separator_region: List[sublime.Region]
+	separator_instr: List[sublime.Point]
 
 class QspWorkspace:
-	def __init__(self, all_workspaces:dict) -> None:
-		self.all_ws = all_workspaces # dict of all workspaces
+	def __init__(self, all_workspaces:WorkspacesPlaces) -> None:
+		self._all_ws = all_workspaces # dict of all workspaces
 		# microbase of locations
-		self.locs = {
+		self._locs:QspLocsMb = {
 			'names': [],	# names of location [str]
 			'regions': [],	# regions of locs initiate tuple[start, end]
 			'places': [],	# file path, where is qsp_locs [str]
 			'hashes': []	# all datas in tuple
 		}
 		# microbase of qsps-file's pathes
-		self.qsps_files = {
+		self._qsps_files:QspsFilesMb = {
 			'pathes': [],	# all files in project (abs pathes)
 			'hashes': []	# md5
 		}
 		# microbase of variables
-		self.local_vars = []	# list[sublime.Region]
-		self.global_vars = []	# list[sublime.Region]
-		self.global_vars_names = set()  # set[variables names]
+		self._local_vars:List[sublime.Region] = []	# list[sublime.Region]
+		self._global_vars:List[sublime.Region] = []	# list[sublime.Region]
+		self._global_vars_names:Set[str] = set()  # set[variables names]
 		# modes
-		self.save_temp_files = True
+		self.save_temp_files:bool = True
 		self.markers = {
 			'on_pre_close_project': False
 		}
 
 	def _log(self, string:str) -> None:
 		if self.save_temp_files:
-			qsp.log(string, self.save_temp_files)
+			qsp.log(string)
 
 # --------------------------------- qsp-locations mb functions ---------------------------------
 
-	def add_loc(self, name:str, region:tuple, place:str) -> None:
+	def add_loc(self, name:LocName, region:ViewRegion, place:Union[Path, ViewId]) -> None:
 		""" Add new qsp-location to workspace """
-		if not (name, region, place) in self.locs['hashes']:
+		if not (name, region, place) in self._locs['hashes']:
 			# one index for all fields
-			self.locs['names'].append(name)
-			self.locs['regions'].append(region)
-			self.locs['places'].append(place)
-			self.locs['hashes'].append((name, region, place))
+			self._locs['names'].append(name)
+			self._locs['regions'].append(region)
+			self._locs['places'].append(place)
+			self._locs['hashes'].append((name, region, place))
 
 	def replace_locs(self, old_path:str, new_path:str) -> None:
 		""" Change place of qsp-locations. """
-		while old_path in self.locs['places']:
-			i = self.locs['places'].index(old_path)
-			self.locs['places'][i] = new_path
+		while old_path in self._locs['places']:
+			i = self._locs['places'].index(old_path)
+			self._locs['places'][i] = new_path
 			self.loc_hash_update(i)
 
 	def del_loc_by_index(self, i:int) -> None:
 		""" Delete the qsp-location from workspace by index"""
-		if i < 0 or i > len(self.locs['names'])-1: return None
-		del self.locs['names'][i]
-		del self.locs['regions'][i]
-		del self.locs['places'][i]
-		del self.locs['hashes'][i]
+		if i < 0 or i > len(self._locs['names'])-1: return None
+		del self._locs['names'][i]
+		del self._locs['regions'][i]
+		del self._locs['places'][i]
+		del self._locs['hashes'][i]
 
 	def del_all_locs_by_place(self, loc_place:Union[str, int]) -> None:
 		""" del all locations by place. loc_place - path at file with qsp_location """
-		while loc_place in self.locs['places']:
-			i = self.locs['places'].index(loc_place)
+		while loc_place in self._locs['places']:
+			i = self._locs['places'].index(loc_place)
 			self.del_loc_by_index(i)
 
 	def loc_hash_update(self, i:int) -> None:
 		""" Обновляем хэш локации """
-		self.locs['hashes'][i] = (
-			self.locs['names'][i],
-			self.locs['regions'][i],
-			self.locs['places'][i]
+		self._locs['hashes'][i] = (
+			self._locs['names'][i],
+			self._locs['regions'][i],
+			self._locs['places'][i]
 		)
 
-	def get_locs(self) -> list:
-		return self.locs['hashes'].copy()
+	def get_locs(self) -> List[LocHash]:
+		return self._locs['hashes'].copy()
 	
-	def get_locs_names(self) -> list:
+	def get_locs_names(self) -> List[LocName]:
 		"""	Extract all qsp-location's names. """
-		return self.locs['names'].copy()
+		return self._locs['names'].copy()
 
-	def refresh_qsplocs(self, view:sublime.View, current_qsps:str) -> None:
+	def refresh_qsplocs(self, view:sublime.View, current_qsps:Optional[Path]) -> None:
 		"""	Refresh list of QSP-locations created on this view """
-		qsps_path = (view.id() if current_qsps is None else current_qsps) # abs_path
+		qsps_path = (view.id() if not current_qsps else current_qsps) # abs_path
 		self.del_all_locs_by_place(qsps_path)
 		for s in view.symbol_regions():
 			if s.name.startswith('Локация: '): # TODO: привязка к тому, что символ начинается с Локация не очень удобна!
@@ -96,24 +122,24 @@ class QspWorkspace:
 	def clear_old_qsplocs(self, views:List[sublime.View]) -> None:
 		""" Delete locations from WS, if this views don't exist. """
 		view_ids = [v.id() for v in views]
-		for place in self.locs['places']:
+		for place in self._locs['places']:
 			if isinstance(place, int) and not place in view_ids:
 				self.del_all_locs_by_place(place)
 
-	def locs_dupl(self) -> list: # list[tuples(name, region, place)] *[1]
+	def locs_dupl(self) -> List[LocHash]: # list[tuples(name, region, place)] *[1]
 		""" Get qsp-locations with duplicate names. """
-		qsp_locs = [] # list[tuples(name, region, place)]
-		exclude_hashes = []
-		for i, loc_hash in enumerate(self.locs['hashes']):
+		qsp_locs:List[LocHash] = [] # list[tuples(name, region, place)]
+		exclude_hashes:List[LocHash] = []
+		for i, loc_hash in enumerate(self._locs['hashes']):
 			loc_name, _, _ = loc_hash
-			if (not loc_hash in exclude_hashes) and (loc_name in self.locs['names'][i+1:]):
+			if (not loc_hash in exclude_hashes) and (loc_name in self._locs['names'][i+1:]):
 				qsp_locs.append(loc_hash)
 				exclude_hashes.append(loc_hash)
 				u = i + 1
-				while u < len(self.locs['hashes']) and loc_name in self.locs['names'][u:]:
-					u = self.locs['names'].index(loc_name, u)
-					qsp_locs.append(self.locs['hashes'][u]) # add duplicate to out list
-					exclude_hashes.append(self.locs['hashes'][u])
+				while u < len(self._locs['hashes']) and loc_name in self._locs['names'][u:]:
+					u = self._locs['names'].index(loc_name, u)
+					qsp_locs.append(self._locs['hashes'][u]) # add duplicate to out list
+					exclude_hashes.append(self._locs['hashes'][u])
 					u += 1 # search next location
 		return qsp_locs
 
@@ -121,48 +147,45 @@ class QspWorkspace:
 
 # ----------------------------------- qsps-files mb functions -----------------------------------
 
-	def get_qsps_files(self) -> list: # list of tuples!
+	def get_qsps_files(self) -> List[Tuple[AbsPath, HashMD5]]: # list of tuples!
 		"""
 			Return list of qsps-files from WS:
 			list[tuples(path_of_file:str, hash_of_file:str)]
 		"""
 		# all pathes in list of pathes are abs. Dont need use absing func.
-		return list(zip(self.qsps_files['pathes'], self.qsps_files['hashes']))
+		return list(zip(self._qsps_files['pathes'], self._qsps_files['hashes']))
 
-	def add_qsps_file(self, qsps_file_path:str, qsps_file_hash:str) -> int:
+	def add_qsps_file(self, qsps_file_path:str, qsps_file_hash:str) -> None:
 		""" Add qsps-file to WS """
-		self.qsps_files['pathes'].append(qsps_file_path)
-		self.qsps_files['hashes'].append(qsps_file_hash)
+		self._qsps_files['pathes'].append(qsps_file_path)
+		self._qsps_files['hashes'].append(qsps_file_hash)
 
 	def del_qsps_file(self, path:str) -> None:
-		if path in self.qsps_files['pathes']:
-			i = self.qsps_files['pathes'].index(path)
-			del self.qsps_files['pathes'][i]
-			del self.qsps_files['hashes'][i]
+		if path in self._qsps_files['pathes']:
+			i = self._qsps_files['pathes'].index(path)
+			del self._qsps_files['pathes'][i]
+			del self._qsps_files['hashes'][i]
 
 	def replace_qsps_file(self, old_path:str, new_path:str) -> None:
 		""" When replace the phisically file, or rename it,
 		this func replace old file by new in WS. """
-		if old_path in self.qsps_files['pathes']:
-			i = self.qsps_files['pathes'].index(old_path)
-			self.qsps_files['pathes'][i] = new_path
+		if old_path in self._qsps_files['pathes']:
+			i = self._qsps_files['pathes'].index(old_path)
+			self._qsps_files['pathes'][i] = new_path
 
-	def refresh_qsps_files(self, window_folders:list) -> None:
+	def refresh_qsps_files(self, window_folders:List[AbsPath]) -> None:
 		""" refresh files mb in ws """
 		old = set(self.get_qsps_files()) # set[tuple(abs-path, hash)]
-		files_pathes = []
+		files_pathes:List[AbsPath] = []
 		for f in window_folders:
 			files_pathes.extend(qsp.get_files_list(f))
-		new = set()
+		new:Set[Tuple[AbsPath, HashMD5]] = set()
 		for f in files_pathes:
 			new.add((f, self.get_hash(f))) # set[tuple(abs-path, hash)]
-		to_del = list(old - new)
-		to_add = list(new - old)
-		to_del_paths, to_del_hashs = [], []
-		if len(to_del)>0:
-			to_del_paths, to_del_hashs = zip(*to_del) # tuples
-		to_del_hashs = list(to_del_hashs)
-		to_del_paths = list(to_del_paths)
+		to_del:List[Tuple[AbsPath, HashMD5]] = list(old - new)
+		to_add:List[Tuple[AbsPath, HashMD5]] = list(new - old)
+		to_del_paths:List[AbsPath] = [path for path, _hash in to_del]
+		to_del_hashs:List[HashMD5] = [_hash for _, _hash in to_del]
 		# replace on new paths
 		for new_path, md5 in to_add[:]: # to_add = list[tuples(file_path, file_hash)]
 			if md5 in to_del_hashs:
@@ -174,10 +197,10 @@ class QspWorkspace:
 				del to_del_hashs[i]
 				del to_del_paths[i]
 			else:
-				qsps_file = NewQspsFile()
+				qsps_file = QspsFile()
 				qsps_file.read_from_file(new_path)
 				qsps_file.split_to_locations()
-				for loc_name, loc_region in qsps_file.get_qsplocs():
+				for loc_name, loc_region in qsps_file.get_loc_symbols():
 					# str, tuple(start, end)
 					self.add_loc(loc_name, loc_region, new_path)
 				self.add_qsps_file(new_path, md5)
@@ -189,19 +212,19 @@ class QspWorkspace:
 
 	def refresh_md5(self, qsps_file_path:str) -> None:
 		""" Refreshing md5 of file by path """
-		if qsps_file_path in self.qsps_files['pathes']:
-			i = self.qsps_files['pathes'].index(qsps_file_path)
-			self.qsps_files['hashes'][i] = self.get_hash(qsps_file_path)
+		if qsps_file_path in self._qsps_files['pathes']:
+			i = self._qsps_files['pathes'].index(qsps_file_path)
+			self._qsps_files['hashes'][i] = self.get_hash(qsps_file_path)
 
 	def qsps_file_is_exist(self, qsps_file_path:str) -> bool:
 		""" Prove qsps-file is exist in WS """
-		return qsps_file_path in self.qsps_files['pathes']
+		return qsps_file_path in self._qsps_files['pathes']
 
 	def qsps_files_number(self) -> int:
 		"""
 			Return number of qsps-files in WS.
 		"""
-		return len(self.qsps_files['pathes'])
+		return len(self._qsps_files['pathes'])
 
 # ----------------------------------- qsps-files mb functions -----------------------------------
 
@@ -216,8 +239,8 @@ class QspWorkspace:
 		with open(ws_file_path, "r", encoding="utf-8") as fp:
 			ws_json = json.load(fp) # get json struct ws from file
 
-		if len(self.locs['hashes']) > 0:
-			self.__init__()
+		if len(self._locs['hashes']) > 0:
+			self.__init__(self._all_ws)
 			qsp.write_error_log(const.QSP_ERROR_MSG.WS_ALREADY_INIT)
 
 		for place, qsp_locs in ws_json['locations'].items():
@@ -230,41 +253,41 @@ class QspWorkspace:
 				self.add_loc(name, tuple(region), place)
 
 		for path, md5 in ws_json['files_paths'].items():
-			self.qsps_files['pathes'].append(path)
-			self.qsps_files['hashes'].append(md5)
+			self._qsps_files['pathes'].append(path)
+			self._qsps_files['hashes'].append(md5)
 
-	def get_json_struct(self) -> dict:
-		qsp_ws_out = { 'locations': {}, 'files_paths': {} }
+	def get_json_struct(self) -> WsJson:
+		qsp_ws_out:WsJson = { 'locations': {}, 'files_paths': {} }
 		qsp_locs_out = qsp_ws_out['locations']
 		qsp_files_out = qsp_ws_out['files_paths']
-		for qsp_loc in self.locs['hashes']:
+		for qsp_loc in self._locs['hashes']:
 			qsps_file_path = qsp_loc[2]
 			if isinstance(qsps_file_path, int): continue
 			if not qsps_file_path in qsp_locs_out: qsp_locs_out[qsps_file_path] = []
-			qsp_locs_out[qsps_file_path].append([qsp_loc[0], qsp_loc[1]])
-		for i, qsps_file_path in enumerate(self.qsps_files['pathes']):
+			qsp_locs_out[qsps_file_path].append((qsp_loc[0], qsp_loc[1]))
+		for i, qsps_file_path in enumerate(self._qsps_files['pathes']):
 			# TODO: здесь часть путей должна преобразовываться в относительные
 			# перед возвращением в виде json-структуры.
-			qsp_files_out[qsps_file_path] = self.qsps_files['hashes'][i]
+			qsp_files_out[qsps_file_path] = self._qsps_files['hashes'][i]
 		return qsp_ws_out
 
-	def save_to_file(self, project_folder:str=None) -> None:
+	def save_to_file(self, project_folder:Path='') -> None:
 		"""
 			Save WS in json-file. project_folder must be exist!
 		"""
-		if project_folder is None: return None
+		if not project_folder: return
 		json_ws = self.get_json_struct()
-		if not 'locations' in json_ws or not json_ws['locations']: return None
+		if not 'locations' in json_ws or not json_ws['locations']: return
 		ws_json_path = os.path.join(project_folder, 'qsp-project-workspace.json')
 		with open(ws_json_path, "w", encoding="utf-8") as ws_fp:
 			json.dump(json_ws, ws_fp, indent=4, ensure_ascii=False)
 
-	def refresh_from_views(self, windows_views:List[sublime.View], window_folders:List[str]) -> None:
+	def refresh_from_views(self, windows_views:List[sublime.View], window_folders:List[AbsPath]) -> None:
 		"""
 			Refresh untitled views and opened files in WS.
 		"""
-		_conditional_is_true = (lambda x, y:
-			x is None or qsp.is_path_in_project_folders(x, y))
+		def _conditional_is_true(x:Optional[AbsPath], y:List[AbsPath]) -> bool:
+			return x is None or qsp.is_path_in_project_folders(x, y)
 		for view in windows_views:
 			if QspWorkspace.view_syntax_is_wrong(view): continue
 			current_qsps = view.file_name()
@@ -284,39 +307,43 @@ class QspWorkspace:
 
 # ---------------------------------- variables mb function in WS ----------------------------------
 	def refresh_vars(self, view:sublime.View) -> None:
-		def _find_overlap_main(start_find):
+		def _find_overlap_main(start_find:int):
 			maximal = view.size()+1
-			mini_data_base = {
-				"sprtr-name": [
+			mini_data_base:FindOverlapMb = {
+				"separator_name": [
 					'assign',
 					'while',
 					'brace'
 				],
-				"sprtr-region":
+				"separator_region":
 				[
 					view.find('=', start_find, flags=1+2),
 					view.find('while', start_find, flags=1+2),
 					view.find('}', start_find, flags=1+2)
 				],
-				"sprtr-instring":
+				"separator_instr":
 				[]
 			}
-			for i, _ in enumerate(mini_data_base['sprtr-name']):
-				region = mini_data_base['sprtr-region'][i]
-				mini_data_base['sprtr-instring'].append(
+			for i, _ in enumerate(mini_data_base['separator_name']):
+				region = mini_data_base['separator_region'][i]
+				mini_data_base['separator_instr'].append(
 					region.begin() if region.begin()!=-1 else maximal)
-			minimal = min(mini_data_base['sprtr-instring'])
+			minimal = min(mini_data_base['separator_instr'])
 			if minimal != maximal:
-				i = mini_data_base['sprtr-instring'].index(minimal)
-				sprtr_type = mini_data_base['sprtr-name'][i]
-				sprtr_region = mini_data_base['sprtr-region'][i]
+				i = mini_data_base['separator_instr'].index(minimal)
+				sprtr_type = mini_data_base['separator_name'][i]
+				sprtr_region = mini_data_base['separator_region'][i]
 				return sprtr_type, sprtr_region
 			else:
 				return None, None
 
+		def _safe_f(x:str, y:sublime.Region, z:sublime.Point) -> bool:
+			""" Selector, """
+			return view.match_selector(y.begin(),x) and y.begin()<z
+
 		kw_regions = view.find_all('local', flags=2+4)
-		vars_regions = []
-		_safe_f = lambda x, y, z: view.match_selector(y.begin(),x) and y.begin()<z
+		vars_regions:List[sublime.Region] = []
+		
 		for r in kw_regions:
 			if not view.match_selector(r.begin(), 'keyword.declaration.variables.qsp'):
 				continue
@@ -329,19 +356,19 @@ class QspWorkspace:
 			while start_find < end_line:
 				sprtr_type, sprtr_region = _find_overlap_main(start_find)
 				if sprtr_type == 'assign':
-					if _safe_f('keyword.operator.one-sign.qsp', sprtr_region, end_line):
+					if _safe_f('keyword.operator.one-sign.qsp', cast(sublime.Region, sprtr_region), end_line):
 						end_region = sprtr_region.begin()-1
 						break
 					else:
 						start_find = sprtr_region.end()
 				elif sprtr_type == 'while':
-					if _safe_f('keyword.control.qsp', sprtr_region, end_line):
+					if _safe_f('keyword.control.qsp', cast(sublime.Region, sprtr_region), end_line):
 						end_region = sprtr_region.begin()-1
 						break
 					else:
 						start_find = sprtr_region.end()
 				elif sprtr_type == 'brace':
-					if _safe_f('avs_brace_end', sprtr_region, end_line):
+					if _safe_f('avs_brace_end', cast(sublime.Region, sprtr_region), end_line):
 						end_region = sprtr_region.begin()-1
 						break
 					else:
@@ -367,7 +394,7 @@ class QspWorkspace:
 		end_point = vars_regions[-1].end()
 		i = 1
 		u = 0
-		local_vars = []
+		local_vars:List[sublime.Region] = []
 		while start_point < end_point and not u > 999:
 			u += 1
 			find_var = view.find(user_variable, start_point, flags=2)
@@ -385,19 +412,19 @@ class QspWorkspace:
 					i += 1
 				else:
 					break
-		self.local_vars = local_vars # list[sublime.Region]
-		global_vars = []
+		self._local_vars = local_vars # list[sublime.Region]
+		global_vars:List[sublime.Region] = []
 		for var in view.find_all(user_variable, flags=2):
 			if not var in local_vars and view.match_selector(var.begin(), 'meta.user-variables.qsp'):
 				global_vars.append(var)
-				self.global_vars_names.add(view.substr(var))
-		self.global_vars = global_vars
+				self._global_vars_names.add(view.substr(var))
+		self._global_vars = global_vars
 
-	def get_local_vars(self) -> list:
-		return self.local_vars
+	def get_local_vars(self) -> List[sublime.Region]:
+		return self._local_vars
 
-	def get_global_vars(self) -> list:
-		return self.global_vars
+	def get_global_vars(self) -> List[sublime.Region]:
+		return self._global_vars
 
 # ---------------------------------- variables mb function in WS ----------------------------------
 
@@ -413,9 +440,11 @@ class QspWorkspace:
 		return md5_hash.hexdigest()
 
 	@staticmethod
-	def project_folder(view:sublime.View) -> Union[str, None]:
+	def project_folder(view:sublime.View) -> Optional[Path]:
 		""" Get project folder from view. """
-		folders = view.window().folders()
+		window = view.window()
+		if not window: return
+		folders = window.folders()
 		return (folders[0] if folders else None)
 
 	@staticmethod
@@ -425,23 +454,24 @@ class QspWorkspace:
 		return (folders[0] if folders else None)
 
 	@staticmethod
-	def get_main_pathes(view:sublime.View) -> Tuple[Union[str, None], Union[str, None]]:
+	def get_main_pathes(view:sublime.View) -> Tuple[Union[Path, None], Union[Path, None]]:
 		""" Get current qsps-file path and project_folder path. """
 		current_qsps = view.file_name()
-		folders = view.window().folders()
+		window = view.window()
+		if not window: return current_qsps, None
+		folders = window.folders()
 		project_folder = (folders[0] if folders else None)
-		return current_qsps, project_folder # path:str|None, path:str|None
+		return current_qsps, project_folder
 
 	@staticmethod
-	def get_qsplbls(view:sublime.View, exclude_inputting:sublime.Region=None) -> list: # View, Region -> list
+	def get_qsplbls(view:sublime.View, exclude_inputting:Optional[sublime.Region]=None) -> List[str]: # View, Region -> list
 		"""
 			Return list of QSP-labels created on this view
 		"""
-		qsp_labels = []
+		qsp_labels:List[str] = []
 		for s in view.symbol_regions():
 			if exclude_inputting is None or s.region != exclude_inputting:
-				if s.name.startswith('Метка: '):
-					qsp_labels.append(s.name[7:])
+				if s.name.startswith('Метка: '): qsp_labels.append(s.name[7:])
 		return qsp_labels
 
 	@staticmethod
