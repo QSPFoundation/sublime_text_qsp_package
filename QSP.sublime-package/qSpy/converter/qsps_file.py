@@ -7,6 +7,7 @@ import re
 from typing import List, Optional, Tuple
 
 from .tps import (
+	FileName,
 	LocName,
 	Path,
 	QspsLine,
@@ -106,3 +107,9 @@ class QspsFile():
 
 	def get_loc_symbols(self) -> List[Tuple[LocName, ViewRegion]]:
 		return self._loc_symbols
+
+	def file_name(self) -> FileName:
+		return os.path.splitext(os.path.split(self._input_file)[1])[0]
+
+	def file_path(self) -> Path:
+		return self._input_file

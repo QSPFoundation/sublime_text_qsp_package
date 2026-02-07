@@ -229,11 +229,3 @@ class PpInt(stm.PpVisitor[AstNode]):
         end_include = tkn.include_line
         end_line = tkn.get_end_pos()[0]
         return end_nosavecomm, end_include, end_line
-
-
-    # обработчик ошибок. Пока просто выводим в консоль.
-    def _error(self, message:str) -> None:
-        print(f"Err. {message}.")
-
-    def _logic_error(self, message:str) -> None:
-        print(f"Logic error: {message}. Please, report to the developer.")

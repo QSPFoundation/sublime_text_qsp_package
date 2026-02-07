@@ -8,6 +8,7 @@ from . import pp_expr as expr
 from . import pp_dir as dir
 
 from .pp_environment import PpEnvironment
+from . import error as er
 
 AstNode = Union[None, bool, str]
 Modes = Dict[
@@ -33,7 +34,8 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
     def __init__(self,
                  stmts:List[stm.DirStmt[AstNode]],
                  ns:PpEnvironment,
-                 qsps_raw_lines:List[str]) -> None:
+                 qsps_raw_lines:List[str],
+                 global_pp:bool=False) -> None:
         self._ns = ns # ссылка на общий для всего препроцессора неймспейс
         self._stmts = stmts
         self._marked_lines:List[MarkedLine] = []
@@ -41,10 +43,9 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
 
 
         self._is_true:Optional[bool] = None # маркер выполнения условия
-        # TODO: сюда должен падать режим от препроцессора.
-        # TODO: наверное его стоит прописывать в окружении
+
         self._modes:List[Modes] = [{
-            'pp': True, # on True preprocessor is work
+            'pp': global_pp, # on True preprocessor is work
             'no_save_comm': True, # on True spec-comments don't saves in file
             'open_if': False, # on True condition block is open. На старте условие всегда закрыто!
             'include': True, # on True qsps-lines includes in result
@@ -192,8 +193,7 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
                 if left == right: return False
             else:
                 # Неожиданный оператор для EqualExpr — считаем это логической ошибкой.
-                self._logic_error(f"Unknown equality operator {op!r}")
-                return False
+                raise er.DirsInterpreterError(f"Unknown equality operator {op!r}")
 
         return True
 
@@ -249,10 +249,3 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         for line in self._qsps_raw_lines[strt_ln:end_ln+1]:
             output_lines.append((line, no_save_comm, include))
         return output_lines
-
-    # обработчик ошибок. Пока просто выводим в консоль.
-    def _error(self, message:str) -> None:
-        print(f"Err. {message}.")
-
-    def _logic_error(self, message:str) -> None:
-        print(f"Logic error: {message}. Please, report to the developer.")

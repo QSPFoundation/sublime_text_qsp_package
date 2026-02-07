@@ -4,6 +4,7 @@ from typing import List, Optional, Any
 from .pp_tokens import PpToken as Tkn
 from .pp_tokens import PpTokenType as tt
 from . import pp_stmts as stm
+from . import error as er
 
 PpStmt = stm.PpStmt[Any]
 
@@ -14,11 +15,9 @@ class PpParser:
 
         # валидация цепочки токенов
         if not self._tokens:
-            self._logic_error(f'Init-stage. Tokens-chain is empty')
-            return None
+            raise er.PpParserRunError(f'Init-stage. Tokens-chain is empty')
         if self._tokens and self._tokens[-1].ttype != tt.EOF:
-            self._logic_error(f'There is not EOF in tokens-chain on initial stage')
-            self._tokens.append(Tkn(tt.EOF, '', (-1,-1)))        
+            raise er.PpParserRunError(f'Init-stage. There is not EOF in tokens-chain')       
 
         self._curtok_num:int = 0
         self._curtok:Tkn = self._tokens[0]
@@ -30,6 +29,11 @@ class PpParser:
 
         self._statements:List[PpStmt] = [] # qsps_file entity
 
+        self._error_check: bool = False
+
+    def errored(self) -> bool:
+        return self._error_check
+
     def tokens_parse(self) -> None:
         """ Публичная функция вызова парсера. """
         # прежде всего разбиваем файл на директивы и блоки
@@ -37,7 +41,11 @@ class PpParser:
             if self._check_type(tt.PREFORMATTER):
                 self._tbuffer = self._curtok
                 self._eat_tokens(1)
-            self._statements.append(self._declaration())
+            try:
+                self._statements.append(self._declaration())
+            except er.PpParserError as e:
+                self._error_check = True
+                print(e)
             self._tbuffer = None
         
     def get_statements(self) -> List[PpStmt]:
@@ -58,8 +66,13 @@ class PpParser:
                              tt.RIGHT_BRACKET, tt.RIGHT_BRACE, tt.RIGHT_PAREN,
                              tt.AMPERSAND):
                 return self._statements_line()
+            elif self._check_type(tt.NEWLINE):
+                return self._raw_line_eating()
             else:
-                self._logic_error(f'Unexpected token in location body: {self._curtok.ttype.name}')
+                raise er.PpParserRunError(''.join([
+                    f'Unexpected token in location body: ',
+                    str(self._curtok.ttype.name), str(self._curtok.lexeme_start)
+                    ]))
                 return self._raw_line_eating()
         else:
             if self._check_type(tt.LOC_OPEN):
@@ -67,7 +80,7 @@ class PpParser:
             elif self._check_type(tt.RAW_LINE):
                 return self._raw_line()
             else:
-                self._logic_error(f'Expected LOC_OPEN, RAW_LINE or OPEN_DIR_STMT. Get {self._curtok.ttype.name}')
+                raise er.PpParserRunError(f'Expect LOC_OPEN, RAW_LINE or OPEN_DIR_STMT. Get {self._curtok.ttype.name}')
                 return self._raw_line_eating()
 
     def _statements_line(self) -> stm.StmtsLine[None]:
@@ -101,8 +114,7 @@ class PpParser:
                 break
             else:
                 # Если не разделитель и не комментарий, значит что-то не так
-                self._logic_error(f'Statements Line. Unexpected Token {self._curtok.ttype.name}')
-                break
+               raise er.PpParserRunError(f'Statements Line. Unexpected Token {self._curtok.ttype.name}')
         
         return stm.StmtsLine[None](pref, stmts, comment)
        
@@ -157,8 +169,7 @@ class PpParser:
             value = stm.OtherStmt[None](chain)
         
         if not self._check_type(tt.RIGHT_BRACKET):
-            self._error('BracketBlock. Expected RIGHT_BRACKET')
-            return stm.BracketBlock[None](left, value, Tkn(tt.RIGHT_BRACKET, '', (-1,-1)))
+            raise er.PpParserError(self._curtok, 'BracketBlock. Expected RIGHT_BRACKET')
         
         right:Tkn = self._curtok
         self._eat_tokens(1)
@@ -193,8 +204,7 @@ class PpParser:
             value = stm.OtherStmt[None](chain)
         
         if not self._check_type(tt.RIGHT_PAREN):
-            self._error('ParenBlock. Expected RIGHT_PAREN')
-            return stm.BracketBlock[None](left, value, Tkn(tt.RIGHT_PAREN, '', (-1,-1)))
+            raise er.PpParserError(self._curtok, 'ParenBlock. Expected RIGHT_PAREN')
         
         right:Tkn = self._curtok
         self._eat_tokens(1)
@@ -230,8 +240,7 @@ class PpParser:
             value = stm.OtherStmt[None](chain)
         
         if not self._check_type(tt.RIGHT_BRACE):
-            self._error('CodeBlock. Expected RIGHT_BRACE')
-            return stm.BracketBlock[None](left, value, Tkn(tt.RIGHT_BRACE, '', (-1,-1)))
+            raise er.PpParserError(self._curtok, 'CodeBlock. Expected RIGHT_BRACE')
         
         right:Tkn = self._curtok
         self._eat_tokens(1)
@@ -259,7 +268,7 @@ class PpParser:
             else:
                 value.append(self._raw_string_line(ttype))
         else:
-            self._error('Literal String. Unexpectable EOF')
+            raise er.PpParserError(self._curtok, f'Literal String. Prev-token: {self._prev_peek()}. Unexpectable token')
 
         return stm.StringLiteral[None](left, value)
 
@@ -323,7 +332,7 @@ class PpParser:
             value.append(self._curtok)
             self._eat_tokens(1)
         else:
-            self._error('Comments Apostrophe Block. Unexpectable EOF')        
+            raise er.PpParserError(self._curtok, 'Comments Apostrophe Block. Unexpectable EOF')        
         return value
 
     def _comment_brace_block(self) -> List[Tkn]:
@@ -345,7 +354,7 @@ class PpParser:
                 value.append(self._curtok)
                 self._eat_tokens(1)
         else:
-            self._error('Comments Brace Block. Unexpectable EOF')
+            raise er.PpParserError(self._curtok, 'Comments Brace Block. Unexpectable EOF')
         return value
 
     def _raw_line_eating(self) -> stm.RawLineStmt[None]:
@@ -406,7 +415,12 @@ class PpParser:
     def _next_peek(self) -> Tkn:
         """ Возващает следующий токен. """
         sk = self._curtok_num
-        return self._tokens[sk + 1] 
+        return self._tokens[sk + 1]
+
+    def _prev_peek(self) -> Tkn:
+        """ Возващает previous токен. """
+        sk = self._curtok_num
+        return self._tokens[sk - 1] 
 
     def _eat_tokens(self, count:int) -> None:
         """ Поглощает токен. Т.е. передвигает указатель на следующий. """
@@ -417,12 +431,3 @@ class PpParser:
         """ Сброс начала обработки токенов до указанного """
         self._curtok_num = start_declaration
         self._curtok = self._tokens[self._curtok_num]
-
-    # обработчик ошибок. Пока просто выводим в консоль.
-    def _error(self, message:str) -> None:
-        name = self._curtok.ttype.name
-        coords = self._curtok.lexeme_start
-        print(f"Err. {message}: {name} ({self._curtok_num}) [{coords}].")
-
-    def _logic_error(self, message:str) -> None:
-        print(f"Logic error: {message}. Please, report to the developer.")

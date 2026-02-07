@@ -1,4 +1,4 @@
-import os
+import os, json
 import shutil 
 import subprocess
 from typing import Callable, List, Optional
@@ -10,6 +10,8 @@ from .preprocessor import QspsPP
 from .converter import QspsToQspBuiltinConv, QspsToQspOuterConv, QspsFile
 from .const import SCAN_FILES_LOCNAME
 from . import plugtypes as ts
+
+# from .preprocessor.pp_ast_printer import AstPrinter
 
 Path = ts.Path
 
@@ -23,6 +25,8 @@ class BuildQSP():
 
 		# Default inits.
 		self._root:ts.ProjectScheme = project_scheme # qsp-project.json dict
+		with open('project-sche,e.json', 'w', encoding='utf-8') as fp:
+			json.dump(self._root, fp, indent=2, ensure_ascii=False)
 
 		self._save_temp_files:bool = self._root.get('save_temp_files', False)
 
@@ -44,7 +48,7 @@ class BuildQSP():
 			self._root_folder_qgc = os.path.split(exe_fold)[0]
 			self._qgc_plugin = os.path.join(self._root_folder_qgc, 'plugins', 'a_txt2gam.dll')
 
-		self._converter = {'builting': QspsToQspBuiltinConv}.get(self._conv_api, QspsToQspOuterConv)
+		self._converter = {'builtin': QspsToQspBuiltinConv}.get(self._conv_api, QspsToQspOuterConv)
 
 		# Built-in preprocessor
 		pp_switch = self._root['preprocessor']
@@ -161,6 +165,7 @@ class BuildQSP():
 			self._build_handler(instruction)
 
 	def _qsps_build(self, instruction:ts.QspModule) -> None:
+		""" Builtin preprocessor, builtin or outer converter (not qgc) """
 		qsp_module = ModuleQSP(instruction)
 		module_path = instruction.get('module', '')
 
@@ -172,6 +177,13 @@ class BuildQSP():
 		if self._preprocessor:
 			for src_file in qsp_module.qsps_files():
 				src_file.set_src_lines(self._preprocessor.pp_this_lines(src_file.get_src()))
+				if self._preprocessor.errored(): print(f'^^^^^^ Error in file: "{src_file.file_path()}"')
+				# ast_printer = AstPrinter(self._preprocessor.pp_stmts())
+				# ast_printer.gen_ast()
+				# with open('temp\\'+(src_file.file_name() or 'temp')+'_2.json', 'w', encoding='utf-8') as fp:
+				# 	json.dump(ast_printer.get_ast(), fp, indent=2, ensure_ascii=False)
+				# with open('temp\\'+(src_file.file_name() or 'temp')+'_1.json', 'w', encoding='utf-8') as fp:
+				# 	json.dump(self._preprocessor.pp_tokens(), fp, indent=2, ensure_ascii=False)
 		
 		src_lines = qsp_module.src_lines()
 

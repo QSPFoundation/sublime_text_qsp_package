@@ -7,6 +7,7 @@ from .pp_tokens import PpTokenType as tt
 from . import dirs_stmts as stm
 from . import pp_dir as dir
 from . import pp_expr as expr
+from . import error as er
 
 DirStmt = stm.DirStmt[Any]
 
@@ -17,11 +18,9 @@ class DirsParser:
 
         # валидация цепочки токенов
         if not self._tokens:
-            self._logic_error(f'Init-stage. Tokens-chain is empty')
-            return None
+            raise er.DirsParserRunError(f'Init-stage. Tokens-chain is empty')
         if self._tokens and self._tokens[-1].ttype != tt.EOF:
-            self._logic_error(f'There is not EOF in tokens-chain on initial stage')
-            self._tokens.append(Tkn(tt.EOF, '', (-1,-1)))        
+            raise er.DirsParserRunError(f'Init-stage. There is not EOF in tokens-chain')      
 
         self._curtok_num:int = 0
         self._curtok:Tkn = self._tokens[0]
@@ -32,6 +31,11 @@ class DirsParser:
         self._loc_is_open:bool = False
 
         self._statements:List[DirStmt] = [] # qsps_file entity
+
+        self._error_check: bool = False
+
+    def errored(self) -> bool:
+        return self._error_check
         
     def get_statements(self) -> List[DirStmt]:
         return self._statements
@@ -50,17 +54,19 @@ class DirsParser:
         """ Распарсиваем целый файл из токенов. """
         if self._check_type(tt.OPEN_DIRECTIVE_STMT):
             start_declaration_on_loc:int = self._curtok_num
-            validate_directive_on_loc:Optional[stm.DirectiveStmt[None]] = self._directive()
-            if validate_directive_on_loc:
+            try:
+                validate_directive_on_loc:stm.DirectiveStmt[None] = self._directive()
                 return validate_directive_on_loc
-            else:
+            except er.DirsParserError as e:
+                # dirs are broken!
+                self._error_check = True
+                print(e)
                 self._reset_curtok(start_declaration_on_loc)
                 return self._qsps_line_stmt()
         elif self._check_type(tt.QSPS_LINE):
             return self._qsps_line_stmt()
         else:
-            self._logic_error(f'Unexpected token: {self._curtok.ttype.name} {self._curtok.lexeme_start}')
-            return self._qsps_line_stmt()
+            raise er.DirsParserRunError(f'Declaration parse. Expected QSPS_LINE or OPEN_DIRECTIVE_STMT, get: {self._curtok.ttype.name} {self._curtok.lexeme_start}')
 
     def _qsps_line_stmt(self) -> stm.QspsLineStmt[None]:
         """Получаем строку."""
@@ -84,7 +90,7 @@ class DirsParser:
         
         return stm.QspsLineStmt[None](pref, value)
 
-    def _directive(self) -> Optional[stm.DirectiveStmt[None]]:
+    def _directive(self) -> stm.DirectiveStmt[None]:
         """ Получаем директиву препроцессора, если возможно. """
         pref, self._tbuffer = self._tbuffer, None
         lexeme = self._curtok # !@pp: tt.OPEN_DIRECTIVE_STMT
@@ -116,40 +122,32 @@ class DirsParser:
 
         if self._check_type(tt.VAR_STMT):
             self._eat_tokens(1) # пожираем токен объявления переменной
-            assignment_validation:Optional[dir.AssignmentDir[None]] = self._assignment_dir()
-            if assignment_validation is None:
-                return None
+            assignment_validation:dir.AssignmentDir[None] = self._assignment_dir()
             end_assignment = self._curtok # newline ещё не пожрали
             self._eat_tokens(1)
             return stm.DirectiveStmt[None](pref, lexeme, assignment_validation, end_assignment)
 
         if self._check_type(tt.IF_STMT):
             self._eat_tokens(1) # пожирем IF_STMT
-            condition_validation:Optional[dir.ConditionDir[None]] = self._condition_dir()
-            if condition_validation is None: return None
+            condition_validation:dir.ConditionDir[None] = self._condition_dir()
             return stm.DirectiveStmt[None](pref, lexeme, condition_validation, next_peek)
-        return None # если ни одна цепочка токенов не прошла валидацию при парсинге
+        
+        # some other token mean that directive is broken!
+        raise er.DirsParserError(self._curtok, f'Directive parse. Unexpected token')
 
-    def _condition_dir(self) -> Optional[dir.ConditionDir[None]]:
+    def _condition_dir(self) -> dir.ConditionDir[None]:
         """ Получаем директиву условия """
         if not self._check_type(tt.LEFT_PAREN):
-            self._error(f'Expected LEFT_PAREN')
-            return None
+            raise er.DirsParserError(self._curtok, f'Condition parse. Expected LEFT_PAREN')
         self._eat_tokens(1)
-        cond_expr_validation:Optional[dir.CondExprStmt[None]] = self._cond_expr_stmt()
-        if cond_expr_validation is None: return None
-        condition_expr:dir.CondExprStmt[None] = cond_expr_validation
+        condition_expr:dir.CondExprStmt[None] = self._cond_expr_stmt()
         if not self._check_type(tt.RIGHT_PAREN):
-            self._error(f'Expected RIGHT_PAREN')
-            return None
+            raise er.DirsParserError(self._curtok, f'Condition parse. Expected RIGHT_PAREN')
         self._eat_tokens(1)
         if not self._check_type(tt.THEN_STMT):
-            self._error(f'Expected THEN_STMT')
-            return None
+            raise er.DirsParserError(self._curtok, f'Condition parse. Expected THEN_STMT')
         self._eat_tokens(1)
-        cond_resolves_validation:List[dir.ConditionResolve[None]] = self._cond_resolves()
-        if not cond_resolves_validation: return None
-        cond_resolves = cond_resolves_validation
+        cond_resolves:List[dir.ConditionResolve[None]] = self._cond_resolves()
         # на данном этапе у нас не поглощён только токен следующей строки
         self._eat_tokens(1)
         return dir.ConditionDir(condition=condition_expr, next_dirs=cond_resolves)
@@ -195,50 +193,44 @@ class DirsParser:
                 self._eat_tokens(1)
                 continue
 
-            self._error(f'Unexpected token. Expect Condition resolve tokens')
-            return []
+            raise er.DirsParserError(self._curtok, 'Condition resolve parse. Unexpected token')
 
         return resolves
 
-    def _cond_expr_stmt(self) -> Optional[dir.CondExprStmt[None]]:
+    def _cond_expr_stmt(self) -> dir.CondExprStmt[None]:
         """ Получаем выражение условия """
         or_validation:Optional[expr.OrType[None]] = self._or()
-        if or_validation is None: return None
         return dir.CondExprStmt(or_validation)
 
-    def _or(self) -> Optional[expr.OrType[None]]:
+    def _or(self) -> expr.OrType[None]:
         """ Получаем выражение OR """
-        and_validation:Optional[expr.AndType[None]] = self._and()
-        if and_validation is None: return None
+        and_validation:expr.AndType[None] = self._and()
         left = and_validation
         while self._check_type(tt.OR_OPERATOR):
             
             self._eat_tokens(1)
             
             right_validation = self._and()
-            if right_validation is None: return None
             right = right_validation
             left = expr.OrExpr[None](left, right)
 
         return left
 
-    def _and(self) -> Optional[expr.AndType[None]]:
+    def _and(self) -> expr.AndType[None]:
         """ Выражение логического И """
         not_validation = self._not()
-        if not_validation is None: return None
         left = not_validation
         while self._check_type(tt.AND_OPERATOR):
             
             self._eat_tokens(1)
             
             right_validation = self._not()
-            if right_validation is None: return None
             right = right_validation
             left = expr.AndExpr[None](left, right)
         
         return left
 
-    def _not(self) -> Optional[expr.NotType[None]]:
+    def _not(self) -> expr.NotType[None]:
         """ Получаем выражение с оператором отрицания """
         # NotExpr = notOperator? EqualExpr
         if self._check_type(tt.NOT_OPERATOR):
@@ -246,18 +238,16 @@ class DirsParser:
             self._eat_tokens(1)
             
             validation_equal = self._equal()
-            if validation_equal is None: return None # если есть ошибка в сравнениях, значит это невалидная директива
             right = validation_equal
             return expr.NotExpr(right)
 
         validation_equal = self._equal()
-        return validation_equal if not validation_equal is None else None
+        return validation_equal
             
-    def _equal(self) -> Optional[expr.EqualType[None]]:
+    def _equal(self) -> expr.EqualType[None]:
         """ Получаем выражение сравнения """
         if not self._check_type(tt.IDENTIFIER):
-            self._error('Expected IDENTIFIER (ex. var name)')
-            return None
+            raise er.DirsParserError(self._curtok, f'Equal Parser. Expected first IDENTIFIER (ex. var name)')
         operands:List[expr.VarName[None]] = [expr.VarName[None](self._curtok)]
         operators:List[Tkn] = []
         self._eat_tokens(1)
@@ -267,25 +257,22 @@ class DirsParser:
             self._eat_tokens(1)
             
             if not self._check_type(tt.IDENTIFIER):
-                self._error('Expected IDENTIFIER (ex. var name)')
-                return None
+                raise er.DirsParserError(self._curtok, 'Equal Parser. Expected IDENTIFIER (ex. var name)')
 
             operands.append(expr.VarName[None](self._curtok))
             self._eat_tokens(1)
             
         return expr.EqualExpr[None](operands, operators)
 
-    def _assignment_dir(self) -> Optional[dir.AssignmentDir[None]]:
+    def _assignment_dir(self) -> dir.AssignmentDir[None]:
         """Получаем директиву объявления переменной"""
         # далее должен идти токен скобки
         if not self._check_type(tt.LEFT_PAREN):
-            self._error(f'Expected LEFT_PAREN')
-            return None
+            raise er.DirsParserError(self._curtok, f'Assignment parse. Expected LEFT_PAREN')
         self._eat_tokens(1) # поглотили токен скобки
         # далее идёт идентификатор
         if not self._check_type(tt.IDENTIFIER):
-            self._error('Expected VARIABLE NAME')
-            return None
+            raise er.DirsParserError(self._curtok, f'Assignment parse. Expected VARIABLE NAME')
         key = self._curtok
         self._eat_tokens(1)
         # далее могут идти три варианта
@@ -296,22 +283,18 @@ class DirsParser:
         if self._check_type(tt.ASSIGNMENT_OPERATOR):
             self._eat_tokens(1)
             if not self._check_type(tt.IDENTIFIER):
-                self._error('Expected IDENTIFIER (ex. variable name)')
-                return None
+                raise er.DirsParserError(self._curtok, f'Assignment parse. Expected IDENTIFIER (ex. variable name)')
             value = self._curtok
             self._eat_tokens(1)
             if not self._check_type(tt.RIGHT_PAREN):
-                self._error(f'Expected RIGHT_PAREN')
-                return None
+                raise er.DirsParserError(self._curtok, f'Assignment parse. Expected RIGHT_PAREN')
             self._eat_tokens(1)
             if not self._check_type(tt.NEWLINE): # директива должна заканчиваться переносом на новую строку
-                self._error('Expected end of Directive')
-                return None
+                raise er.DirsParserError(self._curtok, f'Assignment parse. Expected end of Directive')
             # теперь, когда вся валидация пройдена возвращаем присвоение
             return dir.AssignmentDir[None](key, value)
         # любой другой токен означает, что что-то сломано в комманде
-        self._error('Unexpected token')
-        return None
+        raise er.DirsParserError(self._curtok, f'Assignment parse. Unexpected token in assignment')
 
     # aux operations
     def _is_eof(self) -> bool:
@@ -340,12 +323,3 @@ class DirsParser:
         """ Сброс начала обработки токенов до указанного """
         self._curtok_num = start_declaration
         self._curtok = self._tokens[self._curtok_num]
-
-    # обработчик ошибок. Пока просто выводим в консоль.
-    def _error(self, message:str) -> None:
-        name = self._curtok.ttype.name
-        coords = self._curtok.lexeme_start
-        print(f"Dirs-Parser Err. {message}: {name} ({self._curtok_num}) [{coords}].")
-
-    def _logic_error(self, message:str) -> None:
-        print(f"Dirs-parser Logic error: {message}. Please, report to the developer.")

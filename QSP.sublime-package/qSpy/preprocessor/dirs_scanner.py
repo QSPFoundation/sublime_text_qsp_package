@@ -2,6 +2,7 @@ from typing import List, Dict, Tuple, Callable
 
 from .pp_tokens import PpToken as Tkn, TokenNode
 from .pp_tokens import PpTokenType as tt
+from . import error as er
 
 ScanHandler = Callable[[str], None]
 HandlerStack = List[ScanHandler]
@@ -48,6 +49,11 @@ class DirsScaner:
 
         self._curlexeme:List[str] = []
 
+        self._error_check: bool = False
+
+    def errored(self) -> bool:
+        return self._error_check
+
     def get_tokens(self) -> List[Tkn]:
         return self._tokens
 
@@ -65,7 +71,7 @@ class DirsScaner:
             self._scan_line(line)
             
         if self._curlexeme and self._scan_funcs:
-            self._logic_error(f'no clean handler stack [{self._scan_funcs[-1].__name__}]')
+            raise er.DirScannerRunError(f'no clean handler stack [{[func.__name__ for func in self._scan_funcs]}')
 
         self._tokens.append(Tkn(tt.EOF, "", (-1, -1)))
 
@@ -79,7 +85,13 @@ class DirsScaner:
                 self._set_start_lexeme()
             self._curlexeme.append(c)
             # print(c, self._scan_funcs[-1].__name__)
-            self._scan_funcs[-1](c)
+            try:
+                self._scan_funcs[-1](c)
+            except er.DirScannerError as e:
+                self._error_check = True
+                print(e)
+                self._scan_funcs.pop() # убираем функцию из стека
+                self._scan_funcs.append(self._qsps_line_expect)
             
     # методы поиска, учитывающие контекст
     def _qsps_file_expect(self, c:Char) -> None:
@@ -89,14 +101,20 @@ class DirsScaner:
             # Если это первый символ в строке, ищем начало локации или начало директивы
             if c in (' ', '\t'):
                 # поглощаем токен преформатирования
-                self._scan_funcs.append(self._preformatter_expect)
+                if self._next_in_line() in (' ', '\t'):
+                    self._scan_funcs.append(self._preformatter_expect)
+                else:
+                    self._add_token(tt.PREFORMATTER)
             elif c == "!" and self._line_len >= 5 and self._cur_line[0:5] == '!@pp:':
                 # Начало директивы препроцессора. Это однозначно, осталось поглотить токен.
                 self._add_expected_chars('@pp:')
                 self._scan_funcs.append(self._pp_directive_stmt_expect)
             else:
                 # Любой другой символ, это начало сырой строки
-                self._scan_funcs.append(self._qsps_line_expect)
+                if self._current_is_last_in_line():
+                    self._add_token(tt.QSPS_LINE)
+                else:
+                    self._scan_funcs.append(self._qsps_line_expect)
         elif (self._tokens and self._tokens[-1].ttype == tt.PREFORMATTER):
             # если до этого мы поглощали токен преформатирования
             if c == "!" and len(self._cur_line[cn:]) > 5 and self._cur_line[cn:cn+5] == '!@pp:':
@@ -118,13 +136,8 @@ class DirsScaner:
         need = self._prepend_chars.pop() # какой символ ожидаем
         if need != c:
             # ожидаемый символ не совпадает с текущим, значит это:
-            # 1. ошибка работы сканера
-            self._error(f"pp_directive_stmt_expect: expected '{need}', got '{c}'")
-            # 2. сырая строка
-            self._scan_funcs.pop() # убираем функцию из стека
-            self._scan_funcs.append(self._qsps_line_expect)
-            return
-        
+            # 1. ошибка в диррективе
+            raise er.DirScannerError(f"pp_directive_stmt_expect: expected '{need}', got '{c}'")
         # ожидаемый символ совпадает с текущим:
         if not self._prepend_chars:
             # директива препроцессора закончена
@@ -184,7 +197,7 @@ class DirsScaner:
         elif prev_char == '!':
             self._add_token(tt.EQUAL_NOT_EQUAL)
         else:
-            self._error(f"equal_expect: expected '=', got '{c}'")
+            raise er.DirScannerError(f"equal_expect: need '=', got '{c}'")
         self._scan_funcs.pop()
 
     def _identifier_expect(self, c:Char) -> None:
@@ -262,10 +275,3 @@ class DirsScaner:
         """Правильно добавляет ожидаемую последовательность символов. """
         self._prepend_chars = list(chars)
         self._prepend_chars.reverse()
-
-    # обработчик ошибок. Пока просто выводим в консоль.
-    def _error(self, message:str) -> None:
-        print(f"Dirs-Scanner. {message}: ({self._line_num}, {self._current}).")
-
-    def _logic_error(self, message:str) -> None:
-        print(f"Dirs-Scanner Logic error: {message}. Please, report to the developer.")

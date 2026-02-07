@@ -2,6 +2,7 @@ from typing import Callable, List, Tuple, Literal
 
 from .pp_tokens import PpToken as tkn, TokenNode
 from .pp_tokens import PpTokenType as tt
+from . import error as er
 
 LineNum = int
 CharNum = int
@@ -43,6 +44,11 @@ class PpScanner:
 
         self._curlexeme:List[Char] = []
 
+        self._error_check: bool = False
+
+    def errored(self) -> bool:
+        return self._error_check
+
     def scan_tokens(self) -> None:
         """ Find all tokens in the file. """
         for j, line in enumerate(self._marked_lines):
@@ -51,7 +57,7 @@ class PpScanner:
             self._scan_line(line)
             
         if self._curlexeme and self._scan_funcs:
-            print(['Pp-Scanner:', ''.join(self._curlexeme), self._scan_funcs[-1].__name__])
+            raise er.PpScannerRunError(f"no clean handler stack {''.join(self._curlexeme)}, {[foo.__name__ for foo in self._scan_funcs]}")
 
         self._tokens.append(tkn(tt.EOF, "", (-1, -1)))
 
@@ -74,7 +80,14 @@ class PpScanner:
                 self._set_start_lexeme()
             self._curlexeme.append(c)
             # print(c, self._scan_funcs[-1].__name__)
-            self._scan_funcs[-1](c)
+            try:
+                self._scan_funcs[-1](c)
+            except er.PpScannerError as e:
+                self._error_check = True
+                print(e)
+                self._scan_funcs.pop()
+                self._scan_funcs.append(self._raw_loc_line_expect)
+
             
     # методы поиска, учитывающие контекст
     def _qsps_file_expect(self, c:str) -> None:
@@ -88,10 +101,18 @@ class PpScanner:
                 self._scan_funcs.append(self._loc_open_expect)
             elif c in (' ', '\t'):
                 # поглощаем токен преформатирования
-                self._scan_funcs.append(self._preformatter_expect)
+                if self._next_in_line() in (' ', '\t'):
+                    self._scan_funcs.append(self._preformatter_expect)
+                else:
+                    self._add_token(tt.PREFORMATTER)
             else:
                 # Любой другой символ, это начало сырой строки
-                self._scan_funcs.append(self._raw_line_end_expect)
+                if self._current_is_last_in_line():
+                    self._add_token(tt.RAW_LINE)
+                else:
+                    self._scan_funcs.append(self._raw_line_end_expect)
+        elif self._current_is_last_in_line():
+            self._add_token(tt.RAW_LINE)
         else:
             self._scan_funcs.append(self._raw_line_end_expect)
 
@@ -142,7 +163,10 @@ class PpScanner:
         cn:int = self._curchar
         if cn == 0 and c in (' ', '\t'):
             # пробелы с начала строки поглощаем до непробельного символа
-            self._scan_funcs.append(self._preformatter_expect)
+            if self._next_in_line() in (' ', '\t'):
+                self._scan_funcs.append(self._preformatter_expect)
+            else:
+                self._add_token(tt.PREFORMATTER)
         elif cn == 0 and c == '-' and self._next_in_line() == '-':
             # если следующий символ является -, поглощаем строку, как конец локации
             self._scan_funcs.pop() # закрываем сканер тела локации
@@ -176,7 +200,10 @@ class PpScanner:
         elif c == ")":
             self._add_token(tt.RIGHT_PAREN)
         elif c == "&":
-            self._scan_funcs.append(self._ampersand_expect)
+            if self._next_in_line() in (' ', '\t'):
+                self._scan_funcs.append(self._ampersand_expect)
+            else:
+                self._add_token(tt.AMPERSAND)
         elif c == '\n':
             self._add_token(tt.NEWLINE)
         elif (not self._next_in_line() in self._LOC_LINE_DELIMITERS and
@@ -193,10 +220,8 @@ class PpScanner:
         """ Поглощение токена спецкомментария с удалением строки """
         need = self._prepend_chars.pop()
         if need != c:
-            self._error(f"less_spec_comm_tkn_expect: expected '{need}', got '{c}'")
-            self._scan_funcs.pop()
-            self._scan_funcs.append(self._raw_loc_line_expect)
-            return
+            raise er.PpScannerError(self._line_num, self._curchar,
+                        f"less_spec_comm_tkn_expect: expected '{need}', got '{c}'")
 
         if not self._prepend_chars:
             self._add_token(tt.LESS_SPEC_COMM)
@@ -206,10 +231,8 @@ class PpScanner:
         """ Поглощение токена обычного спецкомментария """
         need = self._prepend_chars.pop()
         if need != c:
-            self._error(f"spec_comm_tkn_expect: expected '{need}', got '{c}'")
-            self._scan_funcs.pop()
-            self._scan_funcs.append(self._raw_loc_line_expect)
-            return
+            raise er.PpScannerError(self._line_num, self._curchar,
+                        f"spec_comm_tkn_expect: expected '{need}', got '{c}'")
 
         if not self._prepend_chars:
             self._add_token(tt.SIMPLE_SPEC_COMM)
@@ -281,7 +304,3 @@ class PpScanner:
         """Правильно добавляет ожидаемую последовательность символов. """
         self._prepend_chars = list(chars)
         self._prepend_chars.reverse()
-
-    # обработчик ошибок. Пока просто выводим в консоль.
-    def _error(self, message:str) -> None:
-        print(f"Pp-Scanner. {message}: ({self._line_num}, {self._curchar}).")
