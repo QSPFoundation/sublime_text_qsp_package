@@ -6,8 +6,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, TypeVar, Optional, Union, List
 
-from pp_tokens import PpToken
-import pp_expr as expr
+from .pp_tokens import PpToken
+from . import pp_expr as expr
 
 R = TypeVar("R")
 

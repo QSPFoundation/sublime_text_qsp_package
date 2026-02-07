@@ -1,10 +1,10 @@
 from typing import List, Dict, Union, Literal
 
-import pp_tokens as tkn
+from . import pp_tokens as tkn
 
-import dirs_stmts as stm
-import pp_expr as expr
-import pp_dir as dir
+from . import dirs_stmts as stm
+from . import pp_expr as expr
+from . import pp_dir as dir
 
 AstNode = Dict[
     # key

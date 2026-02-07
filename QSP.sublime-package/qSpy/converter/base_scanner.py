@@ -8,10 +8,7 @@ from .tps import (
 ScanHandler = Callable[[str], None]
 HandlerStack = List[ScanHandler]
 
-if __name__ == "__main__":
-    from base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
-else:
-    from .base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
+from .base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
 
 class BaseScanner:
     """ Scanner of Base block of location. """

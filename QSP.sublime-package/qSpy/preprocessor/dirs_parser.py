@@ -1,12 +1,12 @@
 # from tracemalloc import start
 from typing import List, Optional, Any
 
-from pp_tokens import PpToken as Tkn
-from pp_tokens import PpTokenType as tt
+from .pp_tokens import PpToken as Tkn
+from .pp_tokens import PpTokenType as tt
 
-import dirs_stmts as stm
-import pp_dir as dir
-import pp_expr as expr
+from . import dirs_stmts as stm
+from . import pp_dir as dir
+from . import pp_expr as expr
 
 DirStmt = stm.DirStmt[Any]
 

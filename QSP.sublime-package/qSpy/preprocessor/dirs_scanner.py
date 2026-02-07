@@ -1,7 +1,7 @@
 from typing import List, Dict, Tuple, Callable
 
-from pp_tokens import PpToken as Tkn, TokenNode
-from pp_tokens import PpTokenType as tt
+from .pp_tokens import PpToken as Tkn, TokenNode
+from .pp_tokens import PpTokenType as tt
 
 ScanHandler = Callable[[str], None]
 HandlerStack = List[ScanHandler]

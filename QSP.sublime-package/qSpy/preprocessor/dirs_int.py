@@ -1,13 +1,13 @@
 from typing import List, Dict, Union, Literal, Tuple, cast, Optional
 
 # from pp_tokens import PpTokenType as tt
-from pp_tokens import LineNum
+from .pp_tokens import LineNum
 
-import dirs_stmts as stm
-import pp_expr as expr
-import pp_dir as dir
+from . import dirs_stmts as stm
+from . import pp_expr as expr
+from . import pp_dir as dir
 
-from pp_environment import PpEnvironment
+from .pp_environment import PpEnvironment
 
 AstNode = Union[None, bool, str]
 Modes = Dict[

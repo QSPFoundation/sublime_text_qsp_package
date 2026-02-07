@@ -3,16 +3,16 @@ from typing import Dict, List, Literal, Optional
 
 Path = str
 
-from pp_environment import PpEnvironment
-from pp_tokens import TokenNode
+from .pp_environment import PpEnvironment
+from .pp_tokens import TokenNode
 
-from dirs_scanner import DirsScaner
-from dirs_parser import DirStmt, DirsParser
-from dirs_int import DirsInt
+from .dirs_scanner import DirsScaner
+from .dirs_parser import DirStmt, DirsParser
+from .dirs_int import DirsInt
 
-from pp_scanner import PpScanner
-from pp_parser import PpParser, PpStmt
-from pp_int import MarkedLine, PpInt, QspsLine
+from .pp_scanner import PpScanner
+from .pp_parser import PpParser, PpStmt
+from .pp_int import MarkedLine, PpInt, QspsLine
 
 class QspsPP:
     """ Препроцессор для файлов  """

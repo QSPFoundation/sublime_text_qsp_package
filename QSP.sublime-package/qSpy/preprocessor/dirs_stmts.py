@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, Optional, TypeVar, List
 
-from pp_tokens import PpToken
-import pp_dir as dir
+from .pp_tokens import PpToken
+from . import pp_dir as dir
 
 R = TypeVar("R")
 

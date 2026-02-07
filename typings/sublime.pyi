@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from enum import IntEnum, IntFlag
 from typing import Any, Callable, Dict, List, Optional, Tuple, Literal, Union
 
-Point = int
+Point = int # not in API
+
 
 class FindFlags(IntFlag):
     NONE = 0
@@ -59,9 +60,8 @@ class Syntax:
     hidden: bool # If the syntax is hidden from the user.
     scope: str
 
-Value = Union[bool, str, int, float, list[Value], dict[str, Value], None]
-
-CommandArgs = Optional[Dict[str, Value]]
+Value = Union[bool, str, int, float, list[Value], dict[str, Value], None] # not in API
+CommandArgs = Optional[Dict[str, Value]] # Not in API
 
 class View:
     def substr(self, x: Union[Region, Point]) -> str: ...

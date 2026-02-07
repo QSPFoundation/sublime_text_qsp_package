@@ -1,10 +1,9 @@
 # from tracemalloc import start
 from typing import List, Optional, Any
 
-from pp_tokens import PpToken as Tkn
-from pp_tokens import PpTokenType as tt
-
-import pp_stmts as stm
+from .pp_tokens import PpToken as Tkn
+from .pp_tokens import PpTokenType as tt
+from . import pp_stmts as stm
 
 PpStmt = stm.PpStmt[Any]
 

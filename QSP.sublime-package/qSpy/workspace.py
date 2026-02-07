@@ -11,6 +11,7 @@ from . import const as const
 from .plugtypes import (AbsPath, LocName, Path, ViewId, HashMD5)
 from .converter import ViewRegion
 
+Point = int
 WorkspacesPlaces = Dict[Path, 'QspWorkspace']
 LocHash = Tuple[LocName, ViewRegion, Union[Path, ViewId]]
 
@@ -33,7 +34,7 @@ class WsJson(TypedDict):
 class FindOverlapMb(TypedDict):
 	separator_name: List[Literal['assign', 'while', 'brace']]
 	separator_region: List[sublime.Region]
-	separator_instr: List[sublime.Point]
+	separator_instr: List[Point]
 
 class QspWorkspace:
 	def __init__(self, all_workspaces:WorkspacesPlaces) -> None:
@@ -337,7 +338,7 @@ class QspWorkspace:
 			else:
 				return None, None
 
-		def _safe_f(x:str, y:sublime.Region, z:sublime.Point) -> bool:
+		def _safe_f(x:str, y:sublime.Region, z:Point) -> bool:
 			""" Selector, """
 			return view.match_selector(y.begin(),x) and y.begin()<z
 

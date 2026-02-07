@@ -4,7 +4,7 @@ import sublime_plugin # type: ignore
 import os
 import re
 import json
-from typing import Optional, Union, List, Tuple, cast
+from typing import Dict, Optional, Union, List, Tuple, cast
 # import time
 
 # Importing my modules from qSpy package.
@@ -20,8 +20,10 @@ from .qSpy.project import QspProject
 from .qSpy import const
 
 # My typing
-import qSpy.plugtypes as ts
+from .qSpy import plugtypes as ts
 Path = ts.Path
+Value = Union[bool, str, int, float, List['Value'], Dict[str, 'Value'], None]
+CommandArgs = Optional[Dict[str, Value]]
 
 class QspBuildCommand(sublime_plugin.WindowCommand):
 	"""
@@ -661,7 +663,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 # ---------------------------------- Events for action recognition ----------------------------------
 
 	def on_window_command(self, window:sublime.Window, command_name:str,
-																args:sublime.CommandArgs) -> None:
+																args:CommandArgs) -> None:
 		if command_name in ('rename_path'):
 			QSP_MARKERS[command_name] = True
 		elif command_name in ('delete_file') and args:

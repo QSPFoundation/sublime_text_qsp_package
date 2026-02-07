@@ -9,9 +9,7 @@ from .moduleqsp import ModuleQSP
 from .preprocessor import QspsPP
 from .converter import QspsToQspBuiltinConv, QspsToQspOuterConv, QspsFile
 from .const import SCAN_FILES_LOCNAME
-# import time
-
-import plugtypes as ts
+from . import plugtypes as ts
 
 Path = ts.Path
 

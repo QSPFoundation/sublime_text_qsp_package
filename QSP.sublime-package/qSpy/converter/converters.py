@@ -74,7 +74,7 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
             run_on_visit = loc.run_on_visit()
             if run_on_visit:
                 run_on_visit[-1] = run_on_visit[-1][:-1] # crunch for extra \n-char in end lines
-                code_lines = ''.join(run_on_visit).replace('\n', '\r\n')
+                code_lines:str = ''.join(run_on_visit).replace('\n', '\r\n')
             else:
                 code_lines = ''
             out_lines:List[GameLine] = []

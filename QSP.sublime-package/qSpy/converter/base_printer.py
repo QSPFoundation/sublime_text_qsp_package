@@ -1,8 +1,7 @@
 from typing import List, Dict, Union, Literal
 
-import base_tokens as tkn
-
-import base_stmt as stm
+from . import base_tokens as tkn
+from . import base_stmt as stm
 
 AstNode = Dict[
     # key

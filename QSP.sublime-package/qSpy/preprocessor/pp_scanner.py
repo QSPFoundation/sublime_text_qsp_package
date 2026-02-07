@@ -1,7 +1,7 @@
 from typing import Callable, List, Tuple, Literal
 
-from pp_tokens import PpToken as tkn, TokenNode
-from pp_tokens import PpTokenType as tt
+from .pp_tokens import PpToken as tkn, TokenNode
+from .pp_tokens import PpTokenType as tt
 
 LineNum = int
 CharNum = int

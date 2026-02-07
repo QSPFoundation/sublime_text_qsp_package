@@ -3,7 +3,7 @@ import os
 from typing import List, Tuple, Optional
 
 Ext = str
-from plugtypes import (
+from .plugtypes import (
 	Path, FileName
 )
 

@@ -1,8 +1,8 @@
 from typing import List, Dict, Union, Literal, Tuple, cast
 
-from pp_tokens import LineNum, PpToken, PpTokenType as tt
+from .pp_tokens import LineNum, PpToken, PpTokenType as tt
 
-import pp_stmts as stm
+from . import pp_stmts as stm
 
 AstNode = Union[None, bool, str]
 Modes = Dict[
