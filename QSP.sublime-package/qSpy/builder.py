@@ -1,4 +1,4 @@
-import os, json
+import os
 import shutil 
 import subprocess
 from typing import Callable, List, Optional
@@ -25,8 +25,6 @@ class BuildQSP():
 
 		# Default inits.
 		self._root:ts.ProjectScheme = project_scheme # qsp-project.json dict
-		with open('project-sche,e.json', 'w', encoding='utf-8') as fp:
-			json.dump(self._root, fp, indent=2, ensure_ascii=False)
 
 		self._save_temp_files:bool = self._root.get('save_temp_files', False)
 
@@ -72,7 +70,7 @@ class BuildQSP():
 		self._build_qsp_modules()
 
 	def run_game(self) -> None:
-		print('Run file in player')
+		print('Run file in player.')
 		# Run Start QSP-file.
 		# TODO: proving the player is exist
 		self._run_qsp_file()
@@ -182,6 +180,7 @@ class BuildQSP():
 				# ast_printer.gen_ast()
 				# with open('temp\\'+(src_file.file_name() or 'temp')+'_2.json', 'w', encoding='utf-8') as fp:
 				# 	json.dump(ast_printer.get_ast(), fp, indent=2, ensure_ascii=False)
+				# print(src_file.file_path())
 				# with open('temp\\'+(src_file.file_name() or 'temp')+'_1.json', 'w', encoding='utf-8') as fp:
 				# 	json.dump(self._preprocessor.pp_tokens(), fp, indent=2, ensure_ascii=False)
 		

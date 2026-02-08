@@ -45,7 +45,9 @@ class QspsFile():
 
 	def set_src_lines(self, file_strings:List[QspsLine]) -> None:
 		""" Add source-lines at end of QspsFile. """
-		if not file_strings: return
+		if not file_strings:
+			print(f'QspsFile Error: get empty list for change src for file: {self._input_file}')
+			return
 		self._src_lines = file_strings
 
 	def read_from_file(self, input_file:Path) -> None:

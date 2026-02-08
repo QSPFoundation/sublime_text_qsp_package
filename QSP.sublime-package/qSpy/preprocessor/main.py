@@ -121,6 +121,10 @@ class QspsPP:
             self._pp_int = PpInt(pp_stmts, marked_lines)
             self._pp_int.run()
             output_lines = self._pp_int.get_output()
+            if not output_lines:
+                # Pp return empty list of QspsLines, if all locations exclude
+                # QspsFile src need not empty list for changing, return this
+                return ['\n']
             # if self._pp_int.errored(): self._error_check = True
         except er.PpInterpreterError as e:
             self._error_check = True
