@@ -183,7 +183,9 @@ class BuildQSP():
 				# print(src_file.file_path())
 				# with open('temp\\'+(src_file.file_name() or 'temp')+'_1.json', 'w', encoding='utf-8') as fp:
 				# 	json.dump(self._preprocessor.pp_tokens(), fp, indent=2, ensure_ascii=False)
-		
+		if instruction.get('start_qsploc_file', ''):
+			qsp_module.restand_first_loc()
+
 		src_lines = qsp_module.src_lines()
 
 		# Convert TXT2GAM (qsps) at Game (`.qsp`)
@@ -199,7 +201,7 @@ class BuildQSP():
 		if not module_path: return # impossible
 		i:List[ts.Path] = [] # pathes to source files and folders
 		# cc_path = os.path.join(root_folder_qgc, 'plugins', 'a_remove_comments.dll')
-		start_qsploc_file:ts.Path = ''
+		start_qsploc_file:ts.Path = instruction.get('start_qsploc_file', '')
 		for file in instruction.get('files', []):
 			i.append(file['path'])
 		if i: start_qsploc_file = i[0]

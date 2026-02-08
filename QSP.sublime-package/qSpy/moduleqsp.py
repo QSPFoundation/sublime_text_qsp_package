@@ -22,7 +22,13 @@ class ModuleQSP():
 
         self._src_files:List[QspsFile] = []
         self._src_files_pathes:List[Path] = []
+
+        
+        self._start_qsploc_file:Path = scheme.get('start_qsploc_file', '')
+        self._start_qsploc_file_index:int = -1
+        
         self._extends_by_scheme()
+
 
         # self.code_system = 'utf-8'
 
@@ -36,6 +42,8 @@ class ModuleQSP():
             src.read_from_file(file_path)
             self._src_files.append(src)
             self._src_files_pathes.append(file_path)
+            if self._start_qsploc_file == file_path:
+                self._start_qsploc_file_index = len(self._src_files)-1
         else:
             qsp.write_error_log(f'[ModuleQSP:001] File don\'t exist. Prove path {file_path}.')
 
@@ -55,6 +63,14 @@ class ModuleQSP():
     def add_qsps_file(self, src:QspsFile) -> None:
         """ Append QspsFile at list of src-files """
         self._src_files.append(src)
+
+    def restand_first_loc(self) -> None:
+        """ Restand QspsFile, marked first on 0 place in list. """
+        i = self._start_qsploc_file_index
+        if i == -1 or i >= len(self._src_files):
+            print('QspsFile. Set first qsploc file not work. mail to lex666endless@gmail.com')
+            return
+        self._src_files[0], self._src_files[i] = self._src_files[i], self._src_files[0]
 
     # def _set_output_files(self) -> None:
     #     """

@@ -25,6 +25,7 @@ class QspModule(TypedDict, total=False):
 	module: Path
 	folders: List[FolderPath]
 	files: List[FilePath]
+	start_qsploc_file: Path
 
 class AssetsConfig(TypedDict, total=False):
 	output:Path

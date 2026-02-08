@@ -231,7 +231,8 @@ class QspProject:
             rm:ts.QspModule = {
                 'module': os.path.abspath(module_name),
                 'folders': [],
-                'files': []
+                'files': [],
+                'start_qsploc_file': ''
             }
             r.append(rm)
             # Make folder paths absolute
@@ -241,6 +242,8 @@ class QspProject:
             for file in module.get('files', []):
                 rm['files'].append({'path': os.path.abspath(file['path'])})
                 files_or_folders = True
+            start_file = module.get('start_qsploc_file', '')
+            if start_file: rm['start_qsploc_file'] = os.path.abspath(start_file)
 
         if not files_or_folders:
             raise _SchemeProvingError('Not Qsp-module\'s schemes in qsp-project.json.')
