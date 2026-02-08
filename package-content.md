@@ -2,7 +2,7 @@
 
 **Включает в себя:**
 * `Completions` — папка, включающая файлы со списком автодополнений ключевых слов QSP.
-* `qSpy` — py-пакет вспомогательных скриптов для плагина. Cм. [readme](https://github.com/AleksVersus/JAD_for_QSP/blob/master/QSP.sublime-package/qSpy/readme.md)
+* `qSpy` — py-пакет вспомогательных скриптов для плагина.
 * `QGC` — [QSP Game Converter](https://qsp.org/index.php?option=com_agora&task=topic&id=1339&p=1&prc=25&Itemid=57) от Alex (studentik), ускоряющий сборку проекта на Windows.
 * `Snippets` - папка со стандартными сниппетами (фрагментами кода) для QSP.
 * `.python-version` - версия встроенного интерпретатора python, в которой будет запускаться плагин

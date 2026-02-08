@@ -114,8 +114,14 @@ class QspProject:
                     else:
                         # если файл проекта не найден в папке, в которой лежит поинт-файл,
                         # ищем вверх от поинт-файла. Это костыль для старых реализаций.
-                        f = self.search_project_folder(point_file, f)
-                        if f:
+                        spf = self.search_project_folder(point_file, f)
+                        if spf:
+                            self._work_dir = spf
+                            return
+                        else:
+                            # файл проекта не найден, хотя мы искали от поинт-файла, однако
+                            # поинт-файл принадлежит найденной папке. Значит собираем проект
+                            # из всех файлов обнаруженной папки
                             self._work_dir = f
                             return
             except ValueError as e: # если файлы лежат на разных дисках. TODO: убрать вывод в консоль

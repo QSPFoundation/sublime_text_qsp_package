@@ -12,6 +12,7 @@ from .const import SCAN_FILES_LOCNAME
 from . import plugtypes as ts
 
 # from .preprocessor.pp_ast_printer import AstPrinter
+import time
 
 Path = ts.Path
 
@@ -61,13 +62,15 @@ class BuildQSP():
 		self.assets:List[ts.AssetsConfig] = []
 
 	def build_project(self) -> None:
-		print('Build project.')
+		print(f'Build project. {self._conv_api.upper()} mode.')
 		assets = self._root['assets']
 		if assets: self._copy_assets(assets)
 
 		if self._scans: self._create_scans_loc()
 		# Build QSP-files.
+		old = time.time()
 		self._build_qsp_modules()
+		print(f'Elapsed {time.time() - old}')
 
 	def run_game(self) -> None:
 		print('Run file in player.')
