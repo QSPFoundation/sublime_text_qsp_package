@@ -109,6 +109,8 @@ class DirsScaner:
                 # Начало директивы препроцессора. Это однозначно, осталось поглотить токен.
                 self._add_expected_chars('@pp:')
                 self._scan_funcs.append(self._pp_directive_stmt_expect)
+            elif c == '\n':
+                self._add_token(tt.QSPS_LINE)
             else:
                 # Любой другой символ, это начало сырой строки
                 if self._current_is_last_in_line():
@@ -121,9 +123,13 @@ class DirsScaner:
                 # имеем дело с диррективой
                 self._add_expected_chars('@pp:')
                 self._scan_funcs.append(self._pp_directive_stmt_expect)
+            elif c == '\n':
+                self._add_token(tt.QSPS_LINE)
             else:
                 # или с сырой строкой
                 self._scan_funcs.append(self._qsps_line_expect)
+        # elif c == '\n':
+        #     self._add_token(tt.NEWLINE)
         else:
             # такой вариант невозможен, но предусмотрительно обрабатываем, как сырую строку
             self._scan_funcs.append(self._qsps_line_expect)

@@ -1,0 +1,12 @@
+{
+    "project": [
+        {
+            "module": ".\\game.qsp",
+            "files": [
+                {"path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw\\_src\\02_pages\\разделы книгры 200\\page.153.qsps"
+                }
+            ]
+        }
+    ],
+    "preprocessor": "On"
+}
