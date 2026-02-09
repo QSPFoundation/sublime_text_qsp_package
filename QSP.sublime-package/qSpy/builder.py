@@ -1,4 +1,4 @@
-import os
+import os#, json
 import shutil 
 import subprocess
 from typing import Callable, List, Optional
@@ -181,16 +181,17 @@ class BuildQSP():
 				if self._preprocessor.errored(): print(f'^^^^^^ Error in file: "{src_file.file_path()}"')
 				# ast_printer = AstPrinter(self._preprocessor.pp_stmts())
 				# ast_printer.gen_ast()
-				# with open('temp\\'+(src_file.file_name() or 'temp')+'_2.json', 'w', encoding='utf-8') as fp:
+				# with open((src_file.file_name() or 'temp')+'_2.json', 'w', encoding='utf-8') as fp:
 				# 	json.dump(ast_printer.get_ast(), fp, indent=2, ensure_ascii=False)
-				# print(src_file.file_path())
-				# with open('temp\\'+(src_file.file_name() or 'temp')+'_1.json', 'w', encoding='utf-8') as fp:
+				# # print(src_file.file_path())
+				# with open((src_file.file_name() or 'temp')+'_1.json', 'w', encoding='utf-8') as fp:
 				# 	json.dump(self._preprocessor.pp_tokens(), fp, indent=2, ensure_ascii=False)
 		if instruction.get('start_qsploc_file', ''):
 			qsp_module.restand_first_loc()
 
 		src_lines = qsp_module.src_lines()
-
+		# with open('preconverter'+'_1.txt', 'w', encoding='utf-8') as fp:
+		# 	fp.writelines(src_lines)
 		# Convert TXT2GAM (qsps) at Game (`.qsp`)
 		converter = self._converter(module_path,
 									self._save_temp_files, self._conv_path, self._conv_args)

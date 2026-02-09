@@ -76,11 +76,14 @@ class PpInt(stm.PpVisitor[AstNode]):
     def get_output(self) -> List[QspsLine]:
         output_lines:List[QspsLine] = []
         temporary:List[QspsLine] = []
-        for line in self._prepare_lines:
+        for i, line in enumerate(self._prepare_lines):
             temporary.append(line)
             if '\n' in line:
                 output_lines.append(''.join(temporary))
                 temporary.clear()
+            elif i == len(self._prepare_lines)-1:
+                # к последней строке добавляем перенос строки, если его нет
+                output_lines.append(f"{''.join(temporary)}\n")
         return output_lines
     # Statements
 

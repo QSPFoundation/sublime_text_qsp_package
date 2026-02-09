@@ -25,11 +25,11 @@ CommandArgs = Optional[Dict[str, Value]]
 def build(qsp_mode:ts.QspMode = "--br") -> None:
     # Three commands from arguments.
     argv = {
-        'file': 'D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.math.3\\[source]\\qsp-project.json',
+        'file': '.\\qsp-project.json',
         'file_base_name': 'qsp-project', 'file_extension': 'json', 'file_name': 'qsp-project.json',
-        'file_path': 'D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.math.3\\[source]',
+        'file_path': '.',
 
-        'folder': 'D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]',
+        'folder': '.',
         'packages': 'C:\\Users\\aleks\\AppData\\Roaming\\Sublime Text\\Packages',
         'platform': 'Windows',
         
@@ -65,4 +65,5 @@ def build(qsp_mode:ts.QspMode = "--br") -> None:
         qsp_proj.save_json()
 
 if __name__ == "__main__":
+    os.chdir(os.path.split(__file__)[0])
     build('--build')
