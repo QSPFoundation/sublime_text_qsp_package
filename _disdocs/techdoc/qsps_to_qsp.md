@@ -1,5 +1,8 @@
 # Конвертер `qsps_to_qsp.py`
 
+> [!danger] Устарело!
+> Данная статья устарела. конвертер переработан.
+
 > формат TXT2GAM и qsps — это одно и то же. Это текстовые файлы с особым форматом записи QSP-кода.
 
 Скрипт основан на JS-скрипте Werewolf'а для конвертирования текстовых файлов формата qsps в файлы QSP: [https://codepen.io/srg-kostyrko/full/QWqdwxv](https://codepen.io/srg-kostyrko/full/QWqdwxv)

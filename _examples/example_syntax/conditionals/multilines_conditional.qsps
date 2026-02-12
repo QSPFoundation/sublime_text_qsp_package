@@ -130,7 +130,7 @@ end
 # cond2
 ! тесты end`ов и вложенных условий
 
-! end if
+! end if, TODO: if не должен подсвечиваться
 if 1:
 	!pass
 end if
