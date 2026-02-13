@@ -1,1565 +1,5 @@
 {
     "locations": {
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\logging.qsps": [
-            [
-                "log.add",
-                [
-                    25,
-                    32
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\prove regexp in Object.qsps": [
-            [
-                "prv.str.inObj",
-                [
-                    173,
-                    186
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\проверка веса.qsps": [
-            [
-                "prv.obj.weight",
-                [
-                    134,
-                    148
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\find right bag.qsps": [
-            [
-                "get.bag",
-                [
-                    182,
-                    189
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с шестнадцатеричными числами\\+col.qsps": [
-            [
-                "em.col.add",
-                [
-                    249,
-                    259
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\обработка ссылок.qsps": [
-            [
-                "int.link.obj",
-                [
-                    264,
-                    276
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\gen.ahref.inMount.qsps": [
-            [
-                "gen.ahref.inMount",
-                [
-                    231,
-                    248
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор освещения.qsps": [
-            [
-                "int.lighting",
-                [
-                    2,
-                    14
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\интерпретатор. действие из условного перехода.qsps": [
-            [
-                "gen.act.goto",
-                [
-                    189,
-                    201
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\части тела\\base.new.bodypart.qsps": [
-            [
-                "base.new.bodypart",
-                [
-                    378,
-                    395
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\разрядить.qsps": [
-            [
-                "menu.obj.disCharge",
-                [
-                    42,
-                    60
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. настройки.qsps": [
-            [
-                "int.diary.sets",
-                [
-                    2,
-                    16
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизведение описания предмета.qsps": [
-            [
-                "int.obj.property",
-                [
-                    2,
-                    18
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\возможно ли купить.qsps": [
-            [
-                "prv.obj.pay",
-                [
-                    207,
-                    218
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизводит счётчик по ай-ди.qsps": [
-            [
-                "int.counter",
-                [
-                    2,
-                    13
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\Алтарь\\механика алтарей.qsps": [
-            [
-                "int.altar",
-                [
-                    56,
-                    65
-                ]
-            ],
-            [
-                "altar.sacrifice",
-                [
-                    4008,
-                    4023
-                ]
-            ],
-            [
-                "altar.charge.obj",
-                [
-                    5100,
-                    5116
-                ]
-            ],
-            [
-                "get.spirit",
-                [
-                    7481,
-                    7491
-                ]
-            ],
-            [
-                "menu.obj.put.onAltar",
-                [
-                    10358,
-                    10378
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\покупка продажа предметов.qsps": [
-            [
-                "obj.sale.cost",
-                [
-                    112,
-                    125
-                ]
-            ],
-            [
-                "obj.purc.cost",
-                [
-                    566,
-                    579
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. таблица - большая. вариант 1.qsps": [
-            [
-                "int.diary.big",
-                [
-                    2,
-                    15
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\разобрать.qsps": [
-            [
-                "menu.obj.unmount",
-                [
-                    151,
-                    167
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\get.obj.pos.qsps": [
-            [
-                "get.obj.pos",
-                [
-                    142,
-                    153
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\прочитать.qsps": [
-            [
-                "menu.obj.read",
-                [
-                    2,
-                    15
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\задание добавить.qsps": [
-            [
-                "add.new.task",
-                [
-                    222,
-                    234
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\задание проверить выполнение.qsps": [
-            [
-                "prv.task.diary",
-                [
-                    229,
-                    243
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\стандартные заклинания\\base.magic.string (надстройка для боевых заклинаний).qsps": [
-            [
-                "base.magic.string",
-                [
-                    138,
-                    155
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\убрать в сумку.qsps": [
-            [
-                "menu.in.bag",
-                [
-                    92,
-                    103
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\удаление меток на предмете.qsps": [
-            [
-                "del.markers.obj",
-                [
-                    105,
-                    120
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\текст в зависимости от локации.qsps": [
-            [
-                "int.dyn.back",
-                [
-                    272,
-                    284
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с шестнадцатеричными числами\\hex-dec.qsps": [
-            [
-                "em.hex.inDec",
-                [
-                    138,
-                    150
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\get.obj.DU.qsps": [
-            [
-                "get.obj.DU",
-                [
-                    85,
-                    95
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с шестнадцатеричными числами\\dec-col.qsps": [
-            [
-                "em.dec.inCol",
-                [
-                    216,
-                    228
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\func\\вспомогательные функции.qsps": [
-            [
-                "get.word.padez",
-                [
-                    208,
-                    222
-                ]
-            ],
-            [
-                "get.word.end",
-                [
-                    926,
-                    938
-                ]
-            ],
-            [
-                "remastering.tag.number",
-                [
-                    1673,
-                    1695
-                ]
-            ],
-            [
-                "get.loc.id",
-                [
-                    2098,
-                    2108
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\начало истории_02.qsps": [
-            [
-                "[1.3_story_next]",
-                [
-                    2,
-                    18
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\задание добавить стадию.qsps": [
-            [
-                "add.new.stady",
-                [
-                    145,
-                    158
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\em.const.qsps": [
-            [
-                "em.RN",
-                [
-                    32,
-                    37
-                ]
-            ],
-            [
-                "const.10SP",
-                [
-                    99,
-                    109
-                ]
-            ],
-            [
-                "const.5SP",
-                [
-                    235,
-                    244
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\показать свойства.qsps": [
-            [
-                "menu.obj.property",
-                [
-                    75,
-                    92
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\print additional description.qsps": [
-            [
-                "print.word",
-                [
-                    2,
-                    12
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\sys\\onobjsel.qsps": [
-            [
-                "onObjSel",
-                [
-                    3,
-                    11
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор уникальных действий.qsps": [
-            [
-                "gen.act.act",
-                [
-                    159,
-                    170
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\get shell list for door.qsps": [
-            [
-                "get.shell.inOpen",
-                [
-                    413,
-                    429
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\replace in obj regexp on string.qsps": [
-            [
-                "rpl.str.inObj.id",
-                [
-                    147,
-                    163
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\retape object.qsps": [
-            [
-                "rtp.obj",
-                [
-                    155,
-                    162
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\create object.qsps": [
-            [
-                "add.new.obj",
-                [
-                    588,
-                    599
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\выбор пола.qsps": [
-            [
-                "[1.0_game_start]",
-                [
-                    2,
-                    18
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор стандартных заголовков для локаций.qsps": [
-            [
-                "gen.loc.head",
-                [
-                    134,
-                    146
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\game.help (стандартная помощь).qsps": [
-            [
-                "game.help",
-                [
-                    143,
-                    152
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\+герой. свойства.qsps": [
-            [
-                "hero.prop",
-                [
-                    119,
-                    128
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. таблица - маленькая.qsps": [
-            [
-                "int.diary.small",
-                [
-                    2,
-                    17
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\textincode.qsps": [
-            [
-                "int.DIN",
-                [
-                    248,
-                    255
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\убрать в инвентарь.qsps": [
-            [
-                "menu.in.inventory",
-                [
-                    48,
-                    65
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\дополнительные тексты\\base.word.uron.qsps": [
-            [
-                "base.word.uron",
-                [
-                    2,
-                    16
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.tag.cont.qsps": [
-            [
-                "em.tag.getCont",
-                [
-                    114,
-                    128
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\есть ли на теле место.qsps": [
-            [
-                "prv.pos.inObj",
-                [
-                    231,
-                    244
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с массивами\\array.prnt.qsps": [
-            [
-                "em.arr.print",
-                [
-                    61,
-                    73
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.smithing.qsps": [
-            [
-                "base.smithing",
-                [
-                    336,
-                    349
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\свойства и параметры\\base.new.property.qsps": [
-            [
-                "base.new.property",
-                [
-                    518,
-                    535
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get similar objects.qsps": [
-            [
-                "get.similar.obj",
-                [
-                    220,
-                    235
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\true goto current location.qsps": [
-            [
-                "true.goto.curloc",
-                [
-                    2,
-                    18
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\уроны и ущербы\\поиск уронов-ущербов.qsps": [
-            [
-                "get.uron.list",
-                [
-                    2,
-                    15
-                ]
-            ],
-            [
-                "get.similar.Uron",
-                [
-                    1136,
-                    1152
-                ]
-            ],
-            [
-                "sim.uron.onFull",
-                [
-                    2201,
-                    2216
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\diary.get_id.qsps": [
-            [
-                "diary.get_id",
-                [
-                    44,
-                    56
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\время суток.qsps": [
-            [
-                "int.time.hours",
-                [
-                    272,
-                    286
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get all daughters by parent_ID.qsps": [
-            [
-                "get.daughter.obj.all",
-                [
-                    350,
-                    370
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\надеть на тело.qsps": [
-            [
-                "menu.in.body",
-                [
-                    137,
-                    149
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\дополнительные тексты\\base.word.screen.qsps": [
-            [
-                "base.word.screen",
-                [
-                    2,
-                    18
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\поднять предмет.qsps": [
-            [
-                "take.obj",
-                [
-                    122,
-                    130
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\интерпретатор дополнительных пунктов меню.qsps": [
-            [
-                "int.menu.obj",
-                [
-                    120,
-                    132
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\remastering.obj.qsps": [
-            [
-                "remastering.obj",
-                [
-                    212,
-                    227
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\заметка добавить.qsps": [
-            [
-                "add.new.note",
-                [
-                    54,
-                    66
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\int.sex.qsps": [
-            [
-                "int.word.SEX",
-                [
-                    2,
-                    14
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор действий.qsps": [
-            [
-                "int.loc.act",
-                [
-                    2,
-                    13
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\scripts.sys\\influence.script (влияния и воздействия).qsps": [
-            [
-                "int.influence.scripts",
-                [
-                    141,
-                    162
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\prv.obj.id.qsps": [
-            [
-                "prv.obj.id",
-                [
-                    94,
-                    104
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\стандартные заклинания\\magic.warspell.qsps": [
-            [
-                "magic.warspell",
-                [
-                    194,
-                    208
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\заметка изменить.qsps": [
-            [
-                "edit.note",
-                [
-                    66,
-                    75
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\HTML-заголовки.qsps": [
-            [
-                "int.html.Hn",
-                [
-                    109,
-                    120
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\scripts.sys\\text in code.qsps": [
-            [
-                "int.run",
-                [
-                    122,
-                    129
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\add nocount object in purse.qsps": [
-            [
-                "add.obj.nocount",
-                [
-                    87,
-                    102
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс локации.qsps": [
-            [
-                "int.loc.interface",
-                [
-                    85,
-                    102
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с целыми числами\\minus.qsps": [
-            [
-                "em.abs",
-                [
-                    73,
-                    79
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\время года.qsps": [
-            [
-                "int.time.years",
-                [
-                    190,
-                    204
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизведение инвентаря.qsps": [
-            [
-                "int.inventory",
-                [
-                    156,
-                    169
-                ]
-            ],
-            [
-                "int.inventory.obj",
-                [
-                    1697,
-                    1714
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\decrease objects.qsps": [
-            [
-                "minus.obj",
-                [
-                    136,
-                    145
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\sys\\onnewloc.qsps": [
-            [
-                "onNewLoc",
-                [
-                    558,
-                    566
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с массивами\\array.prnt.few.qsps": [
-            [
-                "em.fewArrs.print",
-                [
-                    739,
-                    755
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор.qsps": [
-            [
-                "int.diary",
-                [
-                    96,
-                    105
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\доп.меню\\доп.меню.qsps": [
-            [
-                "menu.rainbowsword.color.change",
-                [
-                    2,
-                    32
-                ]
-            ],
-            [
-                "menu.backer.back",
-                [
-                    1297,
-                    1313
-                ]
-            ],
-            [
-                "menu.backer.memory",
-                [
-                    1466,
-                    1484
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\open door by key.qsps": [
-            [
-                "use.key.inDoor",
-                [
-                    500,
-                    514
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\календарь и функции времени.qsps": [
-            [
-                "int.time.calendar",
-                [
-                    925,
-                    942
-                ]
-            ],
-            [
-                "get.time.now",
-                [
-                    3150,
-                    3162
-                ]
-            ],
-            [
-                "sim.time",
-                [
-                    3577,
-                    3585
-                ]
-            ],
-            [
-                "summ.time",
-                [
-                    6254,
-                    6263
-                ]
-            ],
-            [
-                "get.leapYear",
-                [
-                    9512,
-                    9524
-                ]
-            ],
-            [
-                "conv.time",
-                [
-                    10157,
-                    10166
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\scripts.sys\\запуск скриптов.qsps": [
-            [
-                "run.dynamic.script",
-                [
-                    185,
-                    203
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. текст задания.qsps": [
-            [
-                "int.notes",
-                [
-                    78,
-                    87
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\начало истории_01.qsps": [
-            [
-                "[1.2_story_start]",
-                [
-                    2,
-                    19
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор действий-гиперссылок - поднять объект.qsps": [
-            [
-                "gen.act.obj",
-                [
-                    542,
-                    553
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get daughter by parent_ID.qsps": [
-            [
-                "get.daughter.obj",
-                [
-                    489,
-                    505
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\hero.stat-scale.qsps": [
-            [
-                "get.scale.hero",
-                [
-                    2,
-                    16
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор гиперссылок - надеть объект.qsps": [
-            [
-                "gen.ahref.actObj",
-                [
-                    160,
-                    176
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\zero.qsps": [
-            [
-                "em.zero",
-                [
-                    184,
-                    191
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор ссылок.qsps": [
-            [
-                "int.link",
-                [
-                    159,
-                    167
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\день недели.qsps": [
-            [
-                "int.time.days",
-                [
-                    255,
-                    268
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\диалоги\\b.w.s.qsps": [
-            [
-                "b.w.s",
-                [
-                    275,
-                    280
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. заметки в дневнике.qsps": [
-            [
-                "int.diary.note",
-                [
-                    2,
-                    16
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\изменение таблиц соответственно зарядам.qsps": [
-            [
-                "redo.obj.inCharge",
-                [
-                    290,
-                    307
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. таблица - большая. вариант 2.qsps": [
-            [
-                "int.diary.big1",
-                [
-                    2,
-                    16
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\test_location.qsps": [
-            [
-                "!--tester--!",
-                [
-                    196,
-                    208
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. уровень.qsps": [
-            [
-                "hero.level",
-                [
-                    87,
-                    97
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.new.obj.get.qsps": [
-            [
-                "base.new.obj.get",
-                [
-                    2,
-                    18
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.new.obj\\01_base.new.obj.qsps": [
-            [
-                "base.new.obj",
-                [
-                    319,
-                    331
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get object by ID.qsps": [
-            [
-                "get.obj.id",
-                [
-                    92,
-                    102
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\магия\\маги.qsps": [
-            [
-                "magic.menergy.spell",
-                [
-                    2,
-                    21
-                ]
-            ],
-            [
-                "magic.add.spell",
-                [
-                    2844,
-                    2859
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\визуальная задержка.qsps": [
-            [
-                "waiting.string",
-                [
-                    429,
-                    443
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\сравнение списков типов.qsps": [
-            [
-                "prv.onTarget",
-                [
-                    105,
-                    117
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\rndstr.qsps": [
-            [
-                "em.str.random",
-                [
-                    319,
-                    332
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор предметов на локациях.qsps": [
-            [
-                "int.loc.obj",
-                [
-                    238,
-                    249
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.word.inPos.qsps": [
-            [
-                "em.str.getWord",
-                [
-                    372,
-                    386
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор переходов.qsps": [
-            [
-                "int.act.goto",
-                [
-                    272,
-                    284
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\съесть.qsps": [
-            [
-                "menu.obj.eat",
-                [
-                    2,
-                    14
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс кузницы.qsps": [
-            [
-                "interface.smith",
-                [
-                    2,
-                    17
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. магическая сила.qsps": [
-            [
-                "hero.mana",
-                [
-                    197,
-                    206
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\перемещение предмета или его части.qsps": [
-            [
-                "replace.obj",
-                [
-                    313,
-                    324
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с дробными числами\\indiv.qsps": [
-            [
-                "em.indiv",
-                [
-                    298,
-                    306
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс сундука.qsps": [
-            [
-                "interface.chest",
-                [
-                    46,
-                    61
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.calibr.qsps": [
-            [
-                "base.calibr",
-                [
-                    2,
-                    13
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.tag.num.qsps": [
-            [
-                "em.tag.getNum",
-                [
-                    2,
-                    15
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\диалоги\\b.d.s (новые базы).qsps": [
-            [
-                "b.d.s",
-                [
-                    300,
-                    305
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\em.tpl.in.qsps": [
-            [
-                "em.tpl.in",
-                [
-                    140,
-                    149
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\scale.qsps": [
-            [
-                "get.scale",
-                [
-                    275,
-                    284
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\kill.var.olegus.qsps": [
-            [
-                "kill.var.olegus",
-                [
-                    186,
-                    201
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\search.similar.obj.qsps": [
-            [
-                "search.similar.obj",
-                [
-                    233,
-                    251
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\get arm list for door.qsps": [
-            [
-                "get.arm.inOpen",
-                [
-                    165,
-                    179
-                ]
-            ],
-            [
-                "use.shell.inDoor",
-                [
-                    1005,
-                    1021
-                ]
-            ],
-            [
-                "use.arm.inDoor",
-                [
-                    1081,
-                    1095
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\диалоги\\b.d.t.qsps": [
-            [
-                "b.d.t",
-                [
-                    132,
-                    137
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. здоровье.qsps": [
-            [
-                "hero.health",
-                [
-                    204,
-                    215
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. задания.qsps": [
-            [
-                "int.diary.task",
-                [
-                    116,
-                    130
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\интерпретатор динамических конструкций.qsps": [
-            [
-                "int.din.text",
-                [
-                    180,
-                    192
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\str.inArray.qsps": [
-            [
-                "em.str.inArr",
-                [
-                    113,
-                    125
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\setScreen.qsps": [
-            [
-                "setScreen",
-                [
-                    2,
-                    11
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. сила.qsps": [
-            [
-                "hero.force",
-                [
-                    218,
-                    228
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\time.output.addition.qsps": [
-            [
-                "time.output.addition",
-                [
-                    67,
-                    87
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\месяц.qsps": [
-            [
-                "int.time.month",
-                [
-                    218,
-                    232
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\sys\\usercom.qsps": [
-            [
-                "inputText",
-                [
-                    2,
-                    11
-                ]
-            ],
-            [
-                "inputText.obj",
-                [
-                    4720,
-                    4733
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. информация.qsps": [
-            [
-                "int.diary.info",
-                [
-                    2,
-                    16
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизведение персонажа.qsps": [
-            [
-                "int.hero.property",
-                [
-                    2,
-                    19
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\проброс_01.qsps": [
-            [
-                "[1.1_game_start]",
-                [
-                    126,
-                    142
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\find skeleton key.qsps": [
-            [
-                "get.key.inBreake",
-                [
-                    247,
-                    263
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\clear all parents.qsps": [
-            [
-                "clr.parent.obj",
-                [
-                    112,
-                    126
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\содержимое хранилищ.qsps": [
-            [
-                "int.chest.name",
-                [
-                    154,
-                    168
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\intro\\вводные данные.qsps": [
-            [
-                "!intro!",
-                [
-                    85,
-                    92
-                ]
-            ],
-            [
-                "hero.intro",
-                [
-                    189,
-                    199
-                ]
-            ],
-            [
-                "hero.sex",
-                [
-                    687,
-                    695
-                ]
-            ],
-            [
-                "hero.property",
-                [
-                    1516,
-                    1529
-                ]
-            ],
-            [
-                "hero.bodypart",
-                [
-                    6511,
-                    6524
-                ]
-            ],
-            [
-                "hero.uron",
-                [
-                    6900,
-                    6909
-                ]
-            ],
-            [
-                "hero.count",
-                [
-                    8674,
-                    8684
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. удача.qsps": [
-            [
-                "hero.luck",
-                [
-                    196,
-                    205
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\find key for open.qsps": [
-            [
-                "get.key.inOpen",
-                [
-                    588,
-                    602
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс местности.qsps": [
-            [
-                "interface.place",
-                [
-                    46,
-                    61
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\delete object by id.qsps": [
-            [
-                "del.obj.id",
-                [
-                    63,
-                    73
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\int.var.qsps": [
-            [
-                "int.var",
-                [
-                    247,
-                    254
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\выбросить.qsps": [
-            [
-                "menu.obj.put",
-                [
-                    147,
-                    159
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_disdocs\\example_postprocessor\\adding_lib\\01_test.qsps": [
             [
                 "start",
@@ -1569,100 +9,12 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\delete object and all daughters.qsps": [
-            [
-                "del.obj",
-                [
-                    170,
-                    177
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с дробными числами\\dz.qsps": [
-            [
-                "em.dz",
-                [
-                    390,
-                    395
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\интерпретатор заголовков локаций.qsps": [
-            [
-                "int.loc.head",
-                [
-                    118,
-                    130
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\base.img (стандартные изображения).qsps": [
-            [
-                "base.img",
-                [
-                    149,
-                    157
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\выучить прочесть заклинание.qsps": [
-            [
-                "menu.obj.spell.teach",
-                [
-                    2,
-                    22
-                ]
-            ],
-            [
-                "menu.obj.spell.read",
-                [
-                    194,
-                    213
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\безусловные переходы в динамических текстах.qsps": [
-            [
-                "int.dyn.goto",
-                [
-                    218,
-                    230
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get object_ID by object_Regexp.qsps": [
-            [
-                "get.id.obj",
-                [
-                    170,
-                    180
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_disdocs\\example_postprocessor\\launcher.qsps": [
             [
                 "[launcher]",
                 [
                     38,
                     48
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\надевание предмета.qsps": [
-            [
-                "use.obj.actObj",
-                [
-                    443,
-                    457
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\[start].qsps": [
-            [
-                "[start]",
-                [
-                    232,
-                    239
                 ]
             ]
         ],
@@ -2633,106 +985,6 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package\\syntax_test_qsp.qsps": [
-            [
-                "[ошибки]",
-                [
-                    865,
-                    873
-                ]
-            ],
-            [
-                "фигурные скобки действия условия",
-                [
-                    2419,
-                    2451
-                ]
-            ],
-            [
-                "[0.1_game_info]",
-                [
-                    3181,
-                    3196
-                ]
-            ],
-            [
-                "newerland",
-                [
-                    4266,
-                    4275
-                ]
-            ],
-            [
-                "привет",
-                [
-                    4370,
-                    4376
-                ]
-            ],
-            [
-                "[м:0]_общий_вид_локации_места",
-                [
-                    4411,
-                    4440
-                ]
-            ],
-            [
-                "[м:1]_дом",
-                [
-                    6629,
-                    6638
-                ]
-            ],
-            [
-                "[м:2]_улица",
-                [
-                    13037,
-                    13048
-                ]
-            ],
-            [
-                "место;стандартная_кухня",
-                [
-                    14131,
-                    14154
-                ]
-            ],
-            [
-                "[chest]",
-                [
-                    15149,
-                    15156
-                ]
-            ],
-            [
-                "ошибка конца локации",
-                [
-                    27044,
-                    27064
-                ]
-            ],
-            [
-                "[death]",
-                [
-                    27154,
-                    27161
-                ]
-            ],
-            [
-                "[sugar-func]",
-                [
-                    28400,
-                    28412
-                ]
-            ],
-            [
-                "[help]",
-                [
-                    28656,
-                    28662
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\new_grammar test.qsps": [
             [
                 "[pp.start]",
@@ -2742,91 +994,12 @@
                 ]
             ]
         ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[help].qsps": [
-            [
-                "[help]",
-                [
-                    499,
-                    505
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\главное меню\\main_screen.qsps": [
-            [
-                "[0.1_game_info]",
-                [
-                    89,
-                    104
-                ]
-            ],
-            [
-                "[0.2_drive_info]",
-                [
-                    4772,
-                    4788
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\местность\\01_моя комната.qsps": [
-            [
-                "[м:1]_моя_комната",
-                [
-                    326,
-                    343
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[diary].qsps": [
-            [
-                "[diary]",
-                [
-                    138,
-                    145
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[death].qsps": [
-            [
-                "[death]",
-                [
-                    2,
-                    9
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[chest].qsps": [
-            [
-                "[chest]",
-                [
-                    185,
-                    192
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\pptest.qsps": [
-            [
-                "[pp.start] [8]",
-                [
-                    456,
-                    470
-                ]
-            ]
-        ],
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\expected.qsps": [
             [
                 "[pp.start] [8]",
                 [
                     2,
                     16
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\воздействия\\hero.vosst.time.qsps": [
-            [
-                "hero.vosst.time",
-                [
-                    247,
-                    262
                 ]
             ]
         ],
@@ -3125,171 +1298,6 @@
                 [
                     2,
                     10
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\multiline_comments.qsps": [
-            [
-                "multiline_comments",
-                [
-                    38,
-                    56
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\singleline_comments.qsps": [
-            [
-                "singleline_comments",
-                [
-                    86,
-                    105
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\wrong_comment_after_end.qsps": [
-            [
-                "after_end",
-                [
-                    13,
-                    22
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\wrong_comments.qsps": [
-            [
-                "wrong-working comment",
-                [
-                    3,
-                    24
-                ]
-            ],
-            [
-                "breaking_brace_comment",
-                [
-                    202,
-                    224
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\conditionals\\singlelines_conditionals.qsps": [
-            [
-                "singlelines_conditionals",
-                [
-                    34,
-                    58
-                ]
-            ],
-            [
-                "wrong_singlelines_conditionals",
-                [
-                    199,
-                    229
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\keywords\\functions.qsps": [
-            [
-                "string_functions",
-                [
-                    100,
-                    116
-                ]
-            ],
-            [
-                "mixtype_functions",
-                [
-                    1366,
-                    1383
-                ]
-            ],
-            [
-                "numeric_functions",
-                [
-                    2036,
-                    2053
-                ]
-            ],
-            [
-                "tuple_functions",
-                [
-                    3085,
-                    3100
-                ]
-            ],
-            [
-                "foo",
-                [
-                    3384,
-                    3387
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\keywords\\operators.qsps": [
-            [
-                "main_and_stat_operators",
-                [
-                    38,
-                    61
-                ]
-            ],
-            [
-                "other_operators",
-                [
-                    223,
-                    238
-                ]
-            ],
-            [
-                "definite_var_operators",
-                [
-                    1397,
-                    1419
-                ]
-            ],
-            [
-                "controls_operators",
-                [
-                    1558,
-                    1576
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\keywords\\sysvars_n_vars.qsps": [
-            [
-                "sysvars_string",
-                [
-                    29,
-                    43
-                ]
-            ],
-            [
-                "sysvar_number",
-                [
-                    1282,
-                    1295
-                ]
-            ],
-            [
-                "altypevars",
-                [
-                    1948,
-                    1958
-                ]
-            ],
-            [
-                "invar_n_sysvar",
-                [
-                    2068,
-                    2082
-                ]
-            ]
-        ],
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\operation\\math.qsps": [
-            [
-                "math_operacion_2",
-                [
-                    2,
-                    18
                 ]
             ]
         ],
@@ -4350,194 +2358,203 @@
                     231406
                 ]
             ]
+        ],
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\pptest.qsps": [
+            [
+                "[pp.start] [8]",
+                [
+                    456,
+                    470
+                ]
+            ]
         ]
     },
     "files_paths": {
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\logging.qsps": "0a67c5b2e49c75ca718f07d440e9d83d",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\prove regexp in Object.qsps": "11b89df82ff8b72454c1e4f74f188770",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\проверка веса.qsps": "3cbb3976c01e583aa7124f1500ea94b2",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\find right bag.qsps": "30645bcab28498cf381111523d146f20",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с шестнадцатеричными числами\\+col.qsps": "e44c3218c53529ea7d22b3769c5b48c4",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\обработка ссылок.qsps": "d631dcaf9c36162daea0d8ddd1b224b3",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\gen.ahref.inMount.qsps": "2023854bee6666f0d51ba55007a31066",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор освещения.qsps": "19d6879f4abdcdae13ade87c686656d2",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\интерпретатор. действие из условного перехода.qsps": "3276962f63b6c84e76cf8d9a3a0ed464",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\части тела\\base.new.bodypart.qsps": "a007908981617916569abb7893e5a299",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\разрядить.qsps": "ed2bfce2ddde67119832c7c8f65c8806",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. настройки.qsps": "0edbdd42d1c7835b147ef05d8e7b9e9d",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизведение описания предмета.qsps": "4eeb04a7d2daf30c99221f4a640ad591",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\возможно ли купить.qsps": "e98af4199b8df8ec663b16f8f7f4aab2",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизводит счётчик по ай-ди.qsps": "97206f2d6f7e536bfc1d3ce503c87fd8",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\Алтарь\\механика алтарей.qsps": "1035500a07666cda7e09807b36796685",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\покупка продажа предметов.qsps": "956b29cc79b29c5236bc68d61ab53638",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\keywords\\functions.qsps": "d74fbdddab227da7e54cf04a7ec47a88",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. таблица - большая. вариант 1.qsps": "bf8d8f8e500fd6d6ec8951b96e60c1fe",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[diary].qsps": "ea67c6f6f49fb4d532ea86e136c4d7a6",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\разобрать.qsps": "ead5b62461ec4fe6388ddcefa652ae71",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\get.obj.pos.qsps": "d588093cb4ef5bdc4de31053b20a2a04",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\прочитать.qsps": "5eb40e98db31ccca6c849ccd0096bff5",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\задание добавить.qsps": "e380c815fb69cb160bb5e0d90b5d2eae",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\задание проверить выполнение.qsps": "821ffe7d5659b31c7797cfab3b83df1a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\стандартные заклинания\\base.magic.string (надстройка для боевых заклинаний).qsps": "cdeef5d9d3a425c9786bea9a1f3fbb61",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\убрать в сумку.qsps": "f875bbba360dd4a965314aa4e190cb01",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\удаление меток на предмете.qsps": "173339f27dfcdd0a8ef53506ffa25bb4",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\текст в зависимости от локации.qsps": "5b9dea553cca43e4163816ac455d250c",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\[start].qsps": "7d9af6b136d023989875f29291d5f71a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с шестнадцатеричными числами\\hex-dec.qsps": "1e629a01e12aa54193a82802a4b38b48",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\get.obj.DU.qsps": "85639d9e21e856e043487cbbf8c81aeb",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с шестнадцатеричными числами\\dec-col.qsps": "724646d944ca39572771746b4de30850",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\func\\вспомогательные функции.qsps": "bfe9f21fb897e96feaa4aa5db4fa2557",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\начало истории_02.qsps": "a5b5dfa22366312ab621c74d611d2418",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\задание добавить стадию.qsps": "cabcf3e5de3d0499d44724434792f651",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\em.const.qsps": "33750825c9544ae54a4ceb8a68aa9d38",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\wrong_comment_after_end.qsps": "07b4c0ff4e0a00c9f0e87f309660ed3a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\показать свойства.qsps": "d53315a0cf28453ade059f590e5a2d96",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\print additional description.qsps": "c93dc8f67c562318d95e6af08835e550",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\sys\\onobjsel.qsps": "e4e87926e7a218a65b4930933855df0e",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор уникальных действий.qsps": "b801cc205d7abc35e98e8cba142242f7",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\get shell list for door.qsps": "345948281e5dd1552d6e006610d8a653",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\replace in obj regexp on string.qsps": "d8d4b8814781f4a232146bbdcc3e62ca",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\retape object.qsps": "732f4a58e6ec677052e115a53e6ae881",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\create object.qsps": "67b84bc730412726c0d177ff39bd261d",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\выбор пола.qsps": "b5989ea2857a6d02365e9be2962ad8a4",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор стандартных заголовков для локаций.qsps": "7f54ffa850fe01500af9e190c0ff482b",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\game.help (стандартная помощь).qsps": "dff658a233afd543127988351260ebc3",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\+герой. свойства.qsps": "86f1916a6dd4f14a7fd19ac1d3b3e3e1",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. таблица - маленькая.qsps": "1b8155657b394c8e2f876f7547261511",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\textincode.qsps": "009c863dd1f1b2109173ce8903cdac58",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\убрать в инвентарь.qsps": "0d3b283a8309f3f4101b5cc5929a4da5",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\дополнительные тексты\\base.word.uron.qsps": "6c1f71f500806601aedd2da4261733c5",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.tag.cont.qsps": "2657a59ebb9fb6db17dbff75c50a03ae",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\есть ли на теле место.qsps": "71166338c0dcdb8da05f9640c21029b0",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с массивами\\array.prnt.qsps": "b70b879e0afcc467fd82c92f5a46227a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.smithing.qsps": "a97469b78d6198f21672afeb74788ba4",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\свойства и параметры\\base.new.property.qsps": "4f2b90e2ca393fabeb1927e78b12faa7",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get similar objects.qsps": "6358926df8164627c2a37ff26c314de4",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\true goto current location.qsps": "7dbaf520cb2c302d24be6ed0be27ecfe",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\уроны и ущербы\\поиск уронов-ущербов.qsps": "5025ce74109dfcc282bdb26cb84a8a22",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\diary.get_id.qsps": "ccdca9d92b3945995387f080d3c9df63",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\время суток.qsps": "3a96266489be2af280e08d4b14ed54d7",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get all daughters by parent_ID.qsps": "ecf901a89cc572a7d1b89cb164c348fe",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\надеть на тело.qsps": "65144c662676f259f28ee9d4a2923ad5",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\дополнительные тексты\\base.word.screen.qsps": "97fc7f36bdd67737cf0202fce687910f",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\поднять предмет.qsps": "9cbbe58952132a5807e8f1015506de60",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\интерпретатор дополнительных пунктов меню.qsps": "7061b2b22c50409b7b57e6a840fe5680",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\remastering.obj.qsps": "ac992beec6e23762179fa51f3fe8c8d4",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\заметка добавить.qsps": "2d85f9860c77cf78488af1eb2883987a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\int.sex.qsps": "25c3f63e51304dca2b74963dd45078b3",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор действий.qsps": "b1e275a8f20e3a7069cfec8457fb44f8",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\scripts.sys\\influence.script (влияния и воздействия).qsps": "3d6520e297ee3e50e999b4b55260d76e",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\prv.obj.id.qsps": "2ba4231d769458a78e44ec08897d8fa0",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\стандартные заклинания\\magic.warspell.qsps": "c6590ef2ca2cae1b03371c520770ad48",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\заметка изменить.qsps": "49a7ffbdc1710b28a77cbe628658fd8f",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\HTML-заголовки.qsps": "de66e2363730b0ff4e6e5effed2ddfe4",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\scripts.sys\\text in code.qsps": "87fab6d4f63c304e6ff32fd658225a3a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\add nocount object in purse.qsps": "a949ace8ce9cad45501cde55e756aeea",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс локации.qsps": "d89a87544186c24df6765de532225312",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с целыми числами\\minus.qsps": "11c6185dc95ffadbbc60226a6f73a922",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\время года.qsps": "571f690684d2498ebf6f5d8896fc12fc",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\conditionals\\singlelines_conditionals.qsps": "2e445a4510dd88197a388cf26ec61b2b",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизведение инвентаря.qsps": "5a0f521c1f8af8143316088331678bce",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\decrease objects.qsps": "ca8b60f64c11c802a9a66eabe01d58f6",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\sys\\onnewloc.qsps": "0c9283937dd59a8ce5ee7a0ac4f14835",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с массивами\\array.prnt.few.qsps": "b23d1eb836db124bee822f028f3f5459",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор.qsps": "c6834b3f5cf64651edd29ea23153f42b",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[help].qsps": "55dc959a2ab3658b09fa5918287d1782",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\доп.меню\\доп.меню.qsps": "c695e0e3134291b724f8ca7f05024bb3",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\open door by key.qsps": "9aeee03201ec987a69198da3e9661e0e",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[chest].qsps": "335b40a677951b7866685ecbb0b89419",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\календарь и функции времени.qsps": "f0a7c5618343880cff9277057d31509d",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\scripts.sys\\запуск скриптов.qsps": "1c03d6050a8c51a223c694da9436f3f7",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. текст задания.qsps": "ad8e1d21328b635f459ef40171a40868",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\начало истории_01.qsps": "8f51c898ab8cd09b539141a320cbfd9e",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор действий-гиперссылок - поднять объект.qsps": "ada1cee88506ed3f403060361bee6673",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\multiline_comments.qsps": "c14d8c987eda37ad860ebebec6a876c3",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get daughter by parent_ID.qsps": "5c7fc05e5216702d03f9234f5f4411f0",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\hero.stat-scale.qsps": "d1930587acbfb093b5a6dfb3bfa38d26",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор гиперссылок - надеть объект.qsps": "c0b0dbca86c0aa4ec8b5dcaa7c6ec9e7",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\operation\\math.qsps": "8af5cf1b716a6424e9b6e37a8bd0243b",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\zero.qsps": "4c8dca3918b4d306fc7edbfec973d996",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор ссылок.qsps": "d870040a31ecd857851e756b7e28cc8d",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\день недели.qsps": "40de55df1710066c63970a1678355402",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\диалоги\\b.w.s.qsps": "dd17107199b810b5539385961bcfe594",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. заметки в дневнике.qsps": "6c01505016c3a64d04b5cf327cae4a39",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\изменение таблиц соответственно зарядам.qsps": "c432a10fb3b954490ba443babf35b7db",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. таблица - большая. вариант 2.qsps": "b64bfceb295d2b2b4eb1785179795cae",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\keywords\\operators.qsps": "511012f4249b68ecf090d25b67227497",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\test_location.qsps": "c6f5e5f8acf3bc06f4bd6128cc2e2fc9",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. уровень.qsps": "d019ccf06a267925a7ee526aa6a7c27a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.new.obj.get.qsps": "c2c7359adf2d08498fa161ab18af7dcb",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.new.obj\\01_base.new.obj.qsps": "98d1588ec974c0359f66abf39bc94bf1",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get object by ID.qsps": "8ffa8c6b456f4178ab0d66ad5f028159",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\магия\\маги.qsps": "3ccfaca5d169c4c01c279d462a700ec5",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\визуальная задержка.qsps": "9c4fec2a1d7ff281052d3e21adac217d",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\сравнение списков типов.qsps": "3d96cf1697b25599a247c0347c43ede3",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\rndstr.qsps": "b15368f1e06f0fa3ade6a7699b7a7bfd",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор предметов на локациях.qsps": "32a92f908d05b8555f05e1da7c94035c",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.word.inPos.qsps": "5d11973cfd1e0e4fd2e2c6c01e5d3a39",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор переходов.qsps": "85e70665a3265dfa1e402a8b1e5259b8",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\съесть.qsps": "dde99f4e487fc5367c46414f67c6dbad",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс кузницы.qsps": "257ac4e04e20638db36efab18457a119",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. магическая сила.qsps": "abae75b0fb9d5420132c7d74421ca450",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\перемещение предмета или его части.qsps": "3aaf07ac0b5a4cec0ea96e879e089998",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с дробными числами\\indiv.qsps": "b6511eee7c5bde462299ca5c7bcd4d5e",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс сундука.qsps": "e9ad32e34f54e5351ba52f4b92160bfb",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.calibr.qsps": "52d59ee5320ab34e48242822e4dd2404",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[death].qsps": "93c73d24ff2027ff0eb70944d2fc5dc7",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.tag.num.qsps": "b4b932211a55a7d351a2aa4bd709ae3b",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\диалоги\\b.d.s (новые базы).qsps": "6bb367d8361550c0012e67c9ed66f01f",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\em.tpl.in.qsps": "665c447479561b20f75ab7e1a4da8b80",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\scale.qsps": "30f3370d3083a26f0120ee51668c1a51",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\kill.var.olegus.qsps": "f13ce109a89ff1dadec74dcdfc6d253d",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\search.similar.obj.qsps": "16ba8fea4098eb67a9ad31e6b46292da",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\get arm list for door.qsps": "499040f277ce07ce389b2d9941696461",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package\\syntax_test_qsp.qsps": "cdc8e2cd1d0d8f14f503b6bd5aebe98c",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\диалоги\\b.d.t.qsps": "f2d063f0181816150a735c4361a400c2",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. здоровье.qsps": "aa6a245952552729b260437d4d802935",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. задания.qsps": "9f378328ad4707eacb1de79e08673dc9",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\интерпретатор динамических конструкций.qsps": "773dd6b161ed9bd56761f24d0c1147c5",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\str.inArray.qsps": "a2df8b6a5ba436981e32a62525d8b337",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\setScreen.qsps": "586ba43c74664c2a7d88ed38ab811993",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. сила.qsps": "391806186f958e18bb6e0e0e48cd3b41",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\time.output.addition.qsps": "b9d02965983f379d1c3d6095e07a5297",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\месяц.qsps": "110342ba8e3e6b59ec79250aad2a929e",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\sys\\usercom.qsps": "ec59202874ef7e93688c28571f2398ee",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. информация.qsps": "c0641d77a626c0a2f1c6e23c08fc847b",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизведение персонажа.qsps": "568b7e1d2a9d2a4dbf170d0930e46674",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\местность\\01_моя комната.qsps": "63c6ee0b4234cd266bfb16409c712a5f",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\проброс_01.qsps": "00434e270e374d08e14813e576925d2a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\singleline_comments.qsps": "3f276c14ee990effb7dd81e63b4e6091",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\find skeleton key.qsps": "66fd39d69afd870eb5f813cc82b36729",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\clear all parents.qsps": "92d02671fa10fef1b055bce29aa94b0e",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\содержимое хранилищ.qsps": "41f0444c44c680f780ae48a362dc3c61",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\intro\\вводные данные.qsps": "5d013cb49fdcf4ad4ee5a57be9d5e34f",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\воздействия\\hero.vosst.time.qsps": "9b1361a66c994325d7f38eaa6d87d080",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. удача.qsps": "efb8d78633c330cb03b153671c69c0fb",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\find key for open.qsps": "1f621ac8e7df200d145193d5f9eecf29",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс местности.qsps": "0b26b6719d551fc8e12bb445ffe1cb24",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\delete object by id.qsps": "bcd75e1a634ef36019425c5a20fe15eb",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\int.var.qsps": "9a0fe4c90e67a6c406a2c59c19370889",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\выбросить.qsps": "9224e867301bfffe6bbd143911aafa62",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_disdocs\\example_postprocessor\\adding_lib\\01_test.qsps": "8015f33d1022bbcc8aa88f20831ba58a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\delete object and all daughters.qsps": "44169041d75d67080adc03c6949d7e03",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с дробными числами\\dz.qsps": "5fe02d319b76ceab2e5e3b6bea7d3a6a",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\keywords\\sysvars_n_vars.qsps": "cc3fb06ade455b271b46477e78888d85",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\интерпретатор заголовков локаций.qsps": "b012f85af0ab3186930ecd09a8d7e8b0",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\главное меню\\main_screen.qsps": "a955e9cfca1ce4f5762dbc3982f61610",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\base.img (стандартные изображения).qsps": "51a2cba8ba836ba39a07bea6377ee609",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\выучить прочесть заклинание.qsps": "246ea3a8a0c13e713a45e8c40c194439",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\безусловные переходы в динамических текстах.qsps": "59ca3dd0ff04d8fd50039c46d95d6843",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get object_ID by object_Regexp.qsps": "5f775c7f59bb05bc0f3d8ce0732fce98",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_disdocs\\example_postprocessor\\launcher.qsps": "e8ff2d14d7605eddd8b386511312d0e7",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\надевание предмета.qsps": "732ae8195a3901414b63255af7a82572",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\wrong_comments.qsps": "1226e67ab42444e78336c7a95f63bd8d",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\examples_splitter\\basesex.qsps": "4399ce872eaec74f8d469202638a4f47",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\new_grammar test.qsps": "7d390465e9323fab9d6f6cc3770e109c",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\pptest.qsps": "81ba50279b394039199e53d2cda98a6e",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\for_autotest.qsps": "84fb88c4383b6dc313674e5b749a9741",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\expected.qsps": "41a3a507ab615aa06f5db820ef3092ad",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\examples_qsp_to_qsps\\ukuzya_txt2gam.qsps": "abf20444f0219ec6c667b42b99d78500",
         "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\examples_qsps_to_qsp\\ukuzya_old.qsps": "abf20444f0219ec6c667b42b99d78500",
-        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\conditionals\\multilines_conditional.qsps": "0ebc8f9998d9881ad5da215758f77101"
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\интерпретатор заголовков локаций.qsps": "86c7fd4a0b9c656def7f5e3aed0c2ca1",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[chest].qsps": "e7523fd1d714b8ebe734077bb11898a4",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\int.var.qsps": "8f2fc21a3431db7fa122c35616693ead",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор освещения.qsps": "69c7e0a849755e85a3fb79c5f99229aa",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\визуальная задержка.qsps": "816d056f1658d8df85d9453698978687",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор действий.qsps": "db3d879375f29be7ca9f5ea098307269",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор ссылок.qsps": "cdc74b5dd0cc5fab6b3cf7e0958f1b5f",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\wrong_comment_after_end.qsps": "e69470e7b3f5b2558b1cf1204064abbf",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\intro\\вводные данные.qsps": "617f6b5660174ea208f702d97ca6eace",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. таблица - большая. вариант 2.qsps": "1c1b3d349694313bcee5b8f2e2670eb8",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с шестнадцатеричными числами\\hex-dec.qsps": "83b6234336de2025169c0d2a625fd1c5",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\delete object by id.qsps": "a4805591ef7a923c18c4210df9b6351e",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\заметка добавить.qsps": "9f553ebbdd39857576d9891792297b41",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\for_autotest.qsps": "aeca1e0d0f697604f7d0e88a6e147956",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\operation\\math.qsps": "97b9bf797eceac3e331ae3fd81fb2c08",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\поднять предмет.qsps": "f0c87221df2a80f15921e57a54079830",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\keywords\\sysvars_n_vars.qsps": "046e96329072d57b54603c1ecf28f844",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\календарь и функции времени.qsps": "04c50759d7d530860febec9e2f80e93b",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\главное меню\\main_screen.qsps": "625bc9b91a4de5d35d0be06465af489b",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\начало истории_01.qsps": "b2d7eeeaac4401f8dc06b45a3fc1f276",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.tag.cont.qsps": "4652602d8964b00ab6d9db812d396f2a",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. уровень.qsps": "500a7370e8555f77caf8aba4113c1215",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[death].qsps": "6745bb2c0f5d1ccc61bf512d9f741318",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с шестнадцатеричными числами\\+col.qsps": "cd52745178e62f382fbed7cb70a4ecaf",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с дробными числами\\indiv.qsps": "3417e27785b247091824d68b33a8e468",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\singleline_comments.qsps": "ae3f2ff6a5c3b7589518d6df4b8525e5",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\conditionals\\multilines_conditional.qsps": "7260a134dd2afcca333e7ebe03590fd1",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\части тела\\base.new.bodypart.qsps": "fac8a4554575df8bc8429eeb5bbebf17",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\true goto current location.qsps": "6f5a03b0c77183875716bbcc335678ed",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\диалоги\\b.d.s (новые базы).qsps": "acfdad8ea283c0b1a83dc70d4daa9576",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.new.obj.get.qsps": "9307c6531d3cf85edbda69fd4e3c4692",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\scripts.sys\\запуск скриптов.qsps": "a31cb6836de6f7845d15ccd3e26049eb",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизведение инвентаря.qsps": "5f788a9c7a4077bf647725f45ef632db",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с массивами\\array.prnt.qsps": "24533f4fe59fd23ae116d7d4ab0b280a",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\scripts.sys\\text in code.qsps": "84504ff0348f5b2085a59a8c69dc873c",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\gen.ahref.inMount.qsps": "f32a83218c59383f3e20fc12dcdcea1c",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\sys\\onnewloc.qsps": "101fcb4a56288c39ba34613ef96f58af",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\обработка ссылок.qsps": "b6e56fbac23a2785d9a50a5e91ebe4a4",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get object_ID by object_Regexp.qsps": "ea842ca8606f86cc738eb8524d370ae8",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\prv.obj.id.qsps": "10d5e9ef828a8f5702317671caf47f4c",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\logging.qsps": "e513dec93287523d15a921486e530a9c",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\kill.var.olegus.qsps": "09b388b20e3acb7a94c74b549cf29cf9",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\+герой. свойства.qsps": "cb4085bdb5ab35372a5ffbdb448b8544",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\conditionals\\singlelines_conditionals.qsps": "be3cf322bb33bf064c1376b556d8bcae",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\есть ли на теле место.qsps": "cc237021feab7e92615a8017edf4cb6b",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\надевание предмета.qsps": "7e2d9b8133b1ff51b8a7b40ce6b715df",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\доп.меню\\доп.меню.qsps": "031135bbf588c016368b8ffb0f73df9f",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\интерпретатор дополнительных пунктов меню.qsps": "cf1e554907fdaa0fc8d5112a1aa52cef",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\начало истории_02.qsps": "6527903b513934d7cdb0f731461adc57",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\воздействия\\hero.vosst.time.qsps": "92e16bb0404493d231babde6b3f8da9b",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\диалоги\\b.w.s.qsps": "6672c35e0f5a929acbe84a865d5a4cb6",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\keywords\\operators.qsps": "bc300af9e3adff17e97f58cbefcd7e86",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[diary].qsps": "eb6cefa86746f0383b62d353211aa199",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. удача.qsps": "9b26b34fbed3ce6cf421fb1ca792b421",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\время суток.qsps": "07ac03a5b54d093ac14f9d2cffa41e1c",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\open door by key.qsps": "e3ad9ef75ff03ebf9ce40bdeee310035",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_preprocessor\\pptest.qsps": "e86c61dc1fd2269f80c6cc5df5277b4c",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get object by ID.qsps": "b0895ba3e7b6b367a92484e520f11648",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс сундука.qsps": "6eb0668cd6ff44e4357817af7e765fca",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\магия\\маги.qsps": "a54f1813a79e2878c2880aa6cba9d285",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\decrease objects.qsps": "958a557aa370ce6c135704568eb8f935",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\задание добавить стадию.qsps": "b61e649193d7334a74aa2e50031b338a",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\add nocount object in purse.qsps": "cd7f2f22a6fed0a761315ca5c03af253",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\hero.stat-scale.qsps": "687efabb7e9c6159b24bae0de48e4893",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\wrong_comments.qsps": "fd352d370045d273222e00e253654894",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\покупка продажа предметов.qsps": "3c76b345c7932361b8c7dd2acd17cead",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\текст в зависимости от локации.qsps": "259f2feb2a1bbbcd3a7aaa715ef3782a",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\sys\\usercom.qsps": "2d9506875ebb9158d786412edcd99ca6",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\game.help (стандартная помощь).qsps": "9c2473ad0d19f9485729e715959cd052",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\проверка веса.qsps": "b9ce32acd136553c07e3586663ffbc63",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор гиперссылок - надеть объект.qsps": "7771a989cefc10b54899620c9d98d788",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\выучить прочесть заклинание.qsps": "bf3ea6d7b11c8db6f7853b8b401f0af3",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get similar objects.qsps": "bf4cd0b1d9baf804c09c0554a03318c3",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\разобрать.qsps": "9bee1d15a9916063e519d8b7d4990589",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\стандартные заклинания\\base.magic.string (надстройка для боевых заклинаний).qsps": "2da32322909a8e1aaf1ea7c21f444cbe",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\zero.qsps": "6a35b93a4f0c51cf261528111e206da8",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\убрать в сумку.qsps": "aae3249198d573f95e388057688b8d7d",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с целыми числами\\minus.qsps": "d32ee49fbd25e9114834c808e39a92c7",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\find right bag.qsps": "cba854b9a62c2db99bc5a19ce1a36053",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\sys\\onobjsel.qsps": "18b4ed8a442c5d591dce4359288ce4a1",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\clear all parents.qsps": "bdb8197abbc3762ef8bc40735c9f5593",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\retape object.qsps": "b2394c23d67e197ead0772a9d412656f",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. таблица - большая. вариант 1.qsps": "9580e48ac3f58c71b4f49888e751c7e6",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\get arm list for door.qsps": "64c06c40edac383a1aec95611fae8eef",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\надеть на тело.qsps": "6fbfac1f097dd659c086ed46963673d6",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\задание добавить.qsps": "b193f045e73ab2950d8fa3cf36ec5d99",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\diary.get_id.qsps": "6b318dd47fa25099d9d187f620902663",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\задание проверить выполнение.qsps": "812573b58f81c28263dac20910e055b9",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\textincode.qsps": "d3b8b9a3acb6a7c3bfa4d82d488e9742",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс местности.qsps": "d3200274624219d4e979214428741e19",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с дробными числами\\dz.qsps": "e2c844c687b689397da67990b35b3576",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\setScreen.qsps": "bd3932210cc7e05ce59c6a49794171df",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\уроны и ущербы\\поиск уронов-ущербов.qsps": "654fb62532fe68e5dbb66f9c7d707e15",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. текст задания.qsps": "f1b5bfae86e630bf4c893c55c93c8163",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. информация.qsps": "2f49f5576824c4c9986fe8690dcb2ac7",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\prove regexp in Object.qsps": "2fe49a3deed13d15d8a571aa915e3751",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\месяц.qsps": "533d095c7634371cf52599c6ffc56e75",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. настройки.qsps": "c97a417825635920409738e722ba1045",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\дополнительные тексты\\base.word.uron.qsps": "e096b9f92f192c45516b713ea4c3e77c",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\search.similar.obj.qsps": "6c15a6051b1a18af363bb24556e271e6",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\изменение таблиц соответственно зарядам.qsps": "6aeb82a748b2c3981a508148ca39ded6",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор переходов.qsps": "9e580041573ef39725403def6caa5fe1",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\test_location.qsps": "9640c1ee0499a707c9e9670f85e98d81",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\em.const.qsps": "48714160c0de1296965d08569371db86",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор стандартных заголовков для локаций.qsps": "bb3f50f804ba56206b399255e219b471",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. заметки в дневнике.qsps": "595166839c6ad18279fb2743e40a3b6a",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\int.sex.qsps": "19a2d43344a2a8718238d37219b65c23",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\проброс_01.qsps": "44a72971c8e92ba28e2410f45d162f5f",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.new.obj\\01_base.new.obj.qsps": "fe4a88b72e91153d2fb6a506c8c53e32",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.smithing.qsps": "19f036a88f5986c306ff66357cd00f6c",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\scripts.sys\\influence.script (влияния и воздействия).qsps": "13ed3e45120653434958baa9ef283b4b",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\str.inArray.qsps": "6bae0644db987a3ce04310a8d8c223e5",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс локации.qsps": "7ea25625fa9cd148050921a0c9fef18e",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\get.obj.pos.qsps": "5c1c66bf1ab853e263f5d753187d6580",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\стандартные заклинания\\magic.warspell.qsps": "88a17eb6c9fa3ece6e835a151274c427",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\сюжет\\выбор пола.qsps": "f4a0c65b0915ed4aed1ac5ced389108e",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор уникальных действий.qsps": "38738d3239543caee48cdf5a76137f0e",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\съесть.qsps": "41d5fb93d8f4ac9afdb134be87fb24de",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\заметка изменить.qsps": "699bab47015d9b58433dd040c891d0bb",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\время года.qsps": "074a16bc312c197c2a3bb5db64bdfd4d",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get daughter by parent_ID.qsps": "7df78ba1745d66c3033b0007aeb28dda",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\свойства и параметры\\base.new.property.qsps": "1a63e9d5babe300ceaef214fdd845cdb",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. таблица - маленькая.qsps": "f0762d8e47febde8c7ca854f8db50530",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\показать свойства.qsps": "dde504c15dacd2a8cf14f46d9463787f",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\возможно ли купить.qsps": "c72a65ec9bac1ac150a6aea3ea85aad8",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\обязательные локации\\[help].qsps": "cc35c379b67fd19d91e6b57abd2974b0",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\delete object and all daughters.qsps": "1e5ba5f75ece2807608b3e722aadeb9c",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. сила.qsps": "40b93008651a3e55675dd552570b204d",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\time.output.addition.qsps": "e0a17f2dc387909bc24a2285956f9c25",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\безусловные переходы в динамических текстах.qsps": "3bef36c1be6259b353fb326398f68cbb",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\create object.qsps": "5649ae777151379b994a80152825c4b2",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\стандартные\\base.img (стандартные изображения).qsps": "e9e770281feb63fe3e4c802938ca3102",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\удаление меток на предмете.qsps": "8ecb08b703931801802bb4322bbb2610",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\comments\\multiline_comments.qsps": "40f717ea83a7a5cd619de32993d382dd",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\воспроизведение времени\\день недели.qsps": "5ca09e28adc1b717615b4cd6aec76062",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с текстом\\rndstr.qsps": "510836174040dbc4e6e4ff874b0fe90e",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\диалоги\\b.d.t.qsps": "3fac9c98ce1bc3d7f97eea56a1ee6b83",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\содержимое хранилищ.qsps": "ab1a4493c7762517477e5ee88642c530",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\выбросить.qsps": "4e628cb5d494580ab585a72ecf15b9c0",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизведение описания предмета.qsps": "e97243040c9360da6b7c3fbfa0338a9e",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\HTML-заголовки.qsps": "9814b4e76b18d2e9ade634432e69b22b",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\дополнительные тексты\\base.word.screen.qsps": "fc794ca189b6e6fa31da95ae08372573",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.word.inPos.qsps": "0e03d44033acc9d614ac16e5794aebaf",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. здоровье.qsps": "2b45211df3ffb430ac1318ad64723dc8",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\counter and parameters\\герой. магическая сила.qsps": "0759fac9b90ed6e32ae6b33dafd2aba5",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\местность\\01_моя комната.qsps": "9c80ba766c95bdf0f24e008fe9f9ac64",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\remastering.obj.qsps": "20565383cedb5b4a67541a2b5d1e2871",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\get all daughters by parent_ID.qsps": "b610f0cb8b202803cfa14308caa9fc71",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\find skeleton key.qsps": "2734c63feb19eec9c0e753eb1d0f57f2",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\em.tpl.in.qsps": "1744b53aad089ad54cf25accff9d4583",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор.qsps": "e6045d2cb0e753030dee35a98a6fe01d",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\убрать в инвентарь.qsps": "a8d54d19ffeba8481643437b971bdf32",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package\\syntax_test_qsp.qsps": "bbb6ebe4a1fb16c0973c97861bac0d26",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_syntax\\keywords\\functions.qsps": "60cddc183ccd6a55b2cc22e0ca24353d",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\find key for open.qsps": "58d633f9aa414929e26432c35988e09d",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\интерпретатор. действие из условного перехода.qsps": "91c342e2047c6664083b6bc003c98ecd",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\интерпретатор предметов на локациях.qsps": "03e4b8a3a9e03cd386e103fa564ae467",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\scale.qsps": "a7548a3504928c127917b390f8211662",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\вспомогательные функции\\get.tag.num.qsps": "ae59d6b89c004d7f50d6ab2566cd8351",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\print additional description.qsps": "81f8cedeb290b0aee7b4a1ee0d3562ad",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизводит счётчик по ай-ди.qsps": "178f11ac8a14eff581c5a884b12763fc",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с массивами\\array.prnt.few.qsps": "0cd499c6cf35f4f23c93d35d7de4456e",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\interface.sys\\интерфейс кузницы.qsps": "f5340c71d5c98e649f92a6e76325bdf6",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\вспомогательные функции\\get.obj.DU.qsps": "adf30ba14ecdafc386aa1c1abac40bde",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\Алтарь\\механика алтарей.qsps": "d9008bde4ee57afc38c94d31aef87f2b",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\перемещение предмета или его части.qsps": "64b4c355a39d0be9072c94bd1c1b4e26",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\func\\вспомогательные функции.qsps": "f6512511b0695dbb3687471198cb1dc1",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\goto.sys\\get shell list for door.qsps": "4689e44d9f037071cdebdc3f0cce45e2",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\сравнение списков типов.qsps": "81c9333aa7ee42b8d091ed26a685db29",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\динамические тексты\\интерпретатор динамических конструкций.qsps": "400b0e7d95318bdc8b3f9f62c0500944",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\дневник\\интерпретатор. задания.qsps": "fabb50106c14dc3c01de6927f73979b3",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\разрядить.qsps": "53963217028a5c065ab32ff640854bf1",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\[lib]\\easy.math\\операции с шестнадцатеричными числами\\dec-col.qsps": "a5162d63d6da84674c57453867a63c98",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\replace in obj regexp on string.qsps": "b8c474b9cbe8222c543588b564cf7b2a",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\objects.sys\\предметы\\стандартные меню предметов\\прочитать.qsps": "43e72f9c4a64c4eca34bb816c447f634",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\интерпретаторы\\воспроизведение персонажа.qsps": "9ed1bf972161b0638c36dbbfb87b3095",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\[start].qsps": "fdaa3afa78f4d059396a230c32b27a95",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\bases\\предметы\\base.calibr.qsps": "3c6f8ce52d37e28cd65b15a912a922f5",
+        "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\drive\\генераторы\\генератор действий-гиперссылок - поднять объект.qsps": "1f045f77c9f64177286da56a71c74858"
     }
 }
