@@ -4,9 +4,23 @@ __all__ = [
 	'QSP_PROJECT_JSON',
 	'QSP_SUBLIME_PROJECT',
 	'QSP_MSG',
-	'QSP_ERROR_MSG']
-
+	'QSP_ERROR_MSG',
+	'PROJECT_FILE_NAME',
+	'PLAYER_PATH',
+	'CONVERTER',
+	'SCAN_FILES_LOCNAME']
+import os
 from types import MappingProxyType
+from .plugtypes import JsonScheme
+
+PROJECT_FILE_NAME = 'qsp-project.json'
+
+# TODO: player-path only fo windows. Make for other OS.
+PLAYER_PATH = os.path.join('C:", "Program Files", "QSP Classic 5.9.5", "bin", "qspgui.exe')
+
+CONVERTER = 'qsps_to_qsp'
+
+SCAN_FILES_LOCNAME = 'prv_file'
 
 # No changable dict for tips in statusbar
 
@@ -169,25 +183,26 @@ QSP_START_TEMPLATE = (
 	'*pl "Quick project start location. Edit this file, and appending new."\n',
 	'*pl "Стартовая локация быстрого проекта. ',
 	'Отредактируйте этот файл и добавьте новые."\n',
-	'-- game.start ---------------------------------\n')
+	f'--- game.start {"-"*33}\n')
 
 # No changable dict for qsp-project.json simple file
 
-_t = {
-		"project":
-		[
-			{
-				"module": "..\\_output_game\\game_start.qsp",
-				"folders":
-				[
-					{"path": "."}
-				]
-			}
-		],
-		"start": "..\\_output_game\\game_start.qsp",
-		"player": "C:\\Program Files\\QSP Classic 5.9.2\\bin\\qspgui.exe"}
+_j:JsonScheme = {
+	"project":
+	[
+		{
+			"module": os.path.join(".", "_output_game", "game_start.qsp"),
+			"folders":
+			[
+				{"path": os.path.join(".", "_src")}
+			]
+		}
+	],
+	"start": os.path.join(".", "_output_game", "game_start.qsp"),
+	"player": PLAYER_PATH
+}
 
-QSP_PROJECT_JSON = MappingProxyType(_t)
+QSP_PROJECT_JSON = MappingProxyType(_j)
 
 # No changable dict for sublimetext-project file
 
@@ -218,11 +233,13 @@ class _Qsp_Errors_Message:
 	def __init__(self):
 		# messages for QSP.py
 		self._need_save = "[0] Save file before building!"
-		self._wrong_extension_qsp = "[1] Wrong extension of file. Need 'qsp'. Can not convert."
-		self._wrong_extension_qsps = "[2] Wrong extension of file. Need 'qsps'. Can not convert."
+		self._wrong_extension_qsp = "[1] Wrong extension of file. Need '.qsp'. Can not convert."
+		self._wrong_extension_qsps = "[2] Wrong extension of file. Need '.qsps'. Can not convert."
 		self._wrong_extension_splitter = "[3] QSP-Splitter: Wrong extension of file. Can not convert."
 		# messages for workspace.py
 		self._ws_init = '[4] QSP WORKSPACE already initialised!!!'
+		self._empty_project = "[5] The project is empty, or not exist!"
+		self._not_choosing_file = "[6] Choose file with '.qsp' extension before converting."
 
 	@property
 	def NEED_SAVE_FILE(self):
@@ -243,5 +260,13 @@ class _Qsp_Errors_Message:
 	@property
 	def WS_ALREADY_INIT(self):
 		return self._ws_init
+	
+	@property
+	def EMPTY_PROJECT(self):
+		return self._empty_project
+
+	@property
+	def NOT_CHOOSING_FILE(self):
+		return self._not_choosing_file
 
 QSP_ERROR_MSG = _Qsp_Errors_Message()

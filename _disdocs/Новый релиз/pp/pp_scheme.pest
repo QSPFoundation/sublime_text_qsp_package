@@ -1,0 +1,176 @@
+QspsPP {
+  space := " " | "\t"    // не пропускаем \n/\r\n автоматически
+
+  // File = (Line newline?)* eof
+  QspsFile = (QspLocation | RawLinesBlock | EmptyLines)* eof
+
+  QspLocation = locOpen LocBody locClose newline?
+  locOpen = locDefKwrd locName? newline
+  // Строки тела локации не должны начинаться с маркера конца локации
+  locName = rawLine
+  LocBody = ((~locEndKwrd LocationLine)? newline)*
+  locClose = locEndKwrd rawLine?
+
+  RawLinesBlock = (NonLocRawLine (newline | &eof))+
+  NonLocRawLine = (PpDirectiveLine | ~locDefKwrd rawLine)
+
+  LocationLine = CommentStmt
+       | StmtsLine
+       | EmptyLines
+
+  EmptyLines = newline+
+
+  CommentStmt = (PpDirectiveLine | SpecialComment | SimpleComment) (&newline | &eof)
+
+  PpDirectiveLine  = openDirectiveStmt PpDirective
+  PpDirectiveFullLine = PpDirectiveLine (newline | eof)
+  SpecialComment = (lessSpecCommKwrd | simpleSpecCommKwrd) CommentBody
+  SimpleComment = commentKwrd CommentBody
+
+  // ---------------------------------- Any Comment Body ---------------------------------- //
+    CommentBody = (commCodeBlock | rawStringLiteral | rawCommentChar)*
+
+    commCodeBlock        = leftBrace commCodeBlockContent* rightBrace
+
+    commCodeBlockContent = (commCodeBlock
+                        | rawStringLiteral
+                        | rawCommentChar)+
+
+    rawCommentChar = ~("{" | "}" | "'" | "\"") any
+    
+  // ---------------------------------- Any Comment Body ---------------------------------- //
+
+  // ---- Specials Comments Tokens ----
+  simpleSpecCommKwrd = "!@"
+  lessSpecCommKwrd = "!@<"
+  // ---- Specials Comments Tokens ----
+
+  // Simple Comment Token
+  commentKwrd = "!"
+
+  StmtsLine = OtherStmt (stmtDelimiter OtherStmt)* (stmtDelimiter CommentStmt)? (&newline | &eof)
+  OtherStmt = ( rawStringLiteral // внутри строк так же поддерживаются директивы препроцессора, если они записаны отдельной строкой
+              | BracketBlock
+              | ParenBlock
+              | CodeBlock
+              | rawOtherStmtChar)+
+
+  rawOtherStmtChar = ~(stmtDelimiter | newline) any
+
+  BracketBlock = leftBracket OtherStmt* rightBracket
+  ParenBlock = leftParen OtherStmt* rightParen
+  CodeBlock = leftBrace CodeBlockContent* rightBrace
+
+  CodeBlockContent = ( CodeBlock
+                     | PpDirectiveFullLine
+                     | rawStringLiteral
+                     | rawCodeBlockChar)+
+
+  rawCodeBlockChar = ~(leftBrace | rightBrace) any
+
+  // --------------------------------- PreProcessors Directives --------------------------------- //
+    PpDirective = (DefineVarDirective
+                | IfDirective
+                | savecommStmt
+                | noSavecommStmt
+                | onStmt
+                | offStmt
+                | noppStmt
+                | endifStmt
+                | rawLine)
+        
+    ConditionResolve = (onStmt
+                      | offStmt
+                      | savecommStmt
+                      | noSavecommStmt
+                      | noppStmt
+                      | includeStmt
+                      | excludeStmt)
+
+    // complex
+    IfDirective = ifStmt leftParen ConditionExpr rightParen thenStmt ConditionResolve+
+    DefineVarDirective = varStmt leftParen DefineVarExpression rightParen
+
+    // define var
+    DefineVarExpression = varName (assignmentOperator varName)?
+
+    // Equal Expression /in priority/
+    ConditionExpr = OrExpr
+    OrExpr = AndExpr (orOperator AndExpr)*
+    AndExpr = NotExpr (andOperator NotExpr)*
+    NotExpr = notOperator? EqualExpr
+    EqualExpr = varName ((equalEqual | equalNotEqual) varName)*
+
+    // unions
+    logicOperator = (logicKwOperator | equalEqual | equalNotEqual)
+    logicKwOperator = (andOperator | orOperator | notOperator)
+
+    // Literals
+    varName = ~logicOperator (alnum)+ // buildin instruction any letter
+    
+
+    // Tokens
+    openDirectiveStmt = "!@pp:"
+    // markers of commands
+    ifStmt = "if"
+    thenStmt = ":"
+    varStmt = "var"
+      // commands
+      onStmt = "on"
+      offStmt = "off"
+      savecommStmt = "savecomm"
+      noSavecommStmt = "nosavecomm"
+      noppStmt = "nopp"
+      includeStmt = "include"
+      excludeStmt = "exclude"
+      // signs
+      assignmentOperator = "="
+      equalEqual = "=="
+      equalNotEqual = "!="
+      andOperator = "and"
+      orOperator = "or"
+      notOperator = "not"
+
+    endifStmt = "endif"
+
+    locDefKwrd = "#"
+    locEndKwrd = "--" "-"*
+
+  // --------------------------------- PreProcessors Directives --------------------------------- //
+
+
+  // ------------------------------------ Raw Strings ------------------------------------ //
+    rawStringLiteral = rawApostrophedString | rawQuotedString
+
+    rawApostrophedString = apostrophe (apostropheEscape | rawApostropheChar)* apostrophe
+    rawQuotedString      = quote (quoteEscape | rawQuoteChar)* quote
+
+    rawApostropheChar = ~apostrophe any
+    rawQuoteChar      = ~quote any
+
+    quoteEscape = "\"\""
+    apostropheEscape = "''"
+  // ------------------------------------ Raw Strings ------------------------------------ //
+
+    // Tokens
+    stmtDelimiter = "&"
+
+    leftParen = "("
+    rightParen = ")"
+    leftBrace = "{"
+    rightBrace = "}"
+    leftBracket = "["
+    rightBracket = "]"
+    apostrophe = "'"
+    quote = "\""
+    
+
+  // general rules
+  rawChar = ~newline any
+  rawLine = rawChar+
+
+  // endings
+  newline = "\r\n" | "\n" | "\r"
+  eof = end
+  
+}

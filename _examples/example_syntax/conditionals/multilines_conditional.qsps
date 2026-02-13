@@ -1,0 +1,180 @@
+QSP-Game Условия. Многострочные
+
+# outer_keywords
+end & ! неверно закрытый end
+
+elseif & ! elseif вне условия
+
+else & ! else вне условия
+-- outer_keywords ---------------------------------
+
+# cond1
+! многострочное условие без комментария после двоеточия
+if x > y and d > j:
+	*pl 'Команды'
+end
+
+! многострочное условие с комментарием после двоеточия
+if x > y and d > j: ! теперь можно писать так
+	*pl 'Команды'
+end
+
+! многострочное условие с однострочными elseif и else
+if 1:
+	elseif x = 1: *pl '1'
+	elseif x = 2: *pl '2'
+	elseif x = 3: *pl '3'
+	elseif x = 4: *pl '4'
+	else: *pl '0'
+end
+
+! лишний else
+if 1:
+	elseif x = 1: *pl '1'
+	elseif x = 2: *pl '2'
+	elseif x = 3: *pl '3'
+	elseif x = 4: *pl '4'
+	else: *pl '0'
+	else: *pl '0'
+end
+
+! кривой else
+if 1:
+	elseif x = 1: *pl '1'
+	elseif x = 2: *pl '2'
+	elseif x = 3: *pl '3'
+	elseif x = 4: *pl '4'
+	else x = 5: *pl '0'
+end
+
+! кривой elseif
+if 1:
+	elseif x = 1: *pl '1'
+	elseif x = 2: *pl '2'
+	elseif x = 3: *pl '3'
+	elseif x = 4: *pl '4'
+	elseif: *pl '0'
+end
+
+! многострочные elseif и else
+if 1:
+	! pass
+elseif x = 1:
+	*pl '1'
+elseif x = 2:
+	*pl '2'
+elseif x = 3:
+	*pl '3'
+elseif x = 4:
+	*pl '4'
+else:
+	*pl '0'
+end
+
+! многострочные elseif и else с комментариями после двоеточия
+if 1:
+	! pass
+elseif x = 1: ! первый вариант
+	*pl '1'
+elseif x = 2: ! второй вариант
+	*pl '2'
+elseif x = 3: ! третий вариант
+	*pl '3'
+elseif x = 4: ! четвёртый вариант
+	*pl '4'
+else: ! вариант по умолчанию
+	*pl '0'
+end
+
+! однострочные elseif и else, хотя и с комментариями после двоеточия
+if 1:
+	! pass
+elseif x = 1: & ! первый вариант
+	*pl '1'
+elseif x = 2: & ! второй вариант
+	*pl '2'
+elseif x = 3: & ! третий вариант
+	*pl '3'
+elseif x = 4: & ! четвёртый вариант
+	*pl '4'
+else: & ! вариант по умолчанию
+	*pl '0'
+end
+
+! однострочные elseif с игнорируемыми командами в следующих строках
+if 1:
+	!pass
+elseif x = 1: *pl '1'
+	gosub '1' & ! команды подсвечиваются, как комментарий
+elseif x = 2: *pl '2'
+	gosub '2' & ! потому что игнориуются плеером.
+elseif x = 3: *pl '3'
+	gosub '3' & ! ни одна из команд, следующих после
+elseif x = 4: *pl '4'
+	gosub '4' & ! однострочной else или elseif,
+else: *pl '0'
+	gosub '0' & ! не будет исполнена
+end
+
+! лишний end в однострочном else
+if 1:
+	elseif x = 1: *pl '1'
+	elseif x = 2: *pl '2'
+	elseif x = 3: *pl '3'
+	elseif x = 4: *pl '4'
+	else: end
+end
+-- cond1 ---------------------------------
+
+
+# cond2
+! тесты end`ов и вложенных условий
+
+! end if, TODO: if не должен подсвечиваться
+if 1:
+	!pass
+end if
+
+! комментарий за end`ом
+if 1:
+	!pass
+end эта строка текста игнорируется плеером
+
+! комментарий за endif
+if 1:
+	!pass
+end if эта строка текста игнорируется плеером
+
+! комментарий оканчивается со следующей командой
+if 1:
+	!pass
+end комментарий & *pl 'команда'
+
+! вложенные условия
+if 1:
+	if 2:
+		x = 3
+	else:
+		x = 4
+	end if
+elseif x = 5: y = 9
+else:
+	if 0:
+		new = old
+	else: ! комментарий
+		"Структура не ломается"
+	end
+end
+
+! незакрытое условие руинит подсветку внутри фигурных скобок и подсветку конца локации
+{
+	if 1:
+		elseif x = 1: x
+		else:
+			gosub '1'
+	! условие не закрыто
+}
+
+gosub '12' & ! остальные комманды подсвечиваются нормально
+
+-- cond2 ---------------------------------

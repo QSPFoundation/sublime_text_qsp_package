@@ -1,0 +1,19 @@
+{
+    // режим строгой проверки типов
+    "typeCheckingMode": "strict",
+
+    // версия пайтон для проверки
+    "pythonVersion": "3.8",
+
+    // путь к stub-файлам
+    "stubPath": "typings",
+
+    // исключения
+    "exclude": [
+        "**/__pycache__",
+        "**/node_modules",
+        "**/venv",
+        "**/.venv",
+        "**/.obsidian"
+    ]
+}

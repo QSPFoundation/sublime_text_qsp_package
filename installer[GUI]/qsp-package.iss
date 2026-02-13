@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "QSP Sublime-Package"
-#define MyAppVersion "0.17"
+#define MyAppVersion "0.18"
 #define MyAppPublisher "Aleks Versus'GAM'RUS"
 #define MyAppURL "https://github.com/AleksVersus/JAD_for_QSP"
 
@@ -26,7 +26,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=D:\my\GameDev\QuestSoftPlayer\projects\JAD\installer[GUI]
 OutputBaseFilename=install.QSP.sublime-package.{#MyAppVersion}
-SetupIconFile=D:\my\run\sc\autorun.ico
+SetupIconFile=D:\my\run\sc\st_qsp.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

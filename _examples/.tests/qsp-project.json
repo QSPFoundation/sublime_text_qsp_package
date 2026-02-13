@@ -1,0 +1,15 @@
+{
+    "project": [
+        {
+            "module": ".\\game.qsp",
+            "files_": [
+                {"path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw\\_src\\02_pages\\разделы книгры 200\\page.153.qsps"
+                }
+            ],
+            "files": [
+                {"path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw\\_src\\01_drive\\костыли\\костыль-разделитель.qsps"}
+            ]
+        }
+    ],
+    "preprocessor": "On"
+}
