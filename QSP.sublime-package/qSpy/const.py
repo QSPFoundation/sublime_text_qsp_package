@@ -16,7 +16,7 @@ from .plugtypes import JsonScheme
 PROJECT_FILE_NAME = 'qsp-project.json'
 
 # TODO: player-path only fo windows. Make for other OS.
-PLAYER_PATH = os.path.join('C:", "Program Files", "QSP Classic 5.9.5", "bin", "qspgui.exe')
+PLAYER_PATH = os.path.join("C:", "Program Files", "QSP Classic 5.9.5", "bin", "qspgui.exe")
 
 CONVERTER = 'qsps_to_qsp'
 
