@@ -77,11 +77,8 @@ class TceScanner:
         self._line_len = len(line)
         for i, c in enumerate(line):
             self._curchar = i
-            if not self._curlexeme:
-                # если лексема пуста (начало новой лексемы), устанавливаем начало
-                self._set_start_lexeme()
+            if not self._curlexeme: self._set_start_lexeme()
             self._curlexeme.append(c)
-            # print(c, self._scan_funcs[-1].__name__)
             try:
                 self._scan_funcs[-1](c)
             except er.TceScannerError as e:
@@ -96,13 +93,9 @@ class TceScanner:
         """ Поиск токенов, из которых состоит qsps-файл """
         cn = self._curchar
         if cn == 0:
-            # Если это первый символ в строке, ищем начало локации или начало директивы
             if c == "#":
-                # Начало локации, значит это токен начала локации,
-                # просто добавляем поглощение токена в список:
                 self._scan_funcs.append(self._loc_open_expect)
             else:
-                # Любой другой символ, это начало сырой строки
                 if self._curchar_is_last_in_line():
                     self._add_token(tt.RAW_LINE)
                 else:
@@ -113,50 +106,31 @@ class TceScanner:
             self._scan_funcs.append(self._raw_line_end_expect)
 
     def _raw_line_end_expect(self, c:str) -> None:
-        """ Поглощение токена сырой строки. """
+        """ Поглощение токена сырой строки между локациями. """
         if self._curchar_is_last_in_line():
-            # это последний символ, закрываем сырую строку, убираем функцию из стека
-            self._add_token(tt.RAW_LINE)
-            self._scan_funcs.pop()
-
-    def _raw_text_expect(self, c:str) -> None:
-        """ Токен сырого текста. Это любой текст, кроме конца строки.
-        Закрывается концом файла, или перед концом строки. """
-        if (self._curchar_is_last_in_file() or
-            (self._next_is_last_in_line() and not self._curline_is_last())):
             self._add_token(tt.RAW_LINE)
             self._scan_funcs.pop()
 
     def _loc_open_expect(self, c:str) -> None:
-        """ Распознавание имени локации """
-        # имя локации - это то же самое, что и сырая строка, только с другим типом токена
+        """ Поглощение токена начала локации. """
         if self._curchar_is_last_in_line():
             self._add_token(tt.LOC_OPEN)
             self._scan_funcs.pop()
-            self._scan_funcs.append(self._loc_body_scan)
+            self._scan_funcs.append(self._loc_body_scan) # запускаем распознавание токенов внутри локации
 
     def _loc_close_expect(self, c:str) -> None:
-        """ До конца строки все символы поглощаются, как токен конца локации. """
+        """ Токен конца локации. """
         if self._curchar_is_last_in_line():
-            # с окончанием строки закрываем токен
             self._add_token(tt.LOC_CLOSE)
             self._scan_funcs.pop()
-
-    def _preformatter_expect(self, c:str) -> None:
-        """ Поглощение пробелов в начале строки """
-        if not self._next_in_line() in (' ', '\t'):
-            self._add_token(tt.PREFORMATTER) # формируем токен
-            self._scan_funcs.pop() # отключаем поглощение
 
     def _loc_body_scan(self, c:str) -> None:
         """ Сканирование тела локации. """
         cn:int = self._curchar
-        if cn == 0 and c == '-' and self._next_in_line() == '-':
-            # если следующий символ является -, поглощаем строку, как конец локации
+        if cn == 0 and c == '-' == self._next_in_line():
             self._scan_funcs.pop() # закрываем сканер тела локации
-            self._scan_funcs.append(self._loc_close_expect)
+            self._scan_funcs.append(self._loc_close_expect) # поглощаем токен конца локации
         elif c == '"':
-            # поглощение литерала строки
             self._scan_funcs.append(self._quote_string_literal_expect)
         elif c == "'":
             self._scan_funcs.append(self._apostrophe_string_literal_expect)
@@ -174,7 +148,7 @@ class TceScanner:
         """ Получение токена сырого текста на локации. """
         # Данная строка оканчивается, когда встречает токен, значимый для локации,
         # или конец строки, или конец файла
-        if (self._next_in_line() in self._LOC_LINE_DELIMITERS or
+        if (self._next() in self._LOC_LINE_DELIMITERS or
             self._curchar_is_last_in_file()):
             self._add_token(tt.RAW_LINE)
             self._scan_funcs.pop()

@@ -10,18 +10,25 @@ LocName = str
 Region = Tuple[Point, Point]
 QspsLine = str
 
-class TextConstant(TypedDict):
+class ConstantNote(TypedDict):
     cid: int
     value: ConstantValue
-    path: Path
     location: LocName
+
+class ConstFileContainer(TypedDict):
+    path: Path
+    constants: List[ConstantNote]
+
+class TextConstant(TypedDict):
+    cid: int
+    path: Path
     place: Region
 
 class TceParser:
 
-    def __init__(self, tokens:List[Tkn], file_path:Path) -> None:
+    def __init__(self, tokens:List[Tkn], qsps_file:Path, cid_counter_start:int = 0) -> None:
         self._tokens:List[Tkn] = tokens
-        self._file:Path = file_path
+        self._file:Path = qsps_file
 
         # валидация цепочки токенов
         if not self._tokens:
@@ -37,8 +44,9 @@ class TceParser:
 
         self._loc_is_open:bool = False
         self._loc_name:LocName = ''
-        self._cid_counter: int = 0
+        self._cid_counter: int = cid_counter_start
 
+        self._const_notes:List[ConstantNote] = []
         self._constants:List[TextConstant] = []
 
         self._error_check: bool = False
@@ -59,6 +67,12 @@ class TceParser:
 
     def get_constants(self) -> List[TextConstant]:
         return self._constants
+
+    def get_const_notes(self) -> List[ConstantNote]:
+        return self._const_notes
+
+    def cid_counter(self) -> int:
+        return self._cid_counter
 
     def _declaration(self) -> None:
         """ Распарсиваем целый файл из токенов. """
@@ -89,16 +103,17 @@ class TceParser:
         """ Получаем строку """
         cid:int = self._cid_counter
         self._cid_counter += 1
-        value:ConstantValue = self._curtok.lexeme
+        value:ConstantValue = self._curtok.lexeme[1:-1]
         path:Path = self._file
         location:LocName = self._loc_name
         place:Region = (self._curtok.lexeme_start, self._curtok.get_end_pos())
         self._eat_tokens(1)
 
         self._constants.append({
-            'cid': cid, 'value': value, 'path':path,
-            'location': location, 'place': place
+            'cid': cid, 'path':path,
+            'place': place
         })
+        self._const_notes.append({'cid': cid, 'value': value, 'location':location})
 
     def _open_loc(self) -> None:
         """ Open Loc Statement Create """

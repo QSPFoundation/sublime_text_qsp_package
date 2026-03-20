@@ -1,9 +1,9 @@
 # file __init__.py
 # Text Constant Extractor
 from .main import TextConstantExtractor
-from .tce_parser import TextConstant
+from .tce_parser import TextConstant, ConstantNote, ConstFileContainer
 
 __all__ = [
     'TextConstantExtractor',
-    'TextConstant'
+    'TextConstant', 'ConstantNote', 'ConstFileContainer'
 ]

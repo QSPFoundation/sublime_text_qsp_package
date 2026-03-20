@@ -36,19 +36,29 @@ def main():
     if qsp_proj.scheme_is_wrong():
         print('Scheme is wrong')
 
-    tce = ProjectTextConstantManager(qsp_proj.get_scheme())
-    consts = tce.extract_constants()
+    tcem = ProjectTextConstantManager(qsp_proj.get_scheme())
+    consts = tcem.extract_constants()
+    files = tcem.get_const_files()
 
-    output_file = os.path.join(os.path.split(args['point_file'])[0], 'output.json')
+    output_file = os.path.join(os.path.split(args['point_file'])[0], 'const_output.json')
+    const_file = os.path.join(os.path.split(args['point_file'])[0], 'const_file.json')
 
     with open(output_file, 'w', encoding= 'utf-8') as fp:
         json.dump(consts, fp, indent=4, ensure_ascii=False)
 
+    with open(const_file, 'w', encoding= 'utf-8') as fp:
+        json.dump(files, fp, indent=4, ensure_ascii=False)
+
 def one():
-    tce = TextConstantExtractor('D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\[source]\\qsps\\00_start.qsps')
-    consts = tce.extract_constants()
+    # denny = 'D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\[source]\\qsps\\00_start.qsps'
+    dialog = 'D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.dialog\\[source]\\_interpretator\\start.qsps'
+    tce = TextConstantExtractor(dialog)
+
     with open('const_output.json', 'w', encoding= 'utf-8') as fp:
-        json.dump(consts, fp, indent=4, ensure_ascii=False)
+        json.dump(tce.extract_constants(), fp, ensure_ascii=False)
+
+    with open('const_file.json', 'w', encoding= 'utf-8') as fp:
+        json.dump(tce.get_const_container(), fp, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
-    one()
+    main()
