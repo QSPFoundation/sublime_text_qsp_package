@@ -23,10 +23,10 @@ class ModuleQSP():
         self._src_files:List[QspsFile] = []
         self._src_files_pathes:List[Path] = []
 
-        
+
         self._start_qsploc_file:Path = scheme.get('start_qsploc_file', '')
         self._start_qsploc_file_index:int = -1
-        
+
         self._extends_by_scheme()
 
 
@@ -34,7 +34,7 @@ class ModuleQSP():
 
         # self._src_lines:List[QspsLine] = []    # all strings of module code
         # self.start_time = start_time
-    
+
     def extend_by_file(self, file_path:str) -> None: # file_path:abs_path of file
         """ Add QspsFile by file-path """
         if os.path.isfile(file_path):
@@ -89,6 +89,9 @@ class ModuleQSP():
     def qsps_files(self) -> List[QspsFile]:
         """ Return list of all Qsps-Files. """
         return self._src_files
+
+    def files_paths(self) -> List[Path]:
+        return self._src_files_pathes
 
     def src_to_text(self) -> str:
         """ Get outer text of module """
