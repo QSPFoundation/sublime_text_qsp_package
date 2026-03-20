@@ -45,7 +45,7 @@ def main():
         json.dump(consts, fp, indent=4, ensure_ascii=False)
 
 def one():
-    tce = TextConstantExtractor('D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\[source]\\qsps\\01_start.qsps')
+    tce = TextConstantExtractor('D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\[source]\\qsps\\00_start.qsps')
     consts = tce.extract_constants()
     with open('const_output.json', 'w', encoding= 'utf-8') as fp:
         json.dump(consts, fp, indent=4, ensure_ascii=False)

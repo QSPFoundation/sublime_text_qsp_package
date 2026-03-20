@@ -74,8 +74,8 @@ class TceScanner:
 
     def _scan_line(self, line:QspsLine) -> None:
         """ Find all tokens in the line. """
-        self._line_len = len(line[0])
-        for i, c in enumerate(line[0]):
+        self._line_len = len(line)
+        for i, c in enumerate(line):
             self._curchar = i
             if not self._curlexeme:
                 # если лексема пуста (начало новой лексемы), устанавливаем начало
@@ -210,10 +210,6 @@ class TceScanner:
             self._scan_funcs.pop()
 
     # вспомогательные методы
-    def _is_alnum(self, s:str) -> bool:
-        """ is \\w ? """
-        return s.isalnum() or s == '_'
-
     def _curchar_is_last_in_line(self) -> bool:
         """ Является ли текущий символ последним в строке? """
         return self._curchar == self._line_len - 1
@@ -226,10 +222,6 @@ class TceScanner:
         """ Является ли текущий символ последним в файле? """
         return self._curline_is_last() and self._curchar_is_last_in_line()
 
-    def _next_is_last_in_file(self) -> bool:
-        """ Является ли следующий символ последним в файле? """
-        return self._curline_is_last() and self._next_is_last_in_line()
-
     def _set_start_lexeme(self) -> None:
         """ Устанавливаем начало лексемы. """
         self._start_lexeme = (self._line_num, self._curchar)
@@ -241,14 +233,7 @@ class TceScanner:
     def _next_in_line(self) -> str:
         """ Возвращает следующий символ в строке """
         if self._curchar + 1 < self._line_len:
-            return self._cur_line[0][self._curchar + 1]
-        else:
-            return '\0'
-
-    def _prev_in_line(self) -> str:
-        """ Возвращает предыдущий символ в строке """
-        if self._curchar > 0:
-            return self._cur_line[0][self._curchar - 1]
+            return self._cur_line[self._curchar + 1]
         else:
             return '\0'
 
@@ -264,14 +249,6 @@ class TceScanner:
         """Правильно добавляет ожидаемую последовательность символов. """
         self._prepend_chars = list(chars)
         self._prepend_chars.reverse()
-
-    def _prev(self, char_num:int = -1) -> Char:
-        if char_num == -1: char_num = self._curchar
-        if char_num > 0:
-            return self._cur_line[char_num - 1]
-        elif self._line_num > 0:
-            return self._qsps_lines[self._line_num - 1][-1]
-        return '\0'
 
     def _next(self, char_num:int=-1) -> Char:
         if char_num == -1: char_num = self._curchar
