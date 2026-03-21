@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from .tokens import TokenNode
 from .tce_scanner import TceScanner
@@ -8,10 +8,14 @@ from .error import TceParserRunError, TceScannerRunError
 class TextConstantExtractor:
     """Извлекатель текстовых констант из проекта"""
 
-    def __init__(self, qsps_file:prs.Path, cid_counter_start:int = 0) -> None:
+    def __init__(self, qsps_file:prs.Path,
+                    tce_ignore:Optional[Tuple[str,...]] = None,
+                    cid_counter_start:int = 0) -> None:
         self._qsps_file:prs.Path = qsps_file
         with open(self._qsps_file, 'r', encoding='utf-8') as fp:
             self._qsps_lines:List[prs.QspsLine] = fp.readlines()
+
+        self._tce_ignore:Tuple[str, ...] = tce_ignore if tce_ignore else prs.STANDARD_IGNORE_CONSTS
 
         self._constants:List[prs.TextConstant] = []
         self._const_notes:List[prs.ConstantNote] = []
@@ -37,7 +41,8 @@ class TextConstantExtractor:
 
         # 2. get list of constants
         try:
-            self._parser = parser = prs.TceParser(tokens, self._qsps_file, self._cid_counter)
+            self._parser = parser = prs.TceParser(tokens, self._qsps_file,
+                self._tce_ignore, self._cid_counter)
             parser.tokens_parse()
             self._constants = parser.get_constants()
             self._const_notes = parser.get_const_notes()

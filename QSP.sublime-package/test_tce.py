@@ -35,6 +35,7 @@ def main():
     qsp_proj = QspProject(args, window_folders)
     if qsp_proj.scheme_is_wrong():
         print('Scheme is wrong')
+        return
 
     tcem = ProjectTextConstantManager(qsp_proj.get_scheme())
     consts = tcem.extract_constants()

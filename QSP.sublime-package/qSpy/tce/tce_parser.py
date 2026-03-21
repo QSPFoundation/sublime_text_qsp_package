@@ -24,9 +24,18 @@ class TextConstant(TypedDict):
     path: Path
     place: Region
 
+STANDARD_IGNORE_CONSTS = (
+    '', ' ', '\t', '\n', '\r\n',                # whitespaces
+    r'$', r'%', r'#', '>', '<'                  # type prefixes
+    ':', ';', ',', '.', '!', '?', '^', r'\&',   # delimiters
+    '*', '(', ')', '[', ']', r'\{', r'\}',
+    )
+
 class TceParser:
 
-    def __init__(self, tokens:List[Tkn], qsps_file:Path, cid_counter_start:int = 0) -> None:
+    def __init__(self, tokens:List[Tkn], qsps_file:Path,
+                tce_ignore:Optional[Tuple[str,...]] = None,
+                cid_counter_start:int = 0) -> None:
         self._tokens:List[Tkn] = tokens
         self._file:Path = qsps_file
 
@@ -46,6 +55,7 @@ class TceParser:
         self._loc_name:LocName = ''
         self._cid_counter: int = cid_counter_start
 
+        self._tce_ignore:Tuple[str, ...] = tce_ignore if tce_ignore else STANDARD_IGNORE_CONSTS
         self._const_notes:List[ConstantNote] = []
         self._constants:List[TextConstant] = []
 
@@ -102,12 +112,13 @@ class TceParser:
     def _constant_line(self) -> None:
         """ Получаем строку """
         cid:int = self._cid_counter
-        self._cid_counter += 1
         value:ConstantValue = self._curtok.lexeme[1:-1]
         path:Path = self._file
         location:LocName = self._loc_name
         place:Region = (self._curtok.lexeme_start, self._curtok.get_end_pos())
         self._eat_tokens(1)
+        if value in self._tce_ignore: return # exclude the ignored constants
+        self._cid_counter += 1
 
         self._constants.append({
             'cid': cid, 'path':path,

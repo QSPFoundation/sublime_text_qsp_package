@@ -14,9 +14,6 @@ class TextTokenType(IntEnum):
     #
     NEWLINE = 0
 
-    # preformatting spaces
-    PREFORMATTER = auto()
-
     RAW_LINE = auto()
 
     LOC_OPEN = auto()

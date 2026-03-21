@@ -1,9 +1,9 @@
 import os
-from typing import List
+from typing import List, Tuple
 from . import plugtypes as ts
 from . import function as qsp
 
-from .tce import TextConstantExtractor, TextConstant, ConstFileContainer
+from .tce import TextConstantExtractor, TextConstant, ConstFileContainer, STANDARD_IGNORE_CONSTS
 
 class ProjectTextConstantManager:
     """Извлекатель текстовых констант из проекта."""
@@ -11,6 +11,10 @@ class ProjectTextConstantManager:
     def __init__(self, project_scheme:ts.ProjectScheme) -> None:
         self._root: ts.ProjectScheme = project_scheme
         self._files:List[ts.Path] = []
+        # workdir is change to qsp-project.json place on this stage:
+        ti:ts.Path = os.path.abspath('.\\tce.ignore')
+        self._tce_ignore:Tuple[str, ...] = self._ignore_const_list(ti) if os.path.isfile(ti) else ()
+
 
         self._constants: List[TextConstant] = []
         self._const_files: List[ConstFileContainer] = []
@@ -26,6 +30,11 @@ class ProjectTextConstantManager:
     def get_const_files(self) -> List[ConstFileContainer]:
         return self._const_files
 
+    def _ignore_const_list(self, tce_ignore_file:ts.Path) -> Tuple[str, ...]:
+        with open(tce_ignore_file, 'r', encoding='utf-8') as fp:
+            lines = fp.read().splitlines()
+        lines.extend(STANDARD_IGNORE_CONSTS)
+        return tuple(lines)
 
     def _fill_files_list(self) -> None:
         """Наполняем список путями ко всем файлам проекта."""
@@ -34,7 +43,7 @@ class ProjectTextConstantManager:
 
     def _extract_constants(self) -> None:
         for file_path in self._files:
-            tce = TextConstantExtractor(file_path, self._cid_counter)
+            tce = TextConstantExtractor(file_path, self._tce_ignore, self._cid_counter)
             self._constants.extend(tce.extract_constants())
             self._const_files.append(tce.get_const_container())
             self._cid_counter = tce.cid_counter()
