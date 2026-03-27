@@ -26,7 +26,7 @@ class TextConstant(TypedDict):
 
 STANDARD_IGNORE_CONSTS = (
     '', ' ', '\t', '\n', '\r\n',                # whitespaces
-    r'$', r'%', r'#', '>', '<'                  # type prefixes
+    r'\$', r'\%', r'\#', '>', '<'                  # type prefixes
     ':', ';', ',', '.', '!', '?', '^', r'\&',   # delimiters
     '*', '(', ')', '[', ']', r'\{', r'\}',
     )

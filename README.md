@@ -111,7 +111,7 @@ END
 
 ## Установка пакета QSP для Sublime Text
 
-0. Прежде всего у вас должен быть установлен Sublime Text, желательно Sublime Text 4. Скачать его можно отсюда https://www.sublimetext.com/download.
+0. Прежде всего у вас должен быть установлен Sublime Text, желательно последней версии. Скачать его можно отсюда https://www.sublimetext.com/download.
 
 ### Установка для пользователей Windows
 

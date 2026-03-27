@@ -17,6 +17,11 @@
 						"command": "qsp_new_project"
 					},
 					{
+						"id": "qsp_tools_convert_lines",
+						"caption": "Convert Game-Lines",
+						"command": "decode_qsp_line"
+					},
+					{
 						"id": "qsp_tools_converters",
 						"caption": "Converters (single files)",
 						"children": [

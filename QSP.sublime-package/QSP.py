@@ -74,7 +74,7 @@ class QspToQspsCommand(sublime_plugin.WindowCommand):
 			return
 		qsp_to_qsps = QspToQspsBuiltinConv()
 		qsp_to_qsps.convert_file(argv['file'])
-			
+
 
 class QspsToQspCommand(sublime_plugin.WindowCommand):
 	""" Comand of converting qsps-file to QSP-Game """
@@ -90,7 +90,34 @@ class QspsToQspCommand(sublime_plugin.WindowCommand):
 		output_file = os.path.splitext(argv['file'])[0]+'.qsp'
 		qsps_to_qsp= QspsToQspBuiltinConv(output_file, False)
 		qsps_to_qsp.convert_file(argv['file'], output_file) # TODO: extras output_path
-			
+
+class DecodeQspLineCommand(sublime_plugin.WindowCommand):
+	""" Comand of converting qsp-line to qsps-line """
+	# set cursor at line, or select the text
+	def run(self) -> None:
+		view = self.window.active_view()
+		if not view: return
+		lines:List[str] = [] # decodes lines
+		n:str = QspsToQspBuiltinConv.encode_qsps_line('\n')
+		for region in cast(List[sublime.Region], view.sel()):
+			if region.empty():
+				# add line to lines list
+				l = QspToQspsBuiltinConv.decode_qsp_line(view.substr(view.line(region.begin())))
+				lines.append(l)
+			else:
+				l = QspToQspsBuiltinConv.decode_qsp_line(view.substr(region).replace('\n', n))
+				lines.append(l)
+		new_view = self.window.new_file()
+		self.window.focus_view(new_view)
+		new_view.run_command(
+			'qsp_insert_decoded_lines',
+			{'lines': lines, 'insert_at': 0} # atract the arguments
+		)
+
+class QspInsertDecodedLinesCommand(sublime_plugin.TextCommand):
+	""" Insert the prepared lines. """
+	def run(self, edit:sublime.Edit, lines:List[str], insert_at:int=0) -> None:
+		self.view.insert(edit, insert_at, '\n'.join(lines))
 
 class QspSplitterCommand(sublime_plugin.WindowCommand):
 	"""
@@ -302,8 +329,8 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 				with open(qsp_loc_place, 'r', encoding='utf-8') as file:
 					string = file.read()
 				match = re.search(
-					r'^\#\s*'+re.escape(qsp_loc_name)+'$', 
-					string, 
+					r'^\#\s*'+re.escape(qsp_loc_name)+'$',
+					string,
 					flags=re.MULTILINE)
 				if match is not None: count = ':'+str(len(string[:match.start()].split('\n')))
 				file_name = os.path.basename(qsp_loc_place)
@@ -375,7 +402,7 @@ class QspInvalidInput(sublime_plugin.EventListener):
 		end = view.sel()[0].end()
 		sr_locname = view.expand_to_scope(begin, 'meta.start_location.qsp')
 		sr_lblname = view.expand_to_scope(begin, 'entity.name.qlabel.qsp')
-		
+
 		if begin == end and sr_locname is not None:
 			input_region = (sr_locname.begin(), sr_locname.end())
 			input_text = view.substr(sr_locname)
@@ -479,7 +506,7 @@ class QspAutocomplete(sublime_plugin.EventListener):
 			return (qsp_completions, 24)
 		else:
 			return None
-		
+
 class QspTips(sublime_plugin.EventListener):
 	""" Listener of stand caret to keyword of QSP-syntax """
 	def on_selection_modified(self, view:sublime.View) -> None:
@@ -538,7 +565,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			self._log('extract fin!')
 			return qsp_ws
 		return None
-	
+
 	def _refresh_ws(self, window:sublime.Window) -> None:
 		"""
 			Refresh workspace if it is exist.
