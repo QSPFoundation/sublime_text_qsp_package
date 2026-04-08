@@ -16,7 +16,7 @@ class QspToQspsBuiltinConv():
 	_char_cache:CharCache = {}
 
 	def __init__(self) -> None:
-		self._input_file:Path = "" 
+		self._input_file:Path = ""
 		self._output_folder:Path = ""  # output folder
 		self._file_name:FileName = ""  # file name without extension
 		self._output_file:Path = ""  # output file
@@ -28,14 +28,14 @@ class QspToQspsBuiltinConv():
 		# TODO: delete???
 		self._game_lines:List[GameLine] = [] # qsp source text
 		self._qsps_lines:List[QspsLine] = []  # qsps text
-		
+
 
 	def convert_file(self, input_file:Path='') -> Path:
 		""" Read qsp-file, convert and save to qsps-file. Return path to qsps-file. """
 		if not os.path.isfile(input_file):
 			print(f'Incorrect file path. {input_file}')
 			return ''
-		
+
 		self.read_from_file(input_file)
 		self.split_qsp()
 		self.to_qsps()
@@ -48,8 +48,22 @@ class QspToQspsBuiltinConv():
 			print(f'Incorrect file path. {input_file}')
 			return
 		self._set_pathes(input_file)
-		with open(self._input_file, 'r', encoding='utf-16le') as fp:
-			for line in fp:	self._game_lines.append(line)
+		encodings = ['utf-16-le', 'utf-8-sig', 'utf-8', 'cp1251']
+		for enc in encodings:
+			try:
+				with open(self._input_file, 'r', encoding=enc) as fp:
+					self._game_lines = list(fp) # при ошибке присваивание не произойдёт
+				if enc == 'cp1251' and self._game_lines and self._game_lines[0].startswith('п»ї'):
+					raise UnicodeDecodeError(
+						'cp1251', b'\xef\xbb\xbf', 0, 3,
+						'UTF-8 BOM detected while decoding as cp1251'
+					)
+				self._encoding = enc
+				return
+			except UnicodeDecodeError as e:
+				print(e)
+				continue
+		print('Unknown game encoding! Use txt2gam utilities for conversion.')
 
 	def save_to_file(self, output_file:Path='') -> None:
 		""" Save qsps-text to file. """
@@ -76,7 +90,7 @@ class QspToQspsBuiltinConv():
 		if header != 'QSPGAME':
 			print(f'Old qsp format is not support. Use Quest Generator for converting game in new format.')
 			return
-		
+
 		if qsp_lines[-1].strip() == '': qsp_lines.pop()
 		self._password = QspToQspsBuiltinConv.decode_string(qsp_lines[2][:-1])
 		self._location_count = QspToQspsBuiltinConv.decode_int(qsp_lines[3][:-1])
@@ -120,22 +134,22 @@ class QspToQspsBuiltinConv():
 		for loc in self._locations:
 			self._qsps_lines.extend(QspToQspsBuiltinConv.convert_location(loc))
 		return self._qsps_lines
-		
+
 	def get_locations(self) -> List[QspLocation]:
 		""" Get loactions list """
 		return self._locations
-		
+
 	def get_location(self, index:int) -> QspLocation:
 		""" Get location by index. """
 		return self._locations[index]
-	
+
 	def get_location_by_name(self, name:str) -> Optional[QspLocation]:
 		""" Get location by name. """
 		for loc in self._locations:
 			if loc['name'] == name:
 				return loc
 		return None
-	
+
 	@staticmethod
 	def base_is_exist(location:QspLocation) -> bool:
 		""" Check if base description and actions are exist. """
@@ -216,7 +230,7 @@ class QspToQspsBuiltinConv():
 	def decode_string(qsp_line:str) -> str:
 		""" Decode qsp-line to string. """
 		return QspToQspsBuiltinConv.decode_qsp_line(qsp_line)
-	
+
 	@staticmethod
 	def decode_qsp_line(qsp_line:GameLine) -> QspsLine:
 		""" Decode qsp-line. """
