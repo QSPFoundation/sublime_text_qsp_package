@@ -99,13 +99,15 @@ class DecodeQspLineCommand(sublime_plugin.WindowCommand):
 		if not view: return
 		lines:List[str] = [] # decodes lines
 		n:str = QspsToQspBuiltinConv.encode_qsps_line('\n')
+		rn:str = QspsToQspBuiltinConv.encode_qsps_line('\r\n')
 		for region in cast(List[sublime.Region], view.sel()):
 			if region.empty():
 				# add line to lines list
 				l = QspToQspsBuiltinConv.decode_qsp_line(view.substr(view.line(region.begin())))
 				lines.append(l)
 			else:
-				l = QspToQspsBuiltinConv.decode_qsp_line(view.substr(region).replace('\n', n))
+				l = view.substr(region).replace('\n', n).replace(rn, n)
+				l = QspToQspsBuiltinConv.decode_qsp_line(l)
 				lines.append(l)
 		new_view = self.window.new_file()
 		self.window.focus_view(new_view)
