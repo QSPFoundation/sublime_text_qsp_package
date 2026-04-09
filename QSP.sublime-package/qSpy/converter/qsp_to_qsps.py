@@ -1,6 +1,6 @@
 # python 3.8
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
 
 from .tools import QSP_CODREMOV
 from .tps import (
@@ -8,12 +8,21 @@ from .tps import (
 	QspsChar, GameChar, GameLine, QspsLine
 )
 CharCache = Dict[GameChar, QspsChar]
+Encoding = Literal['utf-16-le', 'utf-8-sig', 'utf-8', 'cp1251']
+
+class ValidationFormatError(ValueError):
+
+	def __init__(self, encoding: str, message: str = "") -> None:
+		full_message = f"[{encoding}] {message}" if message else encoding
+		super().__init__(full_message)
+		self.encoding = encoding
 
 class QspToQspsBuiltinConv():
 	"""Converter ".qsp" game files into qsps-files. Based on converter by Werewolf in JS.
 	stand `game-file` and run script for getting qsps-format file"""
 
 	_char_cache:CharCache = {}
+	_cp1251_cache:CharCache = {}
 
 	def __init__(self) -> None:
 		self._input_file:Path = ""
@@ -25,9 +34,12 @@ class QspToQspsBuiltinConv():
 		self._locations:List[QspLocation] = [] # list of locations
 		self._password:GamePassword = "No"  # password
 
-		# TODO: delete???
 		self._game_lines:List[GameLine] = [] # qsp source text
 		self._qsps_lines:List[QspsLine] = []  # qsps text
+
+		self._encoding:Encoding = 'utf-16-le'
+		# self._cache:CharCache = self._char_cache
+		self._encode_handler = QspToQspsBuiltinConv.decode_qsp_line
 
 
 	def convert_file(self, input_file:Path='') -> Path:
@@ -35,8 +47,11 @@ class QspToQspsBuiltinConv():
 		if not os.path.isfile(input_file):
 			print(f'Incorrect file path. {input_file}')
 			return ''
-
-		self.read_from_file(input_file)
+		try:
+			self.read_from_file(input_file)
+		except ValidationFormatError as e:
+			print(e)
+			return ''
 		self.split_qsp()
 		self.to_qsps()
 		self.save_to_file()
@@ -48,7 +63,7 @@ class QspToQspsBuiltinConv():
 			print(f'Incorrect file path. {input_file}')
 			return
 		self._set_pathes(input_file)
-		encodings = ['utf-16-le', 'utf-8-sig', 'utf-8', 'cp1251']
+		encodings:List[Encoding] = ['utf-16-le', 'utf-8-sig', 'utf-8', 'cp1251']
 		for enc in encodings:
 			try:
 				with open(self._input_file, 'r', encoding=enc) as fp:
@@ -58,7 +73,12 @@ class QspToQspsBuiltinConv():
 						'cp1251', b'\xef\xbb\xbf', 0, 3,
 						'UTF-8 BOM detected while decoding as cp1251'
 					)
+				if self._game_lines and not self._game_lines[0].startswith('QSPGAME'):
+					raise ValidationFormatError(enc,
+						f"Header is not QSPGAME while decoding as {self._game_lines[0][:7]}"
+					)
 				self._encoding = enc
+				if enc == 'cp1251': self._encode_handler = QspToQspsBuiltinConv.decode_cp1251_qsp_line
 				return
 			except UnicodeDecodeError as e:
 				print(e)
@@ -92,21 +112,21 @@ class QspToQspsBuiltinConv():
 			return
 
 		if qsp_lines[-1].strip() == '': qsp_lines.pop()
-		self._password = QspToQspsBuiltinConv.decode_string(qsp_lines[2][:-1])
-		self._location_count = QspToQspsBuiltinConv.decode_int(qsp_lines[3][:-1])
+		self._password = self._decode_string(qsp_lines[2][:-1])
+		self._location_count = self._decode_int(qsp_lines[3][:-1])
 		i = 4
 		while (i < len(qsp_lines)):
-			location_name = QspToQspsBuiltinConv.decode_string(qsp_lines[i][:-1])
-			location_desc = QspToQspsBuiltinConv.decode_string(qsp_lines[i+1][:-1])
-			location_code = QspToQspsBuiltinConv.decode_string(qsp_lines[i+2][:-1])
+			location_name = self._decode_string(qsp_lines[i][:-1])
+			location_desc = self._decode_string(qsp_lines[i+1][:-1])
+			location_code = self._decode_string(qsp_lines[i+2][:-1])
 			i += 3
 			actions:List[Action] = []
-			actions_count = QspToQspsBuiltinConv.decode_int(qsp_lines[i][:-1])
+			actions_count = self._decode_int(qsp_lines[i][:-1])
 			i += 1
 			for _ in range(actions_count):
-				action_image = QspToQspsBuiltinConv.decode_string(qsp_lines[i][:-1])
-				action_name = QspToQspsBuiltinConv.decode_string(qsp_lines[i+1][:-1])
-				action_code = QspToQspsBuiltinConv.decode_string(qsp_lines[i+2][:-1])
+				action_image = self._decode_string(qsp_lines[i][:-1])
+				action_name = self._decode_string(qsp_lines[i+1][:-1])
+				action_code = self._decode_string(qsp_lines[i+2][:-1])
 				actions.append({
 					"image": action_image,
 					"name": action_name,
@@ -221,15 +241,13 @@ class QspToQspsBuiltinConv():
 		""" Escape-sequence for qsp-string. """
 		return qsp_string.replace("'", "''")
 
-	@staticmethod
-	def decode_int(qsp_line:str) -> int:
+	def _decode_int(self, qsp_line:str) -> int:
 		""" Decode qsp-line to int. """
-		return int(QspToQspsBuiltinConv.decode_qsp_line(qsp_line))
+		return int(self._encode_handler(qsp_line))
 
-	@staticmethod
-	def decode_string(qsp_line:str) -> str:
+	def _decode_string(self, qsp_line:str) -> str:
 		""" Decode qsp-line to string. """
-		return QspToQspsBuiltinConv.decode_qsp_line(qsp_line)
+		return self._encode_handler(qsp_line)
 
 	@staticmethod
 	def decode_qsp_line(qsp_line:GameLine) -> QspsLine:
@@ -247,3 +265,24 @@ class QspToQspsBuiltinConv():
 	@staticmethod
 	def decode_char(point:GameChar) -> QspsChar:
 		return (chr(QSP_CODREMOV) if ord(point) == -QSP_CODREMOV else chr(ord(point) + QSP_CODREMOV))
+
+	@staticmethod
+	def decode_cp1251_qsp_line(qsp_line:GameLine) -> QspsLine:
+		""" Decode qsp-line. """
+		cache = QspToQspsBuiltinConv._cp1251_cache
+		exit_lines:List[QspsLine] = []
+		_decode_char = QspToQspsBuiltinConv.decode_cp1251_char
+
+		for char in qsp_line:
+			if char not in cache:
+				cache[char] = _decode_char(char)
+			exit_lines.append(cache[char])
+		return ''.join(exit_lines)
+
+	@staticmethod
+	def decode_cp1251_char(point:GameChar) -> QspsChar:
+		b = point.encode('cp1251')[0]
+		if b == (-QSP_CODREMOV) & 0xFF:
+			return chr(QSP_CODREMOV)
+		out_b = (b + QSP_CODREMOV) & 0xFF
+		return bytes((out_b,)).decode('cp1251')
