@@ -77,7 +77,7 @@ _t = {
 	"showacts": "SHOWACTS [#выражение] — управляет отображением окна действий.",
 	"showstat": "SHOWSTAT [#выражение] — управляет отображением окна дополнительного описания.",
 	"showobjs": "SHOWOBJS [#выражение] — управляет отображением окна предметов.",
-	"showinput": "SHOWINPUT [#выражение] — управляет отображением строки ввода (командной строки).",	
+	"showinput": "SHOWINPUT [#выражение] — управляет отображением строки ввода (командной строки).",
 	"sortarr": "SORTARR [$массив],[#направление_сортировки] — сортировка массива.",
 	"unselect": "UNSELECT — снимает выделение с предмета.",
 	"unpackarr": "UNPACKARR [$имя_массива], [%кортеж], [#начало], [#количество] — распаковывает кортеж в указанный массив.",
@@ -180,9 +180,23 @@ QSP_CMD_TIPS = MappingProxyType(_t)
 QSP_START_TEMPLATE = (
 	'QSP-Game Start game from this location\n\n',
 	'# game.start\n',
-	'*pl "Quick project start location. Edit this file, and appending new."\n',
-	'*pl "Стартовая локация быстрого проекта. ',
-	'Отредактируйте этот файл и добавьте новые."\n',
+	'! BASE\n',
+	"""*p 'Quick project start location. Edit this file, and appending new.
+
+	This is base description of location.
+
+	Это стартовая локация быстрого проекта. Отредактируйте этот файл и создайте новые.
+
+	Этот текст является базовым описанием локации.'\n""",
+	"ACT 'Base Action of location':\n",
+	"\t*pl 'Text from base action of location.'\n",
+	"END\n",
+	"ACT 'Базовое действие локации':\n",
+	"\t*pl 'Текс из кода базового действия локации.'\n",
+	"END\n",
+	"! END BASE\n",
+	'!@ This is the code in the "Run on visit" field. It\'s located outside the Basic Actions and Description section.\n',
+	'!@ Это код в поле "Выполнить при посещении". Он находится за пределами секции Базовых действий и описания.\n\n'
 	f'--- game.start {"-"*33}\n')
 
 # No changable dict for qsp-project.json simple file
@@ -248,19 +262,19 @@ class _Qsp_Errors_Message:
 	@property
 	def WRONG_EXTENSION_QSP(self):
 		return self._wrong_extension_qsp
-	
+
 	@property
 	def WRONG_EXTENSION_QSPS(self):
 		return self._wrong_extension_qsps
-	
+
 	@property
 	def WRONG_EXTENSION_SPLITTER(self):
 		return self._wrong_extension_splitter
-	
+
 	@property
 	def WS_ALREADY_INIT(self):
 		return self._ws_init
-	
+
 	@property
 	def EMPTY_PROJECT(self):
 		return self._empty_project
