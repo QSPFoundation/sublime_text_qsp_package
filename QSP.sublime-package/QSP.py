@@ -150,11 +150,12 @@ class QspNewProjectCommand(sublime_plugin.WindowCommand):
 		first_folder = argv['folder']
 		_jont = os.path.join
 		os.makedirs(_jont(first_folder,'_disdocs'), exist_ok=True)
-		assets_folder = _jont(first_folder, '_output_game', 'assets')
-		os.makedirs(_jont(assets_folder, 'img'), exist_ok=True)
-		os.makedirs(_jont(assets_folder, 'snd'), exist_ok=True)
-		os.makedirs(_jont(assets_folder, 'vid'), exist_ok=True)
-		os.makedirs(_jont(first_folder, '_output_game', 'lib'), exist_ok=True)
+		os.makedirs(_jont(first_folder,'_output_game'), exist_ok=True)
+		# assets_folder = _jont(first_folder, '_output_game', 'assets')
+		# os.makedirs(_jont(assets_folder, 'img'), exist_ok=True)
+		# os.makedirs(_jont(assets_folder, 'snd'), exist_ok=True)
+		# os.makedirs(_jont(assets_folder, 'vid'), exist_ok=True)
+		# os.makedirs(_jont(first_folder, '_output_game', 'lib'), exist_ok=True)
 		os.makedirs(_jont(first_folder, '_src'), exist_ok=True)
 		# crete qsp-project.json
 		project_json_path = _jont(first_folder, 'qsp-project.json')
