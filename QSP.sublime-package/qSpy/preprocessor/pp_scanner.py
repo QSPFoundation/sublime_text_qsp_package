@@ -36,13 +36,15 @@ class PpScanner:
         self._line:MarkedLine = self._marked_lines[0] # значение текущей строки
         self._line_len:int = 0 # длина текущей строки
         self._line_num:LineNum = 0 # номер текущей строки
-        
+
         self._start_lexeme:Point = (0, 0) # начало текущей лексемы (строка, позиция)
 
         self._scan_funcs:List[Callable[[str], None]] = [self._qsps_file_expect]
         self._prepend_chars:Stack = [] # ожидаемые символы в обратном порядке
 
         self._curlexeme:List[Char] = []
+
+        self._open_quote:List[Literal["'",'"',r'{']] = []
 
         self._error_check: bool = False
 
@@ -55,7 +57,7 @@ class PpScanner:
             self._line_num = j
             self._line = line
             self._scan_line(line)
-            
+
         if self._curlexeme and self._scan_funcs:
             raise er.PpScannerRunError(f"no clean handler stack {''.join(self._curlexeme)}, {[foo.__name__ for foo in self._scan_funcs]}")
 
@@ -88,7 +90,7 @@ class PpScanner:
                 self._scan_funcs.pop()
                 self._scan_funcs.append(self._raw_loc_line_expect)
 
-            
+
     # методы поиска, учитывающие контекст
     def _qsps_file_expect(self, c:str) -> None:
         """ Поиск токенов, из которых состоит qsps-файл """
@@ -130,7 +132,7 @@ class PpScanner:
             (self._next_is_last_in_line() and not self._curline_is_last())):
             self._add_token(tt.RAW_LINE)
             self._scan_funcs.pop()
-                
+
     def _loc_open_expect(self, c:str) -> None:
         """ Распознавание имени локации """
         # имя локации - это то же самое, что и сырая строка, только с другим типом токена
@@ -167,7 +169,7 @@ class PpScanner:
                 self._scan_funcs.append(self._preformatter_expect)
             else:
                 self._add_token(tt.PREFORMATTER)
-        elif cn == 0 and c == '-' and self._next_in_line() == '-':
+        elif cn == 0 and c == '-' and self._next_in_line() == '-' and not self._open_quote:
             # если следующий символ является -, поглощаем строку, как конец локации
             self._scan_funcs.pop() # закрываем сканер тела локации
             self._scan_funcs.append(self._loc_close_expect)
@@ -184,13 +186,26 @@ class PpScanner:
         elif c == "\"":
             # кавычка
             self._add_token(tt.QUOTE)
+            # так учитываем контекст открытых и закрытых кавычек
+            if self._open_quote and self._open_quote[-1] == c:
+                self._open_quote.pop()
+            elif not self._open_quote or (self._open_quote and self._open_quote[-1] != "'"):
+                self._open_quote.append(c)
         elif c == "'":
             self._add_token(tt.APOSTROPHE)
+            if self._open_quote and self._open_quote[-1] == c:
+                self._open_quote.pop()
+            elif not self._open_quote or (self._open_quote and self._open_quote[-1] != "\""):
+                self._open_quote.append(c)
         elif c == "{":
             # блок кода
             self._add_token(tt.LEFT_BRACE)
+            if not self._open_quote or (self._open_quote and not self._open_quote[-1] in ("\"", "'")):
+                self._open_quote.append(c)
         elif c == "}":
             self._add_token(tt.RIGHT_BRACE)
+            if self._open_quote and self._open_quote[-1] == "{":
+                self._open_quote.pop()
         elif c == "[":
             self._add_token(tt.LEFT_BRACKET)
         elif c == "]":
