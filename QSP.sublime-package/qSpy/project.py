@@ -4,18 +4,18 @@ from . import plugtypes as ts
 from .const import PROJECT_FILE_NAME, PLAYER_PATH, SCAN_FILES_LOCNAME
 
 class _SchemeProvingError(Exception):
-    
+
     def __init__(self, message: str, *args:object) -> None:
         super().__init__(message, *args)
         self._message = message
-        
+
     def __str__(self) -> str:
         return f"QspProject Error! {self._message}"
 # TODO: QspProject -> ProjectValidator????
 
 class QspProject:
     """ Prepare project to build """
-    
+
 
     def __init__(self, args:ts.SchemeArgs, window_folders:List[ts.Path]) -> None:
         self._args:ts.SchemeArgs = args
@@ -40,13 +40,9 @@ class QspProject:
         self._scheme_is_right:bool = False
 
         try:
-            # prove qgc in system
-
-            self._qgc_path:ts.Path = self._get_qgc_path()
-
             self._work_dir:ts.Path = ''
             self._point_file:ts.Path = ''
-            
+
             self._work_dir_init()
             os.chdir(self._work_dir)
 
@@ -77,15 +73,6 @@ class QspProject:
     def scheme_is_wrong(self) -> bool:
         return not self._scheme_is_right
 
-    def _get_qgc_path(self) -> ts.Path:
-        """ Fast converter Path on Windows. """
-        if self._args.get('platform') == 'windows':
-            qgc_path = os.path.join(self._args.get('packages_path',''),
-                'QSP', 'qgc', 'app', 'QGC.exe')
-            if os.path.isfile(qgc_path):
-                return qgc_path
-        return ''
-
     def _work_dir_init(self) -> None:
         """ Work Dir - dir of `qsp-project.json` """
         self._point_file = point_file = self._args.get('point_file', '')
@@ -100,7 +87,7 @@ class QspProject:
             # if this - project-file, or not opened folders in window (single file)
             self._work_dir = folder
             return
-        
+
         # point-file exist and folders is open
         for f in self._window_folders:
             try:
@@ -200,20 +187,10 @@ class QspProject:
                         raise _SchemeProvingError('Wrong define converter in qsp-projet.json')
             except TypeError:
                 raise _SchemeProvingError('Wrong define converter in qsp-projet.json')
-        conv = self._root['converter']
-        if not os.path.isfile(c_path):
-            # users converter - not exist
-            if c_path == 'qsps_to_qsp': return # Force the built-in player. It's already installed.                
-            if c_path == 'qgc' or (self._root['preprocessor'] == 'Hard-off' and self._qgc_path):
-                # preprocessor hard-off, qgc exist
-                conv['capi'] = 'qgc'
-                conv['path'] = self._qgc_path
-                conv['args'] = c_param
-            # else:  preprocessor off/on or qgc not exist, builtin conv - already stand
-        else:
-            conv['capi'] = 'outer'
-            conv['path'] = os.path.abspath(c_path)
-            conv['args'] = c_param
+        if os.path.isfile(c_path):
+            self._root['converter']['capi'] = 'outer'
+            self._root['converter']['path'] = os.path.abspath(c_path)
+            self._root['converter']['args'] = c_param
 
     def _set_player(self) -> None:
         """Set player path"""
@@ -295,7 +272,7 @@ class QspProject:
             files.append(os.path.abspath(file))
 
         if not (folders or files): return # not folder and files for scan
-        
+
         root_scans['files'] = files
         root_scans['folders'] = folders
 

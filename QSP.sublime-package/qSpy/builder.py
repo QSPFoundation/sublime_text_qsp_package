@@ -1,5 +1,5 @@
 import os#, json
-import shutil 
+import shutil
 import subprocess
 from typing import Callable, List, Optional
 
@@ -41,18 +41,12 @@ class BuildQSP():
 		self._root_folder_qgc:ts.Path = ''
 		self._qgc_plugin:ts.Path = ''
 
-		if self._conv_api == 'qgc':
-			self._build_handler = self._qgc_build
-			exe_fold = os.path.split(self._conv_path)[0] # folder of converter
-			self._root_folder_qgc = os.path.split(exe_fold)[0]
-			self._qgc_plugin = os.path.join(self._root_folder_qgc, 'plugins', 'a_txt2gam.dll')
-
 		self._converter = {'builtin': QspsToQspBuiltinConv}.get(self._conv_api, QspsToQspOuterConv)
 
 		# Built-in preprocessor
 		pp_switch = self._root['preprocessor']
 		self._preprocessor = QspsPP(pp_switch) if pp_switch != 'Hard-off' else None
-		
+
 		# Scanned files proves location
 		self._scans = self._root['scans']
 		self._scan_file:Optional[QspsFile] = None
@@ -96,12 +90,11 @@ class BuildQSP():
 		except subprocess.TimeoutExpired:
 			pass
 
-
 	def _copy_assets(self, assets:List[ts.AssetsConfig]) -> None:
 		""" Copy assets from folder and files to output folder """
 		for resource in assets:
 			self._copy_res(resource)
-		
+
 	def _copy_res(self, resource:ts.AssetsConfig):
 		""" Copy assets to one output folder """
 		output = resource.get('output', '')
@@ -115,9 +108,9 @@ class BuildQSP():
 		for file in resource.get('files', []):
 			old_file = file['path']
 			file_name:ts.FileName = os.path.split(old_file)[1]
-			new_file:ts.Path = os.path.join(output, file_name)					
+			new_file:ts.Path = os.path.join(output, file_name)
 			shutil.copy2(old_file, new_file)
-	
+
 	def _create_scans_loc(self) -> None:
 		""" Prepare and creation location-function of scanned files """
 		# start_time = time.time()
@@ -179,57 +172,14 @@ class BuildQSP():
 			for src_file in qsp_module.qsps_files():
 				src_file.set_src_lines(self._preprocessor.pp_this_lines(src_file.get_src()))
 				if self._preprocessor.errored(): print(f'^^^^^^ Error in file: "{src_file.file_path()}"')
-				# ast_printer = AstPrinter(self._preprocessor.pp_stmts())
-				# ast_printer.gen_ast()
-				# with open((src_file.file_name() or 'temp')+'_2.json', 'w', encoding='utf-8') as fp:
-				# 	json.dump(ast_printer.get_ast(), fp, indent=2, ensure_ascii=False)
-				# # print(src_file.file_path())
-				# with open((src_file.file_name() or 'temp')+'_1.json', 'w', encoding='utf-8') as fp:
-				# 	json.dump(self._preprocessor.pp_tokens(), fp, indent=2, ensure_ascii=False)
+
 		if instruction.get('start_qsploc_file', ''):
 			qsp_module.restand_first_loc()
 
 		src_lines = qsp_module.src_lines()
-		# with open('preconverter'+'_1.txt', 'w', encoding='utf-8') as fp:
-		# 	fp.writelines(src_lines)
-		# Convert TXT2GAM (qsps) at Game (`.qsp`)
+
 		converter = self._converter(module_path,
 									self._save_temp_files, self._conv_path, self._conv_args)
 		converter.convert_lines(src_lines)
 		converter.save_to_file()
 		converter.handle_temp_file()
-
-	def _qgc_build(self, instruction:ts.QspModule) -> None:
-		# prepare parameters
-		module_path:ts.Path = instruction.get('module', '')
-		if not module_path: return # impossible
-		i:List[ts.Path] = [] # pathes to source files and folders
-		# cc_path = os.path.join(root_folder_qgc, 'plugins', 'a_remove_comments.dll')
-		start_qsploc_file:ts.Path = instruction.get('start_qsploc_file', '')
-		for file in instruction.get('files', []):
-			i.append(file['path'])
-		if i: start_qsploc_file = i[0]
-		for path in instruction.get('folders', []):
-			i.append(path['path'])
-		if not start_qsploc_file: start_qsploc_file = qsp.get_files_list(i[0])[0]
-
-		if self._scan_file:
-			scan_files_path = os.path.join(self._root_folder_qgc, 'prv_file.qsps')
-			with open(scan_files_path, 'w', encoding='utf-8') as fp:
-				fp.writelines(self._scan_file.get_src())
-			i.append(scan_files_path)
-			self._scan_file = None
-
-		params:List[str] = []
-		params.append(f'"{self._conv_path}"')
-		params.append(f' -m a -r -p "{self._qgc_plugin}" -o "{module_path}" -qp4st')
-		params.append(' -e "qsps" -i ')
-		params.extend(f'"{i_}"' for i_ in i)
-		if start_qsploc_file: params.append(f' -im "{start_qsploc_file}"')
-
-		# Build TXT2GAM-file
-		proc = subprocess.run(''.join(params), stdout=subprocess.PIPE, shell=True)
-		if proc.returncode != 0:
-			msg = f'Error of QGC #{proc.returncode}. '
-			msg += 'If this Error will be repeat, change "converter" to "qsps_to_qsp".'
-			qsp.write_error_log(msg)

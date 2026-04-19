@@ -38,7 +38,7 @@ class ScansConfig(TypedDict, total=False):
 	files:List[Path]
 
 class ConverterConfig(TypedDict):
-	capi: Literal['qgc', 'builtin', 'outer']
+	capi: Literal['builtin', 'outer']
 	path: Path
 	args: AppParam
 
