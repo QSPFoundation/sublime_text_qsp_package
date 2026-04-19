@@ -129,6 +129,8 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
 
     def save_to_file(self, output_file:Path = '') -> None:
         if not output_file: output_file = self._module_path
+        output_folder:Path = os.path.dirname(output_file)
+        os.makedirs(output_folder, exist_ok=True)
         with open(output_file, 'w', encoding='utf-16le') as file:
             file.writelines(self._game_lines)
 
