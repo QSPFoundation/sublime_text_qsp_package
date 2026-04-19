@@ -8,6 +8,9 @@
     // путь к stub-файлам
     "stubPath": "typings",
 
+    // sublime и sublime_plugin — только в рантайме Sublime; есть лишь .pyi в typings
+    "reportMissingModuleSource": "none",
+
     // исключения
     "exclude": [
         "**/__pycache__",

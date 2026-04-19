@@ -1,5 +1,6 @@
-import sublime		# type: ignore
-import sublime_plugin # type: ignore
+import sublime
+import sublime_plugin
+import subprocess
 
 import os
 import re
@@ -168,6 +169,13 @@ class QspNewProjectCommand(sublime_plugin.WindowCommand):
 		if not os.path.isfile(sublproj_path):
 			with open(sublproj_path, 'w', encoding='utf-8') as file:
 				json.dump(dict(const.QSP_SUBLIME_PROJECT), file, indent=4)
+		# переоткрываем quick-project
+		subprocess.Popen(
+			[sublime.executable_path(), "--project", sublproj_path],
+			startupinfo=subprocess.STARTUPINFO(dwFlags=subprocess.STARTF_USESHOWWINDOW)
+			if sublime.platform() == "windows" else None,
+		)
+		self.window.run_command("close_window")
 		# create startfile
 		start_file_path = _jont(first_folder, '_src', '00_start.qsps')
 		if not os.path.isfile(start_file_path):
