@@ -1,0 +1,74 @@
+# location
+!@pp:var(em_fuse)
+"Определена метка"
+!@pp:if(em_fuse==True):include
+"Первое сработало"
+!@pp:endif
+
+!@pp:if(em_fuse!=False):include
+"Второе сработало"
+!@pp:endif
+
+!@pp:if(em_fuse):include
+"Третье сработало"
+!@pp:endif
+
+"Метка_не_определена"
+
+!@pp:if(em_juce==True):include
+"first сработало, а не должно"
+!@pp:endif
+
+!@pp:if(em_juce!=False):include
+"second сработало, а не должно"
+!@pp:endif
+
+!@pp:if(em_juce):include
+"third сработало, а не должно"
+!@pp:endif
+
+!Метка не определена, но сравниваем с False
+
+!@pp:if(em_juce==False):include
+"fourth сработало"
+!@pp:endif
+
+!@pp:if(em_juce!=True):include
+"sixth сработало"
+!@pp:endif
+
+!@pp:if(not em_juce):include
+"seventh сработало"
+!@pp:endif
+
+"!Тесты объявленных но разных меток"
+
+!@pp:var(em_ooz)
+
+!@pp:if(em_ooz == em_fuse):include
+"Не должно сработать! разноимённые метки"
+!@pp:endif
+
+!@pp:if(em_ooz == True and em_fuse == True):include
+"Обе метки существуют 1"
+!@pp:endif
+
+!@pp:if(em_ooz and em_fuse):include
+"Обе метки существуют 2"
+!@pp:endif
+
+!@pp:if(em_ooz != False or em_fuse):include
+"Хотя бы одна метка существует."
+!@pp:endif
+
+"Объявление метки через необъявленную метку"
+!@pp:var(em_toolz = screwdriver)
+
+!@pp:if(em_toolz):include
+"Объявляемая метка валидна"
+!@pp:endif
+
+!@pp:if(screwdriver):include
+"Объявляемая метка валидна"
+!@pp:endif
+---

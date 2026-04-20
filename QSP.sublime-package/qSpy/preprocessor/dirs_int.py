@@ -69,13 +69,13 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
             stmt.body.accept(self) # выполняем
             self._marked_lines.extend(self._gen_output(sl, el, True))
         else:
-            # препроцессор выключен, 
+            # препроцессор выключен,
             self._marked_lines.extend(self._gen_output(sl, el))
 
     def visit_qsps_line(self, stmt: stm.QspsLineStmt[AstNode]) -> AstNode:
         sl = (stmt.pref.lexeme_start[0] if stmt.pref else stmt.value[0].lexeme_start[0])
         el = stmt.value[-1].get_end_pos()[0] if stmt.value else sl
-        self._marked_lines.extend(self._gen_output(sl, el))  
+        self._marked_lines.extend(self._gen_output(sl, el))
 
     # Directives
 
@@ -135,14 +135,14 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
             True:   self._include_next_lines,
             False:  self._exclude_next_lines
         }[self._is_true]()
-        
+
     def visit_exclude_dir(self, stmt: dir.ExcludeDir[AstNode]) -> AstNode:
         {
             None:   self._exclude_next_lines,
             True:   self._exclude_next_lines,
             False:  self._include_next_lines
         }[self._is_true]()
-        
+
     def visit_cond_expr_stmt(self, stmt: dir.CondExprStmt[AstNode]) -> AstNode:
         return stmt.expr.accept(self)
 
@@ -150,7 +150,7 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         left = stmt.left_oprnd.accept(self)
         right = stmt.right_oprnd.accept(self)
         return bool(left or right)
-        
+
     def visit_and_expr(self, stmt: expr.AndExpr[AstNode]) -> bool:
         left = stmt.left_oprnd.accept(self)
         right = stmt.right_oprnd.accept(self)
@@ -158,10 +158,10 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
 
     def visit_not_expr(self, stmt: expr.NotExpr[AstNode]) -> bool:
         return not bool(stmt.left.accept(self))
-        
+
     def visit_var_name(self, stmt: expr.VarName[AstNode]) -> Union[str, bool]:
         return self._ns.get_var(stmt.value.lexeme)
-    
+
     def visit_equal_expr(self, stmt: expr.EqualExpr[AstNode]) -> bool:
         """
         Реализует сравнение, как в Python:
@@ -188,9 +188,15 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
             right = values[i + 1]
 
             if op == "==":
-                if left != right: return False
+                if True in (left, right):
+                    if bool(left) != bool(right): return False
+                elif left != right:
+                    return False
             elif op == "!=":
-                if left == right: return False
+                if True in (left, right):
+                    if bool(left) == bool(right): return False
+                elif left == right:
+                    return False
             else:
                 # Неожиданный оператор для EqualExpr — считаем это логической ошибкой.
                 raise er.DirsInterpreterError(f"Unknown equality operator {op!r}")
