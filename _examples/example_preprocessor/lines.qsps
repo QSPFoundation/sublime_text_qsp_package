@@ -65,10 +65,26 @@
 !@pp:var(em_toolz = screwdriver)
 
 !@pp:if(em_toolz):include
-"Объявляемая метка валидна"
+"Объявляемая метка валидна 1"
 !@pp:endif
 
 !@pp:if(screwdriver):include
-"Объявляемая метка валидна"
+"Присваиваемая метка валидна"
+!@pp:endif
+
+"Последовательное объявление меток"
+!@pp:var(em_arr_simpl)
+
+!@pp:if(em_arr_simpl):include
+"Метка em_arr_simpl корректно объявлена"
+!@pp:endif
+
+!@pp:if(em_arr_simpl!=True):off
+"Данные строки исключаются из обработки при отсутствии метки"
+!@pp:var(em_arr_clear)
+!@pp:endif
+
+!@pp:if(em_arr_clear):include
+"Метка em_arr_clear корректно объявлена."
 !@pp:endif
 ---
