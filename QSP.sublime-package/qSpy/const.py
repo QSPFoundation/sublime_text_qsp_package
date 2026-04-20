@@ -195,7 +195,7 @@ QSP_START_TEMPLATE = (
 	"\t*pl 'Текс из кода базового действия локации.'\n",
 	"END\n",
 	"! END BASE\n",
-	'!@ This is the code in the "Run on visit" field. It\'s located outside the Basic Actions and Description section.\n',
+	'!@ This is the code in the "Run on visit" field. It is located outside the Basic Actions and Description section.\n',
 	'!@ Это код в поле "Выполнить при посещении". Он находится за пределами секции Базовых действий и описания.\n\n'
 	f'--- game.start {"-"*33}\n')
 

@@ -75,7 +75,7 @@ class BuildQSP():
 	def _run_qsp_file(self) -> None:
 		player = self._root.get('player', '')
 		if not os.path.isfile(player):
-			qsp.write_error_log(f'[106] Path at player is wrong. Prove path «{player}».')
+			qsp.write_error_log(f'[106] Path at player is wrong.')
 			return
 
 		if not os.path.isfile(self._start_module):
