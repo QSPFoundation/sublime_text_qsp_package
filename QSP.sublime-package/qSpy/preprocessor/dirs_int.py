@@ -68,6 +68,9 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         if self._pp_is_on() or self._is_endif(stmt.body):
             stmt.body.accept(self) # выполняем
             self._marked_lines.extend(self._gen_output(sl, el, True))
+        elif self._is_on_dir(stmt.body):
+            # если это команда включения препроцессора, включаем
+            stmt.body.accept(self)
         else:
             # препроцессор выключен,
             self._marked_lines.extend(self._gen_output(sl, el))
@@ -241,6 +244,9 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
 
     def _is_endif(self, body:dir.PpDir[AstNode]) -> bool:
         return self._modes[-1]['open_if'] and isinstance(body, dir.EndifDir)
+
+    def _is_on_dir(self, body:dir.PpDir[AstNode]) -> bool:
+        return isinstance(body, dir.OnDir)
 
     def _new_modes(self) -> None:
         cur = self._modes[-1]
