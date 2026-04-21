@@ -23,7 +23,7 @@ variables: # назначаем переменные для удобства
   kw_operators: |- # keyword.operator
     (?ix:
       inclib|freelib|openqst|opengame|savegame|
-      addobj|delobj|killobj|unsel|unselect|
+      addobj|delobj|killobj|modobj|resetobj|unsel|unselect|
       cls|
       cla|delact|
       cmdclr|cmdclear|

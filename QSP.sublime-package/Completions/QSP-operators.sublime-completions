@@ -247,6 +247,13 @@
             "details": "MSG [сообщение]"
         },
         {
+            "trigger": "modobj",
+            "contents": "modobj '${1:название предмета}', '${2:описание предмета}'${3:, 'путь/к/изображению.png'}",
+            "kind": ["keyword", "o", "Operator"],
+            "annotation": "Замена описания и изображения предмета.",
+            "details": "MODOBJ [$название], [$описание], [$изображение]"
+        },
+        {
             "trigger": "play",
             "contents": "play '${1:путь к звуковому файлу.mp3}'${0}",
             "kind": ["keyword", "o", "Operator"],
@@ -259,6 +266,13 @@
             "kind": ["keyword", "o", "Operator"],
             "annotation": "Обновить интерфейс",
             "details": "REFINT"
+        },
+        {
+            "trigger": "resetobj",
+            "contents": "resetobj '${1:название предмета}'",
+            "kind": ["keyword", "o", "Operator"],
+            "annotation": "Сброс отображения предмета",
+            "details": "RESETOBJ [$название]"
         },
         {
             "trigger": "set",
