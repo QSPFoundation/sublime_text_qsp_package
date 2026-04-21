@@ -118,6 +118,7 @@ contexts: # теперь необходимо определить "контек
     - include: multiline_conditions
     - include: multiline_loop
     - include: kw_declarations
+    - include: sugargosub
     - include: sugarfunc
     - include: wrong_end_else_elseif
     - include: preprocessor
@@ -164,6 +165,16 @@ contexts: # теперь необходимо определить "контек
       captures:
         1: support.function.qsp
         3: string.quoted.double.qsp callable_locs.qsp
+
+  sugargosub:
+    # - match: (\@\@)([\w\.\#]+)(?=\s*\()
+    #   captures:
+    #     1: punctuation.definition.statement.qsp support.statement.builtin.qsp
+    #     2: variable.statement.qsp markup.italic.qsp
+    - match: (\@\@)([\w\.\#]+)
+      captures:
+        1: punctuation.definition.function.qsp support.function.builtin.qsp
+        2: variable.function.qsp
 
   # неявный вызов функций
   sugarfunc:
