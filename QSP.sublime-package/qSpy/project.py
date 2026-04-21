@@ -64,6 +64,7 @@ class QspProject:
         return self._json
 
     def save_json(self) -> None:
+        if not self._project_file: return
         with open(self._project_file, 'w', encoding='utf-8') as fp:
             json.dump(self._json, fp, ensure_ascii=False, indent=4)
 
