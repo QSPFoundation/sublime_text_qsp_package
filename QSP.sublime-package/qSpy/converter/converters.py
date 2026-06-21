@@ -170,8 +170,8 @@ class QspsToQspOuterConv(QspsToQspConverter):
         os.makedirs(os.path.split(self._temp_file_path)[0], exist_ok=True)
         with open(self._temp_file_path, 'w', encoding='utf-8') as file:
             file.writelines(qsps_lines)
-        _run = [self._conv_path, self._temp_file_path, self._module_path,
-                self._conv_args]
+        _run = [self._conv_path, self._temp_file_path, self._module_path]
+        if self._conv_args: _run.append(self._conv_args)
         subprocess.run(_run, stdout=subprocess.PIPE)
         return [] # TODO: GameLines Return really need???
 
