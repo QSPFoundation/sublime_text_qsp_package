@@ -106,6 +106,7 @@ class ModuleQSP():
         src_lines:List[QspsLine] = []
         for src in self._src_files:
             src_lines.extend(src.get_src())
+            src_lines.append('\n\n')
         return src_lines
 
     # def set_src_lines(self, qsps_lines:List[QspsLine]) -> None:
