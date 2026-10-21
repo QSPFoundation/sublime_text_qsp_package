@@ -259,12 +259,10 @@ class PpParser:
             if self._check_type(ttype): # строка окончилась
                 self._eat_tokens(1)
                 break
-            if self._check_type(tt.PREFORMATTER):
-                # токен преформатирования просто пропускаем
-                self._eat_tokens(1)
-                continue
-            else:
-                value.append(self._raw_string_line(ttype))
+            # Токен преформатирования (PREFORMATTER) внутри строковой константы
+            # является частью текста (отступ перенесённой строки), поэтому
+            # не пропускается, а сохраняется вместе с сырой строкой.
+            value.append(self._raw_string_line(ttype))
         else:
             raise er.PpParserError(self._curtok, f'Literal String. Prev-token: {self._prev_peek()}. Unexpectable token')
 

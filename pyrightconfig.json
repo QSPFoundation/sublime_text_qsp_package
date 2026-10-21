@@ -3,7 +3,7 @@
     "typeCheckingMode": "strict",
 
     // версия пайтон для проверки
-    "pythonVersion": "3.8",
+    "pythonVersion": "3.14",
 
     // путь к stub-файлам
     "stubPath": "typings",
