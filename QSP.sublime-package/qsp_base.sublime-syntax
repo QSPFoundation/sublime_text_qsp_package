@@ -76,7 +76,7 @@ variables: # назначаем переменные для удобства
   operacion_two_signs: ([<>\+\-\*\/]=|<>)
   operacion_one_sign: (\+|-|<|>|=|\/|\*|!)
   operacion_word: (?i:and|or|mod)
-  users_variables: ((\$|\%)?[A-Za-zА-Яа-я_][\w\.]*)
+  users_variables: ((\$|\%|\#)?[A-Za-zА-Яа-я_][\w\.]*)
   elseif_else_final: (?i:\bend\s+if\b|\bend\b|\belse\b|\belse\s*if\b|\bif\b|(^\s*\-.*?$))
 
 contexts: # общие контексты подсветки кода локации
@@ -466,6 +466,9 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_illegal_textvariables
     - match: (%)(\b{{system_vars_string}}\b)
       scope: invalid.illegal.qsp avs_illegal_textvariables
+    # # — числовой префикс перед строковой системной переменной → ошибка
+    - match: (\#)(\b{{system_vars_string}}\b)
+      scope: invalid.illegal.qsp avs_illegal_textvariables
 
     - match: |-
         (?x:
@@ -489,6 +492,12 @@ contexts: # общие контексты подсветки кода локац
 
     - match: (\%)(?=\b({{system_vars}})\b)
       scope: variable.language.qsp punctuation.definition.variable avs_sysvar
+    # # — числовой префикс перед числовой системной переменной → верно
+    - match: (\#)(?=\b({{system_vars_num}})\b)
+      scope: variable.language.qsp punctuation.definition.variable avs_sysvar
+    # # — числовой префикс перед системной переменной любого типа → верно
+    - match: (\#)(?=\b({{system_vars}})\b)
+      scope: variable.language.qsp punctuation.definition.variable avs_sysvar
 
     - match: \b({{system_vars_num}}|{{system_vars_string}}|{{system_vars}})\b
       scope: variable.language.qsp avs_sysvar
@@ -498,6 +507,12 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_illegal_$
 
   functions:
+      # # — числовой префикс перед строковой функцией → ошибка типа
+    - match: (\#)(?=\b{{functions_string}}\b)
+      scope: invalid.illegal.qsp avs_wrong_type_prefix
+      # # — числовой префикс перед кортежной функцией → ошибка типа
+    - match: (\#)(?=\b{{functions_tuple}}\b)
+      scope: invalid.illegal.qsp avs_wrong_type_prefix
       # подсвечивает все функции текстового типа без $
     - match: (?<!\$)(\b{{functions_string}}\b)
       scope: invalid.illegal.function.qsp avs_illegal_function
@@ -509,6 +524,9 @@ contexts: # общие контексты подсветки кода локац
       scope: support.function.qsp punctuation.definition.function avs.function
       # правильно подсвечивает префикс типа перед кортежными функциями
     - match: (\%)(?=({{functions_tuple}}\b|{{functions_alltypes}}\b))
+      scope: support.function.qsp punctuation.definition.function avs.function
+      # # — числовой префикс перед числовой/универсальной функцией → верно
+    - match: (\#)(?=({{functions_num}}\b|{{functions_alltypes}}\b))
       scope: support.function.qsp punctuation.definition.function avs.function
       # подсветка непосредственно названий функций
     - match: |-
