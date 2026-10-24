@@ -75,7 +75,8 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 `wrong_close_in_brace`, `users_variables`, `jump_to_label`, `location_call`,
 `operacion`, `numeric`, `operators`, `system_variables`, `functions`, `labels`,
 `strings`, `subexpression`, `subex`, `operacion_subex`, `comments`,
-`comment_after_colon`, `brace_comments`, `illegal_closed_brace`,
+`comment_after_colon`, `comment_after_end`, `comment_after_end_in_brace`,
+`brace_comments`, `illegal_closed_brace`,
 `quote_apostroph_comments`, `special_comments`, `preprocessor`, `qspdocs`,
 `htmlsupport`, `separator_continuation`. + все общие `variables`.
 
@@ -143,6 +144,14 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
       stray-ошибок нет (`iinvalid`, `;` в avs_numeric, THanks — уже чисто);
       наборы kw_operators/functions/system_vars теперь едины для обоих форматов
       (общий источник = база).
+- [x] Шаг 6 — `end` больше НЕ двойное ключевое слово: убраны `end act`/`end loop`/`end if`
+      (в 6 правилах `qsp_base` и в переменной `elseif_else_final`). Поддерживается
+      только `end`; весь текст после него — комментарий, который прерывается на `&`
+      (но не внутри `{}`, кавычек и апострофов) или конце строки; многострочность —
+      через вложенные `{...}`-области. Реализовано контекстами `comment_after_end`
+      (блочная форма) и `comment_after_end_in_brace` (форма внутри `{...}`: `}`
+      завершает и комментарий, и блок). Правило `end` теперь делает `pop+push`.
+      Обновлён `syntax_test_qsp.qsps` (лок «фигурные скобки действия условия»).
 - [ ] Шаг 5 — зачистка: цель «comment.block для между-локационного текста»
       НЕ достигнута (решение A сломало tab-триггеры сниппетов — см. §6.п6).
       Откачено к `meta.diff`. Открытый выбор: A2 (color-scheme) / B (keybinding)
