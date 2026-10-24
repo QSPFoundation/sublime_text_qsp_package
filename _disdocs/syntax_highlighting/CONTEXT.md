@@ -97,8 +97,18 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
    в Python-коде не потребляется → переименование безопасно.
 4. [RESH] `htmlsupport` комментарий «THanks» — в базе уже «Thanks».
 5. [RESH] TODO `qsp.sublime-syntax:16` — снят (реализовано через base+extends).
-6. [OPEN] `meta.diff` как фолбэк-комментарий между локациями (TODO автора —
-   заменить на `comment.block`). Решить отдельно на Шаге 5.
+6. [OPEN] Раскрасить «игнорируемый текст между локациями» как комментарий —
+   НЕ решается простой заменой `meta.diff`→`comment.block`. Решение A ПРОВАЛЕНО
+   и откачено: Sublime подавляет tab-триггеры сниппетов в `comment.*`/`string.*`
+   scope, ДАЖЕ если якорь `meta.gametext.qsp` присутствует. Сейчас снова рабочее
+   `meta.diff meta.gametext.qsp`. Оставшиеся варианты:
+     - A2: оставить meta-токен (не comment) и стилизовать его как комментарий
+           через color-scheme пользователя (сниппеты целы);
+     - B : вызывать сниппет новой локации явным keybinding'ом (insert_snippet
+           работает и в comment-scope) — тогда comment.block допустим, но
+           теряется триггер по набору `# `/`newloc`;
+     - C : оставить как есть (`meta.diff`).
+   Требует решения пользователя.
 7. [RESH] Доп. рассинхрон найден на Шаге 4: в старом qsps было `constant.numeric
    avs_numeric;` (мусорная `;`), в qsrc — `avs_numeric`. В базе — единый
    `avs_numeric` (без `;`).
@@ -133,7 +143,10 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
       stray-ошибок нет (`iinvalid`, `;` в avs_numeric, THanks — уже чисто);
       наборы kw_operators/functions/system_vars теперь едины для обоих форматов
       (общий источник = база).
-- [ ] Шаг 5 — зачистка TODO/маркеров.
+- [ ] Шаг 5 — зачистка: цель «comment.block для между-локационного текста»
+      НЕ достигнута (решение A сломало tab-триггеры сниппетов — см. §6.п6).
+      Откачено к `meta.diff`. Открытый выбор: A2 (color-scheme) / B (keybinding)
+      / C (как есть). Остальная зачистка (manilines и прочее) уже в Шаге 4.
 
 ## 8. Материалы для тестов
 
@@ -142,6 +155,9 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 - Тест-файл синтаксиса: `QSP.sublime-package/syntax_test_qsp.qsps`.
 - Примеров `.qsrc` в репо пока нет — для ручного теста qsrc создать вручную
   файл-локацию (начало `#имя`, тело кода, при необходимости конец-маркер).
+- **qsrc-фикстура (создана):** `_examples/example_syntax_qsrc/sample_location.qsrc`
+  (+ `readme.md` рядом) — покрывает scope'ы тела локации и частные
+  statement-случаи `#…`/`-…`. Использовать для ручной проверки после правок.
 
 ## 9. Правила общения/кода (из памяти пользователя)
 
