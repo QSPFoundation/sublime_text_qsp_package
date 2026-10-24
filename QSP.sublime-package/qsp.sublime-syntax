@@ -50,8 +50,6 @@ contexts:
             1: punctuation.definition.keyword markup.bold.qsp keyword.control meta.end_location.qsp
             2: markup.heading # TODO: насколько верно такое определение от заголовков разделов, так как по сути это комментарий
         - include: location_body
-        - match: ^(\s*?)(-)(.*?)$
-          scope: invalid.illegal.qsp meta.end_location.wrong.qsp
 
   qspgame_header:
     - match: (?<![\s\S])(?i:(qsp-game))(\s+.*)?$
