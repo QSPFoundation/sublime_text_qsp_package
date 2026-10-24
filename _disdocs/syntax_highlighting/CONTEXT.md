@@ -81,6 +81,12 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 `quote_apostroph_comments`, `special_comments`, `preprocessor`, `qspdocs`,
 `htmlsupport`, `separator_continuation`. + все общие `variables`.
 
+BRACED-слой (Шаг 9, тоже в `qsp_base`) — зеркало тела для кода ВНУТРИ
+открытого `{…}`: `location_body_braced`, `comments_in_brace`,
+`multiline_actions_braced`, `multiline_loop_braced`, `multiline_conditions_braced`,
+`multiline_actions_else_braced`, `multiline_actions_elseif_braced`. `figure_brace`
+теперь пушит `location_body_braced` (а не `location_body`).
+
 ТОЛЬКО qsps (остаётся в `qsp.sublime-syntax`): `main`, `diff`, `location_def`
 (блок `# … --`), `qspgame_header`.
 
@@ -170,6 +176,25 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
       (оператор/запятая + только пробелы до конца строки → валидный оператор)
       подключён РАНЬШЕ location_body в multiline_round/multiline_square/figure_brace.
       Вне многострочных скобок поведение не изменилось.
+- [x] Шаг 9 — brace-aware `{…}` (реструктуризация подсветки фигурных скобок).
+      Модель: `{…}` — не «незакрываемый блок», а запись строки; закрывающая `}`
+      — это первая `}` нулевого уровня вложенности, а `}`, спрятанная в
+      строковом литерале (`"…"`/`'…'`) или во вложенных `{…}` внутри
+      `!`-комментария (через `brace_comments`), блок НЕ закрывает. Реализовано
+      отдельным braced-слоем в базе (наследуют оба формата — qsps и qsrc):
+      `location_body_braced` + `comments_in_brace` + braced-двойники
+      `multiline_actions/loop/conditions/else/elseif`; `figure_brace` пушит
+      `location_body_braced`. `comments_in_brace` схлопывается НУЛЕВЫМ
+      `(?=\})` (не поглощая `}`) — скобку тогда ловит `\}`-поп `figure_brace`.
+      Верхний уровень НЕ тронут: обычный `comments` с `illegal_closed_brace`
+      (одиночная `}` вне `{…}` остаётся ошибкой). `end` внутри блока →
+      `comment_after_end_in_brace` (уже было) — `}` после end-комментария
+      закрывает блок. Тесты: новый лок «скобки и комментарии» в
+      `syntax_test_qsp.qsps` + секция в `sample_location.qsrc`. YAML-парс и
+      резолв всех `include/push` — чистые. Осталась известная мелкая
+      граничная ниша: `}` на строке-комментарии ВНУТРИ незакрытого act/if/else
+      (вложенного в `{…}`) по-прежнему ловится `wrong_close_in_brace` как
+      ошибка — это согласовано с «незакрытая конструкция» семантикой.
 - [ ] Шаг 5 — зачистка: цель «comment.block для между-локационного текста»
       НЕ достигнута (решение A сломало tab-триггеры сниппетов — см. §6.п6).
       Откачено к `meta.diff`. Открытый выбор: A2 (color-scheme) / B (keybinding)
