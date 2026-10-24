@@ -25,7 +25,7 @@ SCAN_FILES_LOCNAME = 'prv_file'
 # No changable dict for tips in statusbar
 
 _t = {
-	# operators
+	# statements
 	"inclib": "INCLIB [$путь к игре] — добавить к игре локации из указанного файла QSP.",
 	"goto": "GOTO [$локация], [аргументы...] — переход на локацию с указанным названием.",
 	"xgoto": "XGOTO [$локация], [аргументы...] — переход на локацию без очистки основного описания.",

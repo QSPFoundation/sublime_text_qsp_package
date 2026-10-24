@@ -53,7 +53,7 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 ## 4. Инварианты (НЕ нарушать при рефакторинге)
 
 - **`avs_*`-маркеры в scope'ах** — часть API плагина, терять нельзя. Примеры:
-  `avs_operators`, `avs_sysvar`, `avs_function`, `avs_numeric`,
+  `avs_statements`, `avs_sysvar`, `avs_function`, `avs_numeric`,
   `avs_brace_begin`/`avs_brace_end`, `avs_begin_subexpression`/`avs_end_subexpression`,
   `avs_jumps_labels`, `avs-preprocessor`, `avs.locstart`/`avs.locend`,
   `avs.error`/`avs.wrongelse1`, `avs_wrong_*`, `avs_longstring`, `avs_star`,

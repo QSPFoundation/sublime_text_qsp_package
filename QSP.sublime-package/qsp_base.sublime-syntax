@@ -18,7 +18,7 @@ scope: source.qsp.base
 version: 2
 
 variables: # назначаем переменные для удобства
-  kw_operators: |- # keyword.operator
+  kw_statements: |- # keyword.statement
     (?ix:
       inclib|freelib|openqst|opengame|savegame|
       addobj|delobj|killobj|modobj|resetobj|unsel|unselect|
@@ -34,7 +34,7 @@ variables: # назначаем переменные для удобства
       exec
     )
   kw_controls: (?i:act|if|elseif|else|loop|while|step|end) # keyword.control
-  kw_text_operators: (?i:pl?|nl|clr|clear) # keyword.operator
+  kw_text_statements: (?i:pl?|nl|clr|clear) # keyword.statement
   system_vars_num: (?i:nosave|disablescroll|debug|usehtml|(b|f|l)color|fsize)
   system_vars_string: (?i:counter|ongload|ongsave|onnewloc|onactsel|onobjsel|onobjadd|onobjdel|usercom|fname|backimage)
   system_vars: (?i:args|result)
@@ -99,7 +99,7 @@ contexts: # общие контексты подсветки кода локац
     - include: location_call
     - include: jump_to_label
     - include: labels
-    - include: operators
+    - include: statements
     - include: operacion
     - include: system_variables
     - include: functions
@@ -116,7 +116,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{users_variables}}(?=\s*\b(while|step|else|elseif|and|or|mod)\b)'
       scope: meta.user-variables.qsp
     - match: '{{users_variables}}(?=(\s+{{right_operand}}|\s*\({{right_operand}}))'
-      scope: invalid.illegal.qsp meta.wrong_operator.qsp
+      scope: invalid.illegal.qsp meta.wrong_statement.qsp
     - match: '{{users_variables}}'
       scope: meta.user-variables.qsp
 
@@ -126,7 +126,7 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp
     - match: (jump)\s*(('|").*?\3)
       captures:
-        1: keyword.operator.other.qsp avs_operators
+        1: keyword.statement.qsp avs_statements
         2: string.quoted.double.qsp label_to_jump.qsp
 
   # вызовы локаций
@@ -135,7 +135,7 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp
     - match: (goto|gt|xgoto|xgt|gosub|gs)\s*(('|").*?\3)
       captures:
-        1: keyword.operator.other.qsp avs_operators
+        1: keyword.statement.qsp avs_statements
         2: string.quoted.double.qsp callable_locs.qsp
     - match: (func)(\()(('|").*?\4)
       captures:
@@ -444,22 +444,22 @@ contexts: # общие контексты подсветки кода локац
     - match: \b[0-9]+\b
       scope: constant.numeric avs_numeric
     
-  operators:
-    # подсветка операторов
-    - match: (\b({{kw_operators}}|{{kw_text_operators}})\b)(?!\()
-      scope: keyword.operator.other.qsp avs_operators
-    - match: (\b({{kw_operators}})\b)(?=\()
-      scope: support.function.other.qsp avs_operators
-    - match: (\*)(\b({{kw_text_operators}})\b)(?=\()
+  statements:
+    # подсветка statement'ов
+    - match: (\b({{kw_statements}}|{{kw_text_statements}})\b)(?!\()
+      scope: keyword.statement.qsp avs_statements
+    - match: (\b({{kw_statements}})\b)(?=\()
+      scope: support.function.other.qsp avs_statements
+    - match: (\*)(\b({{kw_text_statements}})\b)(?=\()
       captures:
         1: support.function.star.qsp punctuation.definition.function
-        2: support.function.other.qsp avs_operators
-    - match: (\*)(?={{kw_text_operators}}\b)
-      scope: keyword.operator.star.qsp punctuation.definition.keyword avs_star
+        2: support.function.other.qsp avs_statements
+    - match: (\*)(?={{kw_text_statements}}\b)
+      scope: keyword.statement.star.qsp punctuation.definition.keyword avs_star
     - match: \b{{kw_controls}}\b
       scope: keyword.control.qsp markup.italic.qsp
-    - match: (\*)(?={{kw_operators}}\b)
-      scope: invalid.illegal.qsp avs_wrong_star_operators
+    - match: (\*)(?={{kw_statements}}\b)
+      scope: invalid.illegal.qsp avs_wrong_star_statements
     - match: (\*)(?={{kw_controls}}\b)
       scope: invalid.illegal.qsp avs_wrong_star_controls
 
