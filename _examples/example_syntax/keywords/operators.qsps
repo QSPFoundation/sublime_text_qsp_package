@@ -29,6 +29,7 @@ delact '$название действия'
 delobj 'Название предмета'
 
 dynamic $code
+dynamic
 
 exit
 

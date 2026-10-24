@@ -70,8 +70,8 @@ variables: # назначаем переменные для удобства
   ap: "'"
   opener: '{{braces_open}}{{quote}}{{ap}}'
   closer: '{{braces_close}}{{quote}}{{ap}}'
-  left_operand: '({{quote}}|{{ap}}|\)|\}|\$|\%|\w|\d)'
-  right_operand: '({{quote}}[^{{quote}}]*|{{ap}}[^{{ap}}]*|\([^\)]*?|\[[^\]]*?|\{|((\$|\%)?|-?)\w+?|-?\d+?|\@)'
+  left_operand: '({{quote}}|{{ap}}|\)|\}|\$|\%|\?|\w|\d)'
+  right_operand: '({{quote}}[^{{quote}}]*|{{ap}}[^{{ap}}]*|\([^\)]*?|\[[^\]]*?|\{|((\$|\%|\#)?|-?)\w+?|-?\d+?|\@|\?)'
   nr: (\n\r|\r|\r\n|\n)
   operacion_two_signs: ([<>\+\-\*\/]=|<>)
   operacion_one_sign: (\+|-|<|>|=|\/|\*|!)
@@ -108,8 +108,11 @@ contexts: # общие контексты подсветки кода локац
     - include: separator_continuation
     - include: users_variables
 
-  # пользовательские переменные
+  # пользовательские переменные и специальные символы значений
   users_variables:
+    # ? — символ дефолтного значения (QSP 5.8+), подсвечивается как пользовательская переменная
+    - match: '\?'
+      scope: meta.user-variables.qsp variable.language.default.qsp
     - match: '{{users_variables}}(?=\s*\b(while|step|else|elseif|and|or|mod)\b)'
       scope: meta.user-variables.qsp
     - match: '{{users_variables}}(?=(\s+{{right_operand}}|\s*\({{right_operand}}))'
