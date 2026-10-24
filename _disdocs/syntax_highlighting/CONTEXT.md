@@ -12,9 +12,11 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 диагностики, goto-списки локаций/меток, переименования.
 
 Рабочая директория подсветки: `QSP.sublime-package/`.
-Файлы подсветки:
-- `QSP.sublime-package/qsp.sublime-syntax`
-- `QSP.sublime-package/qsp_locations.sublime-syntax`
+Файлы подсветки (после реформы):
+- `qsp_base.sublime-syntax`        — общая база (hidden, scope `source.qsp.base`)
+- `qsp.sublime-syntax`            — формат qsps (visible, scope `source.qsp`)
+- `qsp.qsrc.sublime-syntax`       — формат qsrc (visible, scope `source.qsrc.qsp`)
+- ~~`qsp_locations.sublime-syntax`~~ — УДАЛЁН (функции разнесены по base + qsrc)
 
 ## 2. Постановка задачи (от пользователя)
 
@@ -84,17 +86,18 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 `include: location_body`; плюс два statement-правила для `#…`/`-…`
 (`avs.locstart`/`avs.locend`), НЕ пушащие блок. Без header/first_line_match.
 
-## 6. Известные баги/шероховатости (к исправлению на Шаге 4)
+## 6. Известные баги/шероховатости
 
-1. `scope: iinvalid.illegal.qsp` — лишняя `i`. Места: `qsp.sublime-syntax:642`,
-   `qsp_locations.sublime-syntax:605` (оба в `operacion_subex`, правило запятой).
-2. `kw_operators` рассинхрон: в `qsp.sublime-syntax:26` есть `modobj|resetobj`,
-   в `qsp_locations.sublime-syntax:20` — нет.
-3. `meta.excess_manilines_else` — опечатка (manilines → multiline).
-4. `htmlsupport` комментарий «THanks» — косметика.
-5. TODO `qsp.sublime-syntax:16` (про вынос в qsp_locations) — снять после рефакторинга.
-6. `meta.diff` используется как фолбэк-комментарий между локациями (TODO автора —
-   заменить на `comment.block` когда появятся сниппеты). Решить отдельно.
+1. [RESH] `scope: iinvalid.illegal.qsp` (опечатка) — УЖЕ исправлена при переносе
+   в базу (в `qsp_base` правило запятой operacion_subex = `invalid.illegal.qsp`).
+2. [RESH] `kw_operators` рассинхрон (`modobj|resetobj`) — база взята из
+   qsp.sublime-syntax, где они есть → qsrc теперь тоже их получает (единый набор).
+3. [OPEN] `meta.excess_manilines_else` — опечатка (manilines → multiline),
+   `qsp_base.sublime-syntax:345` — править на Шаге 4.
+4. [RESH] `htmlsupport` комментарий «THanks» — в базе уже «Thanks».
+5. [RESH] TODO `qsp.sublime-syntax:16` — снят (реализовано через base+extends).
+6. [OPEN] `meta.diff` как фолбэк-комментарий между локациями (TODO автора —
+   заменить на `comment.block`). Решить отдельно на Шаге 5.
 
 ## 7. Статус выполнения
 
@@ -109,7 +112,10 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
       file_extensions приведены к `qsps, qsp-text, text-qsp` (794→~60 строк).
       Ждёт ручной проверки: qsps должен выглядеть как прежде.
       (TODO со строки 16 про вынос в qsp_locations — снят автоматически.)
-- [ ] Шаг 3 — сделан qsrc-синтаксис.
+- [x] Шаг 3 — создан `qsp.qsrc.sublime-syntax` (extends base, file_extensions qsrc,
+      main: qspdocs + statement-правила `#…`/`-…` (avs.locstart/avs.locend) +
+      include location_body); старый `qsp_locations.sublime-syntax` УДАЛЁН.
+      Ждёт ручной проверки на тестовом `.qsrc` (в репо их нет — создать вручную).
 - [ ] Шаг 4 — исправлены баги рассинхрона.
 - [ ] Шаг 5 — зачистка TODO/маркеров.
 

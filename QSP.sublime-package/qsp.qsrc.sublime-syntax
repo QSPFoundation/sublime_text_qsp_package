@@ -1,0 +1,37 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+#
+# Quest Soft Player Language:
+# https://qsp.org/
+#
+# Формат qsrc: ОДИН ФАЙЛ = ОДНА ЛОКАЦИЯ.
+#   - начало локации = начало файла, конец локации = конец файла;
+#   - весь файл подсвечивается как тело локации;
+#   - текста «между локациями» здесь нет;
+#   - конструкции, похожие на qsps-границы (`# …` / `- …`), подсвечиваются
+#     как САМОСТОЯТЕЛЬНЫЕ statements, но НЕ открывают/не закрывают блок;
+#   - заголовок `!@ QSP-Game …` (если есть) — обычный комментарий.
+# Подсветка кода тела общая с форматом qsps — вынесена в базу
+# `qsp_base.sublime-syntax` и подключена через `extends`.
+
+name: QSP # название языка
+scope: source.qsrc.qsp
+version: 2
+extends: qsp_base.sublime-syntax
+file_extensions: # расширения файлов (группа qsrc)
+  - qsrc
+
+contexts:
+  main: # весь файл — тело одной локации
+    # doc/diff-строки `!@ #… - …`
+    - include: qspdocs
+    # qsps-подобные границы локации → самостоятельные statements (без push-блока)
+    - match: ^\s*?(#)\s?.+$
+      scope: constant.character.qsp avs.locstart
+    - match: ^\s*?(-)(.*?)$
+      captures:
+        1: variable.parameter.url.qsp avs.locend
+        2: entity.name.function entity.name avs.locend.comments
+    # остальное — код тела локации (из базы)
+    - include: location_body
