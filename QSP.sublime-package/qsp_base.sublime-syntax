@@ -887,7 +887,6 @@ contexts: # общие контексты подсветки кода локац
         - include: quote_apostroph_comments
         - include: brace_comments
         - include: special_comments
-        - include: illegal_closed_brace
     - match: ((^\s*?)|(\&)\s*?)(!)
       captures:
         3: support.function.builtin.qsp
@@ -900,16 +899,14 @@ contexts: # общие контексты подсветки кода локац
         - include: quote_apostroph_comments
         - include: brace_comments
         - include: special_comments
-        - include: illegal_closed_brace
 
   # Комментарии внутри открытого {…} блока.
-  # Отличие от comments: незакрытая «}» НЕ является ошибкой — если она стоит
-  # на строке-комментарии (при отсутствии незакрытой вложенной «{» из
-  # brace_comments), то это закрывающая скобка самого блока. Поэтому
-  # комментарий схлопывается НУЛЕВЫМ lookahead «(?=\})», не поглощая «}»:
-  # скобку тогда ловит правило закрытия figure_brace. Внутри строковых
-  # литералов (quote_apostroph_comments) и вложенных {…} (brace_comments)
-  # «}» остаётся защищённой и блок не закрывает.
+  # Отличие от comments: комментарий схлопывается НУЛЕВЫМ lookahead «(?=\})»,
+  # не поглощая «}»: если на строке-комментарии стоит «}» нулевого уровня
+  # вложенности (нет незакрытой вложенной «{» из brace_comments), то это
+  # закрывающая скобка самого блока — её ловит правило закрытия figure_brace.
+  # Внутри строковых литералов (quote_apostroph_comments) и вложенных {…}
+  # (brace_comments) «}» остаётся защищённой и блок не закрывает.
   comments_in_brace:
     - match: (?<=\{)((\s*?)|(\&)\s*?)(!)
       captures:
@@ -953,7 +950,6 @@ contexts: # общие контексты подсветки кода локац
         - include: quote_apostroph_comments
         - include: brace_comments
         - include: special_comments
-        - include: illegal_closed_brace
 
   # комментарий после 'end': весь текст до '&' или конца строки.
   # Многострочность достигается вложенными {...} областями (brace_comments):
@@ -962,7 +958,6 @@ contexts: # общие контексты подсветки кода локац
     - meta_content_scope: comment.line.qsp markup.italic.qsp
     - include: quote_apostroph_comments
     - include: brace_comments
-    - include: illegal_closed_brace
     - match: (?=&|{{nr}}|$)
       pop: true
   # тот же комментарий, но для формы внутри { ... }: закрывающая '}'
@@ -985,10 +980,6 @@ contexts: # общие контексты подсветки кода локац
         - include: brace_comments
         - include: quote_apostroph_comments
         # - include: apinbrack
-
-  illegal_closed_brace:
-    - match: '\}'
-      scope: invalid.illegal.qsp open_brace_dont_exist
 
   quote_apostroph_comments:
     - match: '{{quote}}' # [^\{\'\"]*?\" open quotes comment

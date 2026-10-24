@@ -77,7 +77,7 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 `operacion`, `numeric`, `operators`, `system_variables`, `functions`, `labels`,
 `strings`, `subexpression`, `subex`, `operacion_subex`, `comments`,
 `comment_after_colon`, `comment_after_end`, `comment_after_end_in_brace`,
-`brace_comments`, `illegal_closed_brace`,
+`brace_comments`,
 `quote_apostroph_comments`, `special_comments`, `preprocessor`, `qspdocs`,
 `htmlsupport`, `separator_continuation`. + все общие `variables`.
 
@@ -195,6 +195,11 @@ BRACED-слой (Шаг 9, тоже в `qsp_base`) — зеркало тела �
       граничная ниша: `}` на строке-комментарии ВНУТРИ незакрытого act/if/else
       (вложенного в `{…}`) по-прежнему ловится `wrong_close_in_brace` как
       ошибка — это согласовано с «незакрытая конструкция» семантикой.
+      Дополнение: убрана подсветка одиночной «}» в комментариях как ошибки
+      (`illegal_closed_brace`/`open_brace_dont_exist`) — контекст удалён за
+      ненадобностью (braced-слой сам различает «}»-закрытие блока и защищает
+      `}` в кавычках/вложенных {…}); обычный `comments` теперь просто ведёт
+      `}` до конца строки как текст комментария.
 - [ ] Шаг 5 — зачистка: цель «comment.block для между-локационного текста»
       НЕ достигнута (решение A сломало tab-триггеры сниппетов — см. §6.п6).
       Откачено к `meta.diff`. Открытый выбор: A2 (color-scheme) / B (keybinding)
