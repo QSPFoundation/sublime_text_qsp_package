@@ -73,6 +73,7 @@ variables: # назначаем переменные для удобства
   left_operand: '({{quote}}|{{ap}}|\)|\}|\$|\%|\?|\w|\d)'
   right_operand: '({{quote}}[^{{quote}}]*|{{ap}}[^{{ap}}]*|\([^\)]*?|\[[^\]]*?|\{|((\$|\%|\#)?|-?)\w+?|-?\d+?|\@|\?)'
   nr: (\n\r|\r|\r\n|\n)
+  nr_lookahead: (?=\r\n|\r|\n|$)
   operacion_two_signs: ([<>\+\-\*\/]=|<>)
   operacion_one_sign: (\+|-|<|>|=|\/|\*|!)
   operacion_word: (?i:and|or|mod)
@@ -87,6 +88,7 @@ contexts: # общие контексты подсветки кода локац
 
   location_body:
     - include: figure_brace
+    - include: brackets_multiline
     - include: multiline_actions
     - include: multiline_conditions
     - include: multiline_loop
@@ -758,10 +760,69 @@ contexts: # общие контексты подсветки кода локац
       push:
         - meta_content_scope: meta.block
         - include: htmlsupport
+        - include: continuation_tail
         - include: location_body
         - match: '\}'
           scope: punctuation.section.block.end.qsp avs_brace_end
           pop: true
+
+  # # # ------- круглые и квадратные скобки (многострочный код) ------- # # #
+  # push происходит только если после открывающей скобки на ЭТОЙ ЖЕ строке
+  # нет закрывающей (строковые литералы в кавычках/апострофах «пропускаются»
+  # и их скобки не считаются). Сбалансированные в одной строке скобки
+  # обрабатываются прежними построчными правилами — поведение
+  # одиночных проверок операторов не меняется.
+  # NB: внутри regex не используем \xNN — Oniguruma в UTF-8 падает на них
+  # («too short multibyte code string»); кавычки/апострофы — через {{ap}}/{{quote}}.
+  brackets_multiline:
+    - match: '\((?=(?:[^{{ap}}{{quote}})\n]|{{ap}}[^{{ap}}\n]*{{ap}}|{{quote}}[^{{ap}}\n]*{{quote}})*{{nr_lookahead}})'
+      scope: punctuation.section.parens.begin.qsp avs_paren_begin
+      push: multiline_round
+    - match: '\[(?=(?:[^{{ap}}{{quote}}\]\n]|{{ap}}[^{{ap}}\n]*{{ap}}|{{quote}}[^{{ap}}\n]*{{quote}})*{{nr_lookahead}})'
+      scope: punctuation.section.brackets.begin.qsp avs_bracket_begin
+      push: multiline_square
+
+  multiline_round:
+    - meta_content_scope: meta.group.parens.multiline.qsp
+    - match: '\)'
+      scope: punctuation.section.parens.end.qsp avs_paren_end
+      pop: true
+    # продолжение выражения на новой строке: съедаем отступ перед
+    # оператором/запятой/амперсандом, чтобы правила вида (^\s*?|\&\s*?|\K…)
+    # «без левого операнда» не срабатывали ложно на перенесённой строке
+    - match: ^\s+(?=[+\-*\/<>=,&])
+      scope: meta.continuation.expression.qsp
+    - include: continuation_tail
+    - include: brackets_multiline
+    - include: location_body
+
+  multiline_square:
+    - meta_content_scope: meta.group.brackets.multiline.qsp
+    - match: '\]'
+      scope: punctuation.section.brackets.end.qsp avs_bracket_end
+      pop: true
+    - match: ^\s+(?=[+\-*\/<>=,&])
+      scope: meta.continuation.expression.qsp
+    - include: continuation_tail
+    - include: brackets_multiline
+    - include: location_body
+
+  # Оператор/запятая в КОНЦЕ строки внутри многострочных скобок: выражение
+  # продолжается на следующей строке. Sublime матчит правила только в
+  # границах текущей строки, поэтому negative lookahead проверок
+  # «нет правого операнда» не видит операнд со следующей
+  # строки и ложно считает ошибкой.
+  # Эти правила перехватывают такие случаи раньше operacion — но только
+  # когда до конца строки после оператора ничего, кроме пробелов.
+  continuation_tail:
+    - match: (?<={{left_operand}})\s*?({{operacion_two_signs}})(?=\s*{{nr_lookahead}})
+      scope: keyword.operator.two-signs.qsp
+    - match: (?<={{left_operand}})\s*?({{operacion_one_sign}})(?=\s*{{nr_lookahead}})
+      scope: keyword.operator.one-sign.qsp
+    - match: (?<={{left_operand}})\s*?(,)(?=\s*{{nr_lookahead}})
+      scope: punctuation.separator.comma.qsp
+    - match: (?<={{left_operand}})\s*\b({{operacion_word}})\b(?=\s*{{nr_lookahead}})
+      scope: keyword.operator.word.qsp
 
   htmlsupport: # Very Big Thanks to deathaxe
     - match: (?i)(<)(qhtml)(>)

@@ -103,6 +103,22 @@ local i, $b = 4, "56"
 set b56 = 9
 --
 
+# многострочные скобки
+! код внутри ( ) и [ ] может быть разнесён на несколько строк
+set $x = func($arr[0],
+	(1 +
+	2), 'строка') & ! комментарий после &
+$args = [
+	1,
+	-2,
+	3
+]
+set $y = ($a and
+	$b <>
+	0)
+msg "итог <<$x>>"
+-- многострочные скобки ------------------------------
+
 # [0.1_game_info]
 local a, b, c
 "<qhtml><center><h1><font color=#dddd00>ВОЛШЕБСТВО И СТАЛЬ. v 1.2</font></h1></center><center><font color=#000000><table width=70% bgcolor=#ffeedd border=2 cellspacing=5 cellpadding=20><tr><td>

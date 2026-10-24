@@ -15,7 +15,7 @@
 # Подсветка кода тела общая с форматом qsps — вынесена в базу
 # `qsp_base.sublime-syntax` и подключена через `extends`.
 
-name: QSP # название языка
+name: QSP-Loc # название языка
 scope: source.qsrc.qsp
 version: 2
 extends: qsp_base.sublime-syntax

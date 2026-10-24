@@ -68,7 +68,8 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 
 ## 5. Карта контекстов подсветки (что куда переносить в `qsp_base`)
 
-ОБЩЕЕ (в `qsp_base`): `location_body`, `figure_brace`, `multiline_actions`,
+ОБЩЕЕ (в `qsp_base`): `location_body`, `figure_brace`,
+`brackets_multiline`/`multiline_round`/`multiline_square` (многострочные `( )` и `[ ]`), `multiline_actions`,
 `multiline_conditions`, `multiline_loop`, `multiline_actions_else`,
 `illegal_multiline_else`, `multiline_actions_elseif`, `kw_declarations`,
 `sugargosub`, `sugarfunc`, `wrong_end_else_elseif`, `wrongclose`,
@@ -152,6 +153,23 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
       (блочная форма) и `comment_after_end_in_brace` (форма внутри `{...}`: `}`
       завершает и комментарий, и блок). Правило `end` теперь делает `pop+push`.
       Обновлён `syntax_test_qsp.qsps` (лок «фигурные скобки действия условия»).
+- [x] Шаг 7 — поддержка многострочного кода внутри `( )` и `[ ]` (её не было:
+      перенесённые строки ложно помечались «нет левого операнда», скобки не
+      группировались). Новые контексты в базе: `brackets_multiline` (push только
+      если на строке нет парного закрывания вне строковых литералов —
+      сбалансированные в одной строке скобки живут прежними правилами),
+      `multiline_round`/`multiline_square` (закрытие, guard `^\s+(?=[+\-*\/<>=,&])`
+      против ложных `(^...)\K`-проверок, рекурсия, location_body). Новые маркеры:
+      `avs_paren_begin/end`, `avs_bracket_begin/end`, `meta.group.*.multiline`,
+      `meta.continuation.expression`. Переменная `nr_lookahead`. тесты:
+      syntax_test_qsp.qsps (лок «многострочные скобки») + sample_location.qsrc.
+- [x] Шаг 8 — фикс ложных «нет правого операнда» внутри многострочных скобок:
+      Sublime матчит правила только в границах текущей строки, поэтому
+      `(?!\s*?{{right_operand}})` не видит операнд на следующей строке и красит
+      `+`/`,`/`<>`/`and` в конце строки. Новый контекст `continuation_tail`
+      (оператор/запятая + только пробелы до конца строки → валидный оператор)
+      подключён РАНЬШЕ location_body в multiline_round/multiline_square/figure_brace.
+      Вне многострочных скобок поведение не изменилось.
 - [ ] Шаг 5 — зачистка: цель «comment.block для между-локационного текста»
       НЕ достигнута (решение A сломало tab-триггеры сниппетов — см. §6.п6).
       Откачено к `meta.diff`. Открытый выбор: A2 (color-scheme) / B (keybinding)
