@@ -92,12 +92,25 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
    в базу (в `qsp_base` правило запятой operacion_subex = `invalid.illegal.qsp`).
 2. [RESH] `kw_operators` рассинхрон (`modobj|resetobj`) — база взята из
    qsp.sublime-syntax, где они есть → qsrc теперь тоже их получает (единый набор).
-3. [OPEN] `meta.excess_manilines_else` — опечатка (manilines → multiline),
-   `qsp_base.sublime-syntax:345` — править на Шаге 4.
+3. [RESH] `meta.excess_manilines_else` → `meta.excess_multiline_else` — исправлено
+   на Шаге 4 в `qsp_base` (контекст `illegal_multiline_else`). Маркер нигде
+   в Python-коде не потребляется → переименование безопасно.
 4. [RESH] `htmlsupport` комментарий «THanks» — в базе уже «Thanks».
 5. [RESH] TODO `qsp.sublime-syntax:16` — снят (реализовано через base+extends).
 6. [OPEN] `meta.diff` как фолбэк-комментарий между локациями (TODO автора —
    заменить на `comment.block`). Решить отдельно на Шаге 5.
+7. [RESH] Доп. рассинхрон найден на Шаге 4: в старом qsps было `constant.numeric
+   avs_numeric;` (мусорная `;`), в qsrc — `avs_numeric`. В базе — единый
+   `avs_numeric` (без `;`).
+
+## 6b. Как плагин связан с подсветкой
+
+Текущий Python-код (`qSpy/*`) НЕ читает scope-маркеры подсветки — у него
+собственный парсер/конвертер; scope-зависимый `QspAnalyzerCommand` в QSP.py
+закомментирован. Значит `avs_*`/`meta.excess_*` — пока «декоративный» слой
+(для цветсхем/будущего). Отвественно, но менять их имени безопасно.
+Единственная реальная связь плагина с файлами — `QSP.py:195` ссылается на
+`Packages/QSP/qsp.sublime-syntax` (имя qsps-файла нельзя менять).
 
 ## 7. Статус выполнения
 
@@ -116,7 +129,10 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
       main: qspdocs + statement-правила `#…`/`-…` (avs.locstart/avs.locend) +
       include location_body); старый `qsp_locations.sublime-syntax` УДАЛЁН.
       Ждёт ручной проверки на тестовом `.qsrc` (в репо их нет — создать вручную).
-- [ ] Шаг 4 — исправлены баги рассинхрона.
+- [x] Шаг 4 — в базе исправлен `manilines→multiline`; проверено, что других
+      stray-ошибок нет (`iinvalid`, `;` в avs_numeric, THanks — уже чисто);
+      наборы kw_operators/functions/system_vars теперь едины для обоих форматов
+      (общий источник = база).
 - [ ] Шаг 5 — зачистка TODO/маркеров.
 
 ## 8. Материалы для тестов

@@ -342,7 +342,7 @@ contexts: # общие контексты подсветки кода локац
 
   illegal_multiline_else:
     - match: (?:^\s*)(?i:\belse\b)
-      scope: invalid.illegal.qsp meta.excess_manilines_else.qsp
+      scope: invalid.illegal.qsp meta.excess_multiline_else.qsp
 
   multiline_actions_elseif:
     - match: '^(\s*?)(?i:(\belseif\b))(?=\s+\S.*?\:\s*(!.*)?$)'
