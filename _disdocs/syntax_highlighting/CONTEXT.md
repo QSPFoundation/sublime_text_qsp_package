@@ -104,7 +104,11 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 - [x] Шаг 1 — создан `qsp_base.sublime-syntax` (hidden, scope `source.qsp.base`);
       общие variables + общие контексты тела локации (verbatim из qsp.sublime-syntax,
       поведение пока не меняем). На него ещё никто не ссылается.
-- [ ] Шаг 2 — `qsp.sublime-syntax` переведён на `extends`.
+- [x] Шаг 2 — `qsp.sublime-syntax` переведён на `extends: qsp_base.sublime-syntax`;
+      всё общее удалено, локально остались main/diff/location_def/qspgame_header;
+      file_extensions приведены к `qsps, qsp-text, text-qsp` (794→~60 строк).
+      Ждёт ручной проверки: qsps должен выглядеть как прежде.
+      (TODO со строки 16 про вынос в qsp_locations — снят автоматически.)
 - [ ] Шаг 3 — сделан qsrc-синтаксис.
 - [ ] Шаг 4 — исправлены баги рассинхрона.
 - [ ] Шаг 5 — зачистка TODO/маркеров.
