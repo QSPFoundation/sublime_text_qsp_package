@@ -43,6 +43,7 @@ goto & gt & ! goto без аргумента
 inclib 'path to file'
 
 jump 'МЕТКА'
+jump & ! без аргумента
 
 killall
 

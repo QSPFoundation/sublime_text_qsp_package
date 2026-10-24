@@ -461,9 +461,6 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_wrong_star_controls
 
   system_variables:
-      # подсвечивает все системные переменные текстового типа без символа $ как ошибку
-    - match: (?<!\$)(\b{{system_vars_string}}\b)
-      scope: invalid.illegal.qsp avs_illegal_textvariables
     - match: (%)(\b{{system_vars_string}}\b)
       scope: invalid.illegal.qsp avs_illegal_textvariables
     # # — числовой префикс перед строковой системной переменной → ошибка
@@ -513,12 +510,6 @@ contexts: # общие контексты подсветки кода локац
       # # — числовой префикс перед кортежной функцией → ошибка типа
     - match: (\#)(?=\b{{functions_tuple}}\b)
       scope: invalid.illegal.qsp avs_wrong_type_prefix
-      # подсвечивает все функции текстового типа без $
-    - match: (?<!\$)(\b{{functions_string}}\b)
-      scope: invalid.illegal.function.qsp avs_illegal_function
-      # подсвечивает все функции кортежного типа без %
-    - match: (?<!\%)(\b{{functions_tuple}}\b)
-      scope: invalid.illegal.function.qsp avs_illegal_function
       # правильно подсвечивает префикс типа перед строковыми функциями
     - match: (\$)(?=({{functions_string}}\b|{{functions_alltypes}}\b))
       scope: support.function.qsp punctuation.definition.function avs.function
