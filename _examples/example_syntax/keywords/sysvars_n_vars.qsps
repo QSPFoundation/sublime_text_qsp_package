@@ -1,91 +1,145 @@
 QSP-Game описание локации
 
+!@ Семантика префиксов типов (современный QSP):
+!@   нет префикса — универсальный (переменная любого типа)
+!@   #            — числовой
+!@   $            — строковый
+!@   %            — кортежный
+
 # sysvars_string
-$backimage = 'path to file'	& !@ valid
-backimage = 'path'	& !@ invalid var
+! Строковые системные переменные: допустимы $var и var (универсальный);
+! #var и %var — ошибка типа
+$backimage = 'path to file'	& !@ valid (строковый)
+backimage = 'path'	& !@ valid (универсальный)
+#backimage = 'path to file'	& !@ invalid prefix
 %backimage = 'path to file'	& !@ invalid prefix
 
 $fname = 'Consolas'	& !@ valid
-fname = 'courier new'	& !@ invalid var
+fname = 'courier new'	& !@ valid (универсальный)
+#fname = 'Consolas'	& !@ invalid prefix
 %fname = 'Consolas'	& !@ invalid prefix
 
 $onactsel = 'onActSel'	& !@ valid
-onactsel = 'onActSel'	& !@ invalid var
+onactsel = 'onActSel'	& !@ valid (универсальный)
+#onactsel = 'onActSel'	& !@ invalid prefix
 %onactsel = 'onActSel'	& !@ invalid prefix
 
 $ongload = 'onGameLoad'	& !@ valid
-ongload = 'onGameLoad'	& !@ invalid var
+ongload = 'onGameLoad'	& !@ valid (универсальный)
+#ongload = 'onGameLoad'	& !@ invalid prefix
 %ongload = 'onGameLoad'	& !@ invalid prefix
 
 $ongsave = 'onGameSave'	& !@ valid
-ongsave = 'onGameSave'	& !@ invalid var
+ongsave = 'onGameSave'	& !@ valid (универсальный)
+#ongsave = 'onGameSave'	& !@ invalid prefix
 %ongsave = 'onGameSave'	& !@ invalid prefix
 
 $onnewloc = 'onNewLoc'	& !@ valid
-onnewloc = 'onNewLoc'	& !@ invalid var
+onnewloc = 'onNewLoc'	& !@ valid (универсальный)
+#onnewloc = 'onNewLoc'	& !@ invalid prefix
 %onnewloc = 'onNewLoc'	& !@ invalid prefix
 
 $onobjadd = 'onObjAdd'	& !@ valid
-onobjadd = 'onObjAdd'	& !@ invalid var
+onobjadd = 'onObjAdd'	& !@ valid (универсальный)
+#onobjadd = 'onObjAdd'	& !@ invalid prefix
 %onobjadd = 'onObjAdd'	& !@ invalid prefix
 
 $onobjdel = 'onObjDel'	& !@ valid
-onobjdel = 'onObjDel'	& !@ invalid var
+onobjdel = 'onObjDel'	& !@ valid (универсальный)
+#onobjdel = 'onObjDel'	& !@ invalid prefix
 %onobjdel = 'onObjDel'	& !@ invalid prefix
 
 $onobjsel = 'onObjSel'	& !@ valid
-onobjsel = 'onObjSel'	& !@ invalid var
+onobjsel = 'onObjSel'	& !@ valid (универсальный)
+#onobjsel = 'onObjSel'	& !@ invalid prefix
 %onobjsel = 'onObjSel'	& !@ invalid prefix
 
 $usercom = 'userCommand'	& !@ valid
-usercom = 'userCommand'	& !@ invalid var
+usercom = 'userCommand'	& !@ valid (универсальный)
+#usercom = 'userCommand'	& !@ invalid prefix
 %usercom = 'userCommand'	& !@ invalid prefix
+
+$counter = 'loc_name'	& !@ valid
+counter = 'loc_name'	& !@ valid (универсальный)
+#counter = 'loc_name'	& !@ invalid prefix
+%counter = 'loc_name'	& !@ invalid prefix
 -- sysvars_string ---------------------------------
 
+
 # sysvar_number
-bcolor = rgb(red,green,blue)	& !@ valid
-$bcolor & %bcolor	& !@ invalid prefix
+! Числовые системные переменные: допустимы #var и var (универсальный);
+! $var и %var — ошибка типа
+bcolor = rgb(red,green,blue)	& !@ valid (универсальный)
+#bcolor = rgb(red,green,blue)	& !@ valid (числовой)
+$bcolor	& !@ invalid prefix
+%bcolor	& !@ invalid prefix
 
 fcolor = rgb(red,green,blue)	& !@ valid
-$fcolor & %fcolor	& !@ invalid prefix
+#fcolor = rgb(red,green,blue)	& !@ valid
+$fcolor	& !@ invalid prefix
+%fcolor	& !@ invalid prefix
 
 lcolor = rgb(red,green,blue)	& !@ valid
-$lcolor & %lcolor	& !@ invalid prefix
+#lcolor = rgb(red,green,blue)	& !@ valid
+$lcolor	& !@ invalid prefix
+%lcolor	& !@ invalid prefix
 
 debug = 1	& !@ valid
-$debug & %debug	& !@ invalid prefix
+#debug = 1	& !@ valid
+$debug	& !@ invalid prefix
+%debug	& !@ invalid prefix
 
 disablescroll = 1	& !@ valid
-$disablescroll & %disablescroll	& !@ invalid prefix
+#disablescroll = 1	& !@ valid
+$disablescroll	& !@ invalid prefix
+%disablescroll	& !@ invalid prefix
 
 disablesubex & ! не поддерживается
 
 fsize = 14	& !@ valid
-$fsize & %fsize	& !@ invalid prefix
+#fsize = 14	& !@ valid
+$fsize	& !@ invalid prefix
+%fsize	& !@ invalid prefix
 
 nosave = 1	& !@ valid
-$nosave & %nosave	& !@ invalid prefix
+#nosave = 1	& !@ valid
+$nosave	& !@ invalid prefix
+%nosave	& !@ invalid prefix
 
 usehtml = 1	& !@ valid
-$usehtml & %usehtml	& !@ invalid prefix
+#usehtml = 1	& !@ valid
+$usehtml	& !@ invalid prefix
+%usehtml	& !@ invalid prefix
 -- sysvar_number ---------------------------------
 
 
 # altypevars
-args[0] & $args[1] & %args[2]
-result & $result & %result
+! args и result — системные переменные любого типа:
+! допустимы все четыре формы (без префикса, #, $, %)
+args[0] & !@ valid (универсальный)
+#args[1] & !@ valid (числовой)
+$args[2] & !@ valid (строковый)
+%args[3] & !@ valid (кортежный)
+
+result & !@ valid (универсальный)
+#result & !@ valid (числовой)
+$result & !@ valid (строковый)
+%result & !@ valid (кортежный)
 -- altypevars ---------------------------------
 
 # invar_n_sysvar
-!@ имена системных переменных можно использовать, как часть имён пользовательских переменных
+!@ имена системных переменных можно использовать как часть имён
+!@ пользовательских переменных — префикс не мешает
 $maintext_backimage
 $new_curloc
+#new_counter
+%new_arr
 
-!@ запись подряд идущих системных переменных подсвечивается, как ошибка
+!@ запись подряд идущих системных переменных подсвечивается как ошибка
 $result$fname
 
-!@ запись любой переменной перед значением без операции подсвечивается как ошибка
-new_curloc fffff & !@ Подсветка ошибки неизвестное действие
+!@ запись переменной перед значением без операции — ошибка
+new_curloc fffff & !@ неизвестное действие
 showact 1
 $result 34565
 -- invar_sysvar ---------------------------------

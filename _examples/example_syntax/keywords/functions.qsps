@@ -1,162 +1,211 @@
 QSP-Game Тест подсветки функций
 
-! valid & invalid
-! invalid - is invalid in ST, and valid in QSP
+!@ Семантика префиксов типов функций (современный QSP):
+!@   нет префикса — универсальный (можно получить любой тип)
+!@   #            — явный числовой
+!@   $            — явный строковый
+!@   %            — явный кортежный
+!@
+!@ numeric func  → допустимы: func(...)  #func(...)
+!@ string func   → допустимы: $func(...)  func(...)
+!@ tuple func    → допустимы: %arrpack(...)  arrpack(...)
+!@ alltypes func → допустимы: func(...)  #func(...)  $func(...)  %func(...)
+
 # string_functions
-! Функции, возвращающие только текстовые значения нельзя записывать, как числовые или кортежные
-$curacts & curacts & %curacts
+! Строковые функции: допустимы $func(...) и func(...);
+! #func(...) и %func(...) — ошибка типа
+$curacts & curacts & #curacts & %curacts
 
-$curloc & curloc & %curloc
+$curloc & curloc & #curloc & %curloc
 
-$curobjs & curobjs & %curobjs
+$curobjs & curobjs & #curobjs & %curobjs
 
-$desc & desc & %desc
+$desc & desc & #desc & %desc
 
-$getobj(12) & getobj(12) & %getobj(12)
+$getobj(12) & getobj(12) & #getobj(12) & %getobj(12)
 
 $input('Enter the text!')
 input('Enter the text!')
+#input('Enter the text!')
 %input('Enter the text!')
 
 $lcase('low case THIS TEXT')
 lcase('low case THIS TEXT')
+#lcase('low case THIS TEXT')
 %lcase('low case THIS TEXT')
 
-$maintxt & maintxt & %maintxt
+$maintxt & maintxt & #maintxt & %maintxt
 
 $mid('cut THIS TEXT', 5, 4)
 mid('cut THIS TEXT', 5, 4)
+#mid('cut THIS TEXT', 5, 4)
 %mid('cut THIS TEXT', 5, 4)
 
-$qspver & qspver & %qspver
+$qspver & qspver & #qspver & %qspver
 
 $replace($string, $old, $new, 1)
 replace($string, $old, $new, 1)
+#replace($string, $old, $new, 1)
 %replace($string, $old, $new, 1)
 
-$selact & selact & %selact
+$selact & selact & #selact & %selact
 
-$selobj & selobj & %selobj
+$selobj & selobj & #selobj & %selobj
 
-$stattxt & stattxt & %stattxt
+$stattxt & stattxt & #stattxt & %stattxt
 
-$str(123) & str(123) & %str(123)
+$str(123) & str(123) & #str(123) & %str(123)
 
 $strfind($string, $regexp, 0)
 strfind($string, $regexp, 0)
+#strfind($string, $regexp, 0)
 %strfind($string, $regexp, 0)
 
 $trim('   TRIM this TEXT    ')
 trim('   TRIM this TEXT    ')
+#trim('   TRIM this TEXT    ')
 %trim('   TRIM this TEXT    ')
 
 $ucase('upper case THIS TEXT')
 ucase('upper case THIS TEXT')
+#ucase('upper case THIS TEXT')
 %ucase('upper case THIS TEXT')
 
-$user_text & user_text & %user_text
-$usrtxt & usrtxt & %usrtxt
+$user_text & user_text & #user_text & %user_text
+$usrtxt & usrtxt & #usrtxt & %usrtxt
 
 $arrtype($array_name, 0)
 arrtype($array_name, 0)
+#arrtype($array_name, 0)
 %arrtype($array_name, 0)
 -- string_functions ---------------------------------
 
 
 # mixtype_functions
-! функции, возвращающие значения любых типов
+! Функции любого типа (iif, dyneval, func, max, min, arritem):
+! допустимы ВСЕ четыре формы — func, #func, $func, %func
 $dyneval('$result = "string"')
 %dyneval('%result = ["tuple", 1]')
 dyneval('result = 123')
+#dyneval('#result = 123')
 
 $func('foo', 'str')
 %func('foo', 'tpl')
 func('foo', 'num')
+#func('foo', 'num')
 
 $iif(x mod 2 = 0, 'even', 'not even')
-iif(x mod 2 = 0, 1, 0)
 %iif(x, [1, 2], [2, 3])
+iif(x mod 2 = 0, 1, 0)
+#iif(x mod 2 = 0, 1, 0)
 
 $max('aa', 'ab', 'abz')			& $max('$a')
-max(12, 34, 56)					& max('a')
 %max([1, 2], [], [999, 1, 23])	& %max('%a')
+max(12, 34, 56)				& max('a')
+#max(12, 34, 56)			& #max('$a')
 
 $min('aa', 'ab', 'abz')			& $min('$a')
-min(12, 34, 56)					& min('a')
 %min([1, 2], [], [999, 1, 23])	& %min('%a')
+min(12, 34, 56)				& min('a')
+#min(12, 34, 56)			& #min('$a')
 
-arritem('array_name', 5)
-%arritem('%array_name', 45)
 $arritem('$array_name', 99)
+%arritem('%array_name', 45)
+arritem('array_name', 5)
+#arritem('array_name', 5)
 -- mixtype_functions ---------------------------------
 
 # numeric_functions
-! перед функциями, возвращающими только числовые значения нельзя ставить префикс типа
-arrcomp($array_name,$regexp,0)
-$arrcomp($array_name,$regexp,0)
-%arrcomp($array_name,$regexp,0)
+! Числовые функции: допустимы func(...) и #func(...);
+! $func(...) и %func(...) — ошибка типа
+arrcomp($array_name,$regexp,0)		& !@ valid (универсальный)
+#arrcomp($array_name,$regexp,0)		& !@ valid (числовой)
+$arrcomp($array_name,$regexp,0)		& !@ invalid
+%arrcomp($array_name,$regexp,0)		& !@ invalid
 
-arrpos($array_name,value,0)
-$arrpos($array_name,value,0)
-%arrpos($array_name,value,0)
+arrpos($array_name,value,0)			& !@ valid
+#arrpos($array_name,value,0)		& !@ valid
+$arrpos($array_name,value,0)		& !@ invalid
+%arrpos($array_name,value,0)		& !@ invalid
 
-arrsize($array_name)
-$arrsize($array_name)
-%arrsize($array_name)
+arrsize($array_name)			& !@ valid
+#arrsize($array_name)			& !@ valid
+$arrsize($array_name)			& !@ invalid
+%arrsize($array_name)			& !@ invalid
 
-countobj & $countobj & %countobj
+countobj & #countobj			& !@ valid
+$countobj & %countobj			& !@ invalid
 
-instr($string,$substr,0)
-$instr($string,$substr,0)
-%instr($string,$substr,0)
+instr($string,$substr,0)		& !@ valid
+#instr($string,$substr,0)		& !@ valid
+$instr($string,$substr,0)		& !@ invalid
+%instr($string,$substr,0)		& !@ invalid
 
-isnum($string)
-$isnum($string)
-%isnum($string)
+isnum($string)				& !@ valid
+#isnum($string)				& !@ valid
+$isnum($string)				& !@ invalid
+%isnum($string)				& !@ invalid
 
-isplay('путь к файлу')
-$isplay('путь к файлу')
-%isplay('путь к файлу')
+isplay('путь к файлу')			& !@ valid
+#isplay('путь к файлу')			& !@ valid
+$isplay('путь к файлу')			& !@ invalid
+%isplay('путь к файлу')			& !@ invalid
 
-len($string)
-$len($string)
-%len($string)
+len($string)				& !@ valid
+#len($string)				& !@ valid
+$len($string)				& !@ invalid
+%len($string)				& !@ invalid
 
-msecscount & $msecscount & %msecscount
+msecscount & #msecscount		& !@ valid
+$msecscount & %msecscount		& !@ invalid
 
-rand(0,1) & $rand(0,1) & %rand(0,1)
+rand(0,1) & #rand(0,1)			& !@ valid
+$rand(0,1) & %rand(0,1)			& !@ invalid
 
-rgb(red,green,blue)
-$rgb(red,green,blue)
-%rgb(red,green,blue)
+rgb(red,green,blue)			& !@ valid
+#rgb(red,green,blue)			& !@ valid
+$rgb(red,green,blue)			& !@ invalid
+%rgb(red,green,blue)			& !@ invalid
 
-rnd & $rnd & %rnd
+rnd & #rnd				& !@ valid
+$rnd & %rnd				& !@ invalid
 
-strcomp($string,$regexp)
-$strcomp($string,$regexp)
-%strcomp($string,$regexp)
+strcomp($string,$regexp)		& !@ valid
+#strcomp($string,$regexp)		& !@ valid
+$strcomp($string,$regexp)		& !@ invalid
+%strcomp($string,$regexp)		& !@ invalid
 
-strpos($string,$regexp,1)
-$strpos($string,$regexp,1)
-%strpos($string,$regexp,1)
+strpos($string,$regexp,1)		& !@ valid
+#strpos($string,$regexp,1)		& !@ valid
+$strpos($string,$regexp,1)		& !@ invalid
+%strpos($string,$regexp,1)		& !@ invalid
 
-val($string) & $val($string) & %val($string)
+val($string) & #val($string)		& !@ valid
+$val($string) & %val($string)		& !@ invalid
+
+loc('label') & #loc('label')		& !@ valid
+$loc('label') & %loc('label')		& !@ invalid
+
+obj('item') & #obj('item')		& !@ valid
+$obj('item') & %obj('item')		& !@ invalid
 -- numeric_functions ---------------------------------
 
 # tuple_functions
-! функции, возвращающие кортеж допускают только префикс типа % перед названием
-%arrpack('$array_name',0,arrsize('$array_name'))
-arrpack('$array_name',0,arrsize('$array_name'))
-$arrpack('$array_name',0,arrsize('$array_name'))
+! Кортежная функция arrpack: допустимы %arrpack(...) и arrpack(...);
+! $arrpack(...) и #arrpack(...) — ошибка типа
+%arrpack('$array_name',0,arrsize('$array_name'))	& !@ valid (кортежный)
+arrpack('$array_name',0,arrsize('$array_name'))		& !@ valid (универсальный)
+$arrpack('$array_name',0,arrsize('$array_name'))	& !@ invalid
+#arrpack('$array_name',0,arrsize('$array_name'))	& !@ invalid
 -- tuple_functions ---------------------------------
 
 
 # foo
-!example of loaction-function
+!example of location-function
 if 0:
 	elseif $args[0] = 'tpl': %result = ["tuple", 1]
 	elseif $args[0] = 'str': $result = "string"
-	elseif $args[0] = 'num': result = 123
+	elseif $args[0] = 'num': #result = 123
+	else: result = ?
 end
 -- foo ---------------------------------
-
