@@ -262,11 +262,22 @@ contexts: # общие контексты подсветки кода локац
     - match: ^(?:\s*?)(?i:(\belseif\b)) # elseif работает только в многострочной форме (исправить, если изменится в 5.8.0)
       scope: invalid.illegal.qsp meta.excess_elseif.qsp
 
+  # Ошибочные закрытия контейнеров (п.3.3): порядок include'ов зафиксирован —
+  # «сначала ошибки, потом тело» (wrongclose → wrong_close_in_brace →
+  # location_body[_braced]). Правила ловят РАЗНЫЕ символы в непересекающихся
+  # позициях (`-` в начале строки против `}` где угодно), поэтому взаимный
+  # порядок wrongclose/wrong_close_in_brace на matching не влияет — но он
+  # ЕДИНОЙ душой везде и менять его по отдельности нельзя.
+  # wrongclose: «-» в начале строки внутри незакрытого act/loop/if —
+  # ложный признак конца локации.
   wrongclose:
     - match: ^\s*?(-)(.*)({{nr}}$|$)
       scope: invalid.illegal.qsp
       pop: true
 
+  # wrong_close_in_brace: «}» внутри незакрытой конструкции (контейнер ещё
+  # не дописан) — ошибка и выход из контейнера. НАМЕРЕНИЕ (REFACTOR_PLAN §1C.3):
+  # согласовано с семантикой «незакрытая конструкция = ошибка».
   wrong_close_in_brace:
     - match: \}(.*)({{nr}}$|$)
       scope: invalid.illegal.qsp avs.error avs.wrongelse1
@@ -742,31 +753,38 @@ contexts: # общие контексты подсветки кода локац
       scope: keyword.operator.word.qsp
 
   # # # ------------------------ Подсветка комментариев ------------------------  # # #
-  comments: # комментарии. Как однострочные, так и многострочные поддерживаются отсюда
+  # Общий хвост комментария (Фаза 3, п.3.1): тело от «!» до конца строки.
+  # Используется контекстами comments и comments_in_brace (их arms различаются
+  # только якорем и наличием «?\}»-попа, вынесенного в сами arms).
+  # ПОРЯДОК правил внутри push-тел значим (поиск слева направо, первое
+  # совпадение) — менять только вместе с анализом позиционных коллизий.
+  comment_tail_common:
+    - match: (\n\r|\r|\r\n|\n|$)
+      scope: comment.qsp
+      pop: true
+    - include: quote_apostroph_comments
+    - include: brace_comments
+    - include: special_comments
+
+  # Комментарий «!» — однострочный или многострочный (через &-продолжения).
+  # (п.3.1) Arms НЕ слиты в один regex: ветка «^\s*?» матчит только на начале
+  # строки, а «\&» — в любой позиции; общая альтернация с внешним \s*?
+  # ложно расширяла бы набор позиций. Зато тело вынесено в comment_tail_common.
+  comments:
     - match: (?<=\{)((\s*?)|(\&)\s*?)(!)
       captures:
         3: support.function.builtin.qsp
         4: punctuation.definition.comment.qsp
       push:
         - meta_scope: comment.qsp
-        - match: (\n\r|\r|\r\n|\n|$)
-          scope: comment.qsp
-          pop: true
-        - include: quote_apostroph_comments
-        - include: brace_comments
-        - include: special_comments
+        - include: comment_tail_common
     - match: ((^\s*?)|(\&)\s*?)(!)
       captures:
         3: support.function.builtin.qsp
         4: punctuation.definition.comment.qsp
       push:
         - meta_scope: comment.qsp
-        - match: (\n\r|\r|\r\n|\n|$)
-          scope: comment.qsp
-          pop: true
-        - include: quote_apostroph_comments
-        - include: brace_comments
-        - include: special_comments
+        - include: comment_tail_common
 
   # Комментарии внутри открытого {…} блока.
   # Отличие от comments: комментарий схлопывается НУЛЕВЫМ lookahead «(?=\})»,
@@ -784,12 +802,7 @@ contexts: # общие контексты подсветки кода локац
         - meta_scope: comment.qsp
         - match: (?=\})
           pop: true
-        - match: (\n\r|\r|\r\n|\n|$)
-          scope: comment.qsp
-          pop: true
-        - include: quote_apostroph_comments
-        - include: brace_comments
-        - include: special_comments
+        - include: comment_tail_common
     - match: ((^\s*?)|(\&)\s*?)(!)
       captures:
         3: support.function.builtin.qsp
@@ -798,12 +811,7 @@ contexts: # общие контексты подсветки кода локац
         - meta_scope: comment.qsp
         - match: (?=\})
           pop: true
-        - match: (\n\r|\r|\r\n|\n|$)
-          scope: comment.qsp
-          pop: true
-        - include: quote_apostroph_comments
-        - include: brace_comments
-        - include: special_comments
+        - include: comment_tail_common
 
   comment_after_colon: # комментарии после двоеточия
     - match: (?<=:)((\s*?)|(\&)\s*?)(!)
@@ -819,17 +827,14 @@ contexts: # общие контексты подсветки кода локац
         - include: brace_comments
         - include: special_comments
 
-  # комментарий после 'end': весь текст до '&' или конца строки.
-  # Многострочность достигается вложенными {...} областями (brace_comments):
-  # '&' внутри {}, кавычек и апострофов НЕ прерывает комментарий.
-  comment_after_end:
-    - meta_content_scope: comment.line.qsp markup.italic.qsp
-    - include: quote_apostroph_comments
-    - include: brace_comments
-    - match: (?=&|{{nr}}|$)
-      pop: true
-  # тот же комментарий, но для формы внутри { ... }: закрывающая '}'
-  # завершает и комментарий, и внешний блок (ее ловит figure_brace)
+  # Комментарий после 'end': весь текст до '&' или конца строки; внутри
+  # {…} закрывающая '}' завершает и комментарий, и внешний блок (её ловит
+  # figure_brace). Отдельной plain-версии (comment_after_end) БОЛЬШЕ НЕТ:
+  # после Решения-1A (конец п.2.1) все правила 'end' ведут только этот
+  # brace-aware контекст — модель «} структурна всегда» едина для top-level
+  # и braced-форм. Не переносить порядок правил в comment_tail_common:
+  # здесь «&»-pop стоит ПОСЛЕ include'ов и это значимо (pop срабатывает уже
+  # внутри quote/brace-состояний).
   comment_after_end_in_brace:
     - meta_content_scope: comment.line.qsp markup.italic.qsp
     - include: quote_apostroph_comments
