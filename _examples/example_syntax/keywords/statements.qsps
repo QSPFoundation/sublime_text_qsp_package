@@ -108,6 +108,8 @@ act 'Название действия', 'путь к картинке.png':
 	!@ Код действия
 end act комментарий после end & *pl 'other operator'
 
+act 'Название действия': однострочное = действие
+
 loop local i=0 while i<10 step i+=1:
 	!@ Тело цикла
 end комментарий после end & *pl 'other operator'
@@ -115,6 +117,8 @@ end комментарий после end & *pl 'other operator'
 loop local i=0 while i<10 step i+=1:
 	!@ Тело цикла
 end loop комментарий после end & *pl 'other operator'
+
+loop local i=0 while i<10 step i+=1: *pl '> [<<i>>]'
 
 if условие_выполнено:
 !@ Если условие выполнено
@@ -130,5 +134,7 @@ if условие_выполнено:
 	!@ Если условие выполнено
 	!@ Код, который выполняется, если условие не выполнено
 end if комментарий после end & *pl 'other operator'
+
+if a = b elseif z = v: kdkdkd else: dkkdkdk
 -- controls_statements ---------------------------------
 
