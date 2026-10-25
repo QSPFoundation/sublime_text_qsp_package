@@ -64,12 +64,8 @@ variables: # назначаем переменные для удобства
       arrpack
     )
   functions_alltypes: (?i:iif|dyneval|func|max|min|arritem) # variable.function
-  braces_open: '\{'
-  braces_close: '\}'
   quote: '"'
   ap: "'"
-  opener: '{{braces_open}}{{quote}}{{ap}}'
-  closer: '{{braces_close}}{{quote}}{{ap}}'
   left_operand: '({{quote}}|{{ap}}|\)|\}|\$|\%|\?|\w|\d)'
   right_operand: '({{quote}}[^{{quote}}]*|{{ap}}[^{{ap}}]*|\([^\)]*?|\[[^\]]*?|\{|((\$|\%|\#)?|-?)\w+?|-?\d+?|\@|\?)'
   nr: (\n\r|\r|\r\n|\n)
@@ -417,7 +413,8 @@ contexts: # общие контексты подсветки кода локац
         - match: "^.*"
           scope: comment.qsp
         - include: location_body
-  
+
+
   # # # ------- braced-двойники контейнеров (тело внутри {…}) ------- # # #
   # Зеркала multiline_actions / multiline_loop / multiline_conditions /
   # multiline_actions_else / multiline_actions_elseif. Отличия:
@@ -457,7 +454,8 @@ contexts: # общие контексты подсветки кода локац
         - include: wrongclose
         - include: wrong_close_in_brace
         - include: location_body_braced
-  
+
+
   multiline_loop_braced:
     - match: '(?<=\{)(\s*?)(?i:(\bloop\b))(?=.*?(?i:(\bwhile\b))\s\S.*?(?i:(\bstep\b))?\s*?.*?\:\s*?(!.*)?$)'
       scope: meta.begin_cycle.qsp
@@ -489,7 +487,8 @@ contexts: # общие контексты подсветки кода локац
         - include: location_body_braced
     - match: '(?i:(\bloop\b))(?!.*(?i:(\bwhile\b)))'
       scope: invalid.illegal.qsp
-  
+
+
   multiline_conditions_braced:
     - match: '(?<=\{)(\s*?)(?i:(\bif\b))(?=\s*?.*?\:\s*?(!.*)?$)'
       captures:
@@ -521,7 +520,8 @@ contexts: # общие контексты подсветки кода локац
         - include: wrongclose
         - include: wrong_close_in_brace
         - include: location_body_braced
-  
+
+
   multiline_actions_else_braced:
     - match: ^\s*?(?i:(\belse\b))(\s*?)([^\:]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
@@ -583,7 +583,8 @@ contexts: # общие контексты подсветки кода локац
         - include: wrong_close_in_brace
         - include: wrongclose
         - include: location_body_braced
-  
+
+
   multiline_actions_elseif_braced:
     - match: '^(\s*?)(?i:(\belseif\b))(?=\s+\S.*?\:\s*(!.*)?$)'
       captures:
@@ -621,7 +622,8 @@ contexts: # общие контексты подсветки кода локац
         - match: "^.*"
           scope: comment.qsp
         - include: location_body_braced
-  
+
+
   # set и local
   kw_declarations:
       # ([A-Za-zА-Яа-я_][\w\.]*)
@@ -680,7 +682,8 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_wrong_numeric
     - match: \b[0-9]+\b
       scope: constant.numeric avs_numeric
-    
+
+
   statements:
     # подсветка statement'ов
     - match: (\b({{kw_statements}}|{{kw_text_statements}})\b)(?!\()

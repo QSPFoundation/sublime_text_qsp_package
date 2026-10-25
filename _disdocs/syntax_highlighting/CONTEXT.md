@@ -2,7 +2,7 @@
 
 > **Как использовать в новом чате:** приложи этот файл и `PLAN.md` и попроси
 > «продолжить по плану, шаг N». Окно контекста не нужно — всё важное здесь.
-> Последнее обновление: 2026-10-24.
+> Последнее обновление: 2026-10-25.
 
 ## 1. Что за проект
 
@@ -68,13 +68,18 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 
 ## 5. Карта контекстов подсветки (что куда переносить в `qsp_base`)
 
-ОБЩЕЕ (в `qsp_base`): `location_body`, `figure_brace`,
-`brackets_multiline`/`multiline_round`/`multiline_square` (многострочные `( )` и `[ ]`), `multiline_actions`,
+ОБЩЕЕ (в `qsp_base`, актуальный список — синхронизирован с кодом при
+реструктуризации, Фаза 1; контекста `operators` в коде никогда не было —
+операторы живут в `operacion`/`operacion_subex`; `illegal_closed_brace` удалён
+по итогам Шага 9):
+`location_body`, `figure_brace`,
+`brackets_multiline`/`multiline_round`/`multiline_square`/`continuation_tail`
+(многострочные `( )` и `[ ]` + валидный хвост-оператор на переносе), `multiline_actions`,
 `multiline_conditions`, `multiline_loop`, `multiline_actions_else`,
 `illegal_multiline_else`, `multiline_actions_elseif`, `kw_declarations`,
 `sugargosub`, `sugarfunc`, `wrong_end_else_elseif`, `wrongclose`,
 `wrong_close_in_brace`, `users_variables`, `jump_to_label`, `location_call`,
-`operacion`, `numeric`, `operators`, `system_variables`, `functions`, `labels`,
+`operacion`, `numeric`, `statements`, `system_variables`, `functions`, `labels`,
 `strings`, `subexpression`, `subex`, `operacion_subex`, `comments`,
 `comment_after_colon`, `comment_after_end`, `comment_after_end_in_brace`,
 `brace_comments`,
@@ -204,6 +209,18 @@ BRACED-слой (Шаг 9, тоже в `qsp_base`) — зеркало тела �
       НЕ достигнута (решение A сломало tab-триггеры сниппетов — см. §6.п6).
       Откачено к `meta.diff`. Открытый выбор: A2 (color-scheme) / B (keybinding)
       / C (как есть). Остальная зачистка (manilines и прочее) уже в Шаге 4.
+
+**Реструктуризация (REFACTOR_PLAN.md):**
+
+- [x] Фаза 1 (расчистка) — выполнена 2026-10-25: удалены мёртвые `variables`
+      (`opener`/`closer`/`braces_open`/`braces_close`; `quote`/`ap` остались —
+      используются в operand-переменных); подчищены whitespace-only строки
+      (7 в базе, 4 в тест-фикстуре); §5 карты выше приведён к фактическому
+      списку из 50 контекстов базы; контроль прогнан скриптом
+      `_disdocs/syntax_highlighting/check_syntax_phase1.py` — PASS
+      (YAML-load + резолв include/push + баланс скобок + переменные;
+      переиспользуется после каждой фазы). Поведение подсветки не менялось —
+      ручная проверка не требовалась, но не вредна.
 
 ## 8. Материалы для тестов
 
