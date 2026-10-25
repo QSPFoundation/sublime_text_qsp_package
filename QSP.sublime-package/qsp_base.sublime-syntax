@@ -367,15 +367,17 @@ contexts: # общие контексты подсветки кода локац
 
   # # # ------- braced-двойники контейнеров (тело внутри {…}) ------- # # #
   # Зеркала multiline_actions / multiline_loop / multiline_conditions /
-  # multiline_actions_else / multiline_actions_elseif. Отличия:
-  #   - тело push'ит location_body_braced (а не location_body);
-  #   - «end» всегда ведёт на comment_after_end_in_brace (закрывающая «}»
-  #     после end закрывает блок).
+  # multiline_actions_else / multiline_actions_elseif. Единственное отличие:
+  #   - тело пушит включения с суффиксом _braced (location_body_braced и
+  #     вложенные *_braced); «end» В ОБЕИХ версиях ведёт единый
+  #     comment_after_end_in_brace (Решение-1A, Фаза 3).
   # Нужны потому, что Sublime не позволяет «заглянуть в стек» и узнать,
   # открыт ли сейчас {…}-блок: признак окружения кодируется выбором
   # location_body vs location_body_braced.
   # СИНХРОН-КОНТРАКТ (Фаза 5, п.5.1): правки в multiline_* чиним зеркально
-  # здесь же; после п.2.1 пары arms слиты, структура совпадает 1:1.
+  # здесь же. Парность ПРОВЕРЯЕТСЯ АВТОМАТИЧЕСКИ: check_syntax_phase1.py
+  # (_disdocs/syntax_highlighting) сверяет пары после нормализации суффикса
+  # _braced — расхождение валит контроль в FAIL.
   multiline_actions_braced:
     - match: '(?:^|(?<=\{))(\s*?)(?i:(act))(?=\s*?.*?\:\s*?(!.*?)?$)'
       scope: meta.begin_action.qsp

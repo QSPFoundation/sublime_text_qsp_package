@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Контроль Фазы 1 (п.1.4): YAML-load, резолв include/push, баланс скобок regex."""
+"""Контроль Фаз рефакторинга: YAML-load, резолв include/push, баланс скобок
+regex, переменные; с Фазы 5 — парность plain/braced-контейнеров (п.5.1)."""
 import yaml, re, sys, os
 
 # репозиторий = на 2 уровня выше этого файла; при копировании скрипта в другое
@@ -131,6 +132,66 @@ unused = sorted(all_vars - used_tpl)
 print('declared vars:', len(all_vars), '| undefined {{refs}}:', undef or 'none',
       '| declared-but-unused:', unused or 'none')
 if undef or unused:
+    ok = False
+
+# # # ------- Фаза 5, п.5.1: синхрон-контракт plain/braced ------- # # #
+# Каждая пара multiline_* / multiline_*_braced должна быть структурно
+# идентична с точностью до ОЖИДАННЫХ различий (см. комментарий-инвариант
+# над braced-секцией в qsp_base): в braced-версии тело пушит включения с
+# хвостом «_braced» (location_body_braced, multiline_actions_else_braced…).
+# Срезаем хвост «_braced» у include/push-значений БРАСЕННОЙ версии и сверяем
+# правила с plain посериализованно. (comment_after_end_in_brace оканчивается
+# на «_in_brace», не на «_braced», — под строге он не трогается и должен
+# оставаться идентичным в обеих версиях — так и есть по Решению-1A.)
+PAIRS = ['multiline_actions', 'multiline_loop', 'multiline_conditions',
+         'multiline_actions_else', 'multiline_actions_elseif']
+
+def strip_braced_suffix(rules):
+    """Копия правил, у include/push срезан хвост '_braced' (рекурсивно)."""
+    cut = lambda x: x[:-len('_braced')] if isinstance(x, str) \
+        and x.endswith('_braced') else x
+    out = []
+    for r in rules:
+        if not isinstance(r, dict):
+            out.append(r)
+            continue
+        r2 = dict(r)
+        for key in ('include', 'push'):
+            if key not in r2:
+                continue
+            v = r2[key]
+            if isinstance(v, str):
+                r2[key] = cut(v)
+            elif isinstance(v, list):
+                # элементы списка: строки (имена контекстов) режем напрямую,
+                # словари (вложенные правила) — рекурсивно тем же проходом
+                r2[key] = [cut(x) if isinstance(x, str) else
+                           strip_braced_suffix([x])[0] if isinstance(x, dict) else x
+                           for x in v]
+        out.append(r2)
+    return out
+
+pair_errs = []
+base_ctx = data['base']['contexts']
+for name in PAIRS:
+    plain, braced = base_ctx.get(name), base_ctx.get(name + '_braced')
+    if plain is None or braced is None:
+        pair_errs.append('%s: пара отсутствует' % name)
+        continue
+    if len(plain) != len(braced):
+        pair_errs.append('%s: разное число правил (%d vs %d)'
+                         % (name, len(plain), len(braced)))
+        continue
+    n_braced = strip_braced_suffix(braced)
+    if yaml.safe_dump(plain, sort_keys=True) != yaml.safe_dump(n_braced, sort_keys=True):
+        for i, (p, b) in enumerate(zip(plain, n_braced)):
+            if yaml.safe_dump(p, sort_keys=True) != yaml.safe_dump(b, sort_keys=True):
+                pair_errs.append('%s: правило #%d расходится' % (name, i))
+print('braced pairing (5.1): %s'
+      % (pair_errs if pair_errs
+         else 'OK (%d пар), отличия — только суффикс _braced у include/push'
+              % len(PAIRS)))
+if pair_errs:
     ok = False
 
 print('RESULT:', 'PASS' if ok else 'FAIL')
