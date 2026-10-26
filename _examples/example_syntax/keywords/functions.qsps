@@ -78,6 +78,11 @@ $arrtype($array_name, 0)
 arrtype($array_name, 0)
 #arrtype($array_name, 0)
 %arrtype($array_name, 0)
+
+$arrkey($array_name, 0)
+arrkey($array_name, 0)
+#arrkey($array_name, 0)
+%arrkey($array_name, 0)
 -- string_functions ---------------------------------
 
 

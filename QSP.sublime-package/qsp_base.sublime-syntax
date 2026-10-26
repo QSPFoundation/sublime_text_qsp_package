@@ -31,6 +31,8 @@ variables: # назначаем переменные для удобства
       copyarr|sortarr|setvar|insvar|unpackarr|killvar|killall|scanstr|
       view|msg|
       settimer|wait|
+      # exec: отсутствует в qsp_grammar.peg (упущение грамматики, не правим её),
+      # но поддерживается движком и нужен в подсветке — НЕ убирать.
       exec
     )
   kw_controls: (?i:act|if|elseif|else|loop|while|step|end) # keyword.control
@@ -76,7 +78,11 @@ variables: # назначаем переменные для удобства
   operacion_two_signs: ([<>\+\-\*\/]=|<>)
   operacion_one_sign: (\+|-|<|>|=|\/|\*|!)
   operacion_word: (?i:and|or|mod)
-  users_variables: ((\$|\%|\#)?[A-Za-zА-Яа-я_][\w\.]*)
+  # users_variables: имя переменной = все Unicode-буквы, цифры, подчёркивание и точка
+  # (fidelity к grammar varName, п.6.7): первый символ — буква/`_` (не цифра, grammar
+  # `~digit`), далее `\p{L}` (любая буква), `\d`, `_`, `.`. Прочие символы — нельзя.
+  # NB: требует поддержки `\p{L}` в Onigmo Sublime — проверить ручным рендером.
+  users_variables: '((\$|\%|\#)?[\p{L}_][\p{L}\d_.]*)'
   elseif_else_final: (?i:\bend\b|\belse\b|\belse\s*if\b|\bif\b|(^\s*\-.*?$))
 
 contexts: # общие контексты подсветки кода локации

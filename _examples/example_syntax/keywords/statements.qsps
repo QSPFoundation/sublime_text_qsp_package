@@ -71,6 +71,7 @@ scanstr '$массив', 'строка для разбора', 'регулярк
 settimer 500
 
 setvar 'название_массива', значение, 0
+insvar $a, 'x', 0
 
 showacts 0
 showinput 0
