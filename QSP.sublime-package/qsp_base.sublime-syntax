@@ -72,6 +72,11 @@ variables: # назначаем переменные для удобства
   right_operand: '({{quote}}[^{{quote}}]*|{{ap}}[^{{ap}}]*|\([^\)]*?|\[[^\]]*?|\{|((\$|\%|\#)?|-?)\w+?|-?\d+?|\@|\?)'
   nr: (\n\r|\r|\r\n|\n)
   nr_lookahead: (?=\r\n|\r|\n|$)
+  # Фаза 7: «в заголовке есть НЕзакрытая на этой строке ( или [ » — признак
+  # многострочной скобки, из-за которой ':' уезжает на другую строку. Условие
+  # требует наличия открывающей скобки, после которой на ЭТОЙ строке нет ни ')' ни ']'.
+  # Закрытием такой скобки штатно занимается multiline_round.
+  unbalanced_bracket_head: (?=[^\n]*?[\(\[](?![^\n]*?[\)\]])[^\n]*?{{nr_lookahead}})
   # NB (fidelity к qsp_grammar.peg, п.6.3): двухзначные операторы `=<` и `=>`
   # (grammar `binaryStandardOperator`) намеренно НЕ поддержаны — `operacion_two_signs`
   # ловит только `<= >= += -= *= /= <>`. `=<`/`=>` подсветятся как два one-sign'а.
@@ -119,10 +124,14 @@ contexts: # общие контексты подсветки кода локац
     - include: users_variables
 
   location_body:
-    - include: body_common_head
+    # Порядок (Фаза 7): открыватели блоков act/if/loop ИДУТ ПЕРЕД body_common_head,
+    # чтобы «bracket-arm» заголовка не проигрывал приоритет незакрытой «(» в
+    # brackets_multiline. Для строк, не начинающихся с ключевого слова,
+    # figure_brace/brackets_multiline отработают в своём include позже — 1:1.
     - include: multiline_actions
     - include: multiline_conditions
     - include: multiline_loop
+    - include: body_common_head
     - include: body_common_mid
     - include: comments
     - include: body_common_tail
@@ -136,10 +145,11 @@ contexts: # общие контексты подсветки кода локац
   #              форматах ведёт единый comment_after_end_in_brace.
   # figure_brace остаётся общим: вложенная «{» открывает новый braced-блок.
   location_body_braced:
-    - include: body_common_head
+    # См. порядок в location_body (Фаза 7): открыватели блоков до body_common_head.
     - include: multiline_actions_braced
     - include: multiline_conditions_braced
     - include: multiline_loop_braced
+    - include: body_common_head
     - include: body_common_mid
     - include: comments_in_brace
     - include: body_common_tail
@@ -249,21 +259,34 @@ contexts: # общие контексты подсветки кода локац
 
   # конструкции условий (п.2.1: former `(?<=\{)if` + `^if` слиты)
   multiline_conditions:
+    # strict-arm: ':' на строке if → сразу тело
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\bif\b))(?=\s*?.*?\:\s*?(!.*)?$)'
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
-      push:
-        - include: comment_after_colon
-        - match: ^(\s*?)(?i:(\bend\b))
-          captures:
-            2: keyword.control.conditional.end.qsp markup.italic.qsp
-          pop: true
-          push: comment_after_end_in_brace
-        - include: multiline_actions_elseif
-        - include: multiline_actions_else
-        - include: wrongclose
-        - include: wrong_close_in_brace
-        - include: location_body
+      push: multiline_conditions_body
+    # bracket-arm (Фаза 7): многострочная ( или [ в заголовке if — из-за неё ':'
+    # уехал за пределы строки ключевого слова и strict-arm не срабатывает. Открываем
+    # блок сразу; незакрытую скобку доедает location_body (brackets_multiline →
+    # multiline_round), ':' на строке закрытия обрабатывает тот же location_body.
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bif\b)){{unbalanced_bracket_head}}'
+      captures:
+        2: keyword.control.conditional.begin.qsp markup.italic.qsp
+      push: multiline_conditions_body
+
+  # тело if-конструкции (Фаза 7: вынесено из inline-push strict-arm, поведение 1:1;
+  # используют оба arm'а).
+  multiline_conditions_body:
+    - include: comment_after_colon
+    - match: ^(\s*?)(?i:(\bend\b))
+      captures:
+        2: keyword.control.conditional.end.qsp markup.italic.qsp
+      pop: true
+      push: comment_after_end_in_brace
+    - include: multiline_actions_elseif
+    - include: multiline_actions_else
+    - include: wrongclose
+    - include: wrong_close_in_brace
+    - include: location_body
 
   wrong_end_else_elseif:
     - match: (?i:(\bend\b)) # подсветка лишнего end'а
@@ -431,18 +454,27 @@ contexts: # общие контексты подсветки кода локац
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\bif\b))(?=\s*?.*?\:\s*?(!.*)?$)'
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
-      push:
-        - include: comment_after_colon
-        - match: ^(\s*?)(?i:(\bend\b))
-          captures:
-            2: keyword.control.conditional.end.qsp markup.italic.qsp
-          pop: true
-          push: comment_after_end_in_brace
-        - include: multiline_actions_elseif_braced
-        - include: multiline_actions_else_braced
-        - include: wrongclose
-        - include: wrong_close_in_brace
-        - include: location_body_braced
+      push: multiline_conditions_body_braced
+    # bracket-arm (Фаза 7): зеркало plain (parity 5.1).
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bif\b)){{unbalanced_bracket_head}}'
+      captures:
+        2: keyword.control.conditional.begin.qsp markup.italic.qsp
+      push: multiline_conditions_body_braced
+
+  # зеркало multiline_conditions_body: тело пушит location_body_braced и
+  # brace-aware else/elseif. comment_after_end_in_brace — общий (Решение-1A).
+  multiline_conditions_body_braced:
+    - include: comment_after_colon
+    - match: ^(\s*?)(?i:(\bend\b))
+      captures:
+        2: keyword.control.conditional.end.qsp markup.italic.qsp
+      pop: true
+      push: comment_after_end_in_brace
+    - include: multiline_actions_elseif_braced
+    - include: multiline_actions_else_braced
+    - include: wrongclose
+    - include: wrong_close_in_brace
+    - include: location_body_braced
 
   multiline_actions_else_braced:
     - match: ^\s*?(?i:(\belse\b))(\s*?)([^\:]+)(\:).*$

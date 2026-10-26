@@ -1,0 +1,16 @@
+QSP-Game многострочный заголовок условия
+
+# multiline_head
+if [1, 2, 3] = [
+	1, 
+	2,
+	3
+]: *pl 'однострочное действие' else *pl 'работает'
+
+if rand(1,
+	23) = 12:
+	*pl 'fkfkkfkfk'
+else:
+	*pl 'allalalaa'
+end
+--- multiline_head ---------------------------------

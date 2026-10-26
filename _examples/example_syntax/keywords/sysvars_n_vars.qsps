@@ -134,6 +134,8 @@ $maintext_backimage
 $new_curloc
 #new_counter
 %new_arr
+$кирилические_переменные
+%中國.變數
 
 !@ запись подряд идущих системных переменных подсвечивается как ошибка
 $result$fname
