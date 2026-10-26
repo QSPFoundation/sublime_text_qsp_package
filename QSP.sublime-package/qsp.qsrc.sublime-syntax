@@ -28,10 +28,10 @@ contexts:
     - include: qspdocs
     # qsps-подобные границы локации → самостоятельные statements (без push-блока)
     - match: ^\s*?(#)\s?.+$
-      scope: constant.character.qsp avs.locstart
+      scope: constant.character.qsp avs_locstart
     - match: ^\s*?(-)(.*?)$
       captures:
-        1: variable.parameter.url.qsp avs.locend
-        2: entity.name.function entity.name avs.locend.comments
+        1: variable.parameter.url.qsp avs_locend
+        2: entity.name.function entity.name avs_locend_comments
     # остальное — код тела локации (из базы)
     - include: location_body

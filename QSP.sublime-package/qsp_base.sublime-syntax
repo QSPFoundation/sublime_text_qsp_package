@@ -280,7 +280,7 @@ contexts: # общие контексты подсветки кода локац
   # согласовано с семантикой «незакрытая конструкция = ошибка».
   wrong_close_in_brace:
     - match: \}(.*)({{nr}}$|$)
-      scope: invalid.illegal.qsp avs.error avs.wrongelse1
+      scope: invalid.illegal.qsp avs_error avs_wrongelse1
       pop: true
 
   # else (п.2.1): arms «голый else» и «else с хвостом-комментарием» слиты по
@@ -639,13 +639,13 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_wrong_type_prefix
       # правильно подсвечивает префикс типа перед строковыми функциями
     - match: (\$)(?=({{functions_string}}\b|{{functions_alltypes}}\b))
-      scope: support.function.qsp punctuation.definition.function avs.function
+      scope: support.function.qsp punctuation.definition.function avs_function
       # правильно подсвечивает префикс типа перед кортежными функциями
     - match: (\%)(?=({{functions_tuple}}\b|{{functions_alltypes}}\b))
-      scope: support.function.qsp punctuation.definition.function avs.function
+      scope: support.function.qsp punctuation.definition.function avs_function
       # # — числовой префикс перед числовой/универсальной функцией → верно
     - match: (\#)(?=({{functions_num}}\b|{{functions_alltypes}}\b))
-      scope: support.function.qsp punctuation.definition.function avs.function
+      scope: support.function.qsp punctuation.definition.function avs_function
       # подсветка непосредственно названий функций
     - match: |-
         (?x:
@@ -874,12 +874,12 @@ contexts: # общие контексты подсветки кода локац
 
   special_comments:
     - match: (?<=\!)@.*?(?={{nr}})
-      scope: comment.qsp markup.italic.qsp avs-speccomments
+      scope: comment.qsp markup.italic.qsp avs_speccomments
 
   preprocessor:
     - match: ^(\!@pp\:.*?)$
       captures:
-        1: meta.preprocessor.qsp diff.deleted.qsp avs-preprocessor
+        1: meta.preprocessor.qsp diff.deleted.qsp avs_preprocessor
         #2: markup.bold preprocessor.avs
 
   qspdocs:

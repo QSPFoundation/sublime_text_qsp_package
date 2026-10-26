@@ -143,19 +143,25 @@
       непересекающихся позициях) и менять его по отдельности нельзя.
       Семантика `wrong_close_in_brace` документирована как намерение (§1C.3).
       Контроль-скрипт PASS; контекстов в базе 56 (−comment_after_end,
-      +comment_tail_common). Ждёт ручной проверки подсветки (comment-arm'ы
-      формально эквивалентны, но их стоит визуально сверить на фикстурах).
+      +comment_tail_common). Ручная проверка подсветки пройдена (2026-10-26).
 
-### Фаза 4 — гигиена имён (по отдельному согласованию; визуальный риск)
-- [ ] 4.1 Выбрать ОДИН стиль `avs`-маркера; сделать глобальную замену, сверив, что
-      ни один protected-маркер (`avs_statements`, `avs_sysvar`, `avs_function`,
-      `avs_numeric`, `avs_brace_begin/end`, `avs_begin_subexpression/end`,
-      `avs_jumps_labels`, `avs-preprocessor`, `avs.locstart/end`, `avs.error`,
-      `avs_wrong_*`, `avs_longstring`, `avs_star`, `avs-speccomments`,
-      `avs_illegal_*`, `avs_wrong_type_prefix`, `avs_wrong_numeric`, `avs_wrongenter`)
-      не потерян и не переименован.
-- [ ] 4.2 Решить по суффиксу `.qsp` (§3 Решение-2).
-- [ ] 4.3 После 4.x — до/после скриншоты подсветки на фикстурах.
+### Фаза 4 — гигиена имён — ✅ п.4.1/4.2 выполнены 2026-10-26 (4.3 — ждёт)
+- [x] 4.1 Стиль `avs`-маркера унифицирован: ЕДИНЫЙ разделитель — нижнее
+      подчёркивание. Заменено (в базе + qsrc): `avs.error`→`avs_error`,
+      `avs.wrongelse1`→`avs_wrongelse1`, `avs.function`→`avs_function`
+      (слияние с уже существовавшим `avs_function`), `avs-speccomments`→
+      `avs_speccomments`, `avs-preprocessor`→`avs_preprocessor`,
+      `avs.locstart`→`avs_locstart`, `avs.locend`→`avs_locend`,
+      `avs.locend.comments`→`avs_locend_comments`. Проверено grep'ом: ни один
+      protected-маркер не потерян; из потребляемых плагином scope'ов затронутых
+      нет (единственный `avs`-маркер в Python — `avs_brace_end` в workspace.py:372,
+      не менялся). Мёртвая закомментированная строка `#2: … preprocessor.avs`
+      оставлена как есть. readme фикстуры + CONTEXT §4/§6b синхронизированы.
+- [x] 4.2 Суффикс `.qsp` — по Решению-2A НЕ унифицируем (общесхемные scope'ы
+      вроде `constant.numeric`/`meta.block` остаются без `.qsp` — не трогаем
+      цветовые схемы). Фаза 4 по суффиксу не делается.
+- [ ] 4.3 До/после скриншоты подсветки на фикстурах — ручная проверка
+      (рендер в Sublime; в headless-среде недоступно). Ждёт пользователя.
 
 ### Фаза 5 — защита от расползания braced-двойников — ✅ выполнена 2026-10-26
 - [x] 5.1 Синхрон-контракт реализован как **автоматическая** проверка,
