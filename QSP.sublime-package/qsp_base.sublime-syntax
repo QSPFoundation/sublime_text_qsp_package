@@ -28,7 +28,7 @@ variables: # назначаем переменные для удобства
       play|close\sall|close|
       jump|dynamic|goto|gt|xgoto|xgt|gosub|gs|menu|exit|
       showobjs|showstat|showacts|showinput|refint|
-      copyarr|sortarr|setvar|unpackarr|killvar|killall|scanstr|
+      copyarr|sortarr|setvar|insvar|unpackarr|killvar|killall|scanstr|
       view|msg|
       settimer|wait|
       exec
@@ -57,7 +57,7 @@ variables: # назначаем переменные для удобства
       qspver|
       curacts|curobjs|
       getobj|
-      arrtype
+      arrtype|arrkey
     )
   functions_tuple: |- # variable.function
     (?ix:
@@ -70,6 +70,9 @@ variables: # назначаем переменные для удобства
   right_operand: '({{quote}}[^{{quote}}]*|{{ap}}[^{{ap}}]*|\([^\)]*?|\[[^\]]*?|\{|((\$|\%|\#)?|-?)\w+?|-?\d+?|\@|\?)'
   nr: (\n\r|\r|\r\n|\n)
   nr_lookahead: (?=\r\n|\r|\n|$)
+  # NB (fidelity к qsp_grammar.peg, п.6.3): двухзначные операторы `=<` и `=>`
+  # (grammar `binaryStandardOperator`) намеренно НЕ поддержаны — `operacion_two_signs`
+  # ловит только `<= >= += -= *= /= <>`. `=<`/`=>` подсветятся как два one-sign'а.
   operacion_two_signs: ([<>\+\-\*\/]=|<>)
   operacion_one_sign: (\+|-|<|>|=|\/|\*|!)
   operacion_word: (?i:and|or|mod)
@@ -169,6 +172,8 @@ contexts: # общие контексты подсветки кода локац
         1: support.function.qsp
         3: string.quoted.double.qsp callable_locs.qsp
 
+  # NB (fidelity к qsp_grammar.peg, п.6.3): имя пользователя матчается `[\w\.\#]+`
+  # — намеренно БЕЗ кириллицы и `$`/`%` (grammar `nonDelimiterChar+` шире).
   sugargosub:
     - match: (\@\@)([\w\.\#]+)
       captures:
@@ -346,7 +351,10 @@ contexts: # общие контексты подсветки кода локац
   # середине строки не срабатывает, так что порядок comment_after_colon
   # внутри одного пуша не менял matching для обеих веток).
   multiline_actions_elseif:
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belseif\b))(?=\s+\S.*?\:\s*(!.*)?$)'
+    # `else if` (grammar `elseIfSpaceMarker = "else" ws "if"`) трактуется как ЕДИНЫЙ
+    # elseif-оператор: `\b(?:else\s+if|elseif)\b` внутри прежней capture-группы
+    # (нумерация групп сохранена — внутренняя alternation не захватывающая).
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b))(?=\s+\S.*?\:\s*(!.*)?$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -354,7 +362,7 @@ contexts: # общие контексты подсветки кода локац
         - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
           pop: true
         - include: location_body
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belseif\b))(?=\s+\S.*?\:\s*([^!\s].*)?$)'
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b))(?=\s+\S.*?\:\s*([^!\s].*)?$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
@@ -480,7 +488,7 @@ contexts: # общие контексты подсветки кода локац
         - include: location_body_braced
 
   multiline_actions_elseif_braced:
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belseif\b))(?=\s+\S.*?\:\s*(!.*)?$)'
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b))(?=\s+\S.*?\:\s*(!.*)?$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -488,7 +496,7 @@ contexts: # общие контексты подсветки кода локац
         - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
           pop: true
         - include: location_body_braced
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belseif\b))(?=\s+\S.*?\:\s*([^!\s].*)?$)'
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b))(?=\s+\S.*?\:\s*([^!\s].*)?$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
@@ -667,6 +675,9 @@ contexts: # общие контексты подсветки кода локац
     - match: (\$)(?=\b{{functions_tuple}}\b)
       scope: invalid.illegal.qsp avs_wrong_type_prefix
 
+  # NB (fidelity к qsp_grammar.peg, п.6.3): grammar `noteChar` исключает `()[]{}`
+  # из метки, но ВСЕ МЕТКИ ОДНОСТРОЧНЫ — многострочные скобки внутри метки не нужны,
+  # поэтому подсветка намеренно ДОПУСКАЕТ скобки (шире grammar; не является ошибкой).
   labels:
     - match: ^(\s*?\:|\:)([^&'"\n]+)
       captures:
@@ -715,6 +726,13 @@ contexts: # общие контексты подсветки кода локац
   subex:
     - include: figure_brace
     - include: sugarfunc
+    # Многострочность подвыражения `<< … >>` (grammar `stringSubexpression` =
+    # `"<<" mws multilineExpression mws ">>"`, `mws` допускает перенос) разрешена
+    # ТОЛЬКО внутри скобок и вложенных строк. `brackets_multiline` пушит
+    # `multiline_round`/`multiline_square`, которые поглощают переносы внутри `(`/`[
+    # `; `{…}` покрыт `figure_brace`, вложенные строки — `strings`. Правило ниже
+    # ловит ГОЛЫЙ перенос (вне скобок/строк) — он остаётся ошибкой.
+    - include: brackets_multiline
     - match: (\n\r|\r|\r\n|\n)
       scope: invalid.illegal.qsp avs_wrongenter
     - include: operacion_subex

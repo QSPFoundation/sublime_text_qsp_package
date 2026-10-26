@@ -44,7 +44,10 @@ contexts:
         3: entity.name.location.qsp meta.start_location.qsp
       push:
         - meta_scope: meta.location.qsp
-        - match: ^\1(--)(.*?)$
+        # Fidelity к qsp_grammar.peg (п.6.6): endOfLoc = `"--" … newline` — `--` стоит
+        # В НАЧАЛЕ СТРОКИ и НЕ привязан к отступу строки `#`. Прежняя обратная ссылка
+        # `^\1(--)` ложно требовала совпадения отступов — убрана (capture-номера 1/2 сохранены).
+        - match: ^(--)(.*?)$
           pop: true
           captures:
             1: punctuation.definition.keyword markup.bold.qsp keyword.control meta.end_location.qsp
