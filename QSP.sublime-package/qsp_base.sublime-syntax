@@ -238,6 +238,11 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок act: состояние «до ':'» (механика — как multiline_if_pending).
   multiline_act_pending:
+    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход. Здесь
+    # guard именно `--` (wrongclose_locend), а НЕ wrongclose с одинарным `-`:
+    # в заголовке мы на уровне выражения, и перенос вида `step i +=` ⏎ `    -1:`
+    # начинается с `-` легально (в телах блоков — нет, там wrongclose прав).
+    - include: wrongclose_locend
     - match: '(?=:\s*?(!.*?)?$)'
       pop: true
       push: multiline_actions_body
@@ -289,6 +294,8 @@ contexts: # общие контексты подсветки кода локац
   # Если ':' наступил РАНЬШЕ 'while' — заголовок битый (grammar требует while):
   # блок НЕ открываем, а идущие следом end/else словит wrong_end_else_elseif.
   multiline_loop_pending_prewhile:
+    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
+    - include: wrongclose_locend
     - match: '(?=\b(?i:while)\b)'
       pop: true
       push: multiline_loop_pending
@@ -301,6 +308,8 @@ contexts: # общие контексты подсветки кода локац
   # pending-заголовок loop: состояние «до ':'» при уже найденном 'while'
   # (механика — как multiline_if_pending).
   multiline_loop_pending:
+    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
+    - include: wrongclose_locend
     - match: '(?=:\s*?(!.*)?$)'
       pop: true
       push: multiline_loop_body
@@ -340,6 +349,8 @@ contexts: # общие контексты подсветки кода локац
   # pending-заголовок if: состояние «до ':'». Zero-width решения не съедают ':' —
   # его доедает либо тело (block), либо location_body (single-line), как в strict-arm.
   multiline_if_pending:
+    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
+    - include: wrongclose_locend
     # ':' и до конца строки только пробел/комментарий → блочная форма → то же тело,
     # что у strict-arm.
     - match: '(?=:\s*?(!.*)?$)'
@@ -384,6 +395,18 @@ contexts: # общие контексты подсветки кода локац
   # ложный признак конца локации.
   wrongclose:
     - match: ^\s*?(-)(.*)({{nr}}$|$)
+      scope: invalid.illegal.qsp
+      pop: true
+
+  # Фаза 9: «конец локации» (`--`), попадающий в НЕзакрытую многострочную
+  # скобку `( …` / `[ …` / `{ …` — тоже ошибка, как и `wrongclose` для незакрытого
+  # act/if/loop (не поставлен `end`): строка `--` красится invalid и закрывает
+  # ровно один уровень. Здесь требуются ИМЕННО две дефисы (qsp_grammar.peg
+  # `endLocMarker`, п.6.6), потому что перенос выражения с унарным минусом
+  # (`(1 +` ⏎ `    -2)`) внутри скобок ЛЕГАЛЕН и его ловит правило-продолжение
+  # `^\s+(?=[+\-*\/<>=,&])` — guard поэтому стоит СТРОГО РАНЬШЕ него.
+  wrongclose_locend:
+    - match: ^\s*?(--)(.*?)({{nr}}$|$)
       scope: invalid.illegal.qsp
       pop: true
 
@@ -490,6 +513,8 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок elseif: состояние «до ':'» (механика — как multiline_if_pending).
   multiline_elseif_pending:
+    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
+    - include: wrongclose_locend
     - match: '(?=:\s*?(!.*)?$)'
       pop: true
       push: multiline_elseif_body
@@ -531,6 +556,8 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок act (braced): зеркало plain.
   multiline_act_pending_braced:
+    # Фаза 9: зеркало plain (parity 5.1)
+    - include: wrongclose_locend
     - match: '(?=:\s*?(!.*?)?$)'
       pop: true
       push: multiline_actions_body_braced
@@ -569,6 +596,8 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок loop (braced), состояние «while ЕЩЁ НЕ найден»: зеркало plain.
   multiline_loop_pending_prewhile_braced:
+    # Фаза 9: зеркало plain (parity 5.1)
+    - include: wrongclose_locend
     - match: '(?=\b(?i:while)\b)'
       pop: true
       push: multiline_loop_pending_braced
@@ -580,6 +609,8 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок loop (braced): состояние «до ':'» при найденном 'while'.
   multiline_loop_pending_braced:
+    # Фаза 9: зеркало plain (parity 5.1)
+    - include: wrongclose_locend
     - match: '(?=:\s*?(!.*)?$)'
       pop: true
       push: multiline_loop_body_braced
@@ -611,6 +642,8 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок if (braced): зеркало plain.
   multiline_if_pending_braced:
+    # Фаза 9: зеркало plain (parity 5.1)
+    - include: wrongclose_locend
     - match: '(?=:\s*?(!.*)?$)'
       pop: true
       push: multiline_conditions_body_braced
@@ -709,6 +742,8 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок elseif (braced): зеркало plain.
   multiline_elseif_pending_braced:
+    # Фаза 9: зеркало plain (parity 5.1)
+    - include: wrongclose_locend
     - match: '(?=:\s*?(!.*)?$)'
       pop: true
       push: multiline_elseif_body_braced
@@ -1131,6 +1166,9 @@ contexts: # общие контексты подсветки кода локац
       scope: punctuation.section.block.begin.qsp avs_brace_begin
       push:
         - meta_content_scope: meta.block
+        # Фаза 9: `--` внутри незакрытой `{` — ошибка (зеркало wrongclose для
+        # незакрытого блока: красим конец локации и закрываем один уровень)
+        - include: wrongclose_locend
         - include: htmlsupport
         - include: continuation_tail
         # Внутри открытого {…} тело uses brace-aware версию: «}» на
@@ -1161,6 +1199,8 @@ contexts: # общие контексты подсветки кода локац
     - match: '\)'
       scope: punctuation.section.parens.end.qsp avs_paren_end
       pop: true
+    # Фаза 9: `--` внутри незакрытой `(` — ошибка (до правила-продолжения)
+    - include: wrongclose_locend
     # продолжение выражения на новой строке: съедаем отступ перед
     # оператором/запятой/амперсандом, чтобы правила вида (^\s*?|\&\s*?|\K…)
     # «без левого операнда» не срабатывали ложно на перенесённой строке
@@ -1175,6 +1215,8 @@ contexts: # общие контексты подсветки кода локац
     - match: '\]'
       scope: punctuation.section.brackets.end.qsp avs_bracket_end
       pop: true
+    # Фаза 9: `--` внутри незакрытой `[` — ошибка (до правила-продолжения)
+    - include: wrongclose_locend
     - match: ^\s+(?=[+\-*\/<>=,&])
       scope: meta.continuation.expression.qsp
     - include: continuation_tail

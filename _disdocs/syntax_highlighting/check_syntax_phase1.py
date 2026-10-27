@@ -144,7 +144,15 @@ if undef or unused:
 # на «_in_brace», не на «_braced», — под строге он не трогается и должен
 # оставаться идентичным в обеих версиях — так и есть по Решению-1A.)
 PAIRS = ['multiline_actions', 'multiline_loop', 'multiline_conditions',
-         'multiline_actions_else', 'multiline_actions_elseif']
+         'multiline_actions_else', 'multiline_actions_elseif',
+         # Фаза 8: расширено на тела и pending-состояния, вынесенные в Фазе 7
+         # (раньше их парность не проверялась вовсе) — тот же критерий:
+         # отличие только суффикс '_braced' у include/push.
+         'multiline_actions_body', 'multiline_conditions_body',
+         'multiline_loop_body', 'multiline_elseif_body',
+         'multiline_act_pending', 'multiline_if_pending',
+         'multiline_loop_pending', 'multiline_loop_pending_prewhile',
+         'multiline_elseif_pending']
 
 def strip_braced_suffix(rules):
     """Копия правил, у include/push срезан хвост '_braced' (рекурсивно)."""
