@@ -265,21 +265,41 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
       push: multiline_loop_body
-    # bracket-arm (Фаза 7): многострочная ( или [ в while-условии/step loop →
-    # pending-заголовок, решающий форму на ':' (см. multiline_loop_pending).
-    # Требование «while на строке» сохранено, чтобы loop БЕЗ while по-прежнему
-    # уходил в invalid-arm ниже.
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bloop\b))(?=.*?(?i:(\bwhile\b))){{unbalanced_bracket_head}}'
+    # bracket-arm (Фаза 7 + 8): многострочная ( или [ в заголовке loop →
+    # pre-while pending. Guard «while на строке» (был в Фазе 7) СНЯТ: скобка может
+    # стоять и ДО 'while' — в инициализирующей группе grammar
+    # `loopMultiLine = loopMarker ws (singleLineGroup ws)? whileMarker …`, где
+    # `[1,…]` — `nonEmptyTuple` с `mws`, переносы внутри легальны. Требование
+    # 'while' теперь проверяет сам pending (multiline_loop_pending_prewhile), а не
+    # arm: блок открывается ТОЛЬКО если 'while' наступил раньше ':'.
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bloop\b)){{unbalanced_bracket_head}}'
       scope: meta.begin_cycle.qsp
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
-      push: multiline_loop_pending
-    # invalid-arm: loop без 'while' — живёт в multiline_loop (после обоих валидных
-    # arm'ов); в pending его быть не должно — туда он затесался при вставке контекста.
+      push: multiline_loop_pending_prewhile
+    # invalid-arm: loop без 'while' на строке И без незакрытой скобки — живёт в
+    # multiline_loop (после всех валидных arm'ов); в pending его быть не должно.
     - match: '(?i:(\bloop\b))(?!.*(?i:(\bwhile\b)))'
       scope: invalid.illegal.qsp
 
-  # pending-заголовок loop: состояние «до ':'» (механика — как multiline_if_pending).
+  # pending-заголовок loop, состояние «while ЕЩЁ НЕ найден» (Фаза 8): едет по
+  # многострочной скобке через location_body и нулевой ширины переходит в
+  # multiline_loop_pending на первом 'while' (сам 'while' не съедается — красится
+  # штатными правилами, 1:1 с однострочным заголовком).
+  # Если ':' наступил РАНЬШЕ 'while' — заголовок битый (grammar требует while):
+  # блок НЕ открываем, а идущие следом end/else словит wrong_end_else_elseif.
+  multiline_loop_pending_prewhile:
+    - match: '(?=\b(?i:while)\b)'
+      pop: true
+      push: multiline_loop_pending
+    - match: '(?=:\s*?(!.*)?$)'
+      pop: true
+    - match: '(?=:\s*?\S)'
+      pop: true
+    - include: location_body
+
+  # pending-заголовок loop: состояние «до ':'» при уже найденном 'while'
+  # (механика — как multiline_if_pending).
   multiline_loop_pending:
     - match: '(?=:\s*?(!.*)?$)'
       pop: true
@@ -536,17 +556,29 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
       push: multiline_loop_body_braced
-    # bracket-arm (Фаза 7): зеркало plain (parity 5.1) → pending (multiline_loop_pending_braced).
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bloop\b))(?=.*?(?i:(\bwhile\b))){{unbalanced_bracket_head}}'
+    # bracket-arm (Фаза 7 + 8): зеркало plain (parity 5.1) → pre-while pending
+    # (multiline_loop_pending_prewhile_braced); guard «while на строке» снят и здесь.
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bloop\b)){{unbalanced_bracket_head}}'
       scope: meta.begin_cycle.qsp
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
-      push: multiline_loop_pending_braced
+      push: multiline_loop_pending_prewhile_braced
     # invalid-arm: зеркало plain (parity 5.1) — живёт в multiline_loop_braced.
     - match: '(?i:(\bloop\b))(?!.*(?i:(\bwhile\b)))'
       scope: invalid.illegal.qsp
 
-  # pending-заголовок loop (braced): зеркало plain.
+  # pending-заголовок loop (braced), состояние «while ЕЩЁ НЕ найден»: зеркало plain.
+  multiline_loop_pending_prewhile_braced:
+    - match: '(?=\b(?i:while)\b)'
+      pop: true
+      push: multiline_loop_pending_braced
+    - match: '(?=:\s*?(!.*)?$)'
+      pop: true
+    - match: '(?=:\s*?\S)'
+      pop: true
+    - include: location_body_braced
+
+  # pending-заголовок loop (braced): состояние «до ':'» при найденном 'while'.
   multiline_loop_pending_braced:
     - match: '(?=:\s*?(!.*)?$)'
       pop: true

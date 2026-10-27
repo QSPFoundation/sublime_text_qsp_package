@@ -1,9 +1,11 @@
 # CONTEXT — переносимый контекст задачи (подсветка QSP)
 
 > По реструктуризации (REFACTOR_PLAN): Фазы 1–5 сделаны (кроме ручного
-> п.4.3 — скриншоты). Рефакторинг фактически завершён; для продолжения
-> остаётся только ручная визуальная сверка. Приложи `REFACTOR_PLAN.md`.
-> Последнее обновление: 2026-10-26.
+> п.4.3 — скриншоты), Фазы 6–8 тоже (6 — fidelity к `qsp_grammar.peg`,
+> 7 — многострочные скобки в заголовках, 8 — скобка ДО `while` в loop).
+> Рефакторинг фактически завершён; для продолжения остаётся только ручная
+> визуальная сверка (в т.ч. рендер Фазы 8). Приложи `REFACTOR_PLAN.md`.
+> Последнее обновление: 2026-10-27.
 
 ## 1. Что за проект
 
@@ -78,6 +80,10 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 (многострочные `( )` и `[ ]` + валидный хвост-оператор на переносе), `multiline_actions`,
 `multiline_conditions`, `multiline_loop`, `multiline_actions_else`,
 `illegal_multiline_else`, `multiline_actions_elseif`, `kw_declarations`,
+(Фаза 7/8: у act/if/loop/elseif есть `multiline_*_body` — тело блока, и
+`multiline_*_pending` — заголовок ещё не дошёл до `:`; у loop два
+pending-состояния: `multiline_loop_pending_prewhile` («`while` ещё не найден»,
+многострочная скобка в инициализирующей группе) → `multiline_loop_pending`),
 `sugargosub`, `sugarfunc`, `wrong_end_else_elseif`, `wrongclose`,
 `wrong_close_in_brace`, `users_variables`, `jump_to_label`, `location_call`,
 `operacion`, `numeric`, `statements`, `system_variables`, `functions`, `labels`,
@@ -92,8 +98,11 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 BRACED-слой (Шаг 9, тоже в `qsp_base`) — зеркало тела для кода ВНУТРИ
 открытого `{…}`: `location_body_braced`, `comments_in_brace`,
 `multiline_actions_braced`, `multiline_loop_braced`, `multiline_conditions_braced`,
-`multiline_actions_else_braced`, `multiline_actions_elseif_braced`. `figure_brace`
-теперь пушит `location_body_braced` (а не `location_body`).
+`multiline_actions_else_braced`, `multiline_actions_elseif_braced` + (Фаза 7/8)
+их `*_body_braced` и `*_pending_braced` (в т.ч. `multiline_loop_pending_prewhile_braced`).
+`figure_brace` теперь пушит `location_body_braced` (а не `location_body`).
+Парность plain/`_braced` проверяет автотест 5.1 в `check_syntax_phase1.py`
+(с Фазы 8 — 14 пар вместо 5: добавлены тела и pending-состояния).
 
 ТОЛЬКО qsps (остаётся в `qsp.sublime-syntax`): `main`, `diff`, `location_def`
 (блок `# … --`), `qspgame_header`.
@@ -267,6 +276,21 @@ BRACED-слой (Шаг 9, тоже в `qsp_base`) — зеркало тела �
       4.3 (скриншоты до/после) — ждёт ручного рендера в Sublime. Явных изменений
       matching нет (только имена scope'ов), но цвет `avs`-маркеров в схемы
       проверяется визуально.
+- [x] Фазы 6 и 7 (вне Фаз 1–5) — выполнены 2026-10-26; детали только в
+      `REFACTOR_PLAN.md` (§6 — fidelity к `qsp_grammar.peg`; ФАЗА 7 — pending-
+      механизм для многострочных скобок в заголовках act/if/loop/elseif,
+      рендер подтверждён пользователем).
+- [x] Фаза 8 (2026-10-27) — многострочная скобка ДО `while` в заголовке loop
+      (`loop local i = [1,⏎2,3] while …:`). Guard «`while` на строке» снят с
+      bracket-arm `multiline_loop`/`_braced`; вместо него — новый переходный
+      контекст `multiline_loop_pending_prewhile`/`_braced`: он едет по скобке через
+      `location_body(_braced)`, на первом `while` (zero-width) переходит в
+      `multiline_loop_pending`, а если `:` наступил раньше `while` — гасится БЕЗ
+      открытия блока (битый `loop` без `while` → `end` остаётся excess). Контекстов
+      в базе 72 → 74. PAIRS автотеста 5.1 расширен 5 → 14 пар (тела + pending).
+      Фикстура: `conditional_manilevels_head.qsps` (перемаркирован кейс + локи
+      `loop__скобка_до_while_без_while`, `braced__loop_скобка_до_while`).
+      Контроль PASS; ручной рендер в Sublime ждёт подтверждения пользователя.
 
 ## 7b. Открытые решения (спросить пользователя в новом чате; статус на 2026-10-26)
 
