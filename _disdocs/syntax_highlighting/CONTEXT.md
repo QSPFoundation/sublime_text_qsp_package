@@ -1,7 +1,5 @@
 # CONTEXT — переносимый контекст задачи (подсветка QSP)
 
-> **Как использовать в новом чате:** приложи этот файл и `PLAN.md` и попроси
-> «продолжить по плану, шаг N». Окно контекста не нужно — всё важное здесь.
 > По реструктуризации (REFACTOR_PLAN): Фазы 1–5 сделаны (кроме ручного
 > п.4.3 — скриншоты). Рефакторинг фактически завершён; для продолжения
 > остаётся только ручная визуальная сверка. Приложи `REFACTOR_PLAN.md`.
@@ -19,7 +17,6 @@ QSP-пакет для Sublime Text (язык Quest Soft Player, qsp.org). Под
 - `qsp_base.sublime-syntax`        — общая база (hidden, scope `source.qsp.base`)
 - `qsp.sublime-syntax`            — формат qsps (visible, scope `source.qsp`)
 - `qsp.qsrc.sublime-syntax`       — формат qsrc (visible, scope `source.qsrc.qsp`)
-- ~~`qsp_locations.sublime-syntax`~~ — УДАЛЁН (функции разнесены по base + qsrc)
 
 ## 2. Постановка задачи (от пользователя)
 
