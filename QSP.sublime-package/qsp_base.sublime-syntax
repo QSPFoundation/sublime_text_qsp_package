@@ -463,6 +463,18 @@ contexts: # общие контексты подсветки кода локац
   else_body_guarded_tail:
     - include: wrongclose
     - include: wrong_close_in_brace
+  # Тело многострочного else (голый `else` / `else !коммент`) одним ИМЕНОВАННЫМ
+  # контекстом: arm `else !коммент` пушит СРАЗУ ДВА контекста (тело + хвост-
+  # комментарий), и после pop'а комментария по newline верхним должно оказаться
+  # ровно это тело. Зеркало для {…} — else_body_block_braced (parity 5.1).
+  else_body_block:
+    - include: else_body_head_bare
+    - include: else_body_guarded_tail
+    - include: location_body
+  else_body_block_braced:
+    - include: else_body_head_bare
+    - include: else_body_guarded_tail
+    - include: location_body_braced
   # elseif strict-arm: comment_after_colon + final-guard:
   elseif_body_head_strict:
     - include: comment_after_colon
@@ -501,7 +513,7 @@ contexts: # общие контексты подсветки кода локац
     # этому arm'у схватить «голый» else и запушить контекст с catch-all `^.*` →
     # comment.qsp, который красил КОММЕНТАРИЕМ все строки тела до end — хотя
     # многострочный else без ':' легален (тело начинается со следующей строки).
-    # Голый else (и `else !коммент`) корректно доходит до нижнего arm'а.
+    # Голый else доходит до bare-arm ниже, `else !коммент` — до своего arm'а.
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -528,12 +540,31 @@ contexts: # общие контексты подсветки кода локац
           scope: comment.qsp
         - include: else_body_guarded_tail
         - include: location_body
-    # Многострочный `else` БЕЗ хвоста-утверждения: голый `else` и `else !коммент`
-    # (elseMultiLine — двоеточие факультативно, хвост может быть комментарием).
-    # Тело — СЛЕДУЮЩИЕ строки → КОД (фикс 1b: здесь НЕТ catch-all `^.*`→comment).
-    # Выход по final-guard на `end`/`else`/`elseif`. Однострочные формы (`else <stmt>`
-    # без ':') и колонные (`else:` / `else: <текст>` / `else <конд>:`) — выше.
-    - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*(!.*?)?$)'
+    # `else !коммент` БЕЗ ':' — многострочный else с хвостом-комментарием
+    # (elseMultiLine: `(":" ws)? commentStatement?`). В match берём ТОЛЬКО
+    # открывающий `!` (capture → punct): тело комментария уходит в контекст
+    # comment_after_else (pop по newline), поэтому внутри работают "…"/'…'/{…}
+    # и '@'-спецы — как после ':'. Якорь `^` + `[ \t]+` строго фиксирует позицию
+    # «сразу после else», поэтому NOT в теле (`x = !y`) не затрагивается.
+    # Список push: правый контекст — верхний, т.е. комментарий лежит НАД телом
+    # else; после его pop'а по newline верхним становится тело.
+    # `comment.qsp` есть и в capture: тело контекста использует meta_content_scope
+    # (чтобы не накрыть `else`), поэтому сам `!` получает comment-scope только
+    # через capture — ровно как у comment_after_colon.
+    - match: '^(\s*?)(?i:(\belse\b))[ \t]+(!)'
+      captures:
+        2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
+        3: comment.qsp punctuation.definition.comment.begin.qsp main_comment_start.qsp
+      push:
+        - else_body_block
+        - comment_after_else
+    # Многострочный `else` БЕЗ хвоста-утверждения: голый `else` (+ хвостовые
+    # пробелы). elseMultiLine — двоеточие факультативно; хвост-комментарий ловит
+    # arm выше. Тело — СЛЕДУЮЩИЕ строки → КОД (фикс 1b: здесь НЕТ catch-all
+    # `^.*`→comment). Выход по final-guard на `end`/`else`/`elseif`. Однострочные
+    # формы (`else <stmt>` без ':') и колонные (`else:` / `else: <текст>` /
+    # `else <конд>:`) — выше.
+    - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -765,8 +796,17 @@ contexts: # общие контексты подсветки кода локац
           scope: comment.qsp
         - include: else_body_guarded_tail
         - include: location_body_braced
-    # зеркало plain (parity 5.1): многострочный `else` без хвоста (голый / `!коммент`).
-    - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*(!.*?)?$)'
+    # зеркало plain (parity 5.1): `else !коммент` без ':' — хвост = комментарий-
+    # контекст (comment_after_else), тело else лежит под ним (else_body_block_braced).
+    - match: '^(\s*?)(?i:(\belse\b))[ \t]+(!)'
+      captures:
+        2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
+        3: comment.qsp punctuation.definition.comment.begin.qsp main_comment_start.qsp
+      push:
+        - else_body_block_braced
+        - comment_after_else
+    # зеркало plain (parity 5.1): многострочный `else` без хвоста (голый).
+    - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -1149,6 +1189,24 @@ contexts: # общие контексты подсветки кода локац
         - include: quote_apostroph_comments
         - include: brace_comments
         - include: special_comments
+
+  # Хвост-комментарий в заголовке многострочного else (`else !коммент`): ':' по
+  # grammar (elseMultiLine `(":" ws)? commentStatement?`) факультативен, поэтому
+  # comment_after_colon с lookbehind `(?<=:)` этот случай не ловит, а `comments`
+  # видит `!` только в начале строки или после `&` → значок уезжал в оператор NOT.
+  # Открывающий `!` потребляет arm multiline_actions_else (capture → punct), здесь
+  # живёт ТОЛЬКО тело: до newline, с "…"/'…'/{…} и '@'-спецами — та же механика,
+  # что после ':' (потребление хвоста в match убило бы её).
+  # meta_content_scope (НЕ meta_scope): scope комментария не должен накрывать сам
+  # `else` — он относится к match'у, запушившему этот контекст.
+  comment_after_else:
+    - meta_content_scope: comment.qsp
+    - match: '({{nr}}|$)'
+      scope: punctuation.definition.comment.end.qsp main_comment_end.qsp
+      pop: true
+    - include: quote_apostroph_comments
+    - include: brace_comments
+    - include: special_comments
 
   # Комментарий после 'end': весь текст до '&' или конца строки; внутри
   # {…} закрывающая '}' завершает и комментарий, и внешний блок (её ловит
