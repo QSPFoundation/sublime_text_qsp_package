@@ -493,24 +493,77 @@ contexts: # общие контексты подсветки кода локац
     - include: else_body_head_bare
     - include: else_body_guarded_tail
     - include: location_body_braced
+  # МЁРТВЫЙ РЕГИОН однострочных else/elseif.
+  # По грамматике хвост `else: <stmt>` / `else <stmt>` / `elseif <cond>: <stmt>`
+  # делает конструкцию ОДНОСТРОЧНОЙ: строки ниже не исполняются, но ПЛЕЕР их всё
+  # равно СКАНИРУЕТ с учётом кавычек/апострофов/скобок. Поэтому регион красим
+  # настоящим многострочным комментарием с ТОЙ ЖЕ структурой, что и обычные
+  # комментарии (общие quote_apostroph_comments / brace_comments /
+  # special_comments), а НЕ построчным `^.*` (он забирает строку с позиции 0 и
+  # не даёт сработать кавычкам/скобкам).
+  #
+  # Входные кадры (plain + braced-зеркало): хвост САМОЙ строки else/elseif —
+  # обычное тело (location_body), а на НАЧАЛЕ следующей строки кадр заменяет
+  # себя на регион (pop + push = set; для push совместимо со ST3). Якорь ИМЕННО
+  # `^`: `$`/newline не годится — хвост-комментарий (`else: & !…`) съедает
+  # перевод строки своим pop'ом, и `$`-правило уже не сработало бы.
+  #
+  # Сам регион braced-зеркала НЕ имеет: внутри мёртвого кода {…} — это
+  # структура КОММЕНТАРИЯ, а не блок кода, т.е. тело от окружения не зависит.
+  # braced-зеркала нужны только входным кадрам —
+  # else_dead_line_braced / elseif_dead_line_braced (parity 5.1).
+  dead_code_comment:
+    - meta_scope: comment.qsp
+    # выход из региона: строка началась с end/else/elseif/if/`-`
+    - match: '{{final_guard}}'
+      pop: true
+    # структура — ТА ЖЕ, что у обычного комментария (comment_tail_common):
+    # состояния "…"/'…'/{…} живут через переносы строк, поэтому `end` внутри
+    # литерала или вложенных {…} регион НЕ закрывает (как в плеере)
+    - include: quote_apostroph_comments
+    - include: brace_comments
+    - include: special_comments
+
+  else_dead_line:
+    - match: '^'
+      pop: true
+      push: dead_code_comment
+    - include: else_body_guarded_tail
+    - include: location_body
+  else_dead_line_braced:
+    - match: '^'
+      pop: true
+      push: dead_code_comment
+    - include: else_body_guarded_tail
+    - include: location_body_braced
+
+  elseif_dead_line:
+    - match: '^'
+      pop: true
+      push: dead_code_comment
+    - include: location_body
+  elseif_dead_line_braced:
+    - match: '^'
+      pop: true
+      push: dead_code_comment
+    - include: location_body_braced
   # elseif strict-arm: comment_after_colon + final-guard:
   elseif_body_head_strict:
     - include: comment_after_colon
     - match: '{{final_guard}}'
       pop: true
-  # elseif permissive-arm: final-guard + хвост-комментарий:
-  elseif_body_head_permissive:
-    - match: '{{final_guard}}'
-      pop: true
-    - match: "^.*"
-      scope: comment.qsp
+  # elseif permissive-arm (ОДНОСТРОЧНЫЙ `elseif …: <stmt>`): тело-комментарий
+  # УДАЛЕНО вместе с построчным `^.*` (2026-10-28): строки ниже до
+  # else/elseif/end красит общий многострочный регион dead_code_comment,
+  # входной кадр — elseif_dead_line[_braced].
 
   # else (грамматика: elseClause = elseMultiLine | elseSingleLine, двоеточие
   # представляет `(":" ws)?`). Arms идут от специфичных к общим, ПОРЯДОК ЗНАЧИМ:
   #   1) invalid: `else <условие>:` — else условия не допускает (вся строка);
   #   2) colon/caret `^else …:`   3) colon/brace `{else …:` — блок, хвост после ':' = коммент;
-  #   4) colon-single `else: <stmt>` — однострочный: строки ниже до end = мёртвый код
-  #      → комментарий; `else:` и `else: !коммент` забирает (2);
+  #   4) colon-single `else: <stmt>` — однострочный: строки ниже до end = мёртвый
+  #      код → МНОГОСТРОЧНЫЙ комментарий (else_dead_line → dead_code_comment);
+  #      `else:` и `else: !коммент` забирает (2);
   #   5) stmt-single `else <stmt>` без ':' — тот же приём, что (4);
   #   6) `else !коммент` без ':' — ХВОСТ = КОНТЕКСТ комментария (comment_after_else),
   #      под ним — ТЕЛО else (else_body_block), т.е. строки ниже = КОД;
@@ -538,36 +591,26 @@ contexts: # общие контексты подсветки кода локац
         - include: location_body
     # «else <текст>:» (однострочная форма с условием/хвостом). Двоеточие ЗДЕСЬ
     # ОБЯЗАТЕЛЬНО (изменена `(:?)`→`(:)`, 2026-10-28): опциональное `:` позволяло
-    # этому arm'у схватить «голый» else и запушить контекст с catch-all `^.*` →
-    # comment.qsp, который красил КОММЕНТАРИЕМ все строки тела до end — хотя
+    # этому arm'у схватить «голый» else и закрасить КОММЕНТАРИЕМ все строки тела до end — хотя
     # многострочный else без ':' легален (тело начинается со следующей строки).
     # Голый else доходит до bare-arm ниже, `else !коммент` — до своего arm'а.
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
-      push:
-        - include: else_body_head_bare
-        - match: "^.*"
-          scope: comment.qsp
-        - include: else_body_guarded_tail
-        - include: location_body
+      push: else_dead_line
     # Однострочный `else <statements>` БЕЗ двоеточия (elseSingleLine, двоеточие
     # факультативно `(":" ws)?`). Зеркало arm4 (колонной однострочной формы): хвост
     # строки красится штатно (location_body), а ВСЕ последующие строки до `end` —
-    # мёртвый код → комментарий (`^.*`→comment). Условие входа: после else
-    # горизонтальный `[ \t]+` и следующий символ НЕ `!` и не пробел (иначе это
-    # комментарий-строка → многострочный else, см. нижний bare-arm). `end`/`else`/
-    # `elseif` на последующих строках словит final-guard раньше `^.*`.
+    # мёртвый код → многострочный комментарий (else_dead_line → dead_code_comment).
+    # Условие входа: после else горизонтальный `[ \t]+` и следующий символ НЕ `!`
+    # и не пробел (иначе это комментарий-строка → многострочный else, см. нижний
+    # bare-arm). `end`/`else`/`elseif` на последующих строках словит final_guard
+    # региона.
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))[ \t]+(?=[^!\s])'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
-      push:
-        - include: else_body_head_bare
-        - match: "^.*"
-          scope: comment.qsp
-        - include: else_body_guarded_tail
-        - include: location_body
+      push: else_dead_line
     # `else !коммент` БЕЗ ':' — многострочный else с хвостом-комментарием
     # (elseMultiLine: `(":" ws)? commentStatement?`). В match берём ТОЛЬКО
     # открывающий `!` (capture → punct): тело комментария уходит в контекст
@@ -617,13 +660,14 @@ contexts: # общие контексты подсветки кода локац
       push:
         - include: elseif_body_head_strict
         - include: location_body
+    # permissive-arm = ОДНОСТРОЧНЫЙ elseif (`elseif <cond>: <stmt>`): строки ниже
+    # до else/elseif/end — мёртвый код → тот же многострочный комментарий, что
+    # и у однострочного else (dead_code_comment), см. elseif_dead_line.
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_permissive_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
-      push:
-        - include: elseif_body_head_permissive
-        - include: location_body
+      push: elseif_dead_line
     # bracket-arm (Фаза 7): многострочная ( или [ в elseif-условии → pending-
     # заголовок, решающий форму на ':' (см. multiline_elseif_pending). Ветка
     # снимается по sibling-guard (elseif_else_final) при следующем else/elseif/end —
@@ -806,23 +850,13 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
-      push:
-        - include: else_body_head_bare
-        - match: "^.*"
-          scope: comment.qsp
-        - include: else_body_guarded_tail
-        - include: location_body_braced
+      push: else_dead_line_braced
     # зеркало plain (parity 5.1): однострочный `else <statements>` без ':' → след.
-    # строки до `end` = комментарий.
+    # строки до `end` = многострочный комментарий (else_dead_line_braced).
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))[ \t]+(?=[^!\s])'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
-      push:
-        - include: else_body_head_bare
-        - match: "^.*"
-          scope: comment.qsp
-        - include: else_body_guarded_tail
-        - include: location_body_braced
+      push: else_dead_line_braced
     # зеркало plain (parity 5.1): `else !коммент` без ':' — хвост = комментарий-
     # контекст (comment_after_else), тело else лежит под ним (else_body_block_braced).
     - match: '^(\s*?)(?i:(\belse\b))[ \t]+(!)'
@@ -849,9 +883,7 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
-      push:
-        - include: elseif_body_head_permissive
-        - include: location_body_braced
+      push: elseif_dead_line_braced
     # bracket-arm (Фаза 7): зеркало plain (parity 5.1) → pending (multiline_elseif_pending_braced).
     - match: '{{arm_anchor}}{{kw_elseif}}{{unbalanced_bracket_head}}'
       captures:
@@ -1254,33 +1286,57 @@ contexts: # общие контексты подсветки кода локац
     - match: (?=&|\}|{{nr}}|$)
       pop: true
 
-  brace_comments: # данная конструкция отвечает за поддержку вложенных скобок в комменте
+  # --- Состояния «внутри» комментария: "…", '…', {…} ---
+  # Вынесены в ИМЕНОВАННЫЕ контексты (были inline в push-стеках): ОДНО описание
+  # структуры используют и обычные комментарии (comment_tail_common,
+  # comment_after_colon/else/end), и мёртвый регион однострочных
+  # else/elseif (dead_code_comment).
+  # Все три ЖИВУТ ЧЕРЕЗ ПЕРЕНОСЫ СТРОК: литерал QSP бывает многострочным
+  # (см. corpus: $args['…'] = ' ⏎ … ⏎ '), {…} — блочная структура комментария.
+  # Совпадений на «прочий текст» у них НЕТ и не нужно: пока такое состояние на
+  # вершине стека, контексты ниже не рассматриваются, и текст просто остаётся
+  # под их meta_scope. Именно поэтому `}` внутри "…" не закрывает {…}-блок, а
+  # `&`/`end` внутри незакрытого литерала не рвут ни комментарий, ни мёртвый
+  # регион.
+  comment_in_quote:
+    - meta_scope: comment.qsp
+    - match: '{{quote}}'
+      scope: comment.qsp
+      pop: true
+
+  comment_in_apostroph:
+    - meta_scope: comment.qsp
+    - match: '{{ap}}'
+      scope: comment.qsp
+      pop: true
+
+  comment_in_brace:
+    - meta_scope: comment.qsp
+    - match: '\}'
+      scope: punctuation.definition.comment.end.qsp brace_comment_end.qsp
+      pop: true
     - match: '\{'
       scope: punctuation.definition.comment.begin.qsp brace_comment_start.qsp
-      push:
-        - meta_scope: comment.qsp
-        - match: '\}'
-          scope: punctuation.definition.comment.end.qsp brace_comment_end.qsp
-          pop: true
-        - include: brace_comments
-        - include: quote_apostroph_comments
-        # - include: apinbrack
+      push: comment_in_brace
+    - match: '{{quote}}'
+      push: comment_in_quote
+    - match: '{{ap}}'
+      push: comment_in_apostroph
 
+  # вложенные {…} в комментарии (вход в comment_in_brace)
+  brace_comments:
+    - match: '\{'
+      scope: punctuation.definition.comment.begin.qsp brace_comment_start.qsp
+      push: comment_in_brace
+
+  # "…" / '…' в комментарии (вход в состояния литералов)
   quote_apostroph_comments:
-    - match: '{{quote}}' # [^\{\'\"]*?\" open quotes comment
+    - match: '{{quote}}'
       scope: comment.qsp
-      push:
-        - meta_scope: comment.qsp
-        - match: '{{quote}}'
-          scope: comment.qsp
-          pop: true
-    - match: '{{ap}}' # [^\{\'\"]*?\' open apostrophes comment
+      push: comment_in_quote
+    - match: '{{ap}}'
       scope: comment.qsp
-      push:
-        - meta_scope: comment.qsp
-        - match: '{{ap}}'
-          scope: comment.qsp
-          pop: true
+      push: comment_in_apostroph
 
   special_comments:
     - match: (?<=\!)@.*?(?={{nr}})

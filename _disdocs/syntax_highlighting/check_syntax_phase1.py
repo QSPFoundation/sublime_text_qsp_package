@@ -155,7 +155,11 @@ PAIRS = ['multiline_actions', 'multiline_loop', 'multiline_conditions',
          'multiline_elseif_pending',
          # фикс `else !коммент` (1g): тело многострочного else вынесено в
          # именованные контексты (нужны для push двух контекстов в arm'е).
-         'else_body_block']
+         'else_body_block',
+         # 1j: мёртвый регион однострочных else/elseif = многострочный
+         # комментарий (хвост строки else/elseif выделяется
+         # location_body[_braced]).
+         'else_dead_line', 'elseif_dead_line']
 
 def strip_braced_suffix(rules):
     """Копия правил, у include/push срезан хвост '_braced' (рекурсивно)."""
