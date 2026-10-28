@@ -269,8 +269,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_actions_body
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body
 
   multiline_actions_body:
@@ -324,8 +323,7 @@ contexts: # общие контексты подсветки кода локац
       push: multiline_loop_pending
     - match: '{{pend_block_soft}}'
       pop: true
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body
 
   # pending-заголовок loop: состояние «до ':'» при уже найденном 'while'
@@ -336,8 +334,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_loop_body
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body
 
   multiline_loop_body:
@@ -381,8 +378,7 @@ contexts: # общие контексты подсветки кода локац
       push: multiline_conditions_body
     # ':' и на этой же строке утверждение → однострочная форма → блок НЕ открываем;
     # возвращаемся в location_body, а идущие следом else/end словит wrong_end_else_elseif.
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body
 
   # тело if-конструкции (Фаза 7: вынесено из inline-push strict-arm, поведение 1:1;
@@ -441,6 +437,44 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_error avs_wrongelse1
       pop: true
 
+  # --- Общие include-сегменты тел else/elseif/pending (Шаг 2: P1.2 + P1.4) --
+  # Вынесены ПОСТРОЧНО идентичные inline-тела push-стеков (поведение 1:1:
+  # include внутри push-списка разворачивает правила ровно на своём месте).
+  # Различие plain↔braced остаётся ТОЛЬКО в финальном include location_body /
+  # location_body_braced, поэтому сами сегменты не содержат суффикса _braced и
+  # инклюдятся обоими зеркалами одинаково — sync-контракт (п.5.1) не затрагивается.
+  #
+  # else/elseif: возврат из незакрытого pending-заголовка на inline-':' (P1.4);
+  # один и тот же во всех пяти plain и пяти braced pending-контекстах:
+  pending_inline_pop:
+    - match: '{{pend_inline}}'
+      pop: true
+  # else: illegal_multiline_else + final-guard (без comment_after_colon) —
+  # голова «голого» else (arm5) и else-с-условием (arm4):
+  else_body_head_bare:
+    - include: illegal_multiline_else
+    - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
+      pop: true
+  # else: comment_after_colon + голова — caret/brace arm'ы (arm2/arm3):
+  else_body_common_head:
+    - include: comment_after_colon
+    - include: else_body_head_bare
+  # else: ошибочные закрытия перед телом (location_body подключается в arm'е):
+  else_body_guarded_tail:
+    - include: wrongclose
+    - include: wrong_close_in_brace
+  # elseif strict-arm: comment_after_colon + final-guard:
+  elseif_body_head_strict:
+    - include: comment_after_colon
+    - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
+      pop: true
+  # elseif permissive-arm: final-guard + хвост-комментарий:
+  elseif_body_head_permissive:
+    - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
+      pop: true
+    - match: "^.*"
+      scope: comment.qsp
+
   # else (п.2.1): arms «голый else» и «else с хвостом-комментарием» слиты по
   # якорям через branch-reset; две формы после двоеточия (строгая `^else:` и
   # разрешающая условие `{else x:`) оставлены раздельно — у них разные
@@ -452,23 +486,15 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
-        - include: comment_after_colon
-        - include: illegal_multiline_else
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
-        - include: wrongclose
-        - include: wrong_close_in_brace
+        - include: else_body_common_head
+        - include: else_body_guarded_tail
         - include: location_body
     - match: '(?<=\{)(\s*?)(?i:(\belse\b)){{else_brace_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
-        - include: comment_after_colon
-        - include: illegal_multiline_else
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
-        - include: wrongclose
-        - include: wrong_close_in_brace
+        - include: else_body_common_head
+        - include: else_body_guarded_tail
         - include: location_body
     # «else <текст>:» (однострочная форма с условием/хвостом). Двоеточие ЗДЕСЬ
     # ОБЯЗАТЕЛЬНО (изменена `(:?)`→`(:)`, 2026-10-28): опциональное `:` позволяло
@@ -481,23 +507,38 @@ contexts: # общие контексты подсветки кода локац
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
       push:
-        - include: illegal_multiline_else
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
+        - include: else_body_head_bare
         - match: "^.*"
           scope: comment.qsp
-        - include: wrongclose
-        - include: wrong_close_in_brace
+        - include: else_body_guarded_tail
         - include: location_body
-    - match: '^(\s*?)(?i:(\belse\b))(?=\s*$)'
+    # Однострочный `else <statements>` БЕЗ двоеточия (elseSingleLine, двоеточие
+    # факультативно `(":" ws)?`). Зеркало arm4 (колонной однострочной формы): хвост
+    # строки красится штатно (location_body), а ВСЕ последующие строки до `end` —
+    # мёртвый код → комментарий (`^.*`→comment). Условие входа: после else
+    # горизонтальный `[ \t]+` и следующий символ НЕ `!` и не пробел (иначе это
+    # комментарий-строка → многострочный else, см. нижний bare-arm). `end`/`else`/
+    # `elseif` на последующих строках словит final-guard раньше `^.*`.
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))[ \t]+(?=[^!\s])'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
-        - include: illegal_multiline_else
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
-        - include: wrongclose
-        - include: wrong_close_in_brace
+        - include: else_body_head_bare
+        - match: "^.*"
+          scope: comment.qsp
+        - include: else_body_guarded_tail
+        - include: location_body
+    # Многострочный `else` БЕЗ хвоста-утверждения: голый `else` и `else !коммент`
+    # (elseMultiLine — двоеточие факультативно, хвост может быть комментарием).
+    # Тело — СЛЕДУЮЩИЕ строки → КОД (фикс 1b: здесь НЕТ catch-all `^.*`→comment).
+    # Выход по final-guard на `end`/`else`/`elseif`. Однострочные формы (`else <stmt>`
+    # без ':') и колонные (`else:` / `else: <текст>` / `else <конд>:`) — выше.
+    - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*(!.*?)?$)'
+      captures:
+        2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
+      push:
+        - include: else_body_head_bare
+        - include: else_body_guarded_tail
         - include: location_body
 
   illegal_multiline_else:
@@ -517,19 +558,14 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
-        - include: comment_after_colon
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
+        - include: elseif_body_head_strict
         - include: location_body
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_permissive_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
       push:
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
-        - match: "^.*"
-          scope: comment.qsp
+        - include: elseif_body_head_permissive
         - include: location_body
     # bracket-arm (Фаза 7): многострочная ( или [ в elseif-условии → pending-
     # заголовок, решающий форму на ':' (см. multiline_elseif_pending). Ветка
@@ -547,8 +583,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_elseif_body
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body
 
   multiline_elseif_body:
@@ -590,8 +625,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_actions_body_braced
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body_braced
 
   multiline_actions_body_braced:
@@ -632,8 +666,7 @@ contexts: # общие контексты подсветки кода локац
       push: multiline_loop_pending_braced
     - match: '{{pend_block_soft}}'
       pop: true
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body_braced
 
   # pending-заголовок loop (braced): состояние «до ':'» при найденном 'while'.
@@ -643,8 +676,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_loop_body_braced
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body_braced
 
   multiline_loop_body_braced:
@@ -676,8 +708,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{pend_block_strict}}'
       pop: true
       push: multiline_conditions_body_braced
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body_braced
 
   # зеркало multiline_conditions_body: тело пушит location_body_braced и
@@ -702,23 +733,15 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
-        - include: comment_after_colon
-        - include: illegal_multiline_else
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
-        - include: wrongclose
-        - include: wrong_close_in_brace
+        - include: else_body_common_head
+        - include: else_body_guarded_tail
         - include: location_body_braced
     - match: '(?<=\{)(\s*?)(?i:(\belse\b)){{else_brace_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
-        - include: comment_after_colon
-        - include: illegal_multiline_else
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
-        - include: wrongclose
-        - include: wrong_close_in_brace
+        - include: else_body_common_head
+        - include: else_body_guarded_tail
         - include: location_body_braced
     # «else <текст>:» — зеркало plain (parity 5.1); ':' обязателен (см. plain-arm).
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
@@ -726,23 +749,29 @@ contexts: # общие контексты подсветки кода локац
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
       push:
-        - include: illegal_multiline_else
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
+        - include: else_body_head_bare
         - match: "^.*"
           scope: comment.qsp
-        - include: wrongclose
-        - include: wrong_close_in_brace
+        - include: else_body_guarded_tail
         - include: location_body_braced
-    - match: '^(\s*?)(?i:(\belse\b))(?=\s*$)'
+    # зеркало plain (parity 5.1): однострочный `else <statements>` без ':' → след.
+    # строки до `end` = комментарий.
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))[ \t]+(?=[^!\s])'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
-        - include: illegal_multiline_else
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
-        - include: wrongclose
-        - include: wrong_close_in_brace
+        - include: else_body_head_bare
+        - match: "^.*"
+          scope: comment.qsp
+        - include: else_body_guarded_tail
+        - include: location_body_braced
+    # зеркало plain (parity 5.1): многострочный `else` без хвоста (голый / `!коммент`).
+    - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*(!.*?)?$)'
+      captures:
+        2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
+      push:
+        - include: else_body_head_bare
+        - include: else_body_guarded_tail
         - include: location_body_braced
 
   multiline_actions_elseif_braced:
@@ -750,19 +779,14 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
-        - include: comment_after_colon
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
+        - include: elseif_body_head_strict
         - include: location_body_braced
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_permissive_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
       push:
-        - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
-          pop: true
-        - match: "^.*"
-          scope: comment.qsp
+        - include: elseif_body_head_permissive
         - include: location_body_braced
     # bracket-arm (Фаза 7): зеркало plain (parity 5.1) → pending (multiline_elseif_pending_braced).
     - match: '{{arm_anchor}}{{kw_elseif}}{{unbalanced_bracket_head}}'
@@ -777,8 +801,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_elseif_body_braced
-    - match: '{{pend_inline}}'
-      pop: true
+    - include: pending_inline_pop
     - include: location_body_braced
 
   multiline_elseif_body_braced:

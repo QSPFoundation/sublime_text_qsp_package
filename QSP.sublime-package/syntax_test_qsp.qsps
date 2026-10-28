@@ -557,6 +557,26 @@ else
 
 end
 
+! Однострочный `else <stmt>` БЕЗ ':' (elseSingleLine) — arm6:
+!   • `else` = keyword.control
+!   • хвост на своей строке (`*pl '5'`) = код
+!   • последующие строки до `end` — мёртвый код → комментарий
+! Регресс после 1d: такие строки попадали в bare-arm (arm5) и красились кодом.
+! (Пользовательский пример: multilines_conditional.qsps 127–173, cases 2 и 3.)
+if 0:
+	else *pl '5'
+	*pl '0'
+end
+
+! Многострочный `else` (arm5) — голый и `else !коммент`:
+! тело со след. строки = КОД, не комментарий.
+if 1:
+	567
+else
+	$lvar=2
+! ^^^^^ code (arm5 block body)
+end
+
 loop while i<9 step:
 	jjjjj=000
 end
