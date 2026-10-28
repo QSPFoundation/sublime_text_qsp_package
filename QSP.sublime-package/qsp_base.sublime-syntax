@@ -470,7 +470,13 @@ contexts: # общие контексты подсветки кода локац
         - include: wrongclose
         - include: wrong_close_in_brace
         - include: location_body
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:?)(?=\s*([^!\s].*)?$)'
+    # «else <текст>:» (однострочная форма с условием/хвостом). Двоеточие ЗДЕСЬ
+    # ОБЯЗАТЕЛЬНО (изменена `(:?)`→`(:)`, 2026-10-28): опциональное `:` позволяло
+    # этому arm'у схватить «голый» else и запушить контекст с catch-all `^.*` →
+    # comment.qsp, который красил КОММЕНТАРИЕМ все строки тела до end — хотя
+    # многострочный else без ':' легален (тело начинается со следующей строки).
+    # Голый else (и `else !коммент`) корректно доходит до нижнего arm'а.
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
@@ -714,7 +720,8 @@ contexts: # общие контексты подсветки кода локац
         - include: wrongclose
         - include: wrong_close_in_brace
         - include: location_body_braced
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:?)(?=\s*([^!\s].*)?$)'
+    # «else <текст>:» — зеркало plain (parity 5.1); ':' обязателен (см. plain-arm).
+    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword

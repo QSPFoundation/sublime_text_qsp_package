@@ -585,6 +585,15 @@ local a=234
 --
 
 
+! многострочный else БЕЗ двоеточия — тело подсвечивается кодом, а не комментарием
+if 1:
+	567
+else
+	$lvar=2
+end
+//  <- keyword.control.conditional.else.qsp
+//      ^ meta.user-variables.qsp -comment.qsp
+
 # st.help
 
 {
