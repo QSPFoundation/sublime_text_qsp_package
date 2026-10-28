@@ -89,6 +89,29 @@ variables: # назначаем переменные для удобства
   # NB: требует поддержки `\p{L}` в Onigmo Sublime — проверить ручным рендером.
   users_variables: '((\$|\%|\#)?[\p{L}_][\p{L}\d_.]*)'
   elseif_else_final: (?i:\bend\b|\belse\b|\belse\s*if\b|\bif\b|(^\s*\-.*?$))
+  # Шаг 1 рефакторинга (REFACTORING_REVIEW P1.1): общие фрагменты regex arms,
+  # вынесены 1:1 (побайтовые копии заменяемых кусков — поведение не меняется).
+  # Используются и в plain-, и в braced-контекстах (правки — зеркально).
+  # NB: в значении есть ':' — кавычки YAML обязательны.
+  arm_anchor: '(?:^|(?<=\{))(\s*?)'
+  kw_act: '(?i:(act))'
+  kw_if: '(?i:(\bif\b))'
+  kw_elseif: '(?i:(\b(?:else\s+if|elseif)\b))'
+  kw_loop: '(?i:(\bloop\b))'
+  loop_strict_head: '(?=(?=.*?(?i:(\bwhile\b))\s\S.*?(?i:(\bstep\b))?\s*?.*?\:\s*?(!.*)?$))'
+  loop_no_while: '(?!.*(?i:(\bwhile\b)))'
+  # Решения pending-заголовков на видимом ':' и хвосты strict-arm'ов (все
+  # lookahead-решения — нулевой ширины). «strict» — строгий хвост `!`, «soft» —
+  # мягкий `!?` (act/else). Двоеточие в значениях — кавычки YAML обязательны.
+  pend_block_strict: '(?=:\s*?(!.*)?$)'
+  pend_block_soft: '(?=:\s*?(!.*?)?$)'
+  pend_inline: '(?=:\s*?\S)'
+  act_strict_tail: '(?=\s*?.*?\:\s*?(!.*?)?$)'
+  if_strict_tail: '(?=\s*?.*?\:\s*?(!.*)?$)'
+  else_caret_tail: '(?=\s*?\:\s*?(!.*?)?$)'
+  else_brace_tail: '(?=\s*?.*?\:\s*?(!.*?)?$)'
+  elseif_strict_tail: '(?=\s+\S.*?\:\s*(!.*)?$)'
+  elseif_permissive_tail: '(?=\s+\S.*?\:\s*([^!\s].*)?$)'
 
 contexts: # общие контексты подсветки кода локации
   # Тривиальный вход для самой базы (база hidden, реально используется
@@ -223,14 +246,14 @@ contexts: # общие контексты подсветки кода локац
   # разница видна только для редкого `end текст }`).
   multiline_actions:
     # strict-arm: ':' на строке act → сразу тело
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(act))(?=\s*?.*?\:\s*?(!.*?)?$)'
+    - match: '{{arm_anchor}}{{kw_act}}{{act_strict_tail}}'
       scope: meta.begin_action.qsp
       captures:
         2: keyword.control.action.begin.qsp markup.italic.qsp
       push: multiline_actions_body
     # bracket-arm (Фаза 7): многострочная ( или [ в заголовке act → pending-заголовок,
     # решающий форму на ':' (см. multiline_act_pending).
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(act)){{unbalanced_bracket_head}}'
+    - match: '{{arm_anchor}}{{kw_act}}{{unbalanced_bracket_head}}'
       scope: meta.begin_action.qsp
       captures:
         2: keyword.control.action.begin.qsp markup.italic.qsp
@@ -243,10 +266,10 @@ contexts: # общие контексты подсветки кода локац
     # в заголовке мы на уровне выражения, и перенос вида `step i +=` ⏎ `    -1:`
     # начинается с `-` легально (в телах блоков — нет, там wrongclose прав).
     - include: wrongclose_locend
-    - match: '(?=:\s*?(!.*?)?$)'
+    - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_actions_body
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body
 
@@ -265,7 +288,7 @@ contexts: # общие контексты подсветки кода локац
   # циклы (п.2.1: former `(?<=\{)loop` + `^loop` слиты; пуш-тело было идентично)
   multiline_loop:
     # strict-arm: ':' на строке loop → сразу тело
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bloop\b))(?=.*?(?i:(\bwhile\b))\s\S.*?(?i:(\bstep\b))?\s*?.*?\:\s*?(!.*)?$)'
+    - match: '{{arm_anchor}}{{kw_loop}}{{loop_strict_head}}'
       scope: meta.begin_cycle.qsp
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
@@ -277,14 +300,14 @@ contexts: # общие контексты подсветки кода локац
     # `[1,…]` — `nonEmptyTuple` с `mws`, переносы внутри легальны. Требование
     # 'while' теперь проверяет сам pending (multiline_loop_pending_prewhile), а не
     # arm: блок открывается ТОЛЬКО если 'while' наступил раньше ':'.
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bloop\b)){{unbalanced_bracket_head}}'
+    - match: '{{arm_anchor}}{{kw_loop}}{{unbalanced_bracket_head}}'
       scope: meta.begin_cycle.qsp
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
       push: multiline_loop_pending_prewhile
     # invalid-arm: loop без 'while' на строке И без незакрытой скобки — живёт в
     # multiline_loop (после всех валидных arm'ов); в pending его быть не должно.
-    - match: '(?i:(\bloop\b))(?!.*(?i:(\bwhile\b)))'
+    - match: '{{kw_loop}}{{loop_no_while}}'
       scope: invalid.illegal.qsp
 
   # pending-заголовок loop, состояние «while ЕЩЁ НЕ найден» (Фаза 8): едет по
@@ -299,9 +322,9 @@ contexts: # общие контексты подсветки кода локац
     - match: '(?=\b(?i:while)\b)'
       pop: true
       push: multiline_loop_pending
-    - match: '(?=:\s*?(!.*)?$)'
+    - match: '{{pend_block_soft}}'
       pop: true
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body
 
@@ -310,10 +333,10 @@ contexts: # общие контексты подсветки кода локац
   multiline_loop_pending:
     # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
-    - match: '(?=:\s*?(!.*)?$)'
+    - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_loop_body
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body
 
@@ -331,7 +354,7 @@ contexts: # общие контексты подсветки кода локац
   # конструкции условий (п.2.1: former `(?<=\{)if` + `^if` слиты)
   multiline_conditions:
     # strict-arm: ':' на строке if → сразу тело
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bif\b))(?=\s*?.*?\:\s*?(!.*)?$)'
+    - match: '{{arm_anchor}}{{kw_if}}{{if_strict_tail}}'
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_conditions_body
@@ -341,7 +364,7 @@ contexts: # общие контексты подсветки кода локац
     # ТОЛЬКО на видимом ':' (см. multiline_if_pending). Иначе однострочная форма с
     # многострочной скобкой (`…] = $arr: *pl …`) ложно открывала бы блок и else/end
     # не ловились бы как excess.
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bif\b)){{unbalanced_bracket_head}}'
+    - match: '{{arm_anchor}}{{kw_if}}{{unbalanced_bracket_head}}'
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_if_pending
@@ -353,12 +376,12 @@ contexts: # общие контексты подсветки кода локац
     - include: wrongclose_locend
     # ':' и до конца строки только пробел/комментарий → блочная форма → то же тело,
     # что у strict-arm.
-    - match: '(?=:\s*?(!.*)?$)'
+    - match: '{{pend_block_strict}}'
       pop: true
       push: multiline_conditions_body
     # ':' и на этой же строке утверждение → однострочная форма → блок НЕ открываем;
     # возвращаемся в location_body, а идущие следом else/end словит wrong_end_else_elseif.
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body
 
@@ -425,7 +448,7 @@ contexts: # общие контексты подсветки кода локац
   multiline_actions_else:
     - match: ^\s*?(?i:(\belse\b))(\s*?)([^\:]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
-    - match: '^(\s*?)(?i:(\belse\b))(?=\s*?\:\s*?(!.*)?$)'
+    - match: '^(\s*?)(?i:(\belse\b)){{else_caret_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -436,7 +459,7 @@ contexts: # общие контексты подсветки кода локац
         - include: wrongclose
         - include: wrong_close_in_brace
         - include: location_body
-    - match: '(?<=\{)(\s*?)(?i:(\belse\b))(?=\s*?.*?\:\s*?(!.*)?$)'
+    - match: '(?<=\{)(\s*?)(?i:(\belse\b)){{else_brace_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -484,7 +507,7 @@ contexts: # общие контексты подсветки кода локац
     # `else if` (grammar `elseIfSpaceMarker = "else" ws "if"`) трактуется как ЕДИНЫЙ
     # elseif-оператор: `\b(?:else\s+if|elseif)\b` внутри прежней capture-группы
     # (нумерация групп сохранена — внутренняя alternation не захватывающая).
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b))(?=\s+\S.*?\:\s*(!.*)?$)'
+    - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_strict_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -492,7 +515,7 @@ contexts: # общие контексты подсветки кода локац
         - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
           pop: true
         - include: location_body
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b))(?=\s+\S.*?\:\s*([^!\s].*)?$)'
+    - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_permissive_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
@@ -506,7 +529,7 @@ contexts: # общие контексты подсветки кода локац
     # заголовок, решающий форму на ':' (см. multiline_elseif_pending). Ветка
     # снимается по sibling-guard (elseif_else_final) при следующем else/elseif/end —
     # как и ordinary elseif.
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b)){{unbalanced_bracket_head}}'
+    - match: '{{arm_anchor}}{{kw_elseif}}{{unbalanced_bracket_head}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: multiline_elseif_pending
@@ -515,10 +538,10 @@ contexts: # общие контексты подсветки кода локац
   multiline_elseif_pending:
     # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
-    - match: '(?=:\s*?(!.*)?$)'
+    - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_elseif_body
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body
 
@@ -542,13 +565,13 @@ contexts: # общие контексты подсветки кода локац
   # (_disdocs/syntax_highlighting) сверяет пары после нормализации суффикса
   # _braced — расхождение валит контроль в FAIL.
   multiline_actions_braced:
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(act))(?=\s*?.*?\:\s*?(!.*?)?$)'
+    - match: '{{arm_anchor}}{{kw_act}}{{act_strict_tail}}'
       scope: meta.begin_action.qsp
       captures:
         2: keyword.control.action.begin.qsp markup.italic.qsp
       push: multiline_actions_body_braced
     # bracket-arm (Фаза 7): зеркало plain (parity 5.1) → pending (multiline_act_pending_braced).
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(act)){{unbalanced_bracket_head}}'
+    - match: '{{arm_anchor}}{{kw_act}}{{unbalanced_bracket_head}}'
       scope: meta.begin_action.qsp
       captures:
         2: keyword.control.action.begin.qsp markup.italic.qsp
@@ -558,10 +581,10 @@ contexts: # общие контексты подсветки кода локац
   multiline_act_pending_braced:
     # Фаза 9: зеркало plain (parity 5.1)
     - include: wrongclose_locend
-    - match: '(?=:\s*?(!.*?)?$)'
+    - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_actions_body_braced
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body_braced
 
@@ -578,20 +601,20 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body_braced
 
   multiline_loop_braced:
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bloop\b))(?=.*?(?i:(\bwhile\b))\s\S.*?(?i:(\bstep\b))?\s*?.*?\:\s*?(!.*)?$)'
+    - match: '{{arm_anchor}}{{kw_loop}}{{loop_strict_head}}'
       scope: meta.begin_cycle.qsp
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
       push: multiline_loop_body_braced
     # bracket-arm (Фаза 7 + 8): зеркало plain (parity 5.1) → pre-while pending
     # (multiline_loop_pending_prewhile_braced); guard «while на строке» снят и здесь.
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bloop\b)){{unbalanced_bracket_head}}'
+    - match: '{{arm_anchor}}{{kw_loop}}{{unbalanced_bracket_head}}'
       scope: meta.begin_cycle.qsp
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
       push: multiline_loop_pending_prewhile_braced
     # invalid-arm: зеркало plain (parity 5.1) — живёт в multiline_loop_braced.
-    - match: '(?i:(\bloop\b))(?!.*(?i:(\bwhile\b)))'
+    - match: '{{kw_loop}}{{loop_no_while}}'
       scope: invalid.illegal.qsp
 
   # pending-заголовок loop (braced), состояние «while ЕЩЁ НЕ найден»: зеркало plain.
@@ -601,9 +624,9 @@ contexts: # общие контексты подсветки кода локац
     - match: '(?=\b(?i:while)\b)'
       pop: true
       push: multiline_loop_pending_braced
-    - match: '(?=:\s*?(!.*)?$)'
+    - match: '{{pend_block_soft}}'
       pop: true
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body_braced
 
@@ -611,10 +634,10 @@ contexts: # общие контексты подсветки кода локац
   multiline_loop_pending_braced:
     # Фаза 9: зеркало plain (parity 5.1)
     - include: wrongclose_locend
-    - match: '(?=:\s*?(!.*)?$)'
+    - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_loop_body_braced
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body_braced
 
@@ -630,12 +653,12 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body_braced
 
   multiline_conditions_braced:
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bif\b))(?=\s*?.*?\:\s*?(!.*)?$)'
+    - match: '{{arm_anchor}}{{kw_if}}{{if_strict_tail}}'
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_conditions_body_braced
     # bracket-arm (Фаза 7): зеркало plain (parity 5.1) → pending (multiline_if_pending_braced).
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\bif\b)){{unbalanced_bracket_head}}'
+    - match: '{{arm_anchor}}{{kw_if}}{{unbalanced_bracket_head}}'
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_if_pending_braced
@@ -644,10 +667,10 @@ contexts: # общие контексты подсветки кода локац
   multiline_if_pending_braced:
     # Фаза 9: зеркало plain (parity 5.1)
     - include: wrongclose_locend
-    - match: '(?=:\s*?(!.*)?$)'
+    - match: '{{pend_block_strict}}'
       pop: true
       push: multiline_conditions_body_braced
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body_braced
 
@@ -669,7 +692,7 @@ contexts: # общие контексты подсветки кода локац
   multiline_actions_else_braced:
     - match: ^\s*?(?i:(\belse\b))(\s*?)([^\:]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
-    - match: '^(\s*?)(?i:(\belse\b))(?=\s*?\:\s*?(!.*)?$)'
+    - match: '^(\s*?)(?i:(\belse\b)){{else_caret_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -680,7 +703,7 @@ contexts: # общие контексты подсветки кода локац
         - include: wrongclose
         - include: wrong_close_in_brace
         - include: location_body_braced
-    - match: '(?<=\{)(\s*?)(?i:(\belse\b))(?=\s*?.*?\:\s*?(!.*)?$)'
+    - match: '(?<=\{)(\s*?)(?i:(\belse\b)){{else_brace_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -716,7 +739,7 @@ contexts: # общие контексты подсветки кода локац
         - include: location_body_braced
 
   multiline_actions_elseif_braced:
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b))(?=\s+\S.*?\:\s*(!.*)?$)'
+    - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_strict_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -724,7 +747,7 @@ contexts: # общие контексты подсветки кода локац
         - match: (?=^\s*{{elseif_else_final}}([^\&\n\r]*))
           pop: true
         - include: location_body_braced
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b))(?=\s+\S.*?\:\s*([^!\s].*)?$)'
+    - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_permissive_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
@@ -735,7 +758,7 @@ contexts: # общие контексты подсветки кода локац
           scope: comment.qsp
         - include: location_body_braced
     # bracket-arm (Фаза 7): зеркало plain (parity 5.1) → pending (multiline_elseif_pending_braced).
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\b(?:else\s+if|elseif)\b)){{unbalanced_bracket_head}}'
+    - match: '{{arm_anchor}}{{kw_elseif}}{{unbalanced_bracket_head}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: multiline_elseif_pending_braced
@@ -744,10 +767,10 @@ contexts: # общие контексты подсветки кода локац
   multiline_elseif_pending_braced:
     # Фаза 9: зеркало plain (parity 5.1)
     - include: wrongclose_locend
-    - match: '(?=:\s*?(!.*)?$)'
+    - match: '{{pend_block_soft}}'
       pop: true
       push: multiline_elseif_body_braced
-    - match: '(?=:\s*?\S)'
+    - match: '{{pend_inline}}'
       pop: true
     - include: location_body_braced
 
