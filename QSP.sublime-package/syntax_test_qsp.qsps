@@ -699,6 +699,29 @@ $args|args|result|$result
 set a, d = 234, 678
 local a=234
 
+! P1.5: `no` — ключевое слово регистронезависимо ВЕЗДЕ, в т.ч. внутри `<< … >>`
+!   • раньше в operacion_subex стояло регистрозависимое (\bno\b) → `NO`/`No`
+!     красились как пользовательская переменная;
+!   • теперь одна общая пара правил (operacion_no_common) с (?i:) в обоих контекстах;
+!   • scope ошибки `no` без правого операнда — avs_wrong_no_with_out_right
+!     (был avs_wrong_comma_with_out_left — copy-paste от запятой).
+$x = 1 no 2
+!      ^^ keyword.operator.word.qsp
+$x = 1 NO 2
+!      ^^ keyword.operator.word.qsp
+$x = 1 No 2
+!      ^^ keyword.operator.word.qsp
+msg "<<1 no 2>>"
+!        ^^ keyword.operator.word.qsp
+msg "<<1 NO 2>>"
+!        ^^ keyword.operator.word.qsp
+msg "<<1 No 2>>"
+!        ^^ keyword.operator.word.qsp
+$x = 1 NO
+!      ^^ invalid.illegal.qsp avs_wrong_no_with_out_right
+msg "<<1 NO>>"
+!        ^^ invalid.illegal.qsp avs_wrong_no_with_out_right
+
 -- st.death ---------------------------------
 
 # sugar-func

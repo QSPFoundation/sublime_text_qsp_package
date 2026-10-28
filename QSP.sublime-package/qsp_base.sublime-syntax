@@ -916,11 +916,11 @@ contexts: # общие контексты подсветки кода локац
     - match: \b(?i:set|local|let)\b
       scope: invalid.illegal.qsp
 
-  # операции (Решение-4/4B: построчно идентичные сегменты `operacion`
-  # и `operacion_subex` вынесены в operacion_word_two_signs_common и
-  # operacion_ampersand_common; реально различающиеся группы — one_sign
-  # (unary `-` / `>`-exclusion / lookbehind-vs-\K), comma with_out_left,
-  # регистр `no` — оставлены локально; их слияние изменило бы подсветку.
+  # операции (Решение-4/4B + P1.5: построчно идентичные сегменты `operacion`
+  # и `operacion_subex` вынесены в operacion_word_two_signs_common,
+  # operacion_ampersand_common и operacion_no_common; реально различающиеся
+  # группы — one_sign (unary `-` / `>`-exclusion / lookbehind-vs-\K) и
+  # comma with_out_left — оставлены локально; их слияние изменило бы подсветку.
   operacion_word_two_signs_common:
     # подсветка словарных операторов
     - match: (?<={{left_operand}})\s*\b{{operacion_word}}\b(?!\s*?{{right_operand}})
@@ -955,6 +955,21 @@ contexts: # общие контексты подсветки кода локац
     - match: (,)
       scope: punctuation.separator.comma.qsp
 
+  # `no` (P1.5): пары правил в operacion и operacion_subex были построчно
+  # идентичны, кроме регистра — в subex стоял регистрозависимый \bno\b.
+  # Ключевые слова QSP регистронезависимы → это недосмотр подсветки, а не
+  # зафиксированное поведение, поэтому пара слита здесь с (?i:). Правка
+  # НАМЕРЕННО меняет результат: `NO`/`No` в `<< … >>` теперь keyword/invalid,
+  # а не пользовательская переменная. Ошибочный scope
+  # `avs_wrong_comma_with_out_left` (copy-paste от запятой; у правила
+  # `(?!right_operand)` это «без ПРАВОГО») переименован в
+  # `avs_wrong_no_with_out_right`.
+  operacion_no_common:
+    - match: (?i:\bno\b)(?!\s*?{{right_operand}})
+      scope: invalid.illegal.qsp avs_wrong_no_with_out_right
+    - match: (?i:\bno\b)
+      scope: keyword.operator.word.qsp
+
   operacion:
     - include: operacion_word_two_signs_common
     # подсветка для однознаковых операторов
@@ -972,11 +987,7 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
     - include: operacion_comma_sign
     - include: operacion_ampersand_common
-    # Правила для no
-    - match: (?i:\bno\b)(?!\s*?{{right_operand}})
-      scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
-    - match: (?i:\bno\b)
-      scope: keyword.operator.word.qsp
+    - include: operacion_no_common
 
   numeric:
     - match: \b\d+([A-Za-zа-яА-Я\$\%\._]+\d*)+\b # неправильные переменные, начинающиеся с цифр
@@ -1153,11 +1164,11 @@ contexts: # общие контексты подсветки кода локац
   operacion_subex:
     # Операции ВНУТРИ подвыражения `<< … >>` (embedded source). Общие с
     # `operacion` сегменты вынесены в operacion_word_two_signs_common /
-    # operacion_ampersand_common (Решение-4/4B). Локально оставлены только
-    # реально отличающиеся группы: one_sign (нет unary `-`; with_out_right
-    # несёт доп. exclusion `(>…)`; with_out_left — lookbehind `(?<=(<|&|(|{|[))`
-    # вместо `(^|…)\K`, т.к. здесь нет `^` строки кода), comma with_out_left
-    # (тот же lookbehind) и `no` (регистрозависим, без `(?i:)`).
+    # operacion_ampersand_common (Решение-4/4B) + operacion_no_common (P1.5).
+    # Локально оставлены только реально отличающиеся группы: one_sign (нет
+    # unary `-`; with_out_right несёт доп. exclusion `(>…)`; with_out_left —
+    # lookbehind `(?<=(<|&|(|{|[))` вместо `(^|…)\K`, т.к. здесь нет `^` строки
+    # кода) и comma with_out_left (тот же lookbehind).
     - include: operacion_word_two_signs_common
     # подсветка однознаковых операторов
     - match: (?<={{left_operand}})\s*?{{operacion_one_sign}}(?!(>|\s*?{{right_operand}}))
@@ -1172,11 +1183,7 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
     - include: operacion_comma_sign
     - include: operacion_ampersand_common
-    # Правила для no
-    - match: (\bno\b)(?!\s*?{{right_operand}})
-      scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
-    - match: (\bno\b)
-      scope: keyword.operator.word.qsp
+    - include: operacion_no_common
 
   # # # ------------------------ Подсветка комментариев ------------------------  # # #
   # Общий хвост комментария (Фаза 3, п.3.1): тело от «!» до конца строки.
