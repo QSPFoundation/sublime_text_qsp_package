@@ -1,0 +1,71 @@
+// SYNTAX TEST "Packages/QSP/qsp.sublime-syntax"
+QSP-Game Фаза 9 — конец локации -- внутри незакрытой скобки
+
+! Автотест (scope-assertions): `--`, попавший в НЕзакрытую `(`/`[`/`{` или в застрявший pending-заголовок, красится invalid (wrongclose_locend). Деструктивные локи идут ПОСЛЕДНИМИ: guard снимает один уровень стека, поэтому подсветка после них остаётся помятой и новые утверждения были бы ненадёжны. Control-локи (легальный унарный `-` на переносе) — до них.
+! Автотест: строки вида "! <- scope" / "! ^^^ scope" —
+! утверждения о том, какой scope реально выдал синтаксис.
+! Сгенерировано: _disdocs/syntax_highlighting/gen_syntax_tests.py
+
+# control__перенос_с_унарным_минусом
+if (1 +
+ ^^ keyword.control.conditional.begin.qsp
+    ^ punctuation.section.parens.begin.qsp
+    -2) = -1:
+     ^^ -invalid.illegal.qsp
+       ^ punctuation.section.parens.end.qsp
+         ^ keyword.operator.one-sign.qsp
+             ^ -invalid.illegal.qsp
+    *pl "унарный минус на переносе — норма"
+end
+ ^^^ keyword.control.conditional.end.qsp -invalid.illegal.qsp
+
+# control__многострочный_цикл_с_минусом
+loop while (i <
+ ^^^^ keyword.control.cycle.begin.qsp
+      ^^^^^ keyword.control.qsp
+    5) step i -= 1:
+     ^^ meta.group.parens.multiline.qsp
+               ^^ keyword.operator.two-signs.qsp
+    *pl "тело loop"
+end
+ ^^^ keyword.control.cycle.end.qsp -invalid.illegal.qsp
+
+# unclosed__круглая_скобка_в_заголовке
+if (a and
+ ^^ keyword.control.conditional.begin.qsp
+    ^ punctuation.section.parens.begin.qsp
+    b:
+     ^^ meta.group.parens.multiline.qsp
+    *pl "нет закрывающей скобки"
+-- unclosed__круглая_скобка_в_заголовке
+ ^^ invalid.illegal.qsp
+
+# unclosed__квадратная_скобка_в_аргументе
+act ("объект", arr[0,
+ ^^^ keyword.control.action.begin.qsp
+                   ^ punctuation.section.brackets.begin.qsp
+    1
+     ^ meta.group.brackets.multiline.qsp
+    *pl "нет закрывающей ]"
+-- unclosed__квадратная_скобка_в_аргументе
+ ^^ invalid.illegal.qsp
+
+# unclosed__заголовок_без_двоеточия
+loop while (i <
+ ^^^^ keyword.control.cycle.begin.qsp
+      ^^^^^ keyword.control.qsp
+    5) step i += 1
+     ^^ meta.group.parens.multiline.qsp
+        ^^^^ keyword.control.qsp
+               ^^ keyword.operator.two-signs.qsp
+    *pl "нет : в конце заголовка"
+-- unclosed__заголовок_без_двоеточия
+ ^^ invalid.illegal.qsp
+
+# unclosed__фигурная_скобка
+{
+ ^ punctuation.section.block.begin.qsp meta.block
+    *pl "блок без закрывающей }"
+      ^^ keyword.statement.qsp -invalid.illegal.qsp
+-- unclosed__фигурная_скобка
+ ^^ invalid.illegal.qsp

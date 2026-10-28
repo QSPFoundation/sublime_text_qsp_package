@@ -136,6 +136,6 @@ if условие_выполнено:
 	!@ Код, который выполняется, если условие не выполнено
 end if комментарий после end & *pl 'other operator'
 
-if a = b: ввв elseif z = v: kdkdkd else: dkkdkdk
+if a = b elseif z = v: kdkdkd else: dkkdkdk
 -- controls_statements ---------------------------------
 

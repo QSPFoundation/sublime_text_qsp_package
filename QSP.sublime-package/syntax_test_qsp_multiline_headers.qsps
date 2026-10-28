@@ -1,0 +1,268 @@
+// SYNTAX TEST "Packages/QSP/qsp.sublime-syntax"
+QSP-Game Фаза 7/8 — многострочные скобки в заголовках act/if/loop/elseif
+
+! Автотест (scope-assertions): блочная форма открывается, только когда двоеточие осталось одним в конце строки заголовка; однострочная форма с многострочной скобкой блок НЕ открывает (else/end тогда excess).
+! Автотест: строки вида "! <- scope" / "! ^^^ scope" —
+! утверждения о том, какой scope реально выдал синтаксис.
+! Сгенерировано: _disdocs/syntax_highlighting/gen_syntax_tests.py
+
+# baseline__одной_строкой
+if ($a and $b):
+ ^^ keyword.control.conditional.begin.qsp
+    ^ punctuation.section.parens.begin.qsp
+               ^ -invalid.illegal.qsp
+    *pl "ok"
+     ^^^ keyword.statement.star.qsp
+      ^^ keyword.statement.qsp -invalid.illegal.qsp
+else:
+ ^^^^ keyword.control.conditional.else.qsp -invalid.illegal.qsp
+    *pl "ok else"
+end
+ ^^^ keyword.control.conditional.end.qsp -invalid.illegal.qsp
+
+act ("desc", $x > 0):
+ ^^^ keyword.control.action.begin.qsp
+                 ^ keyword.operator.one-sign.qsp
+                     ^ -invalid.illegal.qsp
+    *pl "ok act"
+end
+ ^^^ keyword.control.action.end.qsp -invalid.illegal.qsp
+
+loop local $i while $i < 5 step $i += 1:
+ ^^^^ keyword.control.cycle.begin.qsp
+               ^^^^^ keyword.control.qsp -invalid.illegal.qsp
+                            ^^^^ keyword.control.qsp -invalid.illegal.qsp
+                                    ^^ keyword.operator.two-signs.qsp
+                        ^ keyword.operator.one-sign.qsp
+    *pl "ok loop"
+end
+ ^^^ keyword.control.cycle.end.qsp -invalid.illegal.qsp
+
+# if__многострочная_круглая_скобка
+if (1 +
+ ^^ keyword.control.conditional.begin.qsp
+    ^ punctuation.section.parens.begin.qsp
+       ^ keyword.operator.one-sign.qsp -invalid.illegal.qsp
+    2) = 3:
+     ^^ meta.group.parens.multiline.qsp
+      ^ punctuation.section.parens.end.qsp
+        ^ keyword.operator.one-sign.qsp
+    *pl "тело if"
+elseif (4 +
+ ^^^^^^ keyword.control.conditional.else.qsp
+        ^ punctuation.section.parens.begin.qsp meta.group.parens.multiline.qsp
+    5) = 9:
+     ^^ meta.group.parens.multiline.qsp
+      ^ punctuation.section.parens.end.qsp
+    *pl "тело elseif"
+else:
+ ^^^^ keyword.control.conditional.else.qsp -invalid.illegal.qsp
+    *pl "тело else"
+end
+ ^^^ keyword.control.conditional.end.qsp -invalid.illegal.qsp
+
+# if__многострочная_квадратная_скобка_однострочная
+if [1,
+ ^^ keyword.control.conditional.begin.qsp
+    ^ punctuation.section.brackets.begin.qsp
+    2,
+     ^ meta.group.brackets.multiline.qsp
+    3] = $arr: *pl "массив в условии"
+     ^^ meta.group.brackets.multiline.qsp
+      ^ punctuation.section.brackets.end.qsp
+        ^ keyword.operator.one-sign.qsp
+                 ^^ keyword.statement.qsp -invalid.illegal.qsp
+              ^ -invalid.illegal.qsp
+else:
+ ^^^^ keyword.control.conditional.else.qsp invalid.illegal.qsp
+    *pl "else"
+end
+ ^^^ invalid.illegal.qsp meta.excess_end.qsp
+
+# act__многострочная_круглая_скобка_блочная
+act ("взять ключ",
+ ^^^ keyword.control.action.begin.qsp
+     ^ punctuation.section.parens.begin.qsp
+      ^ string.quoted.double.qsp
+    hp > 0):
+          ^^ meta.group.parens.multiline.qsp
+           ^ punctuation.section.parens.end.qsp
+        ^ keyword.operator.one-sign.qsp
+            ^ -invalid.illegal.qsp
+    *pl "тело act"
+      ^^ keyword.statement.qsp -invalid.illegal.qsp
+end
+ ^^^ keyword.control.action.end.qsp -invalid.illegal.qsp
+
+# act__однострочная_форма_с_многострочной_скобкой
+act ("дело",
+ ^^^ keyword.control.action.begin.qsp
+    hp > 0): *pl "утверждение после :"
+          ^^ meta.group.parens.multiline.qsp
+           ^ punctuation.section.parens.end.qsp
+               ^^ keyword.statement.qsp -invalid.illegal.qsp
+end
+ ^^^ invalid.illegal.qsp meta.excess_end.qsp
+
+# loop__многострочная_скобка_в_while
+loop while (i <
+ ^^^^ keyword.control.cycle.begin.qsp
+      ^^^^^ keyword.control.qsp
+            ^ punctuation.section.parens.begin.qsp
+    (5 +
+     ^^ meta.group.parens.multiline.qsp
+    1)) step i += 1:
+     ^^^ meta.group.parens.multiline.qsp
+         ^^^^ keyword.control.qsp
+                ^^ keyword.operator.two-signs.qsp
+                    ^ -invalid.illegal.qsp
+    *pl "тело loop"
+end
+ ^^^ keyword.control.cycle.end.qsp -invalid.illegal.qsp
+
+# loop__скобка_до_while
+loop local i = [1,
+ ^^^^ keyword.control.cycle.begin.qsp
+                ^ punctuation.section.brackets.begin.qsp
+              ^ keyword.operator.one-sign.qsp
+    2,
+     ^ meta.group.brackets.multiline.qsp
+    3 ] while i = [1, 2, 3] step o += 1:
+     ^^^ meta.group.brackets.multiline.qsp
+       ^ punctuation.section.brackets.end.qsp
+         ^^^^^ keyword.control.qsp -invalid.illegal.qsp
+                             ^^^^ keyword.control.qsp -invalid.illegal.qsp
+                                        ^ -invalid.illegal.qsp
+    *pl "тело loop"
+end
+ ^^^ keyword.control.cycle.end.qsp -invalid.illegal.qsp
+
+# loop__скобки_до_и_после_while
+loop local i = [1,
+ ^^^^ keyword.control.cycle.begin.qsp
+                ^ punctuation.section.brackets.begin.qsp
+    2,
+    3 ]
+    while i = [1,
+     ^^^^^ keyword.control.qsp -invalid.illegal.qsp
+               ^ punctuation.section.brackets.begin.qsp meta.group.brackets.multiline.qsp
+    2, 3] step o = rand(1,
+     ^^^^^ meta.group.brackets.multiline.qsp
+                    ^^^^^ punctuation.section.parens.begin.qsp
+                         ^^ meta.group.parens.multiline.qsp
+    23):
+     ^^^ meta.group.parens.multiline.qsp
+       ^ punctuation.section.parens.end.qsp
+        ^ -invalid.illegal.qsp
+    *pl "тело loop"
+end
+ ^^^ keyword.control.cycle.end.qsp -invalid.illegal.qsp
+
+# loop__скобка_до_while_без_while
+loop local i = [1,
+ ^^^^ keyword.control.cycle.begin.qsp
+                ^ punctuation.section.brackets.begin.qsp
+    2,
+    3 ] step o += 1:
+         ^^^^ keyword.control.qsp
+       ^ punctuation.section.brackets.end.qsp
+                    ^ -invalid.illegal.qsp
+    *pl "битый loop"
+end
+ ^^^ invalid.illegal.qsp meta.excess_end.qsp
+
+# elseif__многострочная_скобка
+if $a:
+ ^^ keyword.control.conditional.begin.qsp
+    *pl "то"
+elseif (1 +
+ ^^^^^^ keyword.control.conditional.else.qsp
+        ^ punctuation.section.parens.begin.qsp
+    2) = 3:
+     ^^ meta.group.parens.multiline.qsp
+      ^ punctuation.section.parens.end.qsp
+        ^ keyword.operator.one-sign.qsp
+    *pl "elseif"
+end
+ ^^^ keyword.control.conditional.end.qsp -invalid.illegal.qsp
+
+# строки_не_открывают_скобку
+if ("текст (не скобка" +
+ ^^ keyword.control.conditional.begin.qsp
+     ^^^^^^^^^^^^^^^^^^ string.quoted.double.qsp
+                        ^ keyword.operator.one-sign.qsp -invalid.illegal.qsp
+    " ещё текст") = $s:
+     ^^^^^^^^^^^^^ meta.group.parens.multiline.qsp
+                   ^ keyword.operator.one-sign.qsp
+                       ^ -invalid.illegal.qsp
+    *pl "тело"
+end
+ ^^^ keyword.control.conditional.end.qsp -invalid.illegal.qsp
+
+# комментарий_после_двоеточия
+if (a and
+ ^^ keyword.control.conditional.begin.qsp
+    ^ punctuation.section.parens.begin.qsp
+    b): ! обычный комментарий
+     ^^ meta.group.parens.multiline.qsp
+      ^ punctuation.section.parens.end.qsp
+       ^ -invalid.illegal.qsp
+         ^ -invalid.illegal.qsp
+    *pl "тело"
+end
+ ^^^ keyword.control.conditional.end.qsp -invalid.illegal.qsp
+
+# вложенные_многострочные_заголовки
+if (a and
+ ^^ keyword.control.conditional.begin.qsp
+    b):
+     ^^ meta.group.parens.multiline.qsp
+       ^ -invalid.illegal.qsp
+    act ("дело",
+     ^^^ keyword.control.action.begin.qsp
+         ^ punctuation.section.parens.begin.qsp
+        c >
+        d):
+         ^^ meta.group.parens.multiline.qsp
+           ^ -invalid.illegal.qsp
+        *pl "внутри act"
+    end
+     ^^^ keyword.control.action.end.qsp -invalid.illegal.qsp
+end
+ ^^^ keyword.control.conditional.end.qsp -invalid.illegal.qsp
+
+# braced__многострочная_скобка_в_заголовке
+{
+ ^ punctuation.section.block.begin.qsp meta.block
+    if (x and
+     ^^ keyword.control.conditional.begin.qsp
+        ^ punctuation.section.parens.begin.qsp
+        y):
+         ^^ meta.group.parens.multiline.qsp
+           ^ -invalid.illegal.qsp
+        *pl "braced if"
+    else:
+     ^^^^ keyword.control.conditional.else.qsp -invalid.illegal.qsp
+        *pl "braced else"
+    end
+     ^^^ keyword.control.conditional.end.qsp -invalid.illegal.qsp
+}
+
+# braced__loop_скобка_до_while
+{
+ ^ punctuation.section.block.begin.qsp
+    loop local i = [1,
+     ^^^^ keyword.control.cycle.begin.qsp
+                    ^ punctuation.section.brackets.begin.qsp
+        2,
+        3 ] while i = [1, 2, 3] step o = rand(1,
+         ^^^ meta.group.brackets.multiline.qsp
+             ^^^^^ keyword.control.qsp -invalid.illegal.qsp
+                                          ^^^^^ punctuation.section.parens.begin.qsp
+            23):
+             ^^^ meta.group.parens.multiline.qsp
+                ^ -invalid.illegal.qsp
+        *pl "braced loop"
+    end
+     ^^^ keyword.control.cycle.end.qsp -invalid.illegal.qsp
+}
