@@ -96,7 +96,13 @@ variables: # назначаем переменные для удобства
   arm_anchor: '(?:^|(?<=\{))(\s*?)'
   kw_act: '(?i:(act))'
   kw_if: '(?i:(\bif\b))'
-  kw_elseif: '(?i:(\b(?:else\s+if|elseif)\b))'
+  # `else if` — ЕДИНЫЙ оператор (grammar `elseIfMarker = "elseif" | "else" ws "if"`,
+  # `ws = (lineContinuation | space)*` — ПЕРЕНОС строки в `ws` НЕ входит).
+  # Поэтому между `else` и `if` — только ГОРИЗОНТАЛЬНЫЙ `[ \t]+`: с `\s+` пара
+  # склеивалась через `\n`, и легальный вложенный `if` в теле else
+  # (`else` ⏎<TAB>`if …:`, см. _examples/.../add nocount object in purse.qsps)
+  # красился как один elseif-токен.
+  kw_elseif: '(?i:(\b(?:else[ \t]+if|elseif)\b))'
   kw_loop: '(?i:(\bloop\b))'
   loop_strict_head: '(?=(?=.*?(?i:(\bwhile\b))\s\S.*?(?i:(\bstep\b))?\s*?.*?\:\s*?(!.*)?$))'
   loop_no_while: '(?!.*(?i:(\bwhile\b)))'
@@ -512,7 +518,9 @@ contexts: # общие контексты подсветки кода локац
   # Водораздел «код-тело (6/7) vs мёртвый код (4/5)» = наличие однострочного хвоста.
   # braced-зеркало — multiline_actions_else_braced (parity 5.1).
   multiline_actions_else:
-    - match: ^\s*?(?i:(\belse\b))(\s*?)([^\:]+)(\:).*$
+    # Строго В ПРЕДЕЛАХ СТРОКИ (`[ \t]`/`[^:\n\r]`): с прежними `\s*?` + `[^:]+`
+    # правило матчило «else ⏎ if …:» (вложенный if в теле else) как условие→invalid.
+    - match: ^[ \t]*?(?i:(\belse\b))([ \t]*?)([^:\n\r]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
     - match: '^(\s*?)(?i:(\belse\b)){{else_caret_tail}}'
       captures:
@@ -600,8 +608,9 @@ contexts: # общие контексты подсветки кода локац
   # внутри одного пуша не менял matching для обеих веток).
   multiline_actions_elseif:
     # `else if` (grammar `elseIfSpaceMarker = "else" ws "if"`) трактуется как ЕДИНЫЙ
-    # elseif-оператор: `\b(?:else\s+if|elseif)\b` внутри прежней capture-группы
+    # elseif-оператор: `\b(?:else[ \t]+if|elseif)\b` внутри прежней capture-группы
     # (нумерация групп сохранена — внутренняя alternation не захватывающая).
+    # `[ \t]+`, а НЕ `\s+`: внутристрочно — как в грамматике (`ws` без переноса).
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_strict_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -775,7 +784,8 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body_braced
 
   multiline_actions_else_braced:
-    - match: ^\s*?(?i:(\belse\b))(\s*?)([^\:]+)(\:).*$
+    # Строго В ПРЕДЕЛАХ СТРОКИ — зеркало plain-arm1 (parity 5.1).
+    - match: ^[ \t]*?(?i:(\belse\b))([ \t]*?)([^:\n\r]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
     - match: '^(\s*?)(?i:(\belse\b)){{else_caret_tail}}'
       captures:

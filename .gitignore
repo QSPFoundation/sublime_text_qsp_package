@@ -10,3 +10,6 @@
 */install.QSP.sublime-package.*.exe
 /.obsidian/*
 qsp-project-workspace.json
+# Грамматика QSP — ВНЕШНИЙ референс: живёт и обновляется в другом репозитории,
+# сюда подтягивается вручную; в этом репо не версионируется.
+_disdocs/syntax_highlighting/qsp_grammar.peg

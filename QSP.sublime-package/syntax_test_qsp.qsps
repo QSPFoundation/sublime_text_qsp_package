@@ -597,6 +597,48 @@ end
 	end
 }
 
+! `else if` — ЕДИНЫЙ оператор (grammar `elseIfMarker = "else" ws "if"`),
+! работает как `elseif`: ОБА слова — один scope keyword.control.conditional.else,
+! а не «else + новый if». Хвост после ':' — комментарий (как у elseif).
+if 0:
+	123
+else if 1:
+	456
+else if 2: ! хвост-комментарий
+	789
+end
+
+! НЕ `else if`: ПЕРЕНОС строки и `if` в теле else — это bare else + вложенный if.
+!   • `else` = bare-else (arm7), его тело — КОД
+!   • `if` со следующей строки открывает СВОЙ if (закрывается своим `end`)
+! (Реальный случай: _examples/example_project/drive/objects.sys/предметы/
+!  add nocount object in purse.qsps 24–28.)
+if 1:
+	111
+else
+	if 1:
+		222
+	end
+end
+
+! То же в {…}: `else if` целиком и `else` ⏎ `if` — по отдельности.
+{
+	if 1:
+		111
+	else if 1:
+		222
+	end
+}
+{
+	if 1:
+		111
+	else
+		if 1:
+			222
+		end
+	end
+}
+
 loop while i<9 step:
 	jjjjj=000
 end

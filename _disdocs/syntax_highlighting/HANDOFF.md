@@ -4,13 +4,16 @@
 > продолжаем с шага <N>». Он дополняет (не заменяет) память Qoder — там уже лежат
 > дискретные решения (см. §5).
 
-**Дата:** 2026-10-28 · **Ветка:** `master` · **Гит-состояние:** шаги 1, 2 и фикс 1f/1g
-**закоммичены** (HEAD `439584d` = `deepseek-flash fix(syntax): comments after else without :`).
-На диске НЕ закоммичен **Шаг 3 (P1.6)** — только `QSP.sublime-package/qsp_base.sublime-syntax`
-(`git diff` — чистая подстановка переменных/сегментов, см. 1h). Untracked:
-`_disdocs/syntax_highlighting/qsp_grammar.peg` — **решение не принято**: это внешний
-справочный грамматический файл, на подсветку не влияет; либо закоммитить в `_disdocs`,
-либо оставить вне git. ПЕРЕД продолжением выполни `git status`/`git diff` и, если пусто из-за сбоя
+**Дата:** 2026-10-28 · **Ветка:** `master` · **Гит-состояние:** шаги 1–3 + фиксы `else`
+**закоммичены** (HEAD `d4acde5` = `dsf ref(syntax): hygienic of rules and comments`,
+до него `439584d` = `deepseek-flash fix(syntax): comments after else without :`).
+На диске НЕ закоммичен **фикс 1i** (`else if` / перенос строки):
+`qsp_base.sublime-syntax`, `syntax_test_qsp.qsps`, этот файл; плюс правки пользователя в
+`_examples/example_syntax/conditionals/multilines_conditional.qsps` (примеры `else if`).
+Внешний файл `_disdocs/syntax_highlighting/qsp_grammar.peg` — **РЕШЕНО (2026-10-28): не коммитим.**
+Грамматика живёт в другом репозитории и обновляется там; сюда подтягивается **вручную**,
+в этом репо не версионируется → добавлена в `.gitignore` (в `git status` больше не висит).
+Автоматизация синхронизации не сделана (грамматика давно стабильна — сборка не зависит). ПЕРЕД продолжением выполни `git status`/`git diff` и, если пусто из-за сбоя
 вывода PowerShell, — `git add -A; git status` (терминал в этой сессии искажал вывод
 `git diff`; содержимое файлов на диске подтверждено чтением).
 
@@ -22,6 +25,8 @@
 - `QSP.sublime-package/qsp.qsrc.sublime-syntax` — формат `qsrc` (1 файл = 1 локация).
 - `QSP.sublime-package/syntax_test_qsp.qsps` — фикстура-ассерты (1-я строка `// SYNTAX TEST "Packages/QSP/qsp.sublime-syntax"`).
 - `_disdocs/syntax_highlighting/refactoring_review.md` — план аудита/рефакторинга (создан в этой сессии).
+- `_disdocs/syntax_highlighting/qsp_grammar.peg` — **внешний** справочный файл (источник истины по
+  грамматике QSP): не коммитится (в `.gitignore`), подтягивается вручную из другого репозитория.
 - Контроль: `python _disdocs/syntax_highlighting/check_syntax_phase1.py` → ожид `RESULT: PASS`.
 
 ---
@@ -184,6 +189,37 @@
 - **Что НЕ делалось (сознательно):** P1.5 (слияние `no` + переименование scope — намеренная смена
   поведения), P1.7 (`\s*?`→`\s*`), P1.3 (удаление 5-го/bare-arm — **стало неактуально**, см. §3).
 
+### 1i. `else if` как единый оператор + фикс перехода через строку (2026-10-28) ✅
+**Вопрос:** поддерживается ли `else if` так же, как `elseif`? — **Да, поддерживалось и осталось:**
+- `kw_elseif` = `(?i:(\b(?:else[ \t]+if|elseif)\b))`, используется во ВСЕХ трёх elseif-arms ×2
+  (plain + braced), а `multiline_actions_elseif` инклюдится **ДО** `multiline_actions_else`
+  (и в `multiline_conditions_body`, и в `multiline_actions`), поэтому `else if cond:` до else-arms
+  не доходит: оба слова — ОДИН токен со scope `keyword.control.conditional.else.qsp
+  markup.italic.qsp meta.else_body.qsp` (как `elseif`).
+- Покрыто в `syntax_test_qsp.qsps` (plain + braced): блок `else if 1:` / `else if 2: ! хвост`.
+
+**НАЙДЕН ДЕФЕКТ (исправлен):** в `kw_elseif` стоял `\s+`, а `\s` в Onigmo включает перенос
+строки → легальный **вложенный `if` в теле else**
+(`else` ⏎ `<TAB>if $a <> '':`, реальный код:
+`_examples/example_project/drive/objects.sys/предметы/add nocount object in purse.qsps` 24–28)
+склеивался в ОДИН elseif-токен (`else\n\tif`), а сам `if` переставал быть открывателем блока.
+По грамматике `ws = (lineContinuation | space)*` — ПЕРЕНОС строки в `ws` НЕ входит, значит
+`else` и `if` обязаны быть на одной строке.
+- **Фикс 1:** `kw_elseif`: `else\s+if` → `else[ \t]+if` (горизонтальный пробел/таб).
+- **Фикс 2 (обязательный, иначе баг всплывает в другом месте):** arm1
+  `multiline_actions_else` (invalid `else <условие>:`) матчил и его: `\s*?` + `[^:]+` в `[^:]+`
+  попадают `\n`/`\r`. Сужено до строки: `^[ \t]*?(else)([ \t]*?)([^:\n\r]+)(:)` — plain и braced.
+- **Симуляция arm-порядка** (re.M, как края строки в Sublime):
+  `else if 1:` → elseif-arm1 (`else if`); `else\tif 1:` → arm1; `else   if $x > 1: !c` → arm1;
+  `else if $a: & !c` → arm2 (permissive); `else if (1 +` → arm3 (pending); `elseif 1:` → arm1;
+  `else` ⏎ `\tif $a <> '':` → **elseif-arms: нет**, else-arm7 (bare) ✓; `else !коммент` → arm6;
+  `else $lvar = 3` → arm5; `else` → arm7.
+- **Остаточное ограничение (осознанно):** `else _` ⏎ `if …:` (lineContinuation в `ws`)
+  как единый `else if` НЕ подсвечивается — мост через `_`-продолжение в базе отсутствует
+  вообще (известный пробел, отдельная тема); `else if` в ОДНОСТРОЧНОЙ цепочке
+  (`if a: b else if c: d`) тоже не keyword — arms якорятся на `^`/`{`.
+- **Контроль:** `check_syntax_phase1.py` → **PASS** (local=86, pairing 15 пар).
+
 ### 1c. Шаг 2 рефакторинга (P1.2 + P1.4) — поведение НЕЙТРАЛЬНО (1:1, доказано)
 Вынесены построчно-идентичные inline-тела push-стеков в общие include-сегменты
 (`qsp_base.sublime-syntax`, блок перед `multiline_actions_else`), 6 новых контекстов:
@@ -212,6 +248,7 @@ Headless-прогон `run_syntax_test` невозможен при открыт
 5. После шага 3 (доказано 1:1, но глазами — обязательно): операторный блок (`+ - < > = / * !`,
    `no`, `and/or/mod`), запятые в `x, y` / `x,` / `,y`, подвыражения `<< … >>` и вызовы
    локаций `goto "…"` / `gosub '…'` / `gt` / `gs` (в т.ч. битые `goto` без цели).
+6. `else if 1:` — ОДИН токен (как `elseif`); `else` ⏎ `<TAB>if …:` — `else` отдельно, `if` открывает свой блок.
 
 Если рендер чистый → зафиксируй коммит (`git add -A; git commit`).
 
