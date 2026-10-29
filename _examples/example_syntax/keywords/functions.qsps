@@ -20,7 +20,10 @@ $curloc & curloc & #curloc & %curloc
 
 $curobjs & curobjs & #curobjs & %curobjs
 
-$desc($curloc) & desc($curloc) & #desc($curloc) & %desc($curloc)
+$desc($curloc)
+desc($curloc)
+#desc($curloc)
+%desc($curloc)
 
 $getobj(12) & getobj(12) & #getobj(12) & %getobj(12)
 

@@ -987,9 +987,9 @@ contexts: # общие контексты подсветки кода локац
 
   statements:
     # подсветка statement'ов
-    - match: (\b({{kw_statements}}|{{kw_text_statements}})\b)(?!\()
+    - match: \b({{kw_statements}}|{{kw_text_statements}})\b(?!\()
       scope: keyword.statement.qsp avs_statements
-    - match: (\b({{kw_statements}})\b)(?=\()
+    - match: \b({{kw_statements}})\b(?=\()
       scope: support.function.other.qsp avs_statements
     - match: (\*)(\b({{kw_text_statements}})\b)(?=\()
       captures:
@@ -1340,7 +1340,8 @@ contexts: # общие контексты подсветки кода локац
       scope: comment.qsp markup.italic.qsp avs_speccomments
 
   preprocessor:
-    - match: ^(\!@pp\:.*?)$
+    # lazy `.*?` перед `$` избыточен (движок всё равно обязан дойти до конца строки) — P4.3.
+    - match: ^(\!@pp\:.*)$
       captures:
         1: meta.preprocessor.qsp diff.deleted.qsp avs_preprocessor
         #2: markup.bold preprocessor.avs
