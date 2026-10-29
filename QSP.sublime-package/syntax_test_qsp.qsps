@@ -167,6 +167,15 @@ msg "снова вне блока"
 	end
 	! финальный комментарий перед закрывающей}
 -- скобки и комментарии ------------------------------
+# однострочные скобки
+! Фаза 10: сбалансированные в строке ( ) и [ ] тоже punctuation (раньше scope не было)
+set $y = ($a and $b)
+//       ^ punctuation.section.parens.begin.qsp
+//                 ^ punctuation.section.parens.end.qsp
+set $z = $arr[1 + 2]
+//           ^ punctuation.section.brackets.begin.qsp
+//                 ^ punctuation.section.brackets.end.qsp
+-- однострочные скобки ------------------------------
 
 # st.game_info
 local a, b, c

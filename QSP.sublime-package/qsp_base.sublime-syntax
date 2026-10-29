@@ -162,6 +162,9 @@ contexts: # общие контексты подсветки кода локац
     - include: strings
     - include: separator_continuation
     - include: users_variables
+    # Фаза 10: пунктуация ОДНОстрочных ( ) [ ] — ПОСЛЕДНИМ include: anchor-правила
+    # operacion, которые начинаются с '(' / '[' (напр. `(& x)`), должны выигрывать.
+    - include: brackets_inline
 
   location_body: # @braced: auto
     # Порядок (Фаза 7): открыватели блоков act/if/loop ИДУТ ПЕРЕД body_common_head,
@@ -1447,6 +1450,25 @@ contexts: # общие контексты подсветки кода локац
     - include: continuation_tail
     - include: brackets_multiline
     - include: location_body
+
+  # # # ------- круглые и квадратные скобки (ОДНОстрочный код) ------- # # #
+  # Фаза 10: сбалансированные в одной строке скобки раньше не получали НИКАКОГО
+  # scope — пунктуацию ставили только brackets_multiline и multiline_round/square,
+  # а они срабатывают только на НЕзакрытой скобке. Отсюда асимметрия:
+  # `if (1 +` / `2) = 3:` красились как punctuation, а `if ($a and $b):` — нет
+  # (найдено прогоном автотестов, HANDOFF §1p).
+  # Здесь ТОЛЬКО пунктуация: без push и без meta-группы, состояние стека не меняется,
+  # «многострочность» по-прежнему определяет единственный brackets_multiline
+  # (он стоит раньше — body_common_head).
+  brackets_inline:
+    - match: '\('
+      scope: punctuation.section.parens.begin.qsp avs_paren_begin
+    - match: '\)'
+      scope: punctuation.section.parens.end.qsp avs_paren_end
+    - match: '\['
+      scope: punctuation.section.brackets.begin.qsp avs_bracket_begin
+    - match: '\]'
+      scope: punctuation.section.brackets.end.qsp avs_bracket_end
 
   # Оператор/запятая в КОНЦЕ строки внутри многострочных скобок: выражение
   # продолжается на следующей строке. Sublime матчит правила только в

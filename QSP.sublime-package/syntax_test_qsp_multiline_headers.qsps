@@ -11,6 +11,8 @@ QSP-Game Фаза 7/8 — многострочные скобки в загол�
 # baseline__одной_строкой
 if ($a and $b):
 // <- meta.begin_condition.qsp keyword.control.conditional.begin.qsp
+// ^ punctuation.section.parens.begin.qsp
+//           ^ punctuation.section.parens.end.qsp
 // ^ -invalid.illegal.qsp
 //            ^ -invalid.illegal.qsp
     *pl "ok"
