@@ -67,7 +67,7 @@ loop while (i <
 
 # unclosed__фигурная_скобка
 {
-// <- punctuation.section.block.begin.qsp meta.block
+// <- punctuation.section.block.begin.qsp
     *pl "блок без закрывающей }"
 //   ^^ keyword.statement.qsp -invalid.illegal.qsp
 -- unclosed__фигурная_скобка

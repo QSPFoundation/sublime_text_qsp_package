@@ -10,11 +10,11 @@ QSP-Game Фаза 7/8 — многострочные скобки в загол�
 
 # baseline__одной_строкой
 if ($a and $b):
-// <- keyword.control.conditional.begin.qsp meta.begin_condition.qsp
-// ^ punctuation.section.parens.begin.qsp
+// <- meta.begin_condition.qsp keyword.control.conditional.begin.qsp
+// ^ -invalid.illegal.qsp
 //            ^ -invalid.illegal.qsp
     *pl "ok"
-//  ^^^ keyword.statement.star.qsp
+//  ^ keyword.statement.star.qsp
 //   ^^ keyword.statement.qsp -invalid.illegal.qsp
 else:
 // <- keyword.control.conditional.else.qsp -invalid.illegal.qsp meta.begin_else.qsp
@@ -23,7 +23,7 @@ end
 // <- keyword.control.conditional.end.qsp -invalid.illegal.qsp
 
 act ("desc", $x > 0):
-// <- keyword.control.action.begin.qsp meta.begin_action.qsp
+// <- meta.begin_action.qsp keyword.control.action.begin.qsp
 //              ^ keyword.operator.one-sign.qsp
 //                  ^ -invalid.illegal.qsp
     *pl "ok act"
@@ -51,8 +51,8 @@ if (1 +
 //     ^ keyword.operator.one-sign.qsp
     *pl "тело if"
 elseif (4 +
-// <- keyword.control.conditional.else.qsp meta.begin_condition.qsp
-//     ^ punctuation.section.parens.begin.qsp meta.group.parens.multiline.qsp
+// <- meta.begin_condition.qsp keyword.control.conditional.else.qsp
+//     ^ punctuation.section.parens.begin.qsp
     5) = 9:
 //  ^ meta.group.parens.multiline.qsp
 //   ^ punctuation.section.parens.end.qsp
@@ -65,7 +65,7 @@ end
 
 # if__многострочная_квадратная_скобка_однострочная
 if [1,
-// <- keyword.control.conditional.begin.qsp meta.begin_condition.qsp
+// <- meta.begin_condition.qsp keyword.control.conditional.begin.qsp
 // ^ punctuation.section.brackets.begin.qsp
     2,
 //  ^ meta.group.brackets.multiline.qsp
@@ -76,7 +76,7 @@ if [1,
 //              ^^ keyword.statement.qsp -invalid.illegal.qsp
 //           ^ -invalid.illegal.qsp
 else:
-// <- keyword.control.conditional.else.qsp invalid.illegal.qsp
+// <- invalid.illegal.qsp meta.excess_else.qsp
     *pl "else"
 end
 // <- invalid.illegal.qsp meta.excess_end.qsp
@@ -147,7 +147,7 @@ loop local i = [1,
     3 ]
     while i = [1,
 //  ^^^^^ keyword.control.qsp -invalid.illegal.qsp
-//            ^ punctuation.section.brackets.begin.qsp meta.group.brackets.multiline.qsp
+//            ^ punctuation.section.brackets.begin.qsp
     2, 3] step o = rand(1,
 //  ^^^^ meta.group.brackets.multiline.qsp
 //                     ^ punctuation.section.parens.begin.qsp
@@ -175,10 +175,10 @@ end
 
 # elseif__многострочная_скобка
 if $a:
-// <- keyword.control.conditional.begin.qsp meta.begin_condition.qsp
+// <- meta.begin_condition.qsp keyword.control.conditional.begin.qsp
     *pl "то"
 elseif (1 +
-// <- keyword.control.conditional.else.qsp meta.begin_condition.qsp
+// <- meta.begin_condition.qsp keyword.control.conditional.else.qsp
 //     ^ punctuation.section.parens.begin.qsp
     2) = 3:
 //  ^ meta.group.parens.multiline.qsp
@@ -235,7 +235,7 @@ end
 
 # braced__многострочная_скобка_в_заголовке
 {
-// <- punctuation.section.block.begin.qsp meta.block
+// <- punctuation.section.block.begin.qsp
     if (x and
 //  ^^ keyword.control.conditional.begin.qsp
 //     ^ punctuation.section.parens.begin.qsp

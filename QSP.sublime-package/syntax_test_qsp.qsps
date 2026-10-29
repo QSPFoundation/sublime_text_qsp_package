@@ -11,13 +11,13 @@
 ! P4.1 (2026-10-29): `...` в qspdocs — ЛИТЕРАЛЬНОЕ многоточие (было «три любых символа»).
 ! Ассерты ниже живут в meta.gametext (между локациями), где qspdocs инклюднут до catch-all.
 !@ #1 ... #2 - ссылка на две локации
-// ^^^^^^^^^ entity.other.attribute-name.documentation.qsp meta.gametext.qsp
+// ^^^^^^^^^ meta.gametext.qsp entity.other.attribute-name.documentation.qsp
 !@ #1...#2 - без пробелов вокруг многоточия тоже docs
-// ^^^^^^^ entity.other.attribute-name.documentation.qsp meta.gametext.qsp
+// ^^^^^^^ meta.gametext.qsp entity.other.attribute-name.documentation.qsp
 !@ #1 XXX #2 - уже НЕ docs-строка: вместо `...` подставлены три буквы
 // ^^^^^^^^^ meta.gametext.qsp -entity.other.attribute-name.documentation.qsp
 !@ #1 - односсылочная форма
-// ^^ entity.other.attribute-name.documentation.qsp meta.gametext.qsp
+// ^^ meta.gametext.qsp entity.other.attribute-name.documentation.qsp
 Имена локаций записываются после символа решётки #, который должен стоять в начале строки,
 при этом после решётки # не обязательно ставить пробел, но для читаемости кода рекомендую ставить
 
@@ -591,7 +591,7 @@ if 0:
 		{ вложенный блок
 			if 1:
 				*pl 'тоже комментарий'
-// ^ comment.qsp
+//  ^ comment.qsp
 			end
 		}
 	}
@@ -611,7 +611,7 @@ else: *pl '0'
 end
 //^ -comment.qsp
 *pl 'после end — снова код'
-// ^ -comment.qsp
+// <- -comment.qsp
 
 ! Регресс (1j): кавычка в комментарии ЗАЩИЩАЕТ `}` — пока состояние литерала
 ! на вершине стека, контексты ниже (в т.ч. закрытие {…}-блока) не смотрятся.
