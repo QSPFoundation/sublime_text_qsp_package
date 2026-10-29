@@ -1,7 +1,33 @@
 # -*- coding: utf-8 -*-
-"""Контроль Фаз рефакторинга: YAML-load, резолв include/push, баланс скобок
-regex, переменные; с Фазы 5 — парность plain/braced-контейнеров (п.5.1)."""
+"""Контроль Фаз рефакторинга: YAML-load (с запретом ДУБЛИКАТОВ ключей),
+резолв include/push, баланс скобок regex, переменные; с Фазы 5 — парность
+plain/braced-контейнеров (п.5.1); с шага 4 — дрейф сгенерированного региона
+braced-двойников (gen_braced.py)."""
 import yaml, re, sys, os
+
+
+class StrictLoader(yaml.SafeLoader):
+    """SafeLoader, падающий на дубликатах ключей.
+
+    PyYAML молча оставляет ПОСЛЕДНИЙ ключ, а Sublime — первый: дубль в
+    `contexts:` молча меняет подсветку в зависимости от парсера. Ловить такое
+    надо здесь, а не глазами.
+    """
+
+
+def _strict_mapping(loader, node, deep=False):
+    seen = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in seen:
+            raise yaml.constructor.ConstructorError(
+                None, None, 'дубликат ключа %r' % (key,), key_node.start_mark)
+        seen[key] = loader.construct_object(value_node, deep=deep)
+    return seen
+
+
+StrictLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _strict_mapping)
 
 # репозиторий = на 2 уровня выше этого файла; при копировании скрипта в другое
 # место — скорректируйте путь относительно файла (или запустите с --root <путь>)
@@ -17,7 +43,7 @@ data = {}
 for k, f in FILES.items():
     with open(BASE_DIR + f, encoding='utf-8') as fh:
         txt = fh.read()
-    data[k] = yaml.safe_load(txt.replace('%YAML 1.2', ''))
+    data[k] = yaml.load(txt.replace('%YAML 1.2', ''), Loader=StrictLoader)
     data[k]['_txt'] = txt
     print(f + ': YAML load OK')
 
@@ -135,14 +161,11 @@ if undef or unused:
     ok = False
 
 # # # ------- Фаза 5, п.5.1: синхрон-контракт plain/braced ------- # # #
-# Каждая пара multiline_* / multiline_*_braced должна быть структурно
-# идентична с точностью до ОЖИДАННЫХ различий (см. комментарий-инвариант
-# над braced-секцией в qsp_base): в braced-версии тело пушит включения с
-# хвостом «_braced» (location_body_braced, multiline_actions_else_braced…).
-# Срезаем хвост «_braced» у include/push-значений БРАСЕННОЙ версии и сверяем
-# правила с plain посериализованно. (comment_after_end_in_brace оканчивается
-# на «_in_brace», не на «_braced», — под строге он не трогается и должен
-# оставаться идентичным в обеих версиях — так и есть по Решению-1A.)
+# С ШАГА 4 (P0, вариант A) braced-двойники НЕ пишутся руками: они генерируются
+# скриптом gen_braced.py в guarded-регион qsp_base и проверяются ниже отдельным
+# drift-check (регион == перегенерация из plain). Проверка парности оставлена
+# как вторая линия защиты: она сверяет уже СГЕНЕРИРОВАННЫЕ двойники с plain
+# посериализованно (ловит порчу региона руками и ошибки самого генератора).
 PAIRS = ['multiline_actions', 'multiline_loop', 'multiline_conditions',
          'multiline_actions_else', 'multiline_actions_elseif',
          # Фаза 8: расширено на тела и pending-состояния, вынесенные в Фазе 7
@@ -207,6 +230,16 @@ print('braced pairing (5.1): %s'
          else 'OK (%d пар), отличия — только суффикс _braced у include/push'
               % len(PAIRS)))
 if pair_errs:
+    ok = False
+
+# # # ------- шаг 4: braced-слой ГЕНЕРИРУЕТСЯ (gen_braced.py) ------- # # #
+# Двойники живут в guarded-регионе qsp_base (@begin/@end-generated) и обязаны
+# побайтно совпадать с перегенерацией из plain-контекстов (маркер
+# `# @braced: auto`). Дрейф = правка plain без `--write` или правка региона
+# руками. Комментарии в регион не копируются, поэтому сверка — по правилам.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import gen_braced
+if not gen_braced.do_check(BASE_DIR + FILES['base']):
     ok = False
 
 print('RESULT:', 'PASS' if ok else 'FAIL')

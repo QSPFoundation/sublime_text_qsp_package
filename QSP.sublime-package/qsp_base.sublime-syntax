@@ -163,7 +163,7 @@ contexts: # общие контексты подсветки кода локац
     - include: separator_continuation
     - include: users_variables
 
-  location_body:
+  location_body: # @braced: auto
     # Порядок (Фаза 7): открыватели блоков act/if/loop ИДУТ ПЕРЕД body_common_head,
     # чтобы «bracket-arm» заголовка не проигрывал приоритет незакрытой «(» в
     # brackets_multiline. Для строк, не начинающихся с ключевого слова,
@@ -176,23 +176,7 @@ contexts: # общие контексты подсветки кода локац
     - include: comments
     - include: body_common_tail
 
-  # Тело локации ВНУТРИ открытого {…} блока. Полный зеркальный список
-  # location_body, но с brace-aware варианами:
-  #   comments → comments_in_brace (закрывающая «}» строки-комментария
-  #              не помечается ошибкой, а закрывает блок);
-  #   multiline_actions/conditions/loop → *_braced (тело — снова
-  #              location_body_braced). После п.2.1 фаза-2 «end» в обоих
-  #              форматах ведёт единый comment_after_end_in_brace.
-  # figure_brace остаётся общим: вложенная «{» открывает новый braced-блок.
-  location_body_braced:
-    # См. порядок в location_body (Фаза 7): открыватели блоков до body_common_head.
-    - include: multiline_actions_braced
-    - include: multiline_conditions_braced
-    - include: multiline_loop_braced
-    - include: body_common_head
-    - include: body_common_mid
-    - include: comments_in_brace
-    - include: body_common_tail
+  # Тело в {…} — location_body_braced: СГЕНЕРИРОВАНО (@begin-generated ниже).
 
   # пользовательские переменные и специальные символы значений
   users_variables:
@@ -261,7 +245,7 @@ contexts: # общие контексты подсветки кода локац
   # Единый end-tail = comment_after_end_in_brace (brace-aware модель едина для
   # обоих якорей — см. REFACTOR_PLAN §3 Решение-1; на верхнем уровне
   # разница видна только для редкого `end текст }`).
-  multiline_actions:
+  multiline_actions: # @braced: auto
     # strict-arm: ':' на строке act → сразу тело
     - match: '{{arm_anchor}}{{kw_act}}{{act_strict_tail}}'
       scope: meta.begin_action.qsp
@@ -277,7 +261,7 @@ contexts: # общие контексты подсветки кода локац
       push: multiline_act_pending
 
   # pending-заголовок act: состояние «до ':'» (механика — как multiline_if_pending).
-  multiline_act_pending:
+  multiline_act_pending: # @braced: auto
     # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход. Здесь
     # guard именно `--` (wrongclose_locend), а НЕ wrongclose с одинарным `-`:
     # в заголовке мы на уровне выражения, и перенос вида `step i +=` ⏎ `    -1:`
@@ -289,7 +273,7 @@ contexts: # общие контексты подсветки кода локац
     - include: pending_inline_pop
     - include: location_body
 
-  multiline_actions_body:
+  multiline_actions_body: # @braced: auto
     - include: comment_after_colon
     - match: ^(\s*?)(?i:(\bend\b))
       scope: meta.end-action.qsp
@@ -302,7 +286,7 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body
 
   # циклы (п.2.1: former `(?<=\{)loop` + `^loop` слиты; пуш-тело было идентично)
-  multiline_loop:
+  multiline_loop: # @braced: auto
     # strict-arm: ':' на строке loop → сразу тело
     - match: '{{arm_anchor}}{{kw_loop}}{{loop_strict_head}}'
       scope: meta.begin_cycle.qsp
@@ -332,7 +316,7 @@ contexts: # общие контексты подсветки кода локац
   # штатными правилами, 1:1 с однострочным заголовком).
   # Если ':' наступил РАНЬШЕ 'while' — заголовок битый (grammar требует while):
   # блок НЕ открываем, а идущие следом end/else словит wrong_end_else_elseif.
-  multiline_loop_pending_prewhile:
+  multiline_loop_pending_prewhile: # @braced: auto
     # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
     - match: '(?=\b(?i:while)\b)'
@@ -345,7 +329,7 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок loop: состояние «до ':'» при уже найденном 'while'
   # (механика — как multiline_if_pending).
-  multiline_loop_pending:
+  multiline_loop_pending: # @braced: auto
     # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
     - match: '{{pend_block_soft}}'
@@ -354,7 +338,7 @@ contexts: # общие контексты подсветки кода локац
     - include: pending_inline_pop
     - include: location_body
 
-  multiline_loop_body:
+  multiline_loop_body: # @braced: auto
     - include: comment_after_colon
     - match: ^(\s*?)(?i:(\bend\b))
       captures:
@@ -366,7 +350,7 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body
 
   # конструкции условий (п.2.1: former `(?<=\{)if` + `^if` слиты)
-  multiline_conditions:
+  multiline_conditions: # @braced: auto
     # strict-arm: ':' на строке if → сразу тело
     - match: '{{arm_anchor}}{{kw_if}}{{if_strict_tail}}'
       captures:
@@ -385,7 +369,7 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок if: состояние «до ':'». Zero-width решения не съедают ':' —
   # его доедает либо тело (block), либо location_body (single-line), как в strict-arm.
-  multiline_if_pending:
+  multiline_if_pending: # @braced: auto
     # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
     # ':' и до конца строки только пробел/комментарий → блочная форма → то же тело,
@@ -400,7 +384,7 @@ contexts: # общие контексты подсветки кода локац
 
   # тело if-конструкции (Фаза 7: вынесено из inline-push strict-arm, поведение 1:1;
   # используют оба arm'а).
-  multiline_conditions_body:
+  multiline_conditions_body: # @braced: auto
     - include: comment_after_colon
     - match: ^(\s*?)(?i:(\bend\b))
       captures:
@@ -459,7 +443,8 @@ contexts: # общие контексты подсветки кода локац
   # include внутри push-списка разворачивает правила ровно на своём месте).
   # Различие plain↔braced остаётся ТОЛЬКО в финальном include location_body /
   # location_body_braced, поэтому сами сегменты не содержат суффикса _braced и
-  # инклюдятся обоими зеркалами одинаково — sync-контракт (п.5.1) не затрагивается.
+  # инклюдятся обоими зеркалами одинаково. САМИ braced-зеркала с шага 4 не
+  # пишутся руками: их генерирует gen_braced.py в @begin-generated (§ниже).
   #
   # else/elseif: возврат из незакрытого pending-заголовка на inline-':' (P1.4);
   # один и тот же во всех пяти plain и пяти braced pending-контекстах:
@@ -483,16 +468,13 @@ contexts: # общие контексты подсветки кода локац
   # Тело многострочного else (`else !коммент` / голый `else`) одним ИМЕНОВАННЫМ
   # контекстом: arm `else !коммент` пушит СРАЗУ ДВА контекста (тело + хвост-
   # комментарий), и после pop'а комментария по newline верхним должно оказаться
-  # ровно это тело; тот же контекст пушит и bare-arm. Зеркало для {…} —
-  # else_body_block_braced (parity 5.1).
-  else_body_block:
+  # ровно это тело; тот же контекст пушит и bare-arm. Зеркало для {…}
+  # (else_body_block_braced) — в @begin-generated.
+  else_body_block: # @braced: auto
     - include: else_body_head_bare
     - include: else_body_guarded_tail
     - include: location_body
-  else_body_block_braced:
-    - include: else_body_head_bare
-    - include: else_body_guarded_tail
-    - include: location_body_braced
+
   # МЁРТВЫЙ РЕГИОН однострочных else/elseif.
   # По грамматике хвост `else: <stmt>` / `else <stmt>` / `elseif <cond>: <stmt>`
   # делает конструкцию ОДНОСТРОЧНОЙ: строки ниже не исполняются, но ПЛЕЕР их всё
@@ -511,7 +493,7 @@ contexts: # общие контексты подсветки кода локац
   # Сам регион braced-зеркала НЕ имеет: внутри мёртвого кода {…} — это
   # структура КОММЕНТАРИЯ, а не блок кода, т.е. тело от окружения не зависит.
   # braced-зеркала нужны только входным кадрам —
-  # else_dead_line_braced / elseif_dead_line_braced (parity 5.1).
+  # else_dead_line_braced / elseif_dead_line_braced — и живут в @begin-generated.
   dead_code_comment:
     - meta_scope: comment.qsp
     # выход из региона: строка началась с end/else/elseif/if/`-`
@@ -524,29 +506,19 @@ contexts: # общие контексты подсветки кода локац
     - include: brace_comments
     - include: special_comments
 
-  else_dead_line:
+  else_dead_line: # @braced: auto
     - match: '^'
       pop: true
       push: dead_code_comment
     - include: else_body_guarded_tail
     - include: location_body
-  else_dead_line_braced:
-    - match: '^'
-      pop: true
-      push: dead_code_comment
-    - include: else_body_guarded_tail
-    - include: location_body_braced
 
-  elseif_dead_line:
+  elseif_dead_line: # @braced: auto
     - match: '^'
       pop: true
       push: dead_code_comment
     - include: location_body
-  elseif_dead_line_braced:
-    - match: '^'
-      pop: true
-      push: dead_code_comment
-    - include: location_body_braced
+
   # elseif strict-arm: comment_after_colon + final-guard:
   elseif_body_head_strict:
     - include: comment_after_colon
@@ -569,8 +541,8 @@ contexts: # общие контексты подсветки кода локац
   #      под ним — ТЕЛО else (else_body_block), т.е. строки ниже = КОД;
   #   7) bare `else` без хвоста — тело со следующих строк = КОД.
   # Водораздел «код-тело (6/7) vs мёртвый код (4/5)» = наличие однострочного хвоста.
-  # braced-зеркало — multiline_actions_else_braced (parity 5.1).
-  multiline_actions_else:
+  # braced-зеркало — multiline_actions_else_braced (в @begin-generated).
+  multiline_actions_else: # @braced: auto
     # Строго В ПРЕДЕЛАХ СТРОКИ (`[ \t]`/`[^:\n\r]`): с прежними `\s*?` + `[^:]+`
     # правило матчило «else ⏎ if …:» (вложенный if в теле else) как условие→invalid.
     - match: ^[ \t]*?(?i:(\belse\b))([ \t]*?)([^:\n\r]+)(\:).*$
@@ -649,7 +621,7 @@ contexts: # общие контексты подсветки кода локац
   # приведены к порядку comment-первым (guard — нулевой ширины, на
   # середине строки не срабатывает, так что порядок comment_after_colon
   # внутри одного пуша не менял matching для обеих веток).
-  multiline_actions_elseif:
+  multiline_actions_elseif: # @braced: auto
     # `else if` (grammar `elseIfSpaceMarker = "else" ws "if"`) трактуется как ЕДИНЫЙ
     # elseif-оператор: `\b(?:else[ \t]+if|elseif)\b` внутри прежней capture-группы
     # (нумерация групп сохранена — внутренняя alternation не захватывающая).
@@ -678,7 +650,7 @@ contexts: # общие контексты подсветки кода локац
       push: multiline_elseif_pending
 
   # pending-заголовок elseif: состояние «до ':'» (механика — как multiline_if_pending).
-  multiline_elseif_pending:
+  multiline_elseif_pending: # @braced: auto
     # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
     - match: '{{pend_block_soft}}'
@@ -687,41 +659,46 @@ contexts: # общие контексты подсветки кода локац
     - include: pending_inline_pop
     - include: location_body
 
-  multiline_elseif_body:
+  multiline_elseif_body: # @braced: auto
     - include: comment_after_colon
     - match: '{{final_guard}}'
       pop: true
     - include: location_body
 
-  # # # ------- braced-двойники контейнеров (тело внутри {…}) ------- # # #
-  # Зеркала multiline_actions / multiline_loop / multiline_conditions /
-  # multiline_actions_else / multiline_actions_elseif. Единственное отличие:
-  #   - тело пушит включения с суффиксом _braced (location_body_braced и
-  #     вложенные *_braced); «end» В ОБЕИХ версиях ведёт единый
-  #     comment_after_end_in_brace (Решение-1A, Фаза 3).
-  # Нужны потому, что Sublime не позволяет «заглянуть в стек» и узнать,
-  # открыт ли сейчас {…}-блок: признак окружения кодируется выбором
-  # location_body vs location_body_braced.
-  # СИНХРОН-КОНТРАКТ (Фаза 5, п.5.1): правки в multiline_* чиним зеркально
-  # здесь же. Парность ПРОВЕРЯЕТСЯ АВТОМАТИЧЕСКИ: check_syntax_phase1.py
-  # (_disdocs/syntax_highlighting) сверяет пары после нормализации суффикса
-  # _braced — расхождение валит контроль в FAIL.
+  # @begin-generated
+  # # # --- braced-двойники (тело внутри {…}): СГЕНЕРИРОВАНО --- # # #
+  # Источник правды — plain-контексты с маркером `# @braced: auto`.
+  # Правь plain → `python _disdocs/syntax_highlighting/gen_braced.py
+  # --write` → коммить. РУЧНАЯ правка региона запрещена: дрейф валит
+  # check_syntax_phase1.py (и побайтную сверку региона, и парность 5.1).
+  # Нужны потому, что Sublime не умеет «заглянуть в стек»: признак
+  # «открыт ли {…}» кодируется выбором location_body / location_body_braced.
+
+  location_body_braced:
+    # ← сгенерировано из location_body
+    - include: multiline_actions_braced
+    - include: multiline_conditions_braced
+    - include: multiline_loop_braced
+    - include: body_common_head
+    - include: body_common_mid
+    - include: comments_in_brace
+    - include: body_common_tail
+
   multiline_actions_braced:
+    # ← сгенерировано из multiline_actions
     - match: '{{arm_anchor}}{{kw_act}}{{act_strict_tail}}'
       scope: meta.begin_action.qsp
       captures:
         2: keyword.control.action.begin.qsp markup.italic.qsp
       push: multiline_actions_body_braced
-    # bracket-arm (Фаза 7): зеркало plain (parity 5.1) → pending (multiline_act_pending_braced).
     - match: '{{arm_anchor}}{{kw_act}}{{unbalanced_bracket_head}}'
       scope: meta.begin_action.qsp
       captures:
         2: keyword.control.action.begin.qsp markup.italic.qsp
       push: multiline_act_pending_braced
 
-  # pending-заголовок act (braced): зеркало plain.
   multiline_act_pending_braced:
-    # Фаза 9: зеркало plain (parity 5.1)
+    # ← сгенерировано из multiline_act_pending
     - include: wrongclose_locend
     - match: '{{pend_block_soft}}'
       pop: true
@@ -730,6 +707,7 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body_braced
 
   multiline_actions_body_braced:
+    # ← сгенерировано из multiline_actions_body
     - include: comment_after_colon
     - match: ^(\s*?)(?i:(\bend\b))
       scope: meta.end-action.qsp
@@ -742,25 +720,22 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body_braced
 
   multiline_loop_braced:
+    # ← сгенерировано из multiline_loop
     - match: '{{arm_anchor}}{{kw_loop}}{{loop_strict_head}}'
       scope: meta.begin_cycle.qsp
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
       push: multiline_loop_body_braced
-    # bracket-arm (Фаза 7 + 8): зеркало plain (parity 5.1) → pre-while pending
-    # (multiline_loop_pending_prewhile_braced); guard «while на строке» снят и здесь.
     - match: '{{arm_anchor}}{{kw_loop}}{{unbalanced_bracket_head}}'
       scope: meta.begin_cycle.qsp
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
       push: multiline_loop_pending_prewhile_braced
-    # invalid-arm: зеркало plain (parity 5.1) — живёт в multiline_loop_braced.
     - match: '{{kw_loop}}{{loop_no_while}}'
       scope: invalid.illegal.qsp
 
-  # pending-заголовок loop (braced), состояние «while ЕЩЁ НЕ найден»: зеркало plain.
   multiline_loop_pending_prewhile_braced:
-    # Фаза 9: зеркало plain (parity 5.1)
+    # ← сгенерировано из multiline_loop_pending_prewhile
     - include: wrongclose_locend
     - match: '(?=\b(?i:while)\b)'
       pop: true
@@ -770,9 +745,8 @@ contexts: # общие контексты подсветки кода локац
     - include: pending_inline_pop
     - include: location_body_braced
 
-  # pending-заголовок loop (braced): состояние «до ':'» при найденном 'while'.
   multiline_loop_pending_braced:
-    # Фаза 9: зеркало plain (parity 5.1)
+    # ← сгенерировано из multiline_loop_pending
     - include: wrongclose_locend
     - match: '{{pend_block_soft}}'
       pop: true
@@ -781,6 +755,7 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body_braced
 
   multiline_loop_body_braced:
+    # ← сгенерировано из multiline_loop_body
     - include: comment_after_colon
     - match: ^(\s*?)(?i:(\bend\b))
       captures:
@@ -792,19 +767,18 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body_braced
 
   multiline_conditions_braced:
+    # ← сгенерировано из multiline_conditions
     - match: '{{arm_anchor}}{{kw_if}}{{if_strict_tail}}'
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_conditions_body_braced
-    # bracket-arm (Фаза 7): зеркало plain (parity 5.1) → pending (multiline_if_pending_braced).
     - match: '{{arm_anchor}}{{kw_if}}{{unbalanced_bracket_head}}'
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_if_pending_braced
 
-  # pending-заголовок if (braced): зеркало plain.
   multiline_if_pending_braced:
-    # Фаза 9: зеркало plain (parity 5.1)
+    # ← сгенерировано из multiline_if_pending
     - include: wrongclose_locend
     - match: '{{pend_block_strict}}'
       pop: true
@@ -812,9 +786,8 @@ contexts: # общие контексты подсветки кода локац
     - include: pending_inline_pop
     - include: location_body_braced
 
-  # зеркало multiline_conditions_body: тело пушит location_body_braced и
-  # brace-aware else/elseif. comment_after_end_in_brace — общий (Решение-1A).
   multiline_conditions_body_braced:
+    # ← сгенерировано из multiline_conditions_body
     - include: comment_after_colon
     - match: ^(\s*?)(?i:(\bend\b))
       captures:
@@ -827,8 +800,29 @@ contexts: # общие контексты подсветки кода локац
     - include: wrong_close_in_brace
     - include: location_body_braced
 
+  else_body_block_braced:
+    # ← сгенерировано из else_body_block
+    - include: else_body_head_bare
+    - include: else_body_guarded_tail
+    - include: location_body_braced
+
+  else_dead_line_braced:
+    # ← сгенерировано из else_dead_line
+    - match: '^'
+      pop: true
+      push: dead_code_comment
+    - include: else_body_guarded_tail
+    - include: location_body_braced
+
+  elseif_dead_line_braced:
+    # ← сгенерировано из elseif_dead_line
+    - match: '^'
+      pop: true
+      push: dead_code_comment
+    - include: location_body_braced
+
   multiline_actions_else_braced:
-    # Строго В ПРЕДЕЛАХ СТРОКИ — зеркало plain-arm1 (parity 5.1).
+    # ← сгенерировано из multiline_actions_else
     - match: ^[ \t]*?(?i:(\belse\b))([ \t]*?)([^:\n\r]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
     - match: '^(\s*?)(?i:(\belse\b)){{else_caret_tail}}'
@@ -845,20 +839,15 @@ contexts: # общие контексты подсветки кода локац
         - include: else_body_common_head
         - include: else_body_guarded_tail
         - include: location_body_braced
-    # «else <текст>:» — зеркало plain (parity 5.1); ':' обязателен (см. plain-arm).
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
       push: else_dead_line_braced
-    # зеркало plain (parity 5.1): однострочный `else <statements>` без ':' → след.
-    # строки до `end` = многострочный комментарий (else_dead_line_braced).
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))[ \t]+(?=[^!\s])'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: else_dead_line_braced
-    # зеркало plain (parity 5.1): `else !коммент` без ':' — хвост = комментарий-
-    # контекст (comment_after_else), тело else лежит под ним (else_body_block_braced).
     - match: '^(\s*?)(?i:(\belse\b))[ \t]+(!)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -866,13 +855,13 @@ contexts: # общие контексты подсветки кода локац
       push:
         - else_body_block_braced
         - comment_after_else
-    # зеркало plain (parity 5.1): многострочный `else` без хвоста (голый).
     - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*$)'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: else_body_block_braced
 
   multiline_actions_elseif_braced:
+    # ← сгенерировано из multiline_actions_elseif
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_strict_tail}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -884,15 +873,13 @@ contexts: # общие контексты подсветки кода локац
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
       push: elseif_dead_line_braced
-    # bracket-arm (Фаза 7): зеркало plain (parity 5.1) → pending (multiline_elseif_pending_braced).
     - match: '{{arm_anchor}}{{kw_elseif}}{{unbalanced_bracket_head}}'
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: multiline_elseif_pending_braced
 
-  # pending-заголовок elseif (braced): зеркало plain.
   multiline_elseif_pending_braced:
-    # Фаза 9: зеркало plain (parity 5.1)
+    # ← сгенерировано из multiline_elseif_pending
     - include: wrongclose_locend
     - match: '{{pend_block_soft}}'
       pop: true
@@ -901,10 +888,13 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body_braced
 
   multiline_elseif_body_braced:
+    # ← сгенерировано из multiline_elseif_body
     - include: comment_after_colon
     - match: '{{final_guard}}'
       pop: true
     - include: location_body_braced
+
+  # @end-generated
 
   # set и local
   kw_declarations:

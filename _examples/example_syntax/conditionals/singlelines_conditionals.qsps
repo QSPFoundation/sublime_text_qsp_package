@@ -8,4 +8,7 @@ if x = 1: *pl '1' elseif x = 2: *pl '2' elseif x=3: *pl '3' else: *pl '4'
 !@ Эта конструкция распознаётся, как часть многострочного условия.
 !@ Пока не придумал, как излечить
 if x = 1: *pl '1' elseif x = 2: *pl '2' elseif x=3: *pl '3' else:
+! else подсвечивается как vaild, а должно как invalid       ^^^^
+	*pl 'ddd'
+end
 -- wrong_singlelines_conditionals ---------------------------------

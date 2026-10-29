@@ -540,10 +540,6 @@ end
 ! при попадании на эту локацию должно так же создаваться сохранение, чтобы в случае случайного выбора действия "начать игру заново", можно было
 ! загрузиться на локации и проверить, нет ли способа воскреснуть.
 ! операторы
-exec|view|inclib|addqst|openqst|opengame|savegame|killqst|cmdclr|cmdclear|all|close|exit|play|settimer|menu|unsel|unselect|jump|copyarr|delact|wait|killall|dynamic|killvar|delobj|addobj|killobj|cls|cla|gs|xgt|gt|goto|gosub|xgoto|refint|showobjs|showstat|showacts|showinput|msg
-! текстовые
-pl|nl|clr|clear|p
-*pl|*nl|*clr|*clear|*p
 ! операторы конструкций
 act 'jjjjjjj':
 
@@ -631,8 +627,8 @@ end
 if 1:
 	567
 else ! вариант по умолчанию
-	$lvar = !0
-!          ^ оператор NOT в теле, не комментарий
+	lvar = 0!0
+!           ^ оператор NOT в теле, не комментарий
 end
 
 ! То же в {…} (braced-зеркало arm5a):
@@ -683,18 +679,11 @@ end
 		if 1:
 			222
 		end
-	end
-}
+	end}
 
 loop while i<9 step:
 	jjjjj=000
 end
-! числовые системные переменные
-nosave|disablescroll|disablesubex|debug|usehtml|bcolor|fcolor|lcolor|fsize
-! текстовые системные переменные
-$counter|$ongload|$ongsave|$onnewloc|$onactsel|$onobjsel|$onobjadd|$onobjdel|$usercom|$fname|$backimage
-! системные переменные, которые можно употреблять как числовые и текстовые
-$args|args|result|$result
 
 set a, d = 234, 678
 local a=234
@@ -729,11 +718,19 @@ msg "<<1 NO>>"
 @foo.4
 @foo.3(444,"678",@foo("5"))
 
-! употреблять неявный вызов с аргументами без скобок нельзя
+! употреблять неявный вызов функции с аргументами без скобок нельзя
 @foo_09 555,666
 ! можно спокойно использовать в выражениях
 345+@foo4(567)
 456+@foo 56 & ! неверная запись аргумента
+
+! неявный вызов процедуры
+@@proced
+@@proced 555, 666
+@@proced(55,55)
+! все три варианта допустимы
+456 + @@proced
+!   ^^^^^^^^^^ в выражениях использовать нельзя, но не реализовано в подсветке
 --
 
 
@@ -745,23 +742,4 @@ else
 end
 //  <- keyword.control.conditional.else.qsp
 //      ^ meta.user-variables.qsp -comment.qsp
-
-# st.help
-
-{
-	{
-		act "незакрытое многострочное действие":
-			123
-	}
-}
-if незакрытое_условие:
-	567
-else: 4 & !kfkfkfk
-	6788
-
-rund=567
-
-
--- st.help ---------------------------------
-
 
