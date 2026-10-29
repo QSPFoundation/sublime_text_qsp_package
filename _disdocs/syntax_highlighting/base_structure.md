@@ -51,3 +51,37 @@ qsp.sublime-syntax              qsp.qsrc.sublime-syntax
 | `*_braced` двойники | `qsp_base`, регион `@begin-generated` | тело внутри `{…}`; генерируются `gen_braced.py`, руками не правятся |
 
 Следствие: `qspdocs`/`preprocessor` в qsrc — намеренное решение, НЕ повод «чистить» их оттуда.
+
+## meta-scope заголовков блоков (P4.4, 2026-10-29)
+
+Единое семейство `meta.<begin|end>_<kind>.qsp`, вешается через `scope:` на весь
+match заголовка (так устроен `act` с самого начала). Нужно для стилей темы
+«вся строка заголовка» и для ассертов `meta.*` без привязки к keyword-токену.
+
+| Блок | Начало | Конец |
+|---|---|---|
+| `act …` | `meta.begin_action.qsp` | `meta.end_action.qsp` |
+| `loop …` | `meta.begin_cycle.qsp` | нет |
+| `if …` | `meta.begin_condition.qsp` | нет |
+| `elseif …` / `else if …` | `meta.begin_condition.qsp` | — |
+| `else` | `meta.begin_else.qsp` | — |
+
+Уточнения:
+- `meta.end-action.qsp` → **`meta.end_action.qsp`** (дефис был случайным; внешних
+  привязок в теме/плагине/скриптах нет — проверено grep'ом перед переименованием).
+- у `else`/`elseif` keyword по-прежнему несёт `meta.else_body.qsp` — историческая
+  пометка самого ключевого слова, НЕ заменяет `meta.begin_else`/`meta.begin_condition`.
+  Не «чистить» без отдельного решения (меняет result-scopes).
+- концы `loop`/`if` остались без meta-scope — не запрашивались; добавление
+  `meta.end_cycle`/`meta.end_condition` — отдельное решение, а не «недоделка».
+- braced-двойники этих правил живут в регионе `@begin-generated` и правятся только
+  через `gen_braced.py --write`.
+
+## Фикстуры автотестов (`syntax_test_*.qsps`)
+
+Правятся **руками**: генератор (`gen_syntax_tests.py` + `cases_phases_7_8_9.py`),
+которым они создавались, в репозиторий не попал. Геометрия карет проверяется без
+Sublime: `python _disdocs/syntax_highlighting/check_syntax_asserts.py` (отчёт,
+exit 1 при проблемах; `--write` — механическая починка спанов `punctuation.*` /
+`meta.*`). `qspdocs`-правило №1: `...` между ссылками — **литеральное** многоточие
+(P4.1), вокруг допускаются горизонтальные пробелы `[ \t]*`.

@@ -276,7 +276,7 @@ contexts: # общие контексты подсветки кода локац
   multiline_actions_body: # @braced: auto
     - include: comment_after_colon
     - match: ^(\s*?)(?i:(\bend\b))
-      scope: meta.end-action.qsp
+      scope: meta.end_action.qsp
       captures:
         2: keyword.control.action.end.qsp markup.italic.qsp
       pop: true
@@ -353,6 +353,7 @@ contexts: # общие контексты подсветки кода локац
   multiline_conditions: # @braced: auto
     # strict-arm: ':' на строке if → сразу тело
     - match: '{{arm_anchor}}{{kw_if}}{{if_strict_tail}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_conditions_body
@@ -363,6 +364,7 @@ contexts: # общие контексты подсветки кода локац
     # многострочной скобкой (`…] = $arr: *pl …`) ложно открывала бы блок и else/end
     # не ловились бы как excess.
     - match: '{{arm_anchor}}{{kw_if}}{{unbalanced_bracket_head}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_if_pending
@@ -548,6 +550,7 @@ contexts: # общие контексты подсветки кода локац
     - match: ^[ \t]*?(?i:(\belse\b))([ \t]*?)([^:\n\r]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
     - match: '^(\s*?)(?i:(\belse\b)){{else_caret_tail}}'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -555,6 +558,7 @@ contexts: # общие контексты подсветки кода локац
         - include: else_body_guarded_tail
         - include: location_body
     - match: '(?<=\{)(\s*?)(?i:(\belse\b)){{else_brace_tail}}'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -567,6 +571,7 @@ contexts: # общие контексты подсветки кода локац
     # многострочный else без ':' легален (тело начинается со следующей строки).
     # Голый else доходит до bare-arm ниже, `else !коммент` — до своего arm'а.
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
@@ -580,6 +585,7 @@ contexts: # общие контексты подсветки кода локац
     # bare-arm). `end`/`else`/`elseif` на последующих строках словит final_guard
     # региона.
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))[ \t]+(?=[^!\s])'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: else_dead_line
@@ -595,6 +601,7 @@ contexts: # общие контексты подсветки кода локац
     # (чтобы не накрыть `else`), поэтому сам `!` получает comment-scope только
     # через capture — ровно как у comment_after_colon.
     - match: '^(\s*?)(?i:(\belse\b))[ \t]+(!)'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: comment.qsp punctuation.definition.comment.begin.qsp main_comment_start.qsp
@@ -608,6 +615,7 @@ contexts: # общие контексты подсветки кода локац
     # формы (`else <stmt>` без ':') и колонные (`else:` / `else: <текст>` /
     # `else <конд>:`) — выше.
     - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*$)'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: else_body_block
@@ -627,6 +635,7 @@ contexts: # общие контексты подсветки кода локац
     # (нумерация групп сохранена — внутренняя alternation не захватывающая).
     # `[ \t]+`, а НЕ `\s+`: внутристрочно — как в грамматике (`ws` без переноса).
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_strict_tail}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -636,6 +645,7 @@ contexts: # общие контексты подсветки кода локац
     # до else/elseif/end — мёртвый код → тот же многострочный комментарий, что
     # и у однострочного else (dead_code_comment), см. elseif_dead_line.
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_permissive_tail}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
@@ -645,6 +655,7 @@ contexts: # общие контексты подсветки кода локац
     # снимается по sibling-guard (elseif_else_final) при следующем else/elseif/end —
     # как и ordinary elseif.
     - match: '{{arm_anchor}}{{kw_elseif}}{{unbalanced_bracket_head}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: multiline_elseif_pending
@@ -710,7 +721,7 @@ contexts: # общие контексты подсветки кода локац
     # ← сгенерировано из multiline_actions_body
     - include: comment_after_colon
     - match: ^(\s*?)(?i:(\bend\b))
-      scope: meta.end-action.qsp
+      scope: meta.end_action.qsp
       captures:
         2: keyword.control.action.end.qsp markup.italic.qsp
       pop: true
@@ -769,10 +780,12 @@ contexts: # общие контексты подсветки кода локац
   multiline_conditions_braced:
     # ← сгенерировано из multiline_conditions
     - match: '{{arm_anchor}}{{kw_if}}{{if_strict_tail}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_conditions_body_braced
     - match: '{{arm_anchor}}{{kw_if}}{{unbalanced_bracket_head}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_if_pending_braced
@@ -826,6 +839,7 @@ contexts: # общие контексты подсветки кода локац
     - match: ^[ \t]*?(?i:(\belse\b))([ \t]*?)([^:\n\r]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
     - match: '^(\s*?)(?i:(\belse\b)){{else_caret_tail}}'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -833,6 +847,7 @@ contexts: # общие контексты подсветки кода локац
         - include: else_body_guarded_tail
         - include: location_body_braced
     - match: '(?<=\{)(\s*?)(?i:(\belse\b)){{else_brace_tail}}'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
@@ -840,15 +855,18 @@ contexts: # общие контексты подсветки кода локац
         - include: else_body_guarded_tail
         - include: location_body_braced
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
       push: else_dead_line_braced
     - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))[ \t]+(?=[^!\s])'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: else_dead_line_braced
     - match: '^(\s*?)(?i:(\belse\b))[ \t]+(!)'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: comment.qsp punctuation.definition.comment.begin.qsp main_comment_start.qsp
@@ -856,6 +874,7 @@ contexts: # общие контексты подсветки кода локац
         - else_body_block_braced
         - comment_after_else
     - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*$)'
+      scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: else_body_block_braced
@@ -863,17 +882,20 @@ contexts: # общие контексты подсветки кода локац
   multiline_actions_elseif_braced:
     # ← сгенерировано из multiline_actions_elseif
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_strict_tail}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push:
         - include: elseif_body_head_strict
         - include: location_body_braced
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_permissive_tail}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
       push: elseif_dead_line_braced
     - match: '{{arm_anchor}}{{kw_elseif}}{{unbalanced_bracket_head}}'
+      scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: multiline_elseif_pending_braced
@@ -1346,8 +1368,15 @@ contexts: # общие контексты подсветки кода локац
         1: meta.preprocessor.qsp diff.deleted.qsp avs_preprocessor
         #2: markup.bold preprocessor.avs
 
+  # Документация локации (`!@`): в qsp_grammar.peg такого синтаксиса нет — это
+  # соглашение корпуса, поэтому правила ниже только оформительские.
+  # P4.1 (2026-10-29): `...` — ЛИТЕРАЛЬНОЕ многоточие, а не «три любых символа»
+  # (прежняя запись ` ... ` требовала РОВНО один пробел с каждой стороны и матчила
+  # `!@ #1 XXX #2 - …`, но НЕ матчила `!@ #1 ... #2 - …`).
+  # Вокруг — горизонтальные `[ \t]*` (в т.ч. ноль): `\s*` нельзя, `\s` включает
+  # перенос, и заголовок склеил бы соседние строки.
   qspdocs:
-    - match: (?:^\!@\s)([#$%](\d+|r) ... [#$%](\d+|r))(\s+\-\s+)(.*$)
+    - match: (?:^\!@\s)([#$%](\d+|r)[ \t]*\.\.\.[ \t]*[#$%](\d+|r))(\s+\-\s+)(.*$)
       scope: meta.diff meta.gametext.qsp
       captures:
         1: entity.other.attribute-name.documentation.qsp
