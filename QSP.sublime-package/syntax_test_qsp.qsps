@@ -11,13 +11,13 @@
 ! P4.1 (2026-10-29): `...` в qspdocs — ЛИТЕРАЛЬНОЕ многоточие (было «три любых символа»).
 ! Ассерты ниже живут в meta.gametext (между локациями), где qspdocs инклюднут до catch-all.
 !@ #1 ... #2 - ссылка на две локации
-   ^^^^^^^^^ entity.other.attribute-name.documentation.qsp meta.gametext.qsp
+// ^^^^^^^^^ entity.other.attribute-name.documentation.qsp meta.gametext.qsp
 !@ #1...#2 - без пробелов вокруг многоточия тоже docs
-   ^^^^^^^ entity.other.attribute-name.documentation.qsp meta.gametext.qsp
+// ^^^^^^^ entity.other.attribute-name.documentation.qsp meta.gametext.qsp
 !@ #1 XXX #2 - уже НЕ docs-строка: вместо `...` подставлены три буквы
-   ^^^^^^^^^ meta.gametext.qsp -entity.other.attribute-name.documentation.qsp
+// ^^^^^^^^^ meta.gametext.qsp -entity.other.attribute-name.documentation.qsp
 !@ #1 - односсылочная форма
-   ^^ entity.other.attribute-name.documentation.qsp meta.gametext.qsp
+// ^^ entity.other.attribute-name.documentation.qsp meta.gametext.qsp
 Имена локаций записываются после символа решётки #, который должен стоять в начале строки,
 при этом после решётки # не обязательно ставить пробел, но для читаемости кода рекомендую ставить
 
@@ -609,7 +609,7 @@ else: *pl '0'
 	end
 	хвост"
 end
-// ^ -comment.qsp
+//^ -comment.qsp
 *pl 'после end — снова код'
 // ^ -comment.qsp
 
@@ -617,7 +617,7 @@ end
 ! на вершине стека, контексты ниже (в т.ч. закрытие {…}-блока) не смотрятся.
 {
 	! "}"
-//    ^ comment.qsp -punctuation.section.block.end.qsp
+//  ^ comment.qsp -punctuation.section.block.end.qsp
 	*pl 'строка-комментарий с "}" блок не закрыла'
 }
 *pl 'после блока — живой код'
@@ -706,21 +706,21 @@ local a=234
 !   • scope ошибки `no` без правого операнда — avs_wrong_no_with_out_right
 !     (был avs_wrong_comma_with_out_left — copy-paste от запятой).
 $x = 1 no 2
-!      ^^ keyword.operator.word.qsp
+//     ^^ keyword.operator.word.qsp
 $x = 1 NO 2
-!      ^^ keyword.operator.word.qsp
+//     ^^ keyword.operator.word.qsp
 $x = 1 No 2
-!      ^^ keyword.operator.word.qsp
+//     ^^ keyword.operator.word.qsp
 msg "<<1 no 2>>"
-!        ^^ keyword.operator.word.qsp
+//       ^^ keyword.operator.word.qsp
 msg "<<1 NO 2>>"
-!        ^^ keyword.operator.word.qsp
+//       ^^ keyword.operator.word.qsp
 msg "<<1 No 2>>"
-!        ^^ keyword.operator.word.qsp
+//       ^^ keyword.operator.word.qsp
 $x = 1 NO
-!      ^^ invalid.illegal.qsp avs_wrong_no_with_out_right
+//     ^^ invalid.illegal.qsp avs_wrong_no_with_out_right
 msg "<<1 NO>>"
-!        ^^ invalid.illegal.qsp avs_wrong_no_with_out_right
+//       ^^ invalid.illegal.qsp avs_wrong_no_with_out_right
 
 -- st.death ---------------------------------
 
@@ -742,15 +742,14 @@ msg "<<1 NO>>"
 ! все три варианта допустимы
 456 + @@proced
 !   ^^^^^^^^^^ в выражениях использовать нельзя, но не реализовано в подсветке
---
-
 
 ! многострочный else БЕЗ двоеточия — тело подсвечивается кодом, а не комментарием
 if 1:
 	567
 else
+// <- keyword.control.conditional.else.qsp
 	$lvar=2
+//  ^^ meta.user-variables.qsp -comment.qsp
 end
-//  <- keyword.control.conditional.else.qsp
-//      ^ meta.user-variables.qsp -comment.qsp
+--
 
