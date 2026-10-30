@@ -622,7 +622,7 @@ end
 *pl 'после end — снова код'
 // <- -comment.qsp
 
-! Регресс (1j): кавычка в комментарии ЗАЩИЩАЕТ `}` — пока состояние литерала
+! Регресс (1j): кавычка в комментарии ЗАЩИЩАЕТ "}" — пока состояние литерала
 ! на вершине стека, контексты ниже (в т.ч. закрытие {…}-блока) не смотрятся.
 {
 	! "}"
@@ -784,8 +784,73 @@ x = $myname
 $s = "a" _
 //       ^ punctuation.separator.continuation.qsp avs_longstring
 
-! одиночная `}` ВНЕ открытого `{` — ошибка (раньше молчала)
+! одиночная "}" ВНЕ открытого "{" — ошибка (раньше молчала)
 }
 // <- invalid.illegal.qsp avs_wrong_closed_brace
+--
+
+# special comments !@
+! Спецкомментарий `!@` — ВАРИАНТ обычного комментария: те же входы/завершители/
+! вложенные состояния, отличается только окраской тела (avs_speccomments).
+! ВАЖНО (грабли фикстур): скобку в прозе комментария изолируют ТОЛЬКО кавычки — "{", "}";
+! обратные апострофы НЕ изолируют: одинокий "{" открывает вложенное {…}-состояние
+! комментария, тянется через строки и съедает следующие строки вместе с целями ассертов.
+!@ доки
+// ^^^^ comment.qsp markup.italic.qsp avs_speccomments
+msg "после спец-комментария — снова код"
+// <- keyword.statement.qsp
+
+! у обычного комментария спец-окраски НЕТ
+//  ^^^^^ comment.qsp -avs_speccomments
+
+! `&` внутри комментария — ТЕКСТ (grammar `commentText` включает разделитель),
+! в отличие от хвоста после `end` (там noteString) — см. ниже.
+!@ доки & x = 1
+//        ^ comment.qsp -meta.user-variables.qsp
+
+if 1:
+  2
+end !@ доки & pl "ok"
+//   ^ punctuation.definition.comment.begin.qsp avs_speccomments
+//     ^^^^ comment.line.qsp avs_speccomments
+//          ^ keyword.operator.ampersand.qsp
+//            ^^ keyword.statement.qsp
+
+! "}" на строке-комментарии закрывает {…}-блок (не текст комментария).
+! Отдельной строки с закрывающей "}" НЕТ: она уже стоит в конце строки-комментария —
+! лишняя "}" была бы настоящей QSP-ошибкой (invalid.illegal) и ломала бы подсветку.
+{
+  !@ доки}
+//   ^^^^ avs_speccomments
+//       ^ punctuation.section.block.end.qsp -comment.qsp
+
+! "}" внутри "…" защищена — блок закрывает только "}" нулевого уровня
+{
+  !@ "}" хвост}
+//    ^ comment.qsp -punctuation.section.block.end.qsp
+//            ^ punctuation.section.block.end.qsp
+
+! вложенные {…} в спец-комментарии разбираются как в обычном
+!@ {x{y}} хвост
+//      ^ punctuation.definition.comment.end.qsp
+//        ^^^^^ avs_speccomments
+
+! `!@` в мёртвом регионе однострочного elseif (dead_code_comment)
+if 0:
+  elseif 1: *pl '5'
+  !@ доки
+//   ^^^^ comment.qsp avs_speccomments
+end
+// <- keyword.control.conditional.end.qsp
+
+! `else !@ …` — хвост-комментарий, тело else остаётся КОДОМ
+if 1:
+  1
+else !@ доки
+//    ^ punctuation.definition.comment.begin.qsp avs_speccomments
+//      ^^^^ comment.qsp avs_speccomments
+  2
+//^ constant.numeric.qsp
+end
 --
 

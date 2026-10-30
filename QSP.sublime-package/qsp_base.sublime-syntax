@@ -501,8 +501,8 @@ contexts: # общие контексты подсветки кода локац
   # равно СКАНИРУЕТ с учётом кавычек/апострофов/скобок. Поэтому регион красим
   # настоящим многострочным комментарием с ТОЙ ЖЕ структурой, что и обычные
   # комментарии (общие quote_apostroph_comments / brace_comments /
-  # special_comments), а НЕ построчным `^.*` (он забирает строку с позиции 0 и
-  # не даёт сработать кавычкам/скобкам).
+  # special_comments_line), а НЕ построчным `^.*` (он забирает строку с позиции 0
+  # и не даёт сработать кавычкам/скобкам).
   #
   # Входные кадры (plain + braced-зеркало): хвост САМОЙ строки else/elseif —
   # обычное тело (location_body), а на НАЧАЛЕ следующей строки кадр заменяет
@@ -524,7 +524,9 @@ contexts: # общие контексты подсветки кода локац
     # литерала или вложенных {…} регион НЕ закрывает (как в плеере)
     - include: quote_apostroph_comments
     - include: brace_comments
-    - include: special_comments
+    # спец-комментарий `!@`: вариант line — регион продолжается со следующей
+    # строки, т.е. тело завершается там же, где обычный комментарий
+    - include: special_comments_line
 
   else_dead_line: # @braced: auto
     - match: '^'
@@ -1227,7 +1229,9 @@ contexts: # общие контексты подсветки кода локац
       pop: true
     - include: quote_apostroph_comments
     - include: brace_comments
-    - include: special_comments
+    # Спец-комментарий `!@` подключается САЙТОМ, а не здесь: его завершители
+    # обязаны совпадать с завершителями тела-хозяина, а они у plain- и
+    # braced-версий разные (см. блок special_comments_*).
 
   # Комментарий «!» — однострочный или многострочный (через &-продолжения).
   # (п.3.1) Arms НЕ слиты в один regex: ветка «^\s*» матчит только на начале
@@ -1241,6 +1245,7 @@ contexts: # общие контексты подсветки кода локац
       push:
         - meta_scope: comment.qsp
         - include: comment_tail_common
+        - include: special_comments_line
     - match: ((^\s*)|(\&)\s*)(!)
       captures:
         3: support.function.builtin.qsp
@@ -1248,6 +1253,7 @@ contexts: # общие контексты подсветки кода локац
       push:
         - meta_scope: comment.qsp
         - include: comment_tail_common
+        - include: special_comments_line
 
   # Комментарии внутри открытого {…} блока.
   # Отличие от comments: комментарий схлопывается НУЛЕВЫМ lookahead «(?=\})»,
@@ -1266,6 +1272,7 @@ contexts: # общие контексты подсветки кода локац
         - match: (?=\})
           pop: true
         - include: comment_tail_common
+        - include: special_comments_braced
     - match: ((^\s*)|(\&)\s*)(!)
       captures:
         3: support.function.builtin.qsp
@@ -1275,6 +1282,7 @@ contexts: # общие контексты подсветки кода локац
         - match: (?=\})
           pop: true
         - include: comment_tail_common
+        - include: special_comments_braced
 
   comment_after_colon: # комментарии после двоеточия
     - match: (?<=:)((\s*)|(\&)\s*)(!)
@@ -1288,7 +1296,7 @@ contexts: # общие контексты подсветки кода локац
           pop: true
         - include: quote_apostroph_comments
         - include: brace_comments
-        - include: special_comments
+        - include: special_comments_line
 
   # Хвост-комментарий в заголовке многострочного else (`else !коммент`): ':' по
   # grammar (elseMultiLine `(":" ws)? commentStatement?`) факультативен, поэтому
@@ -1306,7 +1314,7 @@ contexts: # общие контексты подсветки кода локац
       pop: true
     - include: quote_apostroph_comments
     - include: brace_comments
-    - include: special_comments
+    - include: special_comments_line
 
   # Комментарий после 'end': весь текст до '&' или конца строки; внутри
   # {…} закрывающая '}' завершает и комментарий, и внешний блок (её ловит
@@ -1320,8 +1328,10 @@ contexts: # общие контексты подсветки кода локац
     - meta_content_scope: comment.line.qsp markup.italic.qsp
     - include: quote_apostroph_comments
     - include: brace_comments
-    # как в comment_after_colon: '@'-спецы после `end !` — тот же токен avs_speccomments
-    - include: special_comments
+    # как в comment_after_colon: '@'-спецы после `end !` — тот же токен
+    # avs_speccomments, но вариант end (pop ещё и по `&`: хвост после `end` —
+    # noteString, и разделитель statement'ов его заканчивает)
+    - include: special_comments_end
     - match: (?=&|\}|{{nr}}|$)
       pop: true
 
@@ -1377,11 +1387,72 @@ contexts: # общие контексты подсветки кода локац
       scope: comment.qsp
       push: comment_in_apostroph
 
-  special_comments:
-    # `|$` — последняя строка файла без перевода строки: без него спец-комментарий
-    # на ней оставался без avs_speccomments (асимметрия с остальными хвостами).
-    - match: (?<=\!)@.*?(?={{nr}}|$)
-      scope: comment.qsp markup.italic.qsp avs_speccomments
+  # --- Спецкомментарий `!@` ----------------------------------------------
+  # `!@` — ВАРИАНТ обычного комментария, а НЕ отдельная конструкция: те же точки
+  # входа, те же завершители и та же внутренняя структура ("…"/'…'/{…}); отличается
+  # ТОЛЬКО окраской тела — markup.italic + avs_speccomments. Внутренние
+  # состояния не дублируются: тело подключает существующую машинерию
+  # комментария (quote_apostroph_comments / brace_comments).
+  #
+  # Маркер ловится В ТЕЛЕ (lookbehind `!`), а не отдельной головой: `!` на всех
+  # сайтах уже съеден головой комментария (comments / comments_in_brace /
+  # comment_after_colon / arm `else !коммент`), а после `end` и в мёртвом регионе
+  # головы нет вовсе. `@` получает тот же begin-пунктуационный scope, что и `!`,
+  # поэтому тема, красящая `punctuation.definition.comment`, видит `!@` единым
+  # маркером (а avs_speccomments — ещё и как спец-маркер).
+  #
+  # Тел ТРИ — по набору завершителей САЙТА (push-тело перекрывает внешнее,
+  # поэтому завершители обязаны ПОВТОРЯТЬ завершители тела-хозяина):
+  #   special_comment_body_line   — newline/$: comments / comment_after_colon /
+  #                                 comment_after_else / dead_code_comment
+  #                                 (регион продолжается со следующей строки);
+  #   special_comment_body_braced — + `(?=\})`: только comments_in_brace (`}` на
+  #                                 строке-комментарии закрывает {…}-блок,
+  #                                 а не остаётся текстом комментария);
+  #   special_comment_body_end    — + `&`/`}`: только comment_after_end_in_brace
+  #                                 (после `end` хвост — noteString, и `&`
+  #                                 заканчивает его по грамматике).
+  special_comments_line:
+    - match: '(?<=\!)@'
+      scope: punctuation.definition.comment.begin.qsp avs_speccomments
+      push: special_comment_body_line
+
+  special_comments_braced:
+    - match: '(?<=\!)@'
+      scope: punctuation.definition.comment.begin.qsp avs_speccomments
+      push: special_comment_body_braced
+
+  special_comments_end:
+    - match: '(?<=\!)@'
+      scope: punctuation.definition.comment.begin.qsp avs_speccomments
+      push: special_comment_body_end
+
+  special_comment_body_line:
+    - meta_scope: comment.qsp markup.italic.qsp avs_speccomments
+    # POP НУЛЕВОЙ ШИРИНЫ (`?=`): newline НЕ съедаем — иначе тело-хозяин
+    # (comment_after_colon / comment_after_else) своего newline-pop'а уже
+    # не увидит и проглотит следующую строку.
+    - match: (?={{nr}}|$)
+      pop: true
+    - include: quote_apostroph_comments
+    - include: brace_comments
+
+  special_comment_body_braced:
+    - meta_scope: comment.qsp markup.italic.qsp avs_speccomments
+    - match: (?=\})
+      pop: true
+    # как в line-варианте: newline не съедаем (pop нулевой ширины)
+    - match: (?={{nr}}|$)
+      pop: true
+    - include: quote_apostroph_comments
+    - include: brace_comments
+
+  special_comment_body_end:
+    - meta_scope: comment.qsp markup.italic.qsp avs_speccomments
+    - include: quote_apostroph_comments
+    - include: brace_comments
+    - match: (?=&|\}|{{nr}}|$)
+      pop: true
 
   preprocessor:
     # lazy `.*?` перед `$` избыточен (движок всё равно обязан дойти до конца строки) — P4.3.
