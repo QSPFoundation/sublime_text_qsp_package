@@ -1192,6 +1192,13 @@ contexts: # общие контексты подсветки кода локац
     - include: numeric
     - include: strings
     - include: users_variables
+    # Пунктуация ОДНОстрочных ( ) [ ] (п.1 аудита): раньше в подвыражении `<< … >>`
+    # скобки были вообще без scope — `brackets_inline` подключался только в
+    # `body_common_tail`. Включение ПОСЛЕДНИМ — как там: anchor-правила, которые
+    # начинают матч с `(`/`[`, должны пробоваться раньше. NB: `\K`-правило
+    # `(& x)` из `operacion_ampersand_common` в pushed-контексте НЕ срабатывает
+    # (п.31 аудита), поэтому порядок здесь — страховка, а не наблюдаемая разница.
+    - include: brackets_inline
 
   operacion_subex:
     # Операции ВНУТРИ подвыражения `<< … >>` (embedded source). Общие с
@@ -1504,11 +1511,16 @@ contexts: # общие контексты подсветки кода локац
   # одиночных проверок операторов не меняется.
   # NB: внутри regex не используем \xNN — Oniguruma в UTF-8 падает на них
   # («too short multibyte code string»); кавычки/апострофы — через {{ap}}/{{quote}}.
+  # NB: «пропускаемая строка» в lookahead'е исключает СВОЙ разделитель
+  # (`{{quote}}[^{{quote}}\n]*{{quote}}` для кавычек, `{{ap}}[^{{ap}}\n]*{{ap}}` для
+  # апострофов). Копипаст с чужим классом в кавычковой альтернативе ломал
+  # распознавание `"…'…"` → незакрытая `(`/`[` на такой строке не виделась
+  # и многострочность терялась: `$x = ("Bob's" +` ⏎ `"dog")` (п.4 аудита).
   brackets_multiline:
-    - match: '\((?=(?:[^{{ap}}{{quote}})\n]|{{ap}}[^{{ap}}\n]*{{ap}}|{{quote}}[^{{ap}}\n]*{{quote}})*{{nr_lookahead}})'
+    - match: '\((?=(?:[^{{ap}}{{quote}})\n]|{{ap}}[^{{ap}}\n]*{{ap}}|{{quote}}[^{{quote}}\n]*{{quote}})*{{nr_lookahead}})'
       scope: punctuation.section.parens.begin.qsp avs_paren_begin
       push: multiline_round
-    - match: '\[(?=(?:[^{{ap}}{{quote}}\]\n]|{{ap}}[^{{ap}}\n]*{{ap}}|{{quote}}[^{{ap}}\n]*{{quote}})*{{nr_lookahead}})'
+    - match: '\[(?=(?:[^{{ap}}{{quote}}\]\n]|{{ap}}[^{{ap}}\n]*{{ap}}|{{quote}}[^{{quote}}\n]*{{quote}})*{{nr_lookahead}})'
       scope: punctuation.section.brackets.begin.qsp avs_bracket_begin
       push: multiline_square
 

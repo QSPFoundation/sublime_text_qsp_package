@@ -854,3 +854,32 @@ else !@ доки
 end
 --
 
+# скобки: lookahead многострочности
+! п.4: апостроф ВНУТРИ "…" не должен ломать детекцию незакрытой скобки.
+! До фикса кавычковая альтернатива lookahead исключала апостроф: строка не считалась
+! «пропускаемой» → пуша multiline_round не было, и «)» со второй строки не закрывал скобку.
+set $sl = ("Bob's" +
+" and dog")
+// <- meta.group.parens.multiline.qsp string.quoted.double.qsp
+//        ^ punctuation.section.parens.end.qsp
+-- скобки: lookahead многострочности --------------------------------
+
+# подвыражения << … >>
+! п.1: внутри `<< … >>` скобки получают пунктуацию (brackets_inline не был
+! включён в subex, хотя в body_common_tail он есть).
+msg "<<$a[0]>>"
+//       ^ punctuation.section.brackets.begin.qsp
+//         ^ punctuation.section.brackets.end.qsp
+msg "<<$args[args['i']]>>"
+//          ^ punctuation.section.brackets.begin.qsp
+//                    ^ punctuation.section.brackets.end.qsp
+msg "<<($a + 1)>>"
+//     ^ punctuation.section.parens.begin.qsp
+//            ^ punctuation.section.parens.end.qsp
+! `(& …)` в подвыражении: `\K`-правило «& без левого операнда» в pushed-контексте
+! не срабатывает (п.31 аудита), поэтому `&` остаётся обычным оператором.
+! Когда п.31 починят, этот ассерт должен стать invalid.illegal.qsp.
+msg "<<(& $a)>>"
+//      ^ keyword.operator.ampersand.qsp
+-- подвыражения << … >> ---------------------------------------------
+
