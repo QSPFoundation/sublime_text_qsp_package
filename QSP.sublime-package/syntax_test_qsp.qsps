@@ -767,6 +767,15 @@ set $q2 = 'одинарные'
 //        ^ string.quoted.single.qsp
 //        ^ -string.quoted.double.qsp
 
+! п.5: метка — только в НАЧАЛЕ строки (плеер иначе её не видит); `:` в середине
+! выражения и метка с кавычками — НЕ метки (решения зафиксированы в шапке `labels`).
+  :метка
+// ^^^^^ entity.name.qlabel.qsp avs_jumps_labels
+x = 5 & :не_метка
+//       ^^^^^^^^ -entity.name.qlabel.qsp avs_jumps_labels
+:"текст"
+//^^^^^ -entity.name.qlabel.qsp
+
 ! многострочный else БЕЗ двоеточия — тело подсвечивается кодом, а не комментарием
 if 1:
 	567
