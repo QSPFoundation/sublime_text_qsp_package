@@ -111,10 +111,10 @@ variables: # назначаем переменные для удобства
   # мягкий `!?` (act/else). Двоеточие в значениях — кавычки YAML обязательны.
   pend_block_strict: '(?=:\s*?(!.*)?$)'
   pend_block_soft: '(?=:\s*?(!.*?)?$)'
-  pend_inline: '(?=:\s*?\S)'
+  pend_inline: '(?=:\s*\S)'
   act_strict_tail: '(?=\s*?.*?\:\s*?(!.*?)?$)'
   if_strict_tail: '(?=\s*?.*?\:\s*?(!.*)?$)'
-  else_caret_tail: '(?=\s*?\:\s*?(!.*?)?$)'
+  else_caret_tail: '(?=\s*\:\s*?(!.*?)?$)'
   else_brace_tail: '(?=\s*?.*?\:\s*?(!.*?)?$)'
   elseif_strict_tail: '(?=\s+\S.*?\:\s*(!.*)?$)'
   elseif_permissive_tail: '(?=\s+\S.*?\:\s*([^!\s].*)?$)'
@@ -129,6 +129,17 @@ variables: # назначаем переменные для удобства
   # (подвыражения `<< … >>` — там нет `^` строки). Захват сохранён.
   left_ctx_anchor: '(^\s*?|\&\s*?|\(\s*?|\{\s*?|\[\s*?)\K'
   left_ctx_lookbehind: '(?<=(<|\&|\(|\{|\[))'
+  # P1.7 (HANDOFF §1r): `\s*?` → `\s*` нормализован ВЕЗДЕ, где за квантором стоит
+  # ОБЯЗАТЕЛЬНЫЙ атом, не совпадающий с пробелом: позиция остановки единственна,
+  # поэтому greedy и lazy дают один и тот же матч (доказано
+  # `normalize_lazy_ws.py --against-head` на корпусе). ЛЕНИВЫЙ вариант оставлен
+  # осознанно — «нормализовывать» его НЕЛЬЗЯ:
+  #   * `arm_anchor` — квантор в КОНЦЕ матча: greedy съест отступ внутрь scope;
+  #   * `left_ctx_anchor` — квантор перед `\K`: greedy сдвинет НАЧАЛО матча;
+  #   * `pend_block_*`, `act_strict_tail`, `if_strict_tail`, `else_brace_tail`,
+  #     `loop_strict_head` — квантор перед `.*`/`(!…)`/`$`: `\s` включает перевод
+  #     строки, greedy дотянется до следующей строки и матч станет успешным там,
+  #     где ленивый его не находил (класс бага `kw_elseif`, §1i).
 
 contexts: # общие контексты подсветки кода локации
   # Тривиальный вход для самой базы (база hidden, реально используется
@@ -278,7 +289,7 @@ contexts: # общие контексты подсветки кода локац
 
   multiline_actions_body: # @braced: auto
     - include: comment_after_colon
-    - match: ^(\s*?)(?i:(\bend\b))
+    - match: ^(\s*)(?i:(\bend\b))
       scope: meta.end_action.qsp
       captures:
         2: keyword.control.action.end.qsp markup.italic.qsp
@@ -343,7 +354,7 @@ contexts: # общие контексты подсветки кода локац
 
   multiline_loop_body: # @braced: auto
     - include: comment_after_colon
-    - match: ^(\s*?)(?i:(\bend\b))
+    - match: ^(\s*)(?i:(\bend\b))
       captures:
         2: keyword.control.cycle.end.qsp markup.italic.qsp
       pop: true
@@ -391,7 +402,7 @@ contexts: # общие контексты подсветки кода локац
   # используют оба arm'а).
   multiline_conditions_body: # @braced: auto
     - include: comment_after_colon
-    - match: ^(\s*?)(?i:(\bend\b))
+    - match: ^(\s*)(?i:(\bend\b))
       captures:
         2: keyword.control.conditional.end.qsp markup.italic.qsp
       pop: true
@@ -405,9 +416,9 @@ contexts: # общие контексты подсветки кода локац
   wrong_end_else_elseif:
     - match: (?i:(\bend\b)) # подсветка лишнего end'а
       scope: invalid.illegal.qsp meta.excess_end.qsp
-    - match: ^(?:\s*?)(?i:(\belse\b)) # лишний else
+    - match: ^(?:\s*)(?i:(\belse\b)) # лишний else
       scope: invalid.illegal.qsp meta.excess_else.qsp
-    - match: ^(?:\s*?)(?i:(\belseif\b)) # elseif работает только в многострочной форме (исправить, если изменится в 5.8.0)
+    - match: ^(?:\s*)(?i:(\belseif\b)) # elseif работает только в многострочной форме (исправить, если изменится в 5.8.0)
       scope: invalid.illegal.qsp meta.excess_elseif.qsp
 
   # Ошибочные закрытия контейнеров (п.3.3): порядок include'ов зафиксирован —
@@ -419,7 +430,7 @@ contexts: # общие контексты подсветки кода локац
   # wrongclose: «-» в начале строки внутри незакрытого act/loop/if —
   # ложный признак конца локации.
   wrongclose:
-    - match: ^\s*?(-)(.*)({{nr}}$|$)
+    - match: ^\s*(-)(.*)({{nr}}$|$)
       scope: invalid.illegal.qsp
       pop: true
 
@@ -431,7 +442,7 @@ contexts: # общие контексты подсветки кода локац
   # (`(1 +` ⏎ `    -2)`) внутри скобок ЛЕГАЛЕН и его ловит правило-продолжение
   # `^\s+(?=[+\-*\/<>=,&])` — guard поэтому стоит СТРОГО РАНЬШЕ него.
   wrongclose_locend:
-    - match: ^\s*?(--)(.*?)({{nr}}$|$)
+    - match: ^\s*(--)(.*?)({{nr}}$|$)
       scope: invalid.illegal.qsp
       pop: true
 
@@ -552,7 +563,7 @@ contexts: # общие контексты подсветки кода локац
     # правило матчило «else ⏎ if …:» (вложенный if в теле else) как условие→invalid.
     - match: ^[ \t]*?(?i:(\belse\b))([ \t]*?)([^:\n\r]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
-    - match: '^(\s*?)(?i:(\belse\b)){{else_caret_tail}}'
+    - match: '^(\s*)(?i:(\belse\b)){{else_caret_tail}}'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -560,7 +571,7 @@ contexts: # общие контексты подсветки кода локац
         - include: else_body_common_head
         - include: else_body_guarded_tail
         - include: location_body
-    - match: '(?<=\{)(\s*?)(?i:(\belse\b)){{else_brace_tail}}'
+    - match: '(?<=\{)(\s*)(?i:(\belse\b)){{else_brace_tail}}'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -573,7 +584,7 @@ contexts: # общие контексты подсветки кода локац
     # этому arm'у схватить «голый» else и закрасить КОММЕНТАРИЕМ все строки тела до end — хотя
     # многострочный else без ':' легален (тело начинается со следующей строки).
     # Голый else доходит до bare-arm ниже, `else !коммент` — до своего arm'а.
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
+    - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -587,7 +598,7 @@ contexts: # общие контексты подсветки кода локац
     # и не пробел (иначе это комментарий-строка → многострочный else, см. нижний
     # bare-arm). `end`/`else`/`elseif` на последующих строках словит final_guard
     # региона.
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))[ \t]+(?=[^!\s])'
+    - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))[ \t]+(?=[^!\s])'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -603,7 +614,7 @@ contexts: # общие контексты подсветки кода локац
     # `comment.qsp` есть и в capture: тело контекста использует meta_content_scope
     # (чтобы не накрыть `else`), поэтому сам `!` получает comment-scope только
     # через capture — ровно как у comment_after_colon.
-    - match: '^(\s*?)(?i:(\belse\b))[ \t]+(!)'
+    - match: '^(\s*)(?i:(\belse\b))[ \t]+(!)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -617,7 +628,7 @@ contexts: # общие контексты подсветки кода локац
     # `^.*`→comment). Выход по final-guard на `end`/`else`/`elseif`. Однострочные
     # формы (`else <stmt>` без ':') и колонные (`else:` / `else: <текст>` /
     # `else <конд>:`) — выше.
-    - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*$)'
+    - match: '^(\s*)(?i:(\belse\b))(?=[ \t]*$)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -723,7 +734,7 @@ contexts: # общие контексты подсветки кода локац
   multiline_actions_body_braced:
     # ← сгенерировано из multiline_actions_body
     - include: comment_after_colon
-    - match: ^(\s*?)(?i:(\bend\b))
+    - match: ^(\s*)(?i:(\bend\b))
       scope: meta.end_action.qsp
       captures:
         2: keyword.control.action.end.qsp markup.italic.qsp
@@ -771,7 +782,7 @@ contexts: # общие контексты подсветки кода локац
   multiline_loop_body_braced:
     # ← сгенерировано из multiline_loop_body
     - include: comment_after_colon
-    - match: ^(\s*?)(?i:(\bend\b))
+    - match: ^(\s*)(?i:(\bend\b))
       captures:
         2: keyword.control.cycle.end.qsp markup.italic.qsp
       pop: true
@@ -805,7 +816,7 @@ contexts: # общие контексты подсветки кода локац
   multiline_conditions_body_braced:
     # ← сгенерировано из multiline_conditions_body
     - include: comment_after_colon
-    - match: ^(\s*?)(?i:(\bend\b))
+    - match: ^(\s*)(?i:(\bend\b))
       captures:
         2: keyword.control.conditional.end.qsp markup.italic.qsp
       pop: true
@@ -841,7 +852,7 @@ contexts: # общие контексты подсветки кода локац
     # ← сгенерировано из multiline_actions_else
     - match: ^[ \t]*?(?i:(\belse\b))([ \t]*?)([^:\n\r]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
-    - match: '^(\s*?)(?i:(\belse\b)){{else_caret_tail}}'
+    - match: '^(\s*)(?i:(\belse\b)){{else_caret_tail}}'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -849,7 +860,7 @@ contexts: # общие контексты подсветки кода локац
         - include: else_body_common_head
         - include: else_body_guarded_tail
         - include: location_body_braced
-    - match: '(?<=\{)(\s*?)(?i:(\belse\b)){{else_brace_tail}}'
+    - match: '(?<=\{)(\s*)(?i:(\belse\b)){{else_brace_tail}}'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -857,18 +868,18 @@ contexts: # общие контексты подсветки кода локац
         - include: else_body_common_head
         - include: else_body_guarded_tail
         - include: location_body_braced
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
+    - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword
       push: else_dead_line_braced
-    - match: '(?:^|(?<=\{))(\s*?)(?i:(\belse\b))[ \t]+(?=[^!\s])'
+    - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))[ \t]+(?=[^!\s])'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: else_dead_line_braced
-    - match: '^(\s*?)(?i:(\belse\b))[ \t]+(!)'
+    - match: '^(\s*)(?i:(\belse\b))[ \t]+(!)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -876,7 +887,7 @@ contexts: # общие контексты подсветки кода локац
       push:
         - else_body_block_braced
         - comment_after_else
-    - match: '^(\s*?)(?i:(\belse\b))(?=[ \t]*$)'
+    - match: '^(\s*)(?i:(\belse\b))(?=[ \t]*$)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -938,18 +949,18 @@ contexts: # общие контексты подсветки кода локац
   # comma with_out_left — оставлены локально; их слияние изменило бы подсветку.
   operacion_word_two_signs_common:
     # подсветка словарных операторов
-    - match: (?<={{left_operand}})\s*\b{{operacion_word}}\b(?!\s*?{{right_operand}})
+    - match: (?<={{left_operand}})\s*\b{{operacion_word}}\b(?!\s*{{right_operand}})
       scope: invalid.illegal.qsp avs_wrong_word_with_out_right
     - match: (?<=^|\&|\(|\{|\[)\s*\b{{operacion_word}}\b(?=\s*?{{right_operand}}*)
       scope: invalid.illegal.qsp avs_wrong_word_with_out_left
     - match: \b{{operacion_word}}\b 
       scope: keyword.operator.word.qsp
     # подсветка двузнаковых операторов
-    - match: (?<={{left_operand}})\s*?{{operacion_two_signs}}(?!\s*?{{right_operand}})
+    - match: (?<={{left_operand}})\s*{{operacion_two_signs}}(?!\s*{{right_operand}})
       scope: invalid.illegal.qsp avs_wrong_two_signs_with_out_right
     - match: '{{left_ctx_anchor}}{{operacion_two_signs}}(?=\s*?{{right_operand}}*)'
       scope: invalid.illegal.qsp avs_wrong_two_signs_with_out_left
-    - match: (?<={{left_operand}})\s*?{{operacion_two_signs}}(?=\s*?{{right_operand}})
+    - match: (?<={{left_operand}})\s*{{operacion_two_signs}}(?=\s*{{right_operand}})
       scope: keyword.operator.two-signs.qsp
 
   operacion_ampersand_common:
@@ -964,7 +975,7 @@ contexts: # общие контексты подсветки кода локац
   # одним блоком запятые не вынести (порядок значим: with_out_right → with_out_left
   # → разделитель) — вынесены два независимых сегмента.
   operacion_comma_with_out_right:
-    - match: (?<={{left_operand}})\s*?(,)(?!\s*?{{right_operand}})
+    - match: (?<={{left_operand}})\s*(,)(?!\s*{{right_operand}})
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_right
   operacion_comma_sign:
     - match: (,)
@@ -980,7 +991,7 @@ contexts: # общие контексты подсветки кода локац
   # `(?!right_operand)` это «без ПРАВОГО») переименован в
   # `avs_wrong_no_with_out_right`.
   operacion_no_common:
-    - match: (?i:\bno\b)(?!\s*?{{right_operand}})
+    - match: (?i:\bno\b)(?!\s*{{right_operand}})
       scope: invalid.illegal.qsp avs_wrong_no_with_out_right
     - match: (?i:\bno\b)
       scope: keyword.operator.word.qsp
@@ -988,9 +999,9 @@ contexts: # общие контексты подсветки кода локац
   operacion:
     - include: operacion_word_two_signs_common
     # подсветка для однознаковых операторов
-    - match: '\-(?=\s*?{{right_operand}})'
+    - match: '\-(?=\s*{{right_operand}})'
       scope: keyword.operator.one-sign.qsp
-    - match: (?<={{left_operand}})\s*?{{operacion_one_sign}}(?!\s*?{{right_operand}})
+    - match: (?<={{left_operand}})\s*{{operacion_one_sign}}(?!\s*{{right_operand}})
       scope: invalid.illegal.qsp avs_wrong_one_sign_with_out_right
     - match: '{{left_ctx_anchor}}{{operacion_one_sign}}(?=\s*?{{right_operand}}*)'
       scope: invalid.illegal.qsp avs_wrong_one_sign_with_out_left
@@ -1113,7 +1124,7 @@ contexts: # общие контексты подсветки кода локац
   # из метки, но ВСЕ МЕТКИ ОДНОСТРОЧНЫ — многострочные скобки внутри метки не нужны,
   # поэтому подсветка намеренно ДОПУСКАЕТ скобки (шире grammar; не является ошибкой).
   labels:
-    - match: ^(\s*?\:|\:)([^&'"\n]+)
+    - match: ^(\s*\:|\:)([^&'"\n]+)
       captures:
         2: entity.name.qlabel.qsp avs_jumps_labels
 
@@ -1186,15 +1197,15 @@ contexts: # общие контексты подсветки кода локац
     # кода) и comma with_out_left (тот же lookbehind).
     - include: operacion_word_two_signs_common
     # подсветка однознаковых операторов
-    - match: (?<={{left_operand}})\s*?{{operacion_one_sign}}(?!(>|\s*?{{right_operand}}))
+    - match: (?<={{left_operand}})\s*{{operacion_one_sign}}(?!(>|\s*{{right_operand}}))
       scope: invalid.illegal.qsp avs_wrong_one_sign_with_out_right
-    - match: '{{left_ctx_lookbehind}}\s*?{{operacion_one_sign}}(?=\s*?{{right_operand}}*)'
+    - match: '{{left_ctx_lookbehind}}\s*{{operacion_one_sign}}(?=\s*?{{right_operand}}*)'
       scope: invalid.illegal.qsp avs_wrong_one_sign_with_out_left
     - match: '{{operacion_one_sign}}'
       scope: keyword.operator.one-sign.qsp
     # Правила для запятых
     - include: operacion_comma_with_out_right
-    - match: '{{left_ctx_lookbehind}}\s*?(,)(?=\s*?{{right_operand}}*)'
+    - match: '{{left_ctx_lookbehind}}\s*(,)(?=\s*?{{right_operand}}*)'
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
     - include: operacion_comma_sign
     - include: operacion_ampersand_common
@@ -1215,18 +1226,18 @@ contexts: # общие контексты подсветки кода локац
     - include: special_comments
 
   # Комментарий «!» — однострочный или многострочный (через &-продолжения).
-  # (п.3.1) Arms НЕ слиты в один regex: ветка «^\s*?» матчит только на начале
-  # строки, а «\&» — в любой позиции; общая альтернация с внешним \s*?
+  # (п.3.1) Arms НЕ слиты в один regex: ветка «^\s*» матчит только на начале
+  # строки, а «\&» — в любой позиции; общая альтернация с внешним \s*
   # ложно расширяла бы набор позиций. Зато тело вынесено в comment_tail_common.
   comments:
-    - match: (?<=\{)((\s*?)|(\&)\s*?)(!)
+    - match: (?<=\{)((\s*)|(\&)\s*)(!)
       captures:
         3: support.function.builtin.qsp
         4: punctuation.definition.comment.qsp
       push:
         - meta_scope: comment.qsp
         - include: comment_tail_common
-    - match: ((^\s*?)|(\&)\s*?)(!)
+    - match: ((^\s*)|(\&)\s*)(!)
       captures:
         3: support.function.builtin.qsp
         4: punctuation.definition.comment.qsp
@@ -1242,7 +1253,7 @@ contexts: # общие контексты подсветки кода локац
   # Внутри строковых литералов (quote_apostroph_comments) и вложенных {…}
   # (brace_comments) «}» остаётся защищённой и блок не закрывает.
   comments_in_brace:
-    - match: (?<=\{)((\s*?)|(\&)\s*?)(!)
+    - match: (?<=\{)((\s*)|(\&)\s*)(!)
       captures:
         3: support.function.builtin.qsp
         4: punctuation.definition.comment.qsp
@@ -1251,7 +1262,7 @@ contexts: # общие контексты подсветки кода локац
         - match: (?=\})
           pop: true
         - include: comment_tail_common
-    - match: ((^\s*?)|(\&)\s*?)(!)
+    - match: ((^\s*)|(\&)\s*)(!)
       captures:
         3: support.function.builtin.qsp
         4: punctuation.definition.comment.qsp
@@ -1262,7 +1273,7 @@ contexts: # общие контексты подсветки кода локац
         - include: comment_tail_common
 
   comment_after_colon: # комментарии после двоеточия
-    - match: (?<=:)((\s*?)|(\&)\s*?)(!)
+    - match: (?<=:)((\s*)|(\&)\s*)(!)
       captures:
         3: support.function.builtin.qsp
         4: punctuation.definition.comment.begin.qsp main_comment_start.qsp
@@ -1478,11 +1489,11 @@ contexts: # общие контексты подсветки кода локац
   # Эти правила перехватывают такие случаи раньше operacion — но только
   # когда до конца строки после оператора ничего, кроме пробелов.
   continuation_tail:
-    - match: (?<={{left_operand}})\s*?({{operacion_two_signs}})(?=\s*{{nr_lookahead}})
+    - match: (?<={{left_operand}})\s*({{operacion_two_signs}})(?=\s*{{nr_lookahead}})
       scope: keyword.operator.two-signs.qsp
-    - match: (?<={{left_operand}})\s*?({{operacion_one_sign}})(?=\s*{{nr_lookahead}})
+    - match: (?<={{left_operand}})\s*({{operacion_one_sign}})(?=\s*{{nr_lookahead}})
       scope: keyword.operator.one-sign.qsp
-    - match: (?<={{left_operand}})\s*?(,)(?=\s*{{nr_lookahead}})
+    - match: (?<={{left_operand}})\s*(,)(?=\s*{{nr_lookahead}})
       scope: punctuation.separator.comma.qsp
     - match: (?<={{left_operand}})\s*\b({{operacion_word}})\b(?=\s*{{nr_lookahead}})
       scope: keyword.operator.word.qsp
