@@ -88,6 +88,13 @@ variables: # назначаем переменные для удобства
   # `~digit`), далее `\p{L}` (любая буква), `\d`, `_`, `.`. Прочие символы — нельзя.
   # NB: требует поддержки `\p{L}` в Onigmo Sublime — проверить ручным рендером.
   users_variables: '((\$|\%|\#)?[\p{L}_][\p{L}\d_.]*)'
+  # sugar_name (аудит п.2): имя пользовательской процедуры/функции после `@`/`@@`.
+  # grammar `userStatementName`/`userFunctionName = nonDelimiterChar+`, а `@` — сам
+  # `delimiterChar`, т.е. имя МОЖЕТ быть кириллицей. Класс — как у `users_variables`:
+  # Unicode-буквы (`\p{L}`), цифры, `_`, `.`, `#` (`$`/`%` в имя не входят).
+  # БЫЛО `[\w\.\#]+`: `\w` в Onigmo — ASCII, поэтому `@Функция(1)`/`@@Процедура(2)`
+  # не подсвечивались (всего 4 случая в корпусе `_examples`).
+  sugar_name: '[\p{L}\d_.\#]+'
   elseif_else_final: (?i:\bend\b|\belse\b|\belse\s*if\b|\bif\b|(^\s*\-.*?$))
   # Шаг 1 рефакторинга (REFACTORING_REVIEW P1.1): общие фрагменты regex arms,
   # вынесены 1:1 (побайтовые копии заменяемых кусков — поведение не меняется).
@@ -230,27 +237,27 @@ contexts: # общие контексты подсветки кода локац
         1: support.function.qsp
         3: string.quoted.double.qsp callable_locs.qsp
 
-  # NB (fidelity к qsp_grammar.peg, п.6.3): имя пользователя матчается `[\w\.\#]+`
-  # — намеренно БЕЗ кириллицы и `$`/`%` (grammar `nonDelimiterChar+` шире).
+  # NB (fidelity к qsp_grammar.peg, п.6.3): имя пользователя — `{{sugar_name}}`
+  # (любые Unicode-буквы, цифры, `_`, `.`, `#`), `$`/`%` в имя не входят.
   sugargosub:
-    - match: (\@\@)([\w\.\#]+)
+    - match: (\@\@)({{sugar_name}})
       captures:
         1: punctuation.definition.function.qsp support.function.builtin.qsp
         2: variable.function.qsp
 
   # неявный вызов функций
   sugarfunc:
-    - match: (\@)([\w\.\#]+)(?=\s*\()
+    - match: (\@)({{sugar_name}})(?=\s*\()
       captures:
         1: punctuation.definition.function.qsp support.function.builtin.qsp
         2: variable.function.qsp markup.italic.qsp
-    - match: (\@)([\w\.\#]+)(?=\s*\b(while|step|else|elseif|and|or|mod)\b)
+    - match: (\@)({{sugar_name}})(?=\s*\b(while|step|else|elseif|and|or|mod)\b)
       captures:
         1: punctuation.definition.function.qsp support.function.builtin.qsp
         2: variable.function.qsp markup.italic.qsp
-    - match: (\@[\w\.\#]+\s+{{right_operand}})
+    - match: (\@{{sugar_name}}\s+{{right_operand}})
       scope: invalid.illegal.qsp markup.italic.qsp
-    - match: (\@)([\w\.\#]+)
+    - match: (\@)({{sugar_name}})
       captures:
         1: punctuation.definition.function.qsp support.function.builtin.qsp
         2: variable.function.qsp markup.italic.qsp
@@ -1137,8 +1144,13 @@ contexts: # общие контексты подсветки кода локац
   # # # ------------------- строки ------------------------ # # #
   # п.2.2: общий body (preprocessor+subexpression+htmlsupport) вынесен в
   # string_common; различие двух arms — только символ кавычки и правило
-  # удвоения (`""`/`''`). meta_scope оставлен `string.quoted.double.qsp`
-  # для обоих как прежде (поведение не меняем).
+  # удвоения (`""`/`''`).
+  # п.3 аудита: meta_scope КАЖДОГО arm'а — по СВОЕЙ кавычке (`double` для `"…"`,
+  # `single` для `'…'`). БЫЛО `string.quoted.double.qsp` в ОБОИХ: тема не могла
+  # различить тип строки, а meta_scope врал про фактический разделитель.
+  # NB: `jump_to_label`/`location_call` по-прежнему красят ОБЕ кавычки
+  # `string.quoted.double.qsp` — там строка-аргумент ловится ОДНОЙ группой
+  # (`({{ap}}|{{quote}}).*?\3`), разделить scope по символу кавычки нечем.
   strings:
     - match: '"'
       push:
@@ -1150,7 +1162,7 @@ contexts: # общие контексты подсветки кода локац
         - include: string_common
     - match: "'"
       push:
-        - meta_scope: string.quoted.double.qsp
+        - meta_scope: string.quoted.single.qsp
         - match: "''"
           scope: constant.character.escape.qsp
         - match: "'"

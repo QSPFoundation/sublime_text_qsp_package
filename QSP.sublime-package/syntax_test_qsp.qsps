@@ -752,6 +752,21 @@ msg "<<1 NO>>"
 456 + @@proced
 !   ^^^^^^^^^^ в выражениях использовать нельзя, но не реализовано в подсветке
 
+! п.2: имя после `@`/`@@` — не только ASCII (было `[\w\.\#]+`, `\w` в Onigmo — ASCII)
+set $текст = @Функция(1)
+//           ^ punctuation.definition.function.qsp support.function.builtin.qsp
+//            ^^^^^^^ variable.function.qsp markup.italic.qsp
+set $текст = @@Процедура(2)
+//           ^^ punctuation.definition.function.qsp support.function.builtin.qsp
+//             ^^^^^^^^^ variable.function.qsp
+
+! п.3: тип строки — по фактической кавычке (было `double` у ОБОИХ)
+set $q1 = "двойные"
+//        ^ string.quoted.double.qsp
+set $q2 = 'одинарные'
+//        ^ string.quoted.single.qsp
+//        ^ -string.quoted.double.qsp
+
 ! многострочный else БЕЗ двоеточия — тело подсвечивается кодом, а не комментарием
 if 1:
 	567
