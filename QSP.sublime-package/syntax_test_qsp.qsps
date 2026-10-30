@@ -760,5 +760,32 @@ else
 	$lvar=2
 //  ^^ meta.user-variables.qsp -comment.qsp
 end
+
+-- st.death ---------------------------------
+
+# scope hygiene
+! число: `constant.numeric` получил суффикс `.qsp` (тема по `constant.numeric.qsp` его видит)
+x = 42
+//  ^^ constant.numeric.qsp avs_numeric
+
+! префикс системной переменной: `punctuation.definition.variable` → `.qsp`
+$q = 5 & $result
+//       ^ punctuation.definition.variable.qsp avs_sysvar
+
+! пользовательская переменная: добавлен ЦВЕТОВОЙ scope `variable.other.qsp`
+x = $myname
+//  ^^^^^^^ meta.user-variables.qsp variable.other.qsp
+
+! содержимое `{…}`: `meta.block` → `meta.block.qsp`
+{ 789 }
+//^^^ meta.block.qsp constant.numeric.qsp
+
+! ` _` в конце строки: пунктуация ровно на `_`, без пробела
+$s = "a" _
+//       ^ punctuation.separator.continuation.qsp avs_longstring
+
+! одиночная `}` ВНЕ открытого `{` — ошибка (раньше молчала)
+}
+// <- invalid.illegal.qsp avs_wrong_closed_brace
 --
 

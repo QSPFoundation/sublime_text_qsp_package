@@ -16,7 +16,10 @@
 # `qsp_base.sublime-syntax` и подключена через `extends`.
 
 name: QSP-Loc # название языка
-scope: source.qsrc.qsp
+# `source.qsp.qsrc`: селекторы матчатся по префиксу сегментов, поэтому
+# `source.qsp` (правила/темы qsps) действует и на `.qsrc`. Прежнее имя
+# `source.qsrc.qsp` имело обратный порядок и родителем считалось `source.qsrc`.
+scope: source.qsp.qsrc
 version: 2
 extends: qsp_base.sublime-syntax
 file_extensions: # расширения файлов (группа qsrc)
@@ -35,3 +38,7 @@ contexts:
         2: entity.name.function entity.name avs_locend_comments
     # остальное — код тела локации (из базы)
     - include: location_body
+    # Одиночная `}` вне открытого `{` — ошибка (см. комментарий в qsp.sublime-syntax:
+    # внутри `{…}` её ловит push figure_brace, поэтому правило только тут).
+    - match: '\}'
+      scope: invalid.illegal.qsp avs_wrong_closed_brace

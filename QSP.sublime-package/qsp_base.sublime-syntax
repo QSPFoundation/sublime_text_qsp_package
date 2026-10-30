@@ -193,16 +193,20 @@ contexts: # общие контексты подсветки кода локац
   # Тело в {…} — location_body_braced: СГЕНЕРИРОВАНО (@begin-generated ниже).
 
   # пользовательские переменные и специальные символы значений
+  # `variable.other.qsp` — ЦВЕТОВОЙ scope (как `variable.language.qsp` у системных
+  # и `support.function.qsp` у функций); `meta.user-variables.qsp` — внешний
+  # маркер группы, чтобы тема/плагин могли красить переменные одним токеном.
+  # У invalid-правила цветового scope нет намеренно: там работает invalid.
   users_variables:
     # ? — символ дефолтного значения (QSP 5.8+), подсвечивается как пользовательская переменная
     - match: '\?'
       scope: meta.user-variables.qsp variable.language.default.qsp
     - match: '{{users_variables}}(?=\s*\b(while|step|else|elseif|and|or|mod)\b)'
-      scope: meta.user-variables.qsp
+      scope: meta.user-variables.qsp variable.other.qsp
     - match: '{{users_variables}}(?=(\s+{{right_operand}}|\s*\({{right_operand}}))'
       scope: invalid.illegal.qsp meta.wrong_statement.qsp
     - match: '{{users_variables}}'
-      scope: meta.user-variables.qsp
+      scope: meta.user-variables.qsp variable.other.qsp
 
   # Прыжок на метку
   jump_to_label:
@@ -588,7 +592,7 @@ contexts: # общие контексты подсветки кода локац
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
-        3: punctuation.definition.keyword
+        3: punctuation.definition.keyword.qsp
       push: else_dead_line
     # Однострочный `else <statements>` БЕЗ двоеточия (elseSingleLine, двоеточие
     # факультативно `(":" ws)?`). Зеркало arm4 (колонной однострочной формы): хвост
@@ -662,7 +666,7 @@ contexts: # общие контексты подсветки кода локац
       scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
-        3: punctuation.definition.keyword
+        3: punctuation.definition.keyword.qsp
       push: elseif_dead_line
     # bracket-arm (Фаза 7): многострочная ( или [ в elseif-условии → pending-
     # заголовок, решающий форму на ':' (см. multiline_elseif_pending). Ветка
@@ -872,7 +876,7 @@ contexts: # общие контексты подсветки кода локац
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
-        3: punctuation.definition.keyword
+        3: punctuation.definition.keyword.qsp
       push: else_dead_line_braced
     - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))[ \t]+(?=[^!\s])'
       scope: meta.begin_else.qsp
@@ -906,7 +910,7 @@ contexts: # общие контексты подсветки кода локац
       scope: meta.begin_condition.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
-        3: punctuation.definition.keyword
+        3: punctuation.definition.keyword.qsp
       push: elseif_dead_line_braced
     - match: '{{arm_anchor}}{{kw_elseif}}{{unbalanced_bracket_head}}'
       scope: meta.begin_condition.qsp
@@ -1019,7 +1023,7 @@ contexts: # общие контексты подсветки кода локац
     - match: \b\d+([A-Za-zа-яА-Я\$\%\._]+\d*)+\b # неправильные переменные, начинающиеся с цифр
       scope: invalid.illegal.qsp avs_wrong_numeric
     - match: \b[0-9]+\b
-      scope: constant.numeric avs_numeric
+      scope: constant.numeric.qsp avs_numeric
 
   statements:
     # подсветка statement'ов
@@ -1029,10 +1033,10 @@ contexts: # общие контексты подсветки кода локац
       scope: support.function.other.qsp avs_statements
     - match: (\*)(\b({{kw_text_statements}})\b)(?=\()
       captures:
-        1: support.function.star.qsp punctuation.definition.function
+        1: support.function.star.qsp punctuation.definition.function.qsp
         2: support.function.other.qsp avs_statements
     - match: (\*)(?={{kw_text_statements}}\b)
-      scope: keyword.statement.star.qsp punctuation.definition.keyword avs_star
+      scope: keyword.statement.star.qsp punctuation.definition.keyword.qsp avs_star
     - match: \b{{kw_controls}}\b
       scope: keyword.control.qsp markup.italic.qsp
     - match: (\*)(?={{kw_statements}}\b)
@@ -1065,16 +1069,16 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_illegal_textvariables
 
     - match: (\$)(?=\b({{system_vars_string}}|{{system_vars}})\b)
-      scope: variable.language.qsp punctuation.definition.variable avs_sysvar
+      scope: variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
 
     - match: (\%)(?=\b({{system_vars}})\b)
-      scope: variable.language.qsp punctuation.definition.variable avs_sysvar
+      scope: variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
     # # — числовой префикс перед числовой системной переменной → верно
     - match: (\#)(?=\b({{system_vars_num}})\b)
-      scope: variable.language.qsp punctuation.definition.variable avs_sysvar
+      scope: variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
     # # — числовой префикс перед системной переменной любого типа → верно
     - match: (\#)(?=\b({{system_vars}})\b)
-      scope: variable.language.qsp punctuation.definition.variable avs_sysvar
+      scope: variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
 
     - match: \b({{system_vars_num}}|{{system_vars_string}}|{{system_vars}})\b
       scope: variable.language.qsp avs_sysvar
@@ -1092,13 +1096,13 @@ contexts: # общие контексты подсветки кода локац
       scope: invalid.illegal.qsp avs_wrong_type_prefix
       # правильно подсвечивает префикс типа перед строковыми функциями
     - match: (\$)(?=({{functions_string}}\b|{{functions_alltypes}}\b))
-      scope: support.function.qsp punctuation.definition.function avs_function
+      scope: support.function.qsp punctuation.definition.function.qsp avs_function
       # правильно подсвечивает префикс типа перед кортежными функциями
     - match: (\%)(?=({{functions_tuple}}\b|{{functions_alltypes}}\b))
-      scope: support.function.qsp punctuation.definition.function avs_function
+      scope: support.function.qsp punctuation.definition.function.qsp avs_function
       # # — числовой префикс перед числовой/универсальной функцией → верно
     - match: (\#)(?=({{functions_num}}\b|{{functions_alltypes}}\b))
-      scope: support.function.qsp punctuation.definition.function avs_function
+      scope: support.function.qsp punctuation.definition.function.qsp avs_function
       # подсветка непосредственно названий функций
     - match: |-
         (?x:
@@ -1316,6 +1320,8 @@ contexts: # общие контексты подсветки кода локац
     - meta_content_scope: comment.line.qsp markup.italic.qsp
     - include: quote_apostroph_comments
     - include: brace_comments
+    # как в comment_after_colon: '@'-спецы после `end !` — тот же токен avs_speccomments
+    - include: special_comments
     - match: (?=&|\}|{{nr}}|$)
       pop: true
 
@@ -1372,7 +1378,9 @@ contexts: # общие контексты подсветки кода локац
       push: comment_in_apostroph
 
   special_comments:
-    - match: (?<=\!)@.*?(?={{nr}})
+    # `|$` — последняя строка файла без перевода строки: без него спец-комментарий
+    # на ней оставался без avs_speccomments (асимметрия с остальными хвостами).
+    - match: (?<=\!)@.*?(?={{nr}}|$)
       scope: comment.qsp markup.italic.qsp avs_speccomments
 
   preprocessor:
@@ -1404,7 +1412,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '\{'
       scope: punctuation.section.block.begin.qsp avs_brace_begin
       push:
-        - meta_content_scope: meta.block
+        - meta_content_scope: meta.block.qsp
         # Фаза 9: `--` внутри незакрытой `{` — ошибка (зеркало wrongclose для
         # незакрытого блока: красим конец локации и закрываем один уровень)
         - include: wrongclose_locend
@@ -1517,6 +1525,7 @@ contexts: # общие контексты подсветки кода локац
           pop: true
         - include: Packages/HTML/HTML (Plain).sublime-syntax
 
+
   separator_continuation:
-    - match: \s_(?=$)
+    - match: '[ ]_(?=$)' # only space and underline characters in line-end. not \t.
       scope: punctuation.separator.continuation avs_longstring

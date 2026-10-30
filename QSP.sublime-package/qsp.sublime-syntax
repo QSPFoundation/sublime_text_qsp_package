@@ -53,6 +53,13 @@ contexts:
             1: punctuation.definition.keyword markup.bold.qsp keyword.control meta.end_location.qsp
             2: markup.heading # TODO: насколько верно такое определение от заголовков разделов, так как по сути это комментарий
         - include: location_body
+        # Одиночная `}` ВНЕ открытого `{` — ошибка (зеркало wrong_close_in_brace для
+        # верхнего уровня). Внутри `{…}` закрывающая `}` штатно закрывает блок (её
+        # ловит push figure_brace), поэтому правило живёт на уровне ЛОКАЦИИ, а не в
+        # location_body: в location_body оно попало бы в braced-двойник и перебило бы
+        # закрытие блока.
+        - match: '\}'
+          scope: invalid.illegal.qsp avs_wrong_closed_brace
 
   qspgame_header:
     - match: (?<![\s\S])(?i:(qsp-game))(\s+.*)?$
