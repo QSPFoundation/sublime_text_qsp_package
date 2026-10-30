@@ -1528,4 +1528,4 @@ contexts: # общие контексты подсветки кода локац
 
   separator_continuation:
     - match: '[ ]_(?=$)' # only space and underline characters in line-end. not \t.
-      scope: punctuation.separator.continuation avs_longstring
+      scope: punctuation.separator.continuation.qsp avs_longstring
