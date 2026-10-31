@@ -12,8 +12,10 @@
 
 ## Подсветка синтаксиса:
 
-Рабочие документы: `_disdocs/syntax_highlighting/REFACTOR_PLAN.md` (план/фазы) и
-`_disdocs/syntax_highlighting/CONTEXT.md` (переносимый контекст).
+Рабочие документы: `_disdocs/syntax_highlighting/HANDOFF.md` (переносимый контекст, §1a–1q —
+что сделано) и `_disdocs/syntax_highlighting/refactoring_review.md` + `base_structure.md`
+(структура подсветки и предложения). Документов `REFACTOR_PLAN.md`/`CONTEXT.md` больше нет.
+Единый гейт перед коммитом: `python _disdocs/syntax_highlighting/check_all.py`.
 
 Аудит с чистого листа (срез `a575f38`, сверка с `qsp_grammar.peg`) —
 `_disdocs/syntax_highlighting/audit_todo.md`: P0 (видимые ошибки) → P3 (тесты).

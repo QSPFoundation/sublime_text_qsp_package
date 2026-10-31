@@ -811,6 +811,15 @@ $s = "a" _
 ! одиночная "}" ВНЕ открытого "{" — ошибка (раньше молчала)
 }
 // <- invalid.illegal.qsp avs_wrong_closed_brace
+
+! `close all`: разделитель внутри ключевого слова — ТОЛЬКО пробел (аудит п.6, решение
+! 2026-10-31): движок принимает `close all` с одиночным пробелом, таб — НЕ разделитель
+! (в отличие от `else[ \t]+if`, где `ws` из грамматики таб разрешает)
+close all
+//^^^^^^^^^ keyword.statement.qsp avs_statements
+close	all
+//^^^^^ keyword.statement.qsp avs_statements
+//     ^ -keyword.statement.qsp
 --
 
 # special comments !@

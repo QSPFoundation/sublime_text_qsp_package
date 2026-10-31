@@ -4,10 +4,11 @@
 > продолжаем с шага <N>». Он дополняет (не заменяет) память Qoder — там уже лежат
 > дискретные решения (см. §5).
 
-**Дата:** 2026-10-29 · **Ветка:** `master` · **Гит-состояние:** HEAD `93376ff`
-(`dsf feat(syntax): punctuation of single-line brackets`) — Фаза 10 (`1q`) закоммичена;
-до неё `20fc16c` (шаг 5 часть 2 `1n` + работа по ассертам `1o`/`1p`: формат `//`,
-порядок scope, геометрия кареток). **Рабочее дерево чистое.**
+**Дата:** 2026-10-31 · **Ветка:** `master` · **Гит-состояние:** HEAD `5bed6ed`
+(`dsf fix(syntax): labels`); до него `d2876b8` (имена `@`/`@@`, scope апострофов) и
+`93376ff` (Фаза 10 — `1q`; до неё `20fc16c` — шаг 5 часть 2 `1n` + ассерты `1o`/`1p`).
+**NB:** §§1a–1q ниже описывают работы ДО этих коммитов; журнал по `d2876b8`/`5bed6ed`
+и по гигиене 2026-10-31 — в `audit_todo.md` (записи «Прогон …» в шапке).
 Контроль: `check_syntax_phase1.py` → **PASS** (local=94, refs=92, pairing 17 пар,
 регион генерации актуален); `check_syntax_asserts.py` → **0 проблем**
 (4 предупреждения о gametext — ожидаемы). Автотесты в Sublime: **29 / 136 / 25, без провалов**.
@@ -31,6 +32,9 @@
 - `_disdocs/syntax_highlighting/qsp_grammar.peg` — **внешний** справочный файл (источник истины по
   грамматике QSP): не коммитится (в `.gitignore`), подтягивается вручную из другого репозитория.
 - Контроль: `python _disdocs/syntax_highlighting/check_syntax_phase1.py` → ожид `RESULT: PASS`.
+- **Единый гейт (аудит п.29):** `python _disdocs/syntax_highlighting/check_all.py` — гоняет ВСЕ
+  три проверки (phase1 + `gen_braced --check` + `check_syntax_asserts`) и падает, если падает
+  любая (exit 0/1). Это и есть команда «перед коммитом» вместо трёх отдельных.
 - `_disdocs/syntax_highlighting/check_syntax_asserts.py` — **контроль scope-ассертов** в
   `syntax_test_*.qsps` без Sublime: понимает `// ^^^` и `// <-`, ловит инертные ассерты
   (без `//`), выход кареток за строку и спаны `punctuation.*`/`meta.*` (`--write` — правка).
@@ -673,6 +677,6 @@ P4.1–P4.5 закрыты.
 ## 6. КАК ПРОДОЛЖИТЬ В НОВОМ ЧАТЕ
 1. Открой воркспейс `d:\my\GameDev\QuestSoftPlayer\projects\JAD`.
 2. Скажи: «читай `_disdocs/syntax_highlighting/HANDOFF.md` и `refactoring_review.md`; делаем шаг <N>».
-3. Перед первой правкой — `git status` (сверь, закоммичен ли §1); после — `check_syntax_phase1.py` (ожид PASS).
+3. Перед первой правкой — `git status` (сверь, закоммичен ли §1); после — `python _disdocs/syntax_highlighting/check_all.py` (единый гейт, ожид `RESULT: PASS`).
 4. Память Qoder уже содержит: «no регистронезависим…», «опциональное (:?) у else-arm…», конвенции
    avs-маркеров/parity/операторов — уточнять их не нужно, но **проверяй актуальность** чтением кода.
