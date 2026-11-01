@@ -31,18 +31,10 @@ variables: # назначаем переменные для удобства
       copyarr|sortarr|setvar|insvar|unpackarr|killvar|killall|scanstr|
       view|msg|
       settimer|wait|
-      # exec: отсутствует в qsp_grammar.peg (упущение грамматики, не правим её),
-      # но поддерживается движком и нужен в подсветке — НЕ убирать.
-      # close[ ]all (аудит п.6, уточнение 2026-10-31): разделитель — ТОЛЬКО пробел.
-      # Движок принимает `close all` именно с одиночным ПРОБЕЛОМ; таб и прочие `\s`
-      # внутри него разделителем НЕ являются. Это НЕ `ws` из грамматики: `close all`
-      # — не многословный маркер, а синтаксическое удобство движка (`close` + аргумент),
-      # поэтому он уже НЕ входит в «единый стиль с `[ \t]`», который действует для
-      # МНОГОСЛОВНЫХ МАРКЕРОВ (`kw_elseif`: `else[ \t]+if` — там `space := " " | "\t"`
-      # из грамматики применим, таб разрешён).
-      # `[ ]` вместо «сырого» пробела: в extended-режиме `(?ix:` пробел ВНЕ класса
-      # игнорируется, так что единственный способ сделать ОДИН пробел обязательным
-      # символом — класс из него (или `\ `).
+      # exec: нет в qsp_grammar.peg, но движок поддерживает — в подсветке нужен, НЕ убирать.
+      # close[ ]all: разделитель — ТОЛЬКО одиночный пробел (таб/прочие `\s` движок не
+      # принимает). `[ ]` вместо «сырого» пробела, т.к. в extended-режиме `(?ix:` пробел
+      # вне класса игнорируется. Это не `ws` из грамматики (в kw_elseif таб разрешён).
       exec
     )
   kw_controls: (?i:act|if|elseif|else|loop|while|step|end) # keyword.control
@@ -82,51 +74,31 @@ variables: # назначаем переменные для удобства
   right_operand: '({{quote}}[^{{quote}}]*|{{ap}}[^{{ap}}]*|\([^\)]*?|\[[^\]]*?|\{|((\$|\%|\#)?|-?)\w+?|-?\d+?|\@|\?)'
   nr: (\n\r|\r|\r\n|\n)
   nr_lookahead: (?=\r\n|\r|\n|$)
-  # Фаза 7: «в заголовке есть НЕзакрытая на этой строке ( или [ » — признак
-  # многострочной скобки, из-за которой ':' уезжает на другую строку. Условие
-  # требует наличия открывающей скобки, после которой на ЭТОЙ строке нет ни ')' ни ']'.
-  # Закрытием такой скобки штатно занимается multiline_round.
+  # «в заголовке есть незакрытая на этой строке ( или [» — признак многострочной
+  # скобки, из-за которой ':' уезжает на другую строку. Закрытием занимается multiline_round.
   unbalanced_bracket_head: (?=[^\n]*?[\(\[](?![^\n]*?[\)\]])[^\n]*?{{nr_lookahead}})
-  # NB (fidelity к qsp_grammar.peg, п.6.3): двухзначные операторы `=<` и `=>`
-  # (grammar `binaryStandardOperator`) намеренно НЕ поддержаны — `operacion_two_signs`
-  # ловит только `<= >= += -= *= /= <>`. `=<`/`=>` подсветятся как два one-sign'а.
-  # Аудит п.15: решение зафиксировано (дописано в список осознанных отклонений
-  # `audit_todo.md`, раздел «Проверено — правок НЕ требует») — не переоткрывать.
+  # намеренная реализация: двухзначные `=<`/`=>` (grammar `binaryStandardOperator`) не
+  # поддержаны — ловим только `<= >= += -= *= /= <>`; `=<`/`=>` красятся как два one-sign'а.
   operacion_two_signs: ([<>\+\-\*\/]=|<>)
   operacion_one_sign: (\+|-|<|>|=|\/|\*|!)
   operacion_word: (?i:and|or|mod)
-  # users_variables: имя переменной = все Unicode-буквы, цифры, подчёркивание и точка
-  # (fidelity к grammar varName, п.6.7): первый символ — буква/`_` (не цифра, grammar
-  # `~digit`), далее `\p{L}` (любая буква), `\d`, `_`, `.`. Прочие символы — нельзя.
-  # NB: требует поддержки `\p{L}` в Onigmo Sublime — проверить ручным рендером.
+  # users_variables: имя = первый символ буква/`_`, далее Unicode-буквы, цифры, `_`, `.`
+  # (grammar varName). Требует поддержки `\p{L}` в Onigmo.
   users_variables: '((\$|\%|\#)?[\p{L}_][\p{L}\d_.]*)'
-  # sugar_name (аудит п.2): имя пользовательской процедуры/функции после `@`/`@@`.
-  # grammar `userStatementName`/`userFunctionName = nonDelimiterChar+`, а `@` — сам
-  # `delimiterChar`, т.е. имя МОЖЕТ быть кириллицей. Класс — как у `users_variables`:
-  # Unicode-буквы (`\p{L}`), цифры, `_`, `.`, `#` (`$`/`%` в имя не входят).
-  # БЫЛО `[\w\.\#]+`: `\w` в Onigmo — ASCII, поэтому `@Функция(1)`/`@@Процедура(2)`
-  # не подсвечивались (всего 4 случая в корпусе `_examples`).
+  # sugar_name: имя процедуры/функции после `@`/`@@` — может быть кириллицей (grammar
+  # `nonDelimiterChar+`, а `@` — сам разделитель). Класс как users_variables + `#`;
+  # `$`/`%` в имя не входят. (`\w` был бы ASCII-only и не ловил кириллицу.)
   sugar_name: '[\p{L}\d_.\#]+'
-  # `else[ \t]*if` вместо `\s*if` (аудит п.6) — тот же `ws`-аргумент, что у
-  # `kw_elseif` ниже: только горизонтальный пробел/таб.
+  # `else[ \t]*if`: горизонтальный пробел/таб (не `\s`), как в kw_elseif.
   elseif_else_final: (?i:\bend\b|\belse\b|\belse[ \t]*if\b|\bif\b|(^\s*\-.*?$))
-  # Шаг 1 рефакторинга (REFACTORING_REVIEW P1.1): общие фрагменты regex arms,
-  # вынесены 1:1 (побайтовые копии заменяемых кусков — поведение не меняется).
-  # Используются и в plain-, и в braced-контекстах (правки — зеркально).
+  # Общие фрагменты regex arms, используемы и в plain-, и в braced-контекстах.
   # NB: в значении есть ':' — кавычки YAML обязательны.
   arm_anchor: '(?:^|(?<=\{))(\s*?)'
   kw_act: '(?i:(act))'
   kw_if: '(?i:(\bif\b))'
-  # `else if` — ЕДИНЫЙ оператор (grammar `elseIfMarker = "elseif" | "else" ws "if"`,
-  # `ws = (lineContinuation | space)*` — ПЕРЕНОС строки в `ws` НЕ входит).
-  # Между `else` и `if` — только ГОРИЗОНТАЛЬНЫЙ пробел/таб `[ \t]+`: fidelity к
-  # грамматическому `space`, а не `\s` (шире: `\r`, `\v`, `\f`, Unicode-пробелы).
-  # NB (аудит п.7 — ОБОСНОВАНИЕ ИСПРАВЛЕНО): прежний текст «с `\s+` пара
-  # склеивалась через `\n`, и вложенный `if` в теле else красился как один
-  # elseif-токен» ФАКТИЧЕСКИ НЕВЕРЕН — Sublime гоняет regex ПОСТРОЧНО, `\n` в
-  # матч не попадает, склейки двух строк не бывает (симптом получен прогоном
-  # через `re.M`, где `\s` видит перевод строки). Сам разделитель `[ \t]+`
-  # сохраняем: грамматика и так требует горизонтальный пробел.
+  # `else if` — ЕДИНЫЙ оператор (grammar `elseIfMarker = "elseif" | "else" ws "if"`;
+  # перенос строки в `ws` НЕ входит). Между словами — только горизонтальный `[ \t]+`
+  # (grammar `space`), не `\s`. Матч Sublime построчный, `\n` в regex не попадает.
   kw_elseif: '(?i:(\b(?:else[ \t]+if|elseif)\b))'
   kw_loop: '(?i:(\bloop\b))'
   loop_strict_head: '(?=(?=.*?(?i:(\bwhile\b))\s\S.*?(?i:(\bstep\b))?\s*?.*?\:\s*?(!.*)?$))'
@@ -143,30 +115,18 @@ variables: # назначаем переменные для удобства
   else_brace_tail: '(?=\s*?.*?\:\s*?(!.*?)?$)'
   elseif_strict_tail: '(?=\s+\S.*?\:\s*(!.*)?$)'
   elseif_permissive_tail: '(?=\s+\S.*?\:\s*([^!\s].*)?$)'
-  # Шаг 3 рефакторинга (P1.6) — общие сегменты, ещё не вынесенные.
-  # final_guard: один и тот же нулевой guard «строка началась с end/else/elseif/
-  # if/-» (pop делает само правило) — было 5 побайтовых копий.
+  # final_guard: нулевой guard «строка началась с end/else/elseif/if/-» (pop делает правило).
   final_guard: '(?=^\s*{{elseif_else_final}}([^\&\n\r]*))'
-  # kw_calls: statement-список вызовов локаций (2 копии в location_call);
-  # группа ЗАХВАТЫВАЮЩАЯ — номера capture в правилах не меняются.
+  # kw_calls: список вызовов локаций; группа захватывающая (номера capture фиксированы).
   kw_calls: '(goto|gt|xgoto|xgt|gosub|gs)'
   # Левый контекст оператора: `\K`-версия (строки кода) и lookbehind-версия
   # (подвыражения `<< … >>` — там нет `^` строки). Захват сохранён.
   left_ctx_anchor: '(^\s*?|\&\s*?|\(\s*?|\{\s*?|\[\s*?)\K'
   left_ctx_lookbehind: '(?<=(<|\&|\(|\{|\[))'
-  # P1.7: `\s*?` → `\s*` нормализован ВЕЗДЕ, где за квантором стоит ОБЯЗАТЕЛЬНЫЙ
-  # атом, не совпадающий с пробелом: позиция остановки единственна, поэтому greedy
-  # и lazy дают один и тот же матч (доказано `normalize_lazy_ws.py
-  # --against-head` на корпусе). ЛЕНИВЫЙ вариант оставлен осознанно, но совсем по
-  # другой причине, чем было записано в первой редакции комментария (аудит п.7:
-  # «`\s` дотянется до следующей строки» — НЕВЕРНО, матч идёт построчно, `\n` в
-  # regex не попадает; ссылка на несуществующий `HANDOFF §1r` тоже убрана):
-  #   * `arm_anchor` — квантор в КОНЦЕ матча: greedy съест отступ внутрь scope;
-  #   * `left_ctx_anchor` — квантор перед `\K`: greedy сдвинет НАЧАЛО матча;
-  #   * `pend_block_*`, `act_strict_tail`, `if_strict_tail`, `else_brace_tail`,
-  #     `loop_strict_head` — zero-width lookahead'ы: greedy/lazy меняет только
-  #     путь поиска, а не результат (ширина матча от них не зависит), поэтому
-  #     нормализовывать нечего — оставлены как есть.
+  # lazy `\s*?` оставлен осознанно там, где greedy менял бы матч: `arm_anchor`
+  # (квантор в конце — greedy съест отступ в scope), `left_ctx_anchor` (перед `\K`
+  # — greedy сдвинет начало матча). В zero-width lookahead'ах (`pend_block_*`,
+  # `*_strict_tail`, `loop_strict_head`) greedy/lazy на результат не влияет.
 
 contexts: # общие контексты подсветки кода локации
   # Тривиальный вход для самой базы (база hidden, реально используется
@@ -174,11 +134,8 @@ contexts: # общие контексты подсветки кода локац
   main:
     - include: location_body
 
-  # Тело локации — два формата (plain вне {…} и braced внутри {…}).
-  # После п.2.3 фаза-2 общие include-сегменты вынесены в body_common_*;
-  # различаются форматы лишь 4 позициями (actions/conditions/loop и comments).
-  # Вложенный `include` вставляет правила referenced-контекста на место —
-  # порядок/приоритет matching сохранены 1:1 (фаза 1 поведение не меняла).
+  # Тело локации — два формата (plain вне {…} и braced внутри {…}); общие include-
+  # сегменты вынесены в body_common_*, форматы различаются лишь 4 позициями.
   body_common_head:
     - include: figure_brace
     - include: brackets_multiline
@@ -200,15 +157,13 @@ contexts: # общие контексты подсветки кода локац
     - include: strings
     - include: separator_continuation
     - include: users_variables
-    # Фаза 10: пунктуация ОДНОстрочных ( ) [ ] — ПОСЛЕДНИМ include: anchor-правила
-    # operacion, которые начинаются с '(' / '[' (напр. `(& x)`), должны выигрывать.
+    # Пунктуация однострочных ( ) [ ] — ПОСЛЕДНИМ: anchor-правила operacion,
+    # начинающиеся с '(' / '[', должны выигрывать.
     - include: brackets_inline
 
   location_body: # @braced: auto
-    # Порядок (Фаза 7): открыватели блоков act/if/loop ИДУТ ПЕРЕД body_common_head,
-    # чтобы «bracket-arm» заголовка не проигрывал приоритет незакрытой «(» в
-    # brackets_multiline. Для строк, не начинающихся с ключевого слова,
-    # figure_brace/brackets_multiline отработают в своём include позже — 1:1.
+    # Открыватели act/if/loop ИДУТ ПЕРЕД body_common_head, чтобы bracket-arm заголовка
+    # не проиграл незакрытой «(» в brackets_multiline.
     - include: multiline_actions
     - include: multiline_conditions
     - include: multiline_loop
@@ -219,15 +174,10 @@ contexts: # общие контексты подсветки кода локац
 
   # Тело в {…} — location_body_braced: СГЕНЕРИРОВАНО (@begin-generated ниже).
 
-  # пользовательские переменные и специальные символы значений
-  # `variable.other.qsp` — ЦВЕТОВОЙ scope (как `variable.language.qsp` у системных
-  # и `support.function.qsp` у функций); `meta.user-variables.qsp` — внешний
-  # маркер группы, чтобы тема/плагин могли красить переменные одним токеном.
-  # У invalid-правила цветового scope нет намеренно: там работает invalid.
+  # Пользовательские переменные. `variable.other.qsp` — цветовая, `meta.user-variables.qsp`
+  # — маркер группы. У invalid-правила цветовая scope отсутствует намеренно.
   users_variables:
-    # ? — символ дефолтного значения (QSP 5.8+), подсвечивается как пользовательская переменная
-    # Аудит п.8: grammar `undefinedLiteral = "?"` (qsp_grammar.peg:336) — это КОНСТАНТА,
-    # а не «языковая переменная». БЫЛО `variable.language.default.qsp`.
+    # `?` — литерал дефолтного значения (grammar `undefinedLiteral`), константа.
     - match: '\?'
       scope: constant.language.undefined.qsp
     - match: '{{users_variables}}(?=\s*\b(while|step|else|elseif|and|or|mod)\b)'
@@ -259,8 +209,7 @@ contexts: # общие контексты подсветки кода локац
         1: support.function.qsp
         3: string.quoted.double.qsp callable_locs.qsp
 
-  # NB (fidelity к qsp_grammar.peg, п.6.3): имя пользователя — `{{sugar_name}}`
-  # (любые Unicode-буквы, цифры, `_`, `.`, `#`), `$`/`%` в имя не входят.
+  # Имя — `{{sugar_name}}` (Unicode-буквы, цифры, `_`, `.`, `#`); `$`/`%` в имя не входят.
   sugargosub:
     - match: (\@\@)({{sugar_name}})
       captures:
@@ -284,21 +233,12 @@ contexts: # общие контексты подсветки кода локац
         1: punctuation.definition.function.qsp support.function.builtin.qsp
         2: variable.function.qsp markup.italic.qsp
 
-  # действия (Фаза 2, п.2.1: former arms `(?<=\{)act` + `^act` слиты через
-  # НЕ-захватывающую alternation якорей `(?:^|(?<=\{))` (оба якоря нулевой
-  # ширины) — единая группа `(\s*?)`=group1, ключ. слово=group2, номера capture
-  # сохранены в обеих ветках). Branch-reset `(?|…)` НЕ используем — эта сборка
-  # Onigmo его не поддерживает ("undefined group option").
-  # Единый end-tail = comment_after_end_in_brace: brace-aware модель едина для
-  # обоих якорей, на верхнем уровне разница видна только для редкого
-  # `end текст }`. (Ссылка на `REFACTOR_PLAN.md` §3 убрана — документа в
-  # репозитории нет, аудит п.28; факт описан здесь.)
-  # NB (аудит п.16, решение): заголовок `act`/`if`/`elseif` БЕЗ `:` invalid'ом
-  # НЕ метится (остаётся `keyword.control`/`support.function`, см. `statements`),
-  # хотя `loop` без `while` метится (`loop_no_while` → invalid). Осознанно: пока
-  # заголовок набирается, `:` ещё не введено — красная заливка на каждом keystroke
-  # была бы ложной ошибкой; `loop` без `while` же не станет валидным никогда.
-  # Не «чинить» без нового решения.
+  # Действия. Arms `(?<=\{)act` + `^act` слиты через non-capturing alternation
+  # `(?:^|(?<=\{))` (оба нулевой ширины). Branch-reset `(?|…)` не поддерживается
+  # этой сборкой Onigmo.
+  # намеренная реализация: заголовок `act`/`if`/`elseif` БЕЗ `:` invalid'ом НЕ метится
+  # (при наборе `:` ещё нет — красная заливка была бы ложной), хотя `loop` без `while`
+  # метится (не станет валидным никогда).
   multiline_actions: # @braced: auto
     # strict-arm: ':' на строке act → сразу тело
     - match: '{{arm_anchor}}{{kw_act}}{{act_strict_tail}}'
@@ -306,8 +246,7 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.action.begin.qsp markup.italic.qsp
       push: multiline_actions_body
-    # bracket-arm (Фаза 7): многострочная ( или [ в заголовке act → pending-заголовок,
-    # решающий форму на ':' (см. multiline_act_pending).
+    # bracket-arm: незакрытая ( или [ в заголовке → pending, решающий форму на ':'.
     - match: '{{arm_anchor}}{{kw_act}}{{unbalanced_bracket_head}}'
       scope: meta.begin_action.qsp
       captures:
@@ -316,10 +255,8 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок act: состояние «до ':'» (механика — как multiline_if_pending).
   multiline_act_pending: # @braced: auto
-    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход. Здесь
-    # guard именно `--` (wrongclose_locend), а НЕ wrongclose с одинарным `-`:
-    # в заголовке мы на уровне выражения, и перенос вида `step i +=` ⏎ `    -1:`
-    # начинается с `-` легально (в телах блоков — нет, там wrongclose прав).
+    # Конец локации в незакрытом заголовке — ошибка + выход. Guard именно `--`
+    # (wrongclose_locend), а не `-`: в заголовке перенос `step i +=` ⏎ `    -1:` легален.
     - include: wrongclose_locend
     - match: '{{pend_block_soft}}'
       pop: true
@@ -339,7 +276,7 @@ contexts: # общие контексты подсветки кода локац
     - include: wrong_close_in_brace
     - include: location_body
 
-  # циклы (п.2.1: former `(?<=\{)loop` + `^loop` слиты; пуш-тело было идентично)
+  # Циклы (arms `(?<=\{)loop` + `^loop` слиты; пуш-тело идентично)
   multiline_loop: # @braced: auto
     # strict-arm: ':' на строке loop → сразу тело
     - match: '{{arm_anchor}}{{kw_loop}}{{loop_strict_head}}'
@@ -347,31 +284,23 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
       push: multiline_loop_body
-    # bracket-arm (Фаза 7 + 8): многострочная ( или [ в заголовке loop →
-    # pre-while pending. Guard «while на строке» (был в Фазе 7) СНЯТ: скобка может
-    # стоять и ДО 'while' — в инициализирующей группе grammar
-    # `loopMultiLine = loopMarker ws (singleLineGroup ws)? whileMarker …`, где
-    # `[1,…]` — `nonEmptyTuple` с `mws`, переносы внутри легальны. Требование
-    # 'while' теперь проверяет сам pending (multiline_loop_pending_prewhile), а не
-    # arm: блок открывается ТОЛЬКО если 'while' наступил раньше ':'.
+    # bracket-arm: незакрытая ( или [ в заголовке loop → pre-while pending. Скобка
+    # может стоять и ДО 'while' (grammar `loopMultiLine`), поэтому требование 'while'
+    # проверяет сам pending, а не arm: блок открывается только если 'while' раньше ':'.
     - match: '{{arm_anchor}}{{kw_loop}}{{unbalanced_bracket_head}}'
       scope: meta.begin_cycle.qsp
       captures:
         2: keyword.control.cycle.begin.qsp markup.italic.qsp
       push: multiline_loop_pending_prewhile
-    # invalid-arm: loop без 'while' на строке И без незакрытой скобки — живёт в
-    # multiline_loop (после всех валидных arm'ов); в pending его быть не должно.
+    # invalid-arm: loop без 'while' и без незакрытой скобки — после всех валидных arm'ов.
     - match: '{{kw_loop}}{{loop_no_while}}'
       scope: invalid.illegal.qsp
 
-  # pending-заголовок loop, состояние «while ЕЩЁ НЕ найден» (Фаза 8): едет по
-  # многострочной скобке через location_body и нулевой ширины переходит в
-  # multiline_loop_pending на первом 'while' (сам 'while' не съедается — красится
-  # штатными правилами, 1:1 с однострочным заголовком).
-  # Если ':' наступил РАНЬШЕ 'while' — заголовок битый (grammar требует while):
-  # блок НЕ открываем, а идущие следом end/else словит wrong_end_else_elseif.
+  # Pending loop, состояние «while ещё не найден»: едет по скобке через location_body
+  # и на первом 'while' переходит в multiline_loop_pending (нулевой ширины). Если ':'
+  # раньше 'while' — заголовок битый, блок не открываем (end/else словит wrong_end_else_elseif).
   multiline_loop_pending_prewhile: # @braced: auto
-    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
+    # Конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
     - match: '(?=\b(?i:while)\b)'
       pop: true
@@ -384,7 +313,7 @@ contexts: # общие контексты подсветки кода локац
   # pending-заголовок loop: состояние «до ':'» при уже найденном 'while'
   # (механика — как multiline_if_pending).
   multiline_loop_pending: # @braced: auto
-    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
+    # Конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
     - match: '{{pend_block_soft}}'
       pop: true
@@ -403,7 +332,7 @@ contexts: # общие контексты подсветки кода локац
     - include: wrong_close_in_brace
     - include: location_body
 
-  # конструкции условий (п.2.1: former `(?<=\{)if` + `^if` слиты)
+  # Конструкции условий (arms `(?<=\{)if` + `^if` слиты)
   multiline_conditions: # @braced: auto
     # strict-arm: ':' на строке if → сразу тело
     - match: '{{arm_anchor}}{{kw_if}}{{if_strict_tail}}'
@@ -411,12 +340,10 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.conditional.begin.qsp markup.italic.qsp
       push: multiline_conditions_body
-    # bracket-arm (Фаза 7): многострочная ( или [ в заголовке if — ':' уехал за
-    # пределы строки ключевого слова, strict-arm не срабатывает. Пушим pending-заголовок:
-    # он едет по многострочной скобке (location_body → multiline_round) и решает форму
-    # ТОЛЬКО на видимом ':' (см. multiline_if_pending). Иначе однострочная форма с
-    # многострочной скобкой (`…] = $arr: *pl …`) ложно открывала бы блок и else/end
-    # не ловились бы как excess.
+    # bracket-arm: незакрытая ( или [ в заголовке if — ':' уехал за пределы строки,
+    # strict-arm не срабатывает. Пушим pending: он едет по скобке и решает форму
+    # только на видимом ':'. Иначе однострочная форма с многострочной скобкой
+    # (`…] = $arr: *pl …`) ложно открывала бы блок.
     - match: '{{arm_anchor}}{{kw_if}}{{unbalanced_bracket_head}}'
       scope: meta.begin_condition.qsp
       captures:
@@ -426,7 +353,7 @@ contexts: # общие контексты подсветки кода локац
   # pending-заголовок if: состояние «до ':'». Zero-width решения не съедают ':' —
   # его доедает либо тело (block), либо location_body (single-line), как в strict-arm.
   multiline_if_pending: # @braced: auto
-    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
+    # Конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
     # ':' и до конца строки только пробел/комментарий → блочная форма → то же тело,
     # что у strict-arm.
@@ -438,8 +365,7 @@ contexts: # общие контексты подсветки кода локац
     - include: pending_inline_pop
     - include: location_body
 
-  # тело if-конструкции (Фаза 7: вынесено из inline-push strict-arm, поведение 1:1;
-  # используют оба arm'а).
+  # Тело if-конструкции (используют оба arm'а).
   multiline_conditions_body: # @braced: auto
     - include: comment_after_colon
     - match: ^(\s*)(?i:(\bend\b))
@@ -461,50 +387,34 @@ contexts: # общие контексты подсветки кода локац
     - match: ^(?:\s*)(?i:(\belseif\b)) # elseif работает только в многострочной форме (исправить, если изменится в 5.8.0)
       scope: invalid.illegal.qsp meta.excess_elseif.qsp
 
-  # Ошибочные закрытия контейнеров (п.3.3): порядок include'ов зафиксирован —
-  # «сначала ошибки, потом тело» (wrongclose → wrong_close_in_brace →
-  # location_body[_braced]). Правила ловят РАЗНЫЕ символы в непересекающихся
-  # позициях (`-` в начале строки против `}` где угодно), поэтому взаимный
-  # порядок wrongclose/wrong_close_in_brace на matching не влияет — но он
-  # ЕДИНОЙ душой везде и менять его по отдельности нельзя.
-  # wrongclose: «-» в начале строки внутри незакрытого act/loop/if —
-  # ложный признак конца локации.
+  # Ошибочные закрытия контейнеров: порядок «сначала ошибки, потом тело» (wrongclose →
+  # wrong_close_in_brace → location_body). Правила ловят разные символы в непересекающихся
+  # позициях, поэтому взаимный порядок на matching не влияет — но он единый везде.
+  # wrongclose: «-» в начале строки внутри незакрытого act/loop/if — ложный признак конца локации.
   wrongclose:
     - match: ^\s*(-)(.*)({{nr}}$|$)
       scope: invalid.illegal.qsp
       pop: true
 
-  # Фаза 9: «конец локации» (`--`), попадающий в НЕзакрытую многострочную
-  # скобку `( …` / `[ …` / `{ …` — тоже ошибка, как и `wrongclose` для незакрытого
-  # act/if/loop (не поставлен `end`): строка `--` красится invalid и закрывает
-  # ровно один уровень. Здесь требуются ИМЕННО две дефисы (qsp_grammar.peg
-  # `endLocMarker`, п.6.6), потому что перенос выражения с унарным минусом
-  # (`(1 +` ⏎ `    -2)`) внутри скобок ЛЕГАЛЕН и его ловит правило-продолжение
-  # `^\s+(?=[+\-*\/<>=,&])` — guard поэтому стоит СТРОГО РАНЬШЕ него.
+  # «Конец локации» (`--`) в незакрытой скобке `( `[ `{` — ошибка, как wrongclose:
+  # строка красится invalid и закрывает один уровень. Нужны ИМЕННО два дефиса
+  # (grammar `endLocMarker`), т.к. перенос с унарным минусом (`(1 +` ⏎ `    -2)`)
+  # легален и ловится продолжением `^\s+(?=[+\-*\/<>=,&])` — guard стоит строго раньше.
   wrongclose_locend:
     - match: ^\s*(--)(.*?)({{nr}}$|$)
       scope: invalid.illegal.qsp
       pop: true
 
-  # wrong_close_in_brace: «}» внутри незакрытой конструкции (контейнер ещё
-  # не дописан) — ошибка и выход из контейнера. НАМЕРЕНИЕ: согласовано с
-  # семантикой «незакрытая конструкция = ошибка» (ссылка на `REFACTOR_PLAN.md`
-  # §1C.3 убрана — документа нет, аудит п.28).
+  # wrong_close_in_brace: «}» внутри незакрытой конструкции — ошибка и выход из контейнера.
   wrong_close_in_brace:
     - match: \}(.*)({{nr}}$|$)
       scope: invalid.illegal.qsp avs_error avs_wrongelse1
       pop: true
 
-  # --- Общие include-сегменты тел else/elseif/pending (Шаг 2: P1.2 + P1.4) --
-  # Вынесены ПОСТРОЧНО идентичные inline-тела push-стеков (поведение 1:1:
-  # include внутри push-списка разворачивает правила ровно на своём месте).
-  # Различие plain↔braced остаётся ТОЛЬКО в финальном include location_body /
-  # location_body_braced, поэтому сами сегменты не содержат суффикса _braced и
-  # инклюдятся обоими зеркалами одинаково. САМИ braced-зеркала с шага 4 не
-  # пишутся руками: их генерирует gen_braced.py в @begin-generated (§ниже).
-  #
-  # else/elseif: возврат из незакрытого pending-заголовка на inline-':' (P1.4);
-  # один и тот же во всех пяти plain и пяти braced pending-контекстах:
+  # --- Общие include-сегменты тел else/elseif/pending ---
+  # Построчно идентичные inline-тела push-стеков. Различие plain↔braced — только
+  # в финальном include location_body/location_body_braced, поэтому сегменты без
+  # суффикса _braced инклюдятся обоими зеркалами. Braced-зеркала генерирует gen_braced.py.
   pending_inline_pop:
     - match: '{{pend_inline}}'
       pop: true
@@ -522,43 +432,29 @@ contexts: # общие контексты подсветки кода локац
   else_body_guarded_tail:
     - include: wrongclose
     - include: wrong_close_in_brace
-  # Тело многострочного else (`else !коммент` / голый `else`) одним ИМЕНОВАННЫМ
-  # контекстом: arm `else !коммент` пушит СРАЗУ ДВА контекста (тело + хвост-
-  # комментарий), и после pop'а комментария по newline верхним должно оказаться
-  # ровно это тело; тот же контекст пушит и bare-arm. Зеркало для {…}
-  # (else_body_block_braced) — в @begin-generated.
+  # Тело многострочного else (`else !коммент` / голый `else`) — именованный контекст:
+  # arm `else !коммент` пушит два контекста (тело + хвост-коммент), после pop'а коммента
+  # верхним должно остаться это тело.
   else_body_block: # @braced: auto
     - include: else_body_head_bare
     - include: else_body_guarded_tail
     - include: location_body
 
-  # МЁРТВЫЙ РЕГИОН однострочных else/elseif.
-  # По грамматике хвост `else: <stmt>` / `else <stmt>` / `elseif <cond>: <stmt>`
-  # делает конструкцию ОДНОСТРОЧНОЙ: строки ниже не исполняются, но ПЛЕЕР их всё
-  # равно СКАНИРУЕТ с учётом кавычек/апострофов/скобок. Поэтому регион красим
-  # настоящим многострочным комментарием с ТОЙ ЖЕ структурой, что и обычные
-  # комментарии (общие quote_apostroph_comments / brace_comments /
-  # special_comments_line), а НЕ построчным `^.*` (он забирает строку с позиции 0
-  # и не даёт сработать кавычкам/скобкам).
-  #
-  # Входные кадры (plain + braced-зеркало): хвост САМОЙ строки else/elseif —
-  # обычное тело (location_body), а на НАЧАЛЕ следующей строки кадр заменяет
-  # себя на регион (pop + push = set; для push совместимо со ST3). Якорь ИМЕННО
-  # `^`: `$`/newline не годится — хвост-комментарий (`else: & !…`) съедает
-  # перевод строки своим pop'ом, и `$`-правило уже не сработало бы.
-  #
-  # Сам регион braced-зеркала НЕ имеет: внутри мёртвого кода {…} — это
-  # структура КОММЕНТАРИЯ, а не блок кода, т.е. тело от окружения не зависит.
-  # braced-зеркала нужны только входным кадрам —
-  # else_dead_line_braced / elseif_dead_line_braced — и живут в @begin-generated.
+  # МЁРТВЫЙ РЕГИОН однострочных else/elseif. Хвост `else: <stmt>` / `else <stmt>` /
+  # `elseif <cond>: <stmt>` делает конструкцию однострочной: строки ниже не исполняются,
+  # но плеер сканирует их с учётом кавычек/скобок — поэтому регион красим многострочным
+  # комментарием с той же структурой (quote_apostroph_comments / brace_comments /
+  # special_comments_line), а НЕ построчным `^.*` (он не дал бы сработать кавычкам/скобкам).
+  # Входной кадр: на начале следующей строки заменяет себя на регион (pop+push). Якорь
+  # `^` (`$`/newline не годится — хвост-комментарий съедает перевод своим pop'ом).
+  # Регион braced-зеркала не имеет: внутри мёртвого кода {…} это структура комментария, не блок.
   dead_code_comment:
     - meta_scope: comment.qsp
     # выход из региона: строка началась с end/else/elseif/if/`-`
     - match: '{{final_guard}}'
       pop: true
-    # структура — ТА ЖЕ, что у обычного комментария (comment_tail_common):
-    # состояния "…"/'…'/{…} живут через переносы строк, поэтому `end` внутри
-    # литерала или вложенных {…} регион НЕ закрывает (как в плеере)
+    # структура та же, что у обычного комментария: "…"/'…'/{…} живут через переносы,
+    # поэтому `end` внутри литерала или вложенных {…} регион не закрывает.
     - include: quote_apostroph_comments
     - include: brace_comments
     # спец-комментарий `!@`: вариант line — регион продолжается со следующей
@@ -583,32 +479,23 @@ contexts: # общие контексты подсветки кода локац
     - include: comment_after_colon
     - match: '{{final_guard}}'
       pop: true
-  # elseif permissive-arm (ОДНОСТРОЧНЫЙ `elseif …: <stmt>`): тело-комментарий
-  # УДАЛЕНО вместе с построчным `^.*` (2026-10-28): строки ниже до
-  # else/elseif/end красит общий многострочный регион dead_code_comment,
-  # входной кадр — elseif_dead_line[_braced].
+  # elseif permissive-arm (однострочный `elseif …: <stmt>`): строки ниже до
+  # else/elseif/end красит общий регион dead_code_comment, входной кадр — elseif_dead_line.
 
-  # else (грамматика: elseClause = elseMultiLine | elseSingleLine, двоеточие
-  # представляет `(":" ws)?`). Arms идут от специфичных к общим, ПОРЯДОК ЗНАЧИМ:
-  #   1) invalid: `else <условие>:` — else условия не допускает (вся строка);
-  #   2) colon/caret `^else …:`   3) colon/brace `{else …:` — блок, хвост после ':' = коммент;
-  #   4) colon-single `else: <stmt>` — однострочный: строки ниже до end = мёртвый
-  #      код → МНОГОСТРОЧНЫЙ комментарий (else_dead_line → dead_code_comment);
-  #      `else:` и `else: !коммент` забирает (2);
-  #   5) stmt-single `else <stmt>` без ':' — тот же приём, что (4);
-  #   6) `else !коммент` без ':' — ХВОСТ = КОНТЕКСТ комментария (comment_after_else),
-  #      под ним — ТЕЛО else (else_body_block), т.е. строки ниже = КОД;
-  #   7) bare `else` без хвоста — тело со следующих строк = КОД.
-  # Водораздел «код-тело (6/7) vs мёртвый код (4/5)» = наличие однострочного хвоста.
-  # Якоря: arms 4–7 — `(?:^|(?<=\{))` (аудит п.21: раньше у 6/7 стоял только `^`,
-  #   и `{else !коммент` / `{else` на одной строке с `{` не ловились); arm 1 — только
-  #   `^` (invalid-условие после `{` штатно доходит до colon-brace arm 3); arms 2/3 —
-  #   осознанная пара caret/brace. Обе ветки якоря нулевой ширины и структурно
-  #   идентичны (одинаковая группа `(\s*)` после якоря) — альтернация безопасна.
-  # braced-зеркало — multiline_actions_else_braced (в @begin-generated).
+  # else (grammar: elseClause = elseMultiLine | elseSingleLine, `(":" ws)?`).
+  # Arms от специфичных к общим, ПОРЯДОК ЗНАЧИМ:
+  #   1) invalid `else <условие>:` — else условия не допускает (вся строка);
+  #   2) colon/caret `^else …:`  3) colon/brace `{else …:` — блок, хвост после ':' = коммент;
+  #   4) `else: <stmt>` — однострочный: строки ниже до end = мёртвый код (dead_code_comment);
+  #   5) `else <stmt>` без ':' — тот же приём, что (4);
+  #   6) `else !коммент` без ':' — хвост = комментарий (comment_after_else), ниже — ТЕЛО (код);
+  #   7) bare `else` — тело со следующих строк = КОД.
+  # Водораздел «код (6/7) vs мёртвый код (4/5)» = наличие однострочного хвоста.
+  # Якоря: arms 4–7 — `(?:^|(?<=\{))` (чтобы `{else` ловился); arm 1 — только `^`;
+  #   arms 2/3 — пара caret/brace. Обе ветки якоря нулевой ширины — альтернация безопасна.
   multiline_actions_else: # @braced: auto
-    # Строго В ПРЕДЕЛАХ СТРОКИ (`[ \t]`/`[^:\n\r]`): с прежними `\s*?` + `[^:]+`
-    # правило матчило «else ⏎ if …:» (вложенный if в теле else) как условие→invalid.
+    # Строго в пределах строки (`[ \t]`/`[^:\n\r]`): иначе «else ⏎ if …:» ложно
+    # читалось как условие→invalid.
     - match: ^[ \t]*?(?i:(\belse\b))([ \t]*?)([^:\n\r]+)(\:).*$
       scope: invalid.illegal.qsp meta.wrong_else_conditional.qsp
     - match: '^(\s*)(?i:(\belse\b)){{else_caret_tail}}'
@@ -627,42 +514,28 @@ contexts: # общие контексты подсветки кода локац
         - include: else_body_common_head
         - include: else_body_guarded_tail
         - include: location_body
-    # «else <текст>:» (однострочная форма с условием/хвостом). Двоеточие ЗДЕСЬ
-    # ОБЯЗАТЕЛЬНО (изменена `(:?)`→`(:)`, 2026-10-28): опциональное `:` позволяло
-    # этому arm'у схватить «голый» else и закрасить КОММЕНТАРИЕМ все строки тела до end — хотя
-    # многострочный else без ':' легален (тело начинается со следующей строки).
-    # Голый else доходит до bare-arm ниже, `else !коммент` — до своего arm'а.
+    # «else <текст>:» (однострочная форма). Двоеточие ОБЯЗАТЕЛЬНО: опциональное `:`
+    # позволяло схватить «голый» else и закрасить комментом тело до end (а многострочный
+    # else без ':' легален). Голый else — до bare-arm ниже, `else !коммент` — до своего arm'а.
     - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))\s*(:)(?=\s*([^!\s].*)?$)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword.qsp
       push: else_dead_line
-    # Однострочный `else <statements>` БЕЗ двоеточия (elseSingleLine, двоеточие
-    # факультативно `(":" ws)?`). Зеркало arm4 (колонной однострочной формы): хвост
-    # строки красится штатно (location_body), а ВСЕ последующие строки до `end` —
-    # мёртвый код → многострочный комментарий (else_dead_line → dead_code_comment).
-    # Условие входа: после else горизонтальный `[ \t]+` и следующий символ НЕ `!`
-    # и не пробел (иначе это комментарий-строка → многострочный else, см. нижний
-    # bare-arm). `end`/`else`/`elseif` на последующих строках словит final_guard
-    # региона.
+    # Однострочный `else <statements>` БЕЗ двоеточия (elseSingleLine). Хвост строки
+    # красится штатно, все строки до `end` — мёртвый код (dead_code_comment). Вход:
+    # после else `[ \t]+` и следующий символ не `!`/пробел (иначе комментарий-строка).
     - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))[ \t]+(?=[^!\s])'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: else_dead_line
-    # `else !коммент` БЕЗ ':' — многострочный else с хвостом-комментарием
-    # (elseMultiLine: `(":" ws)? commentStatement?`). В match берём ТОЛЬКО
-    # открывающий `!` (capture → punct): тело комментария уходит в контекст
-    # comment_after_else (pop по newline), поэтому внутри работают "…"/'…'/{…}
-    # и '@'-спецы — как после ':'. Якорь `(?:^|(?<=\{))` (аудит п.21) + `[ \t]+`
-    # строго фиксирует позицию «сразу после else» (в начале строки или сразу за
-    # `{`), поэтому NOT в теле (`x = !y`) не затрагивается.
-    # Список push: правый контекст — верхний, т.е. комментарий лежит НАД телом
-    # else; после его pop'а по newline верхним становится тело.
-    # `comment.qsp` есть и в capture: тело контекста использует meta_content_scope
-    # (чтобы не накрыть `else`), поэтому сам `!` получает comment-scope только
-    # через capture — ровно как у comment_after_colon.
+    # `else !коммент` без ':' — многострочный else с хвостом-комментарием (elseMultiLine).
+    # Берём только `!` (capture → punct); тело уходит в comment_after_else (pop по newline),
+    # поэтому внутри работают "…"/'…'/{…} и '@'-спецы. Якорь + `[ \t]+` фиксируют позицию
+    # «сразу после else», NOT в теле (`x = !y`) не затрагивается. Комментарий лежит НАД
+    # телом else; после pop'а по newline верхним становится тело.
     - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))[ \t]+(!)'
       scope: meta.begin_else.qsp
       captures:
@@ -671,13 +544,8 @@ contexts: # общие контексты подсветки кода локац
       push:
         - else_body_block
         - comment_after_else
-    # Многострочный `else` БЕЗ хвоста-утверждения: голый `else` (+ хвостовые
-    # пробелы). elseMultiLine — двоеточие факультативно; хвост-комментарий ловит
-    # arm выше. Тело — СЛЕДУЮЩИЕ строки → КОД (фикс 1b: здесь НЕТ catch-all
-    # `^.*`→comment). Выход по final-guard на `end`/`else`/`elseif`. Однострочные
-    # формы (`else <stmt>` без ':') и колонные (`else:` / `else: <текст>` /
-    # `else <конд>:`) — выше. Якорь `(?:^|(?<=\{))` — аудит п.21: `{else` в конце
-    # строки с `{` обязан ловиться так же, как колонный голый else.
+    # Голый `else` (+ хвостовые пробелы) — многострочный, тело со СЛЕДУЮЩИХ строк = КОД.
+    # Выход по final-guard на `end`/`else`/`elseif`. Однострочные/колонные формы — выше.
     - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))(?=[ \t]*$)'
       scope: meta.begin_else.qsp
       captures:
@@ -688,16 +556,11 @@ contexts: # общие контексты подсветки кода локац
     - match: (?:^\s*)(?i:\belse\b)
       scope: invalid.illegal.qsp meta.excess_multiline_else.qsp
 
-  # elseif (п.2.1): пары `^`/{`-arms слиты через branch-reset; тела были
-  # идентичны с точностью до порядка comment_after_colon/final-guard —
-  # приведены к порядку comment-первым (guard — нулевой ширины, на
-  # середине строки не срабатывает, так что порядок comment_after_colon
-  # внутри одного пуша не менял matching для обеих веток).
+  # elseif: пары `^`/`{`-arms слиты; тела идентичны с точностью до порядка
+  # comment_after_colon/final-guard (guard нулевой ширины, посередине строки не срабатывает).
   multiline_actions_elseif: # @braced: auto
-    # `else if` (grammar `elseIfSpaceMarker = "else" ws "if"`) трактуется как ЕДИНЫЙ
-    # elseif-оператор: `\b(?:else[ \t]+if|elseif)\b` внутри прежней capture-группы
-    # (нумерация групп сохранена — внутренняя alternation не захватывающая).
-    # `[ \t]+`, а НЕ `\s+`: внутристрочно — как в грамматике (`ws` без переноса).
+    # `else if` трактуется как единый elseif-оператор `\b(?:else[ \t]+if|elseif)\b`
+    # внутри прежней capture-группы (alternation не захватывающая). `[ \t]+`, не `\s+`.
     - match: '{{arm_anchor}}{{kw_elseif}}{{elseif_strict_tail}}'
       scope: meta.begin_condition.qsp
       captures:
@@ -714,10 +577,7 @@ contexts: # общие контексты подсветки кода локац
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
         3: punctuation.definition.keyword.qsp
       push: elseif_dead_line
-    # bracket-arm (Фаза 7): многострочная ( или [ в elseif-условии → pending-
-    # заголовок, решающий форму на ':' (см. multiline_elseif_pending). Ветка
-    # снимается по sibling-guard (elseif_else_final) при следующем else/elseif/end —
-    # как и ordinary elseif.
+    # bracket-arm: незакрытая ( или [ в elseif-условии → pending, решающий форму на ':'.
     - match: '{{arm_anchor}}{{kw_elseif}}{{unbalanced_bracket_head}}'
       scope: meta.begin_condition.qsp
       captures:
@@ -726,7 +586,7 @@ contexts: # общие контексты подсветки кода локац
 
   # pending-заголовок elseif: состояние «до ':'» (механика — как multiline_if_pending).
   multiline_elseif_pending: # @braced: auto
-    # Фаза 9: конец локации в незакрытом заголовке — ошибка + выход
+    # Конец локации в незакрытом заголовке — ошибка + выход
     - include: wrongclose_locend
     - match: '{{pend_block_soft}}'
       pop: true
@@ -984,7 +844,6 @@ contexts: # общие контексты подсветки кода локац
 
   # set и local
   kw_declarations:
-      # ([A-Za-zА-Яа-я_][\w\.]*)
     - match: \b(?i:(local))\b(?=\s+{{users_variables}}(\[.*?\])?(\,\s*{{users_variables}}(\[.*?\])?)*(\s*\=\s*.+)?\s*(?i:(\&|{{nr}}|\}|\bwhile\b)))
       scope: keyword.declaration.variables.qsp
     - match: \b(?i:(set|let))\b(?=\s+{{users_variables}}(\[.*?\])?(\,\s*{{users_variables}}(\[.*?\])?)*(\s*\=\s*.+)\s*(?i:(\&|{{nr}}|\}|\bwhile\b)))
@@ -992,12 +851,10 @@ contexts: # общие контексты подсветки кода локац
     - match: \b(?i:set|local|let)\b
       scope: invalid.illegal.qsp
 
-  # операции (Решение-4/4B + P1.5: построчно идентичные сегменты `operacion`
-  # и `operacion_subex` вынесены в operacion_word_two_signs_common,
-  # operacion_ampersand_common и operacion_no_common; реально различающиеся
-  # группы — one_sign (unary `-` / `>`-exclusion / lookbehind-vs-\K),
-  # comma с with_out_left и ampersand с with_out_left (п.31: \K не работает
-  # в pushed-контексте) — оставлены локально; их слияние изменило бы подсветку.
+  # Операции: построчно идентичные сегменты `operacion` и `operacion_subex` вынесены
+  # в operacion_word_two_signs_common / operacion_ampersand_common / operacion_no_common;
+  # реально различающиеся группы (one_sign, comma/ampersand with_out_left) оставлены
+  # локально — их слияние изменило бы подсветку.
   operacion_word_two_signs_common:
     # подсветка словарных операторов
     - match: (?<={{left_operand}})\s*\b{{operacion_word}}\b(?!\s*{{right_operand}})
@@ -1015,19 +872,17 @@ contexts: # общие контексты подсветки кода локац
       scope: keyword.operator.two-signs.qsp
 
   operacion_ampersand_common:
-    # Правила для амперсандов. Аудит п.31: `\K`-вариант «без левого операнда»
-    # работает ТОЛЬКО в строках кода; в pushed-контексте `<< … >>` он не срабатывает
-    # (живой прогон 2026-10-30), поэтому operacion_subex больше НЕ включает этот
-    # контекст — у неё локальный lookbehind-двойник (как у one_sign/comma).
+    # Амперсанды: `\K`-вариант «без левого операнда» работает только в строках кода,
+    # а в pushed-контексте `<< … >>` — нет, поэтому operacion_subex не включает этот
+    # контекст (у неё локальный lookbehind-двойник).
     - match: (^\s*?|\(\s*?|\{\s*?|\[\s*?)\K(\&)(?=\s*?{{right_operand}}*)
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
     - match: \&
       scope: keyword.operator.ampersand.qsp
 
-  # Запятая (P1.6): правило «без правого операнда» и сам разделитель построчно
-  # идентичны в operacion и operacion_subex. with_out_left у них РАЗНЫЙ, поэтому
-  # одним блоком запятые не вынести (порядок значим: with_out_right → with_out_left
-  # → разделитель) — вынесены два независимых сегмента.
+  # Запятая: «без правого операнда» и разделитель построчно идентичны в operacion и
+  # operacion_subex, а with_out_left разный — поэтому вынесены два независимых сегмента
+  # (порядок значим: with_out_right → with_out_left → разделитель).
   operacion_comma_with_out_right:
     - match: (?<={{left_operand}})\s*(,)(?!\s*{{right_operand}})
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_right
@@ -1035,15 +890,9 @@ contexts: # общие контексты подсветки кода локац
     - match: (,)
       scope: punctuation.separator.comma.qsp
 
-  # `no` (P1.5): пары правил в operacion и operacion_subex были построчно
-  # идентичны, кроме регистра — в subex стоял регистрозависимый \bno\b.
-  # Ключевые слова QSP регистронезависимы → это недосмотр подсветки, а не
-  # зафиксированное поведение, поэтому пара слита здесь с (?i:). Правка
-  # НАМЕРЕННО меняет результат: `NO`/`No` в `<< … >>` теперь keyword/invalid,
-  # а не пользовательская переменная. Ошибочный scope
-  # `avs_wrong_comma_with_out_left` (copy-paste от запятой; у правила
-  # `(?!right_operand)` это «без ПРАВОГО») переименован в
-  # `avs_wrong_no_with_out_right`.
+  # `no`: пары правил в operacion и operacion_subex отличались только регистром
+  # (в subex — регистрозависимый \bno\b). Ключевые слова QSP регистронезависимы →
+  # пара слита с (?i:); `NO`/`No` в `<< … >>` теперь keyword/invalid, а не переменная.
   operacion_no_common:
     - match: (?i:\bno\b)(?!\s*{{right_operand}})
       scope: invalid.illegal.qsp avs_wrong_no_with_out_right
@@ -1070,13 +919,9 @@ contexts: # общие контексты подсветки кода локац
     - include: operacion_no_common
 
   numeric:
-    # Аудит п.10: был класс `([A-Za-zа-яА-Я\$\%\._]+\d*)` — ASCII+кириллица без
-    # `Ё`/`ё` (вне `А-Я`), греческого и латиницы с диакритикой. `\p{L}` покрывает
-    # все буквы (тот же класс, что в `users_variables`, п.2).
-    # NB: цифра `\d` в класс НЕ добавлена (несмотря на формулировку аудита):
-    # проверено зондом — `\b\d+([\p{L}\d$%._]+\d*)+\b` на чистом `100`/backtracking
-    # (`\d+`→`1`, класс→`0`, `\d*`→`0`, `\b` в конце) ложно красит ЦЕЛОЕ число
-    # invalid'ом. Без `\d` внутри класса `100`/`42` — numeric, `1e5`/`1ё` — invalid.
+    # Неправильные «переменные», начинающиеся с цифр: класс букв — `\p{L}` (как в
+    # users_variables), покрывает `ё`/греческий/диакритику. NB: `\d` в класс НЕ добавлять —
+    # на чистом `100` backtracking ложно покрасит всё число invalid'ом.
     - match: \b\d+([\p{L}\$\%\._]+\d*)+\b # неправильные переменные, начинающиеся с цифр
       scope: invalid.illegal.qsp avs_wrong_numeric
     - match: \b[0-9]+\b
@@ -1125,13 +970,9 @@ contexts: # общие контексты подсветки кода локац
     - match: (?<=[\w\.\$]\$)({{system_vars}}|{{system_vars_string}})
       scope: invalid.illegal.qsp avs_illegal_textvariables
 
-    # Аудит п.24: 4 правила «префикс перед системной переменной» одного scope слиты в
-    # один `(?x)`-сегмент. Ветки различаются только КЛАССОМ ПРЕФИКСА (`$`/`%`/`#`) и
-    # КЛАССОМ ЦЕЛИ; каждая матчит СВОЙ символ префикса (разные символы → одна ветка на
-    # позицию), поэтому альтернация НЕ расширяет набор позиций — грабли «^=literal» из
-    # памяти тут неприменимы (нет `^`-ветки и нет общего хвостового атома после веток).
-    # Порядок веток = прежнему порядку правил (1:1). Два `#`-правила (num / любой тип)
-    # объединены в одну ветку: цель `system_vars_num|system_vars` (disjunct, тот же scope).
+    # 4 правила «префикс перед системной переменной» одного scope слиты в один `(?x)`-сегмент.
+    # Каждая ветка матчит СВОЙ символ префикса → на позицию попадает ≤1 ветка, альтернация
+    # не расширяет набор позиций. Два `#`-правила объединены в одну ветку (цели дизъюнктны).
     - match: |-
         (?x:
           (\$)(?=\b({{system_vars_string}}|{{system_vars}})\b)
@@ -1147,25 +988,16 @@ contexts: # общие контексты подсветки кода локац
     - match: (\$|%)(?={{system_vars_num}}\b)
       scope: invalid.illegal.qsp avs_illegal_$
 
-  # NB (аудит п.9, решение зафиксировано): `loc` и `obj` в qsp_grammar.peg входят
-  # в `unaryKeywordOperator = "no" | "obj" | "loc"` (наравне с `no`, которое красится
-  # как `keyword.operator.word.qsp` в operacion_no_common), но здесь они подсветятся
-  # ТОЛЬКО как функции (`functions_num` → `support.function.qsp`) — ОСОЗНАННОЕ
-  # УПРОЩЕНИЕ, не переоткрывать: в реальном коде они прежде всего функции, а
-  # разведение форм «оператор vs функция» требует анализа скобок/операндов и даёт
-  # малую пользу при риске ложных срабатываний. Отклонены варианты (а) добавить
-  # `obj|loc` keyword-операторами по аналогии с `no` и (б) различать `obj(…)` от
-  # `obj $x` контекстом. Пересматривать, только если появится корпус с унарным
-  # употреблением, где дефект подсветки заметен.
+  # намеренная реализация: `loc`/`obj` в grammar входят в `unaryKeywordOperator`, но
+  # здесь красятся ТОЛЬКО как функции (`support.function.qsp`). В реальном коде они
+  # прежде всего функции; разведение «оператор vs функция» требует анализа операндов
+  # и даёт малую пользу при риске ложных срабатываний.
   functions:
-      # # — числовой префикс перед НЕчисловой функцией (string/tuple) → ошибка типа
-      # (аудит п.24: 2 правила одного префикса/scope слиты в одну ветку целей)
+      # `#` перед НЕчисловой функцией (string/tuple) → ошибка типа (2 правила слиты в одну ветку)
     - match: (\#)(?=\b({{functions_string}}|{{functions_tuple}})\b)
       scope: invalid.illegal.qsp avs_wrong_type_prefix
-      # Аудит п.24: корректный префикс типа перед функцией (`$`→string/alltypes,
-      # `%`→tuple/alltypes, `#`→num/alltypes) — 3 правила одного scope слиты в один
-      # `(?x)`-сегмент (каждая ветка матчит свой символ префикса → позиции не
-      # расширяются; порядок веток = прежний, дословные regex веток сохранены 1:1).
+      # Корректный префикс типа (`$`→string/alltypes, `%`→tuple/alltypes, `#`→num/alltypes):
+      # 3 правила одного scope слиты в `(?x)`-сегмент (каждая ветка — свой символ префикса).
     - match: |-
         (?x:
           (\$)(?=({{functions_string}}\b|{{functions_alltypes}}\b))
@@ -1184,9 +1016,8 @@ contexts: # общие контексты подсветки кода локац
           )\b
         )
       scope: support.function.qsp avs_function
-      # Аудит п.24: НЕверный префикс типа перед функцией — 3 правила одного scope
-      # (`$`/`%` перед num, `%` перед string, `$` перед tuple) слиты в один `(?x)`-сегмент.
-      # `\$|\%` и ветки оставлены дословно (1:1), номера capture не меняются.
+      # НЕверный префикс типа (`$`/`%` перед num, `%` перед string, `$` перед tuple):
+      # 3 правила одного scope слиты в `(?x)`-сегмент, номера capture не меняются.
     - match: |-
         (?x:
           (\$|\%)(?=\b{{functions_num}}\b)
@@ -1195,42 +1026,24 @@ contexts: # общие контексты подсветки кода локац
         )
       scope: invalid.illegal.qsp avs_wrong_type_prefix
 
-  # NB (fidelity к qsp_grammar.peg, п.6.3): grammar `noteChar` исключает `()[]{}`
-  # из метки, но ВСЕ МЕТКИ ОДНОСТРОЧНЫ — многострочные скобки внутри метки не нужны,
-  # поэтому подсветка намеренно ДОПУСКАЕТ скобки (шире grammar; не является ошибкой).
-  #
-  # п.5 аудита: якорь `^` ЗДЕСЬ ОБЯЗАТЕЛЕН и его НЕЛЬЗЯ снимать — плеер (QSP-движок)
-  # находит метки ТОЛЬКО в начале строки, поэтому `:` в середине выражения — не метка.
-  # БЫЛО `^(\s*\:|\:)`: запись читалась как «вторая альтернатива без якоря» и попала
-  # в аудит как дефект — но `^` стоит ПЕРЕД ГРУППОЙ, значит обе ветки привязаны к началу
-  # строки, а ветка `\:` полностью избыточна (`\s*` может быть пустым). Проверено
-  # зондом: старое и новое правило дают одинаковый результат на `if 1: x`, `& :lab`,
-  # `msg a: b` (метки нет); ветка удалена, чтобы такая же ложная тревога не всплыла
-  # снова. Регрессов на корпусе нет: все 607 меток в колонке 0 `_examples/**/*.qsps`
-  # ловятся одинаково (старое и новое — 607).
-  #
-  # НЕ реализовано НАМЕРЕННО:
-  #   * метка после `&` (`&delimiterChar` в grammar) — grammar и другие редакторы
-  #     это разрешают, но плеер распознаёт только метку в начале строки → следуем
-  #     плееру, а не grammar;
-  #   * кавычки внутри метки (`noteString` их разрешает: `:"текст"`) — на кавычках
-  #     плеер ломает распознавание метки, т.е. в метке они НЕВАЛИДНЫ; поэтому класс
-  #     `[^&'"\n]+` оставлен как есть (такая строка просто не считается меткой).
+  # Метка (`:name`). Якорь `^` ОБЯЗАТЕЛЕН: плеер находит метки только в начале строки,
+  # `:` в середине выражения — не метка.
+  # намеренная реализация:
+  #   * скобки внутри метки ДОПУСКАЮТСЯ (шире grammar `noteChar`) — метки однострочны,
+  #     многострочные скобки внутри не нужны, это не ошибка;
+  #   * метка после `&` и кавычки в метке НЕ поддержаны: плеер распознаёт метку только
+  #     в начале строки и ломается на кавычках → класс `[^&'"\n]+` (строка с ними не метка).
   labels:
     - match: ^(\s*):([^&'"\n]+)
       captures:
         2: entity.name.qlabel.qsp avs_jumps_labels
 
   # # # ------------------- строки ------------------------ # # #
-  # п.2.2: общий body (preprocessor+subexpression+htmlsupport) вынесен в
-  # string_common; различие двух arms — только символ кавычки и правило
-  # удвоения (`""`/`''`).
-  # п.3 аудита: meta_scope КАЖДОГО arm'а — по СВОЕЙ кавычке (`double` для `"…"`,
-  # `single` для `'…'`). БЫЛО `string.quoted.double.qsp` в ОБОИХ: тема не могла
-  # различить тип строки, а meta_scope врал про фактический разделитель.
-  # NB: `jump_to_label`/`location_call` по-прежнему красят ОБЕ кавычки
-  # `string.quoted.double.qsp` — там строка-аргумент ловится ОДНОЙ группой
-  # (`({{ap}}|{{quote}}).*?\3`), разделить scope по символу кавычки нечем.
+  # Общий body (preprocessor+subexpression+htmlsupport) вынесен в string_common;
+  # различие двух arms — только символ кавычки и правило удвоения (`""`/`''`).
+  # meta_scope каждого arm'а — по СВОЕЙ кавычке (`double`/`single`).
+  # намеренная реализация: `jump_to_label`/`location_call` красят ОБЕ кавычки `double` —
+  # там строка-аргумент ловится ОДНОЙ группой (`({{ap}}|{{quote}}).*?\3`), разделить нечем.
   strings:
     - match: '"'
       push:
@@ -1269,12 +1082,10 @@ contexts: # общие контексты подсветки кода локац
   subex:
     - include: figure_brace
     - include: sugarfunc
-    # Многострочность подвыражения `<< … >>` (grammar `stringSubexpression` =
-    # `"<<" mws multilineExpression mws ">>"`, `mws` допускает перенос) разрешена
-    # ТОЛЬКО внутри скобок и вложенных строк. `brackets_multiline` пушит
-    # `multiline_round`/`multiline_square`, которые поглощают переносы внутри `(`/`[
-    # `; `{…}` покрыт `figure_brace`, вложенные строки — `strings`. Правило ниже
-    # ловит ГОЛЫЙ перенос (вне скобок/строк) — он остаётся ошибкой.
+    # Многострочность подвыражения `<< … >>` (grammar `stringSubexpression`, `mws`
+    # допускает перенос) разрешена только внутри скобок и вложенных строк: переносы
+    # в `(`/`[` поглощает multiline_round/square, `{…}` — figure_brace, строки — strings.
+    # Правило ниже ловит ГОЛЫЙ перенос (вне скобок/строк) — он остаётся ошибкой.
     - include: brackets_multiline
     - match: (\n\r|\r|\r\n|\n)
       scope: invalid.illegal.qsp avs_wrongenter
@@ -1284,23 +1095,18 @@ contexts: # общие контексты подсветки кода локац
     - include: numeric
     - include: strings
     - include: users_variables
-    # Пунктуация ОДНОстрочных ( ) [ ] (п.1 аудита): раньше в подвыражении `<< … >>`
-    # скобки были вообще без scope — `brackets_inline` подключался только в
-    # `body_common_tail`. Включение ПОСЛЕДНИМ — как там: anchor-правила, которые
-    # начинают матч с `(`/`[`, должны пробоваться раньше. NB (п.31 аудита,
-    # ЗАКРЫТ): «& без левого операнда» в subex — локальное lookbehind-правило
-    # (operacion_ampersand_common с `\K` здесь больше не инклюдится).
+    # Пунктуация однострочных ( ) [ ]: включена ПОСЛЕДНЕЙ — anchor-правила, начинающие
+    # матч с `(`/`[`, должны пробоваться раньше (порядок как в body_common_tail).
+    # `&` без левого операнда в subex — локальное lookbehind-правило (operacion_ampersand_common
+    # с `\K` здесь не инклюдится).
     - include: brackets_inline
 
   operacion_subex:
-    # Операции ВНУТРИ подвыражения `<< … >>` (embedded source). Общие с
-    # `operacion` сегменты вынесены в operacion_word_two_signs_common /
-    # operacion_ampersand_common (Решение-4/4B) + operacion_no_common (P1.5).
-    # Локально оставлены только реально отличающиеся группы: one_sign (нет
-    # unary `-`; with_out_right несёт доп. exclusion `(>…)`; with_out_left —
-    # lookbehind `(?<=(<|&|(|{|[))` вместо `(^|…)\K`, т.к. здесь нет `^` строки
-    # кода) и comma with_out_left (тот же lookbehind) и ampersand (п.31:
-    # `\K`-версия общего контекста в pushed-контексте не срабатывает).
+    # Операции внутри подвыражения `<< … >>` (embedded source). Общие с `operacion`
+    # сегменты вынесены в *_common; локально оставлены только реально отличающиеся
+    # группы: one_sign (нет unary `-`; with_out_right несёт доп. exclusion `(>…)`;
+    # with_out_left — lookbehind вместо `\K`, т.к. здесь нет `^` строки кода), comma
+    # with_out_left (тот же lookbehind) и ampersand (`\K`-версия в pushed-контексте не работает).
     - include: operacion_word_two_signs_common
     # подсветка однознаковых операторов
     - match: (?<={{left_operand}})\s*{{operacion_one_sign}}(?!(>|\s*{{right_operand}}))
@@ -1314,23 +1120,19 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{left_ctx_lookbehind}}\s*(,)(?=\s*?{{right_operand}}*)'
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
     - include: operacion_comma_sign
-    # Правила для амперсандов (аудит п.31): локальный lookbehind-двойник вместо
-    # operacion_ampersand_common — его `\K`-правило в pushed-контексте не
-    # срабатывает (живой прогон 2026-10-30), поэтому `<<(& $a)>>` оставался
-    # без invalid. Семантика зеркальная: `&` сразу после <|&|(|{|[) без левого
-    # операнда — ошибка.
+    # Амперсанды: локальный lookbehind-двойник вместо operacion_ampersand_common — его
+    # `\K`-правило в pushed-контексте не срабатывает. Семантика зеркальная: `&` сразу
+    # после <|&|(|{|[) без левого операнда — ошибка.
     - match: '{{left_ctx_lookbehind}}\s*(\&)(?=\s*?{{right_operand}}*)'
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
     - match: \&
       scope: keyword.operator.ampersand.qsp
     - include: operacion_no_common
 
-  # # # ------------------------ Подсветка комментариев ------------------------  # # #
-  # Общий хвост комментария (Фаза 3, п.3.1): тело от «!» до конца строки.
-  # Используется контекстами comments и comments_in_brace (их arms различаются
-  # только якорем и наличием «?\}»-попа, вынесенного в сами arms).
-  # ПОРЯДОК правил внутри push-тел значим (поиск слева направо, первое
-  # совпадение) — менять только вместе с анализом позиционных коллизий.
+  # --- Подсветка комментариев ---
+  # Общий хвост комментария: тело от «!» до конца строки. Используют comments и
+  # comments_in_brace (их arms различаются только якорем и «?\}»-попом). ПОРЯДОК
+  # правил внутри push-тел значим — менять только вместе с анализом коллизий.
   comment_tail_common:
     - match: (\n\r|\r|\r\n|\n|$)
       scope: comment.qsp
@@ -1342,9 +1144,8 @@ contexts: # общие контексты подсветки кода локац
     # braced-версий разные (см. блок special_comments_*).
 
   # Комментарий «!» — однострочный или многострочный (через &-продолжения).
-  # (п.3.1) Arms НЕ слиты в один regex: ветка «^\s*» матчит только на начале
-  # строки, а «\&» — в любой позиции; общая альтернация с внешним \s*
-  # ложно расширяла бы набор позиций. Зато тело вынесено в comment_tail_common.
+  # Arms НЕ слиты в один regex: «^\s*» матчит только в начале строки, а «\&» — в
+  # любой позиции; общая альтернация ложно расширяла бы набор позиций. Тело — comment_tail_common.
   comments:
     - match: (?<=\{)((\s*)|(\&)\s*)(!)
       captures:
@@ -1407,14 +1208,10 @@ contexts: # общие контексты подсветки кода локац
         - include: special_comments_line
 
   # Хвост-комментарий в заголовке многострочного else (`else !коммент`): ':' по
-  # grammar (elseMultiLine `(":" ws)? commentStatement?`) факультативен, поэтому
-  # comment_after_colon с lookbehind `(?<=:)` этот случай не ловит, а `comments`
-  # видит `!` только в начале строки или после `&` → значок уезжал в оператор NOT.
-  # Открывающий `!` потребляет arm multiline_actions_else (capture → punct), здесь
-  # живёт ТОЛЬКО тело: до newline, с "…"/'…'/{…} и '@'-спецами — та же механика,
-  # что после ':' (потребление хвоста в match убило бы её).
-  # meta_content_scope (НЕ meta_scope): scope комментария не должен накрывать сам
-  # `else` — он относится к match'у, запушившему этот контекст.
+  # grammar факультативен, поэтому comment_after_colon (lookbehind `(?<=:)`) этот
+  # случай не ловит, а `comments` видит `!` только в начале строки или после `&`.
+  # Здесь живёт ТОЛЬКО тело (до newline, с "…"/'…'/{…} и '@'-спецами). meta_content_scope
+  # (НЕ meta_scope): scope комментария не должен накрывать сам `else`.
   comment_after_else:
     - meta_content_scope: comment.qsp
     - match: '({{nr}}|$)'
@@ -1424,14 +1221,10 @@ contexts: # общие контексты подсветки кода локац
     - include: brace_comments
     - include: special_comments_line
 
-  # Комментарий после 'end': весь текст до '&' или конца строки; внутри
-  # {…} закрывающая '}' завершает и комментарий, и внешний блок (её ловит
-  # figure_brace). Отдельной plain-версии (comment_after_end) БОЛЬШЕ НЕТ:
-  # после Решения-1A (конец п.2.1) все правила 'end' ведут только этот
-  # brace-aware контекст — модель «} структурна всегда» едина для top-level
-  # и braced-форм. Не переносить порядок правил в comment_tail_common:
-  # здесь «&»-pop стоит ПОСЛЕ include'ов и это значимо (pop срабатывает уже
-  # внутри quote/brace-состояний).
+  # Комментарий после 'end': весь текст до '&' или конца строки; внутри {…}
+  # закрывающая '}' завершает и комментарий, и внешний блок (ловит figure_brace).
+  # Все правила 'end' ведут только этот brace-aware контекст. Не переносить порядок
+  # правил в comment_tail_common: здесь «&»-pop стоит ПОСЛЕ include'ов и это значимо.
   comment_after_end_in_brace:
     - meta_content_scope: comment.line.qsp markup.italic.qsp
     - include: quote_apostroph_comments
@@ -1444,17 +1237,13 @@ contexts: # общие контексты подсветки кода локац
       pop: true
 
   # --- Состояния «внутри» комментария: "…", '…', {…} ---
-  # Вынесены в ИМЕНОВАННЫЕ контексты (были inline в push-стеках): ОДНО описание
-  # структуры используют и обычные комментарии (comment_tail_common,
-  # comment_after_colon/else/end), и мёртвый регион однострочных
-  # else/elseif (dead_code_comment).
-  # Все три ЖИВУТ ЧЕРЕЗ ПЕРЕНОСЫ СТРОК: литерал QSP бывает многострочным
-  # (см. corpus: $args['…'] = ' ⏎ … ⏎ '), {…} — блочная структура комментария.
-  # Совпадений на «прочий текст» у них НЕТ и не нужно: пока такое состояние на
-  # вершине стека, контексты ниже не рассматриваются, и текст просто остаётся
-  # под их meta_scope. Именно поэтому `}` внутри "…" не закрывает {…}-блок, а
-  # `&`/`end` внутри незакрытого литерала не рвут ни комментарий, ни мёртвый
-  # регион.
+  # Один ИМЕНОВАННЫЙ контекст структуры используют и обычные комментарии
+  # (comment_tail_common, comment_after_colon/else/end), и мёртвый регион
+  # else/elseif (dead_code_comment). Все три ЖИВУТ ЧЕРЕЗ ПЕРЕНОСЫ СТРОК: литерал
+  # QSP бывает многострочным, {…} — блочная структура комментария. Совпадений на
+  # «прочий текст» не нужно: пока состояние на вершине стека, текст остаётся под их
+  # meta_scope. Поэтому `}` внутри "…" не закрывает {…}-блок, а `&`/`end` внутри
+  # незакрытого литерала не рвут комментарий/мёртвый регион.
   comment_in_quote:
     - meta_scope: comment.qsp
     - match: '{{quote}}'
@@ -1498,28 +1287,13 @@ contexts: # общие контексты подсветки кода локац
   # --- Спецкомментарий `!@` ----------------------------------------------
   # `!@` — ВАРИАНТ обычного комментария, а НЕ отдельная конструкция: те же точки
   # входа, те же завершители и та же внутренняя структура ("…"/'…'/{…}); отличается
-  # ТОЛЬКО окраской тела — markup.italic + avs_speccomments. Внутренние
-  # состояния не дублируются: тело подключает существующую машинерию
-  # комментария (quote_apostroph_comments / brace_comments).
-  #
-  # Маркер ловится В ТЕЛЕ (lookbehind `!`), а не отдельной головой: `!` на всех
-  # сайтах уже съеден головой комментария (comments / comments_in_brace /
-  # comment_after_colon / arm `else !коммент`), а после `end` и в мёртвом регионе
-  # головы нет вовсе. `@` получает тот же begin-пунктуационный scope, что и `!`,
-  # поэтому тема, красящая `punctuation.definition.comment`, видит `!@` единым
-  # маркером (а avs_speccomments — ещё и как спец-маркер).
-  #
-  # Тел ТРИ — по набору завершителей САЙТА (push-тело перекрывает внешнее,
-  # поэтому завершители обязаны ПОВТОРЯТЬ завершители тела-хозяина):
-  #   special_comment_body_line   — newline/$: comments / comment_after_colon /
-  #                                 comment_after_else / dead_code_comment
-  #                                 (регион продолжается со следующей строки);
-  #   special_comment_body_braced — + `(?=\})`: только comments_in_brace (`}` на
-  #                                 строке-комментарии закрывает {…}-блок,
-  #                                 а не остаётся текстом комментария);
-  #   special_comment_body_end    — + `&`/`}`: только comment_after_end_in_brace
-  #                                 (после `end` хвост — noteString, и `&`
-  #                                 заканчивает его по грамматике).
+  # ТОЛЬКО окраской тела — markup.italic + avs_speccomments. Внутренние состояния
+  # не дублируются: тело подключает существующую машинерию комментария.
+  # Маркер ловится В ТЕЛЕ (lookbehind `!`), а не головой: `!` на всех сайтах уже
+  # съеден головой комментария, а после `end` и в мёртвом регионе головы нет вовсе.
+  # Тел ТРИ — по набору завершителей САЙТА (push-тело перекрывает внешнее, поэтому
+  # завершители должны повторять завершители тела-хозяина): line (newline/$),
+  # braced (+ `(?=\})`: comments_in_brace), end (+ `&`/`}`: comment_after_end_in_brace).
   special_comments_line:
     - match: '(?<=\!)@'
       scope: punctuation.definition.comment.begin.qsp avs_speccomments
@@ -1563,19 +1337,15 @@ contexts: # общие контексты подсветки кода локац
       pop: true
 
   preprocessor:
-    # lazy `.*?` перед `$` избыточен (движок всё равно обязан дойти до конца строки) — P4.3.
+    # lazy `.*?` перед `$` избыточен (движок всё равно доходит до конца строки).
     - match: ^(\!@pp\:.*)$
       captures:
         1: meta.preprocessor.qsp diff.deleted.qsp avs_preprocessor
         #2: markup.bold preprocessor.avs
 
-  # Документация локации (`!@`): в qsp_grammar.peg такого синтаксиса нет — это
-  # соглашение корпуса, поэтому правила ниже только оформительские.
-  # P4.1 (2026-10-29): `...` — ЛИТЕРАЛЬНОЕ многоточие, а не «три любых символа»
-  # (прежняя запись ` ... ` требовала РОВНО один пробел с каждой стороны и матчила
-  # `!@ #1 XXX #2 - …`, но НЕ матчила `!@ #1 ... #2 - …`).
-  # Вокруг — горизонтальные `[ \t]*` (в т.ч. ноль): `\s*` нельзя, `\s` включает
-  # перенос, и заголовок склеил бы соседние строки.
+  # Документация локации (`!@ #…`): в qsp_grammar.peg такого синтаксиса нет — это
+  # соглашение корпуса, правила только оформительские. `...` — ЛИТЕРАЛЬНОЕ многоточие
+  # (не «три любых символа»); вокруг — горизонтальные `[ \t]*` (`\s*` нельзя — склеил бы строки).
   qspdocs:
     - match: (?:^\!@\s)([#$%](\d+|r)[ \t]*\.\.\.[ \t]*[#$%](\d+|r))(\s+\-\s+)(.*$)
       scope: meta.diff meta.gametext.qsp
@@ -1592,8 +1362,8 @@ contexts: # общие контексты подсветки кода локац
       scope: punctuation.section.block.begin.qsp avs_brace_begin
       push:
         - meta_content_scope: meta.block.qsp
-        # Фаза 9: `--` внутри незакрытой `{` — ошибка (зеркало wrongclose для
-        # незакрытого блока: красим конец локации и закрываем один уровень)
+        # `--` внутри незакрытой `{` — ошибка (зеркало wrongclose: красим конец
+        # локации и закрываем один уровень)
         - include: wrongclose_locend
         - include: htmlsupport
         - include: continuation_tail
@@ -1605,18 +1375,13 @@ contexts: # общие контексты подсветки кода локац
           pop: true
 
   # # # ------- круглые и квадратные скобки (многострочный код) ------- # # #
-  # push происходит только если после открывающей скобки на ЭТОЙ ЖЕ строке
-  # нет закрывающей (строковые литералы в кавычках/апострофах «пропускаются»
-  # и их скобки не считаются). Сбалансированные в одной строке скобки
-  # обрабатываются прежними построчными правилами — поведение
-  # одиночных проверок операторов не меняется.
-  # NB: внутри regex не используем \xNN — Oniguruma в UTF-8 падает на них
-  # («too short multibyte code string»); кавычки/апострофы — через {{ap}}/{{quote}}.
-  # NB: «пропускаемая строка» в lookahead'е исключает СВОЙ разделитель
-  # (`{{quote}}[^{{quote}}\n]*{{quote}}` для кавычек, `{{ap}}[^{{ap}}\n]*{{ap}}` для
-  # апострофов). Копипаст с чужим классом в кавычковой альтернативе ломал
-  # распознавание `"…'…"` → незакрытая `(`/`[` на такой строке не виделась
-  # и многострочность терялась: `$x = ("Bob's" +` ⏎ `"dog")` (п.4 аудита).
+  # push только если после открывающей скобки на ЭТОЙ ЖЕ строке нет закрывающей
+  # (скобки в кавычках/апострофах «пропускаются»). Сбалансированные в одной строке
+  # скобки обрабатываются построчными правилами.
+  # NB: внутри regex не используем \xNN — Oniguruma в UTF-8 падает; кавычки — через {{ap}}/{{quote}}.
+  # NB: «пропускаемая строка» в lookahead'е исключает СВОЙ разделитель (кавычки —
+  # кавычку, апострофы — апостроф). Копипаст с чужим классом ломал распознавание
+  # `"…'…"` → незакрытая `(`/`[` на такой строке не виделась (многострочность терялась).
   brackets_multiline:
     - match: '\((?=(?:[^{{ap}}{{quote}})\n]|{{ap}}[^{{ap}}\n]*{{ap}}|{{quote}}[^{{quote}}\n]*{{quote}})*{{nr_lookahead}})'
       scope: punctuation.section.parens.begin.qsp avs_paren_begin
@@ -1630,7 +1395,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '\)'
       scope: punctuation.section.parens.end.qsp avs_paren_end
       pop: true
-    # Фаза 9: `--` внутри незакрытой `(` — ошибка (до правила-продолжения)
+    # `--` внутри незакрытой `(` — ошибка (до правила-продолжения)
     - include: wrongclose_locend
     # продолжение выражения на новой строке: съедаем отступ перед
     # оператором/запятой/амперсандом, чтобы правила вида (^\s*?|\&\s*?|\K…)
@@ -1646,7 +1411,7 @@ contexts: # общие контексты подсветки кода локац
     - match: '\]'
       scope: punctuation.section.brackets.end.qsp avs_bracket_end
       pop: true
-    # Фаза 9: `--` внутри незакрытой `[` — ошибка (до правила-продолжения)
+    # `--` внутри незакрытой `[` — ошибка (до правила-продолжения)
     - include: wrongclose_locend
     - match: ^\s+(?=[+\-*\/<>=,&])
       scope: meta.continuation.expression.qsp
@@ -1655,14 +1420,9 @@ contexts: # общие контексты подсветки кода локац
     - include: location_body
 
   # # # ------- круглые и квадратные скобки (ОДНОстрочный код) ------- # # #
-  # Фаза 10: сбалансированные в одной строке скобки раньше не получали НИКАКОГО
-  # scope — пунктуацию ставили только brackets_multiline и multiline_round/square,
-  # а они срабатывают только на НЕзакрытой скобке. Отсюда асимметрия:
-  # `if (1 +` / `2) = 3:` красились как punctuation, а `if ($a and $b):` — нет
-  # (найдено прогоном автотестов, HANDOFF §1p).
-  # Здесь ТОЛЬКО пунктуация: без push и без meta-группы, состояние стека не меняется,
-  # «многострочность» по-прежнему определяет единственный brackets_multiline
-  # (он стоит раньше — body_common_head).
+  # Сбалансированные в одной строке скобки: здесь ТОЛЬКО пунктуация, без push и без
+  # meta-группы (состояние стека не меняется). «Многострочность» определяет
+  # brackets_multiline (он стоит раньше — body_common_head).
   brackets_inline:
     - match: '\('
       scope: punctuation.section.parens.begin.qsp avs_paren_begin
@@ -1673,13 +1433,11 @@ contexts: # общие контексты подсветки кода локац
     - match: '\]'
       scope: punctuation.section.brackets.end.qsp avs_bracket_end
 
-  # Оператор/запятая в КОНЦЕ строки внутри многострочных скобок: выражение
-  # продолжается на следующей строке. Sublime матчит правила только в
-  # границах текущей строки, поэтому negative lookahead проверок
-  # «нет правого операнда» не видит операнд со следующей
-  # строки и ложно считает ошибкой.
-  # Эти правила перехватывают такие случаи раньше operacion — но только
-  # когда до конца строки после оператора ничего, кроме пробелов.
+  # Оператор/запятая в КОНЦЕ строки внутри многострочных скобок: выражение продолжается
+  # на следующей строке. Sublime матчит только в границах текущей строки, поэтому negative
+  # lookahead проверок «нет правого операнда» не видит операнд со следующей строки и ложно
+  # считает ошибкой. Эти правила перехватывают такие случаи раньше operacion — только когда
+  # до конца строки после оператора ничего, кроме пробелов.
   continuation_tail:
     - match: (?<={{left_operand}})\s*({{operacion_two_signs}})(?=\s*{{nr_lookahead}})
       scope: keyword.operator.two-signs.qsp
@@ -1690,7 +1448,7 @@ contexts: # общие контексты подсветки кода локац
     - match: (?<={{left_operand}})\s*\b({{operacion_word}})\b(?=\s*{{nr_lookahead}})
       scope: keyword.operator.word.qsp
 
-  htmlsupport: # Very Big Thanks to deathaxe
+  htmlsupport: # Thanks to deathaxe
     - match: (?i)(<)(qhtml)(>)
       scope: meta.tag.html.qsp
       captures:
