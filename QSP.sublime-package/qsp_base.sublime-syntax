@@ -598,6 +598,11 @@ contexts: # общие контексты подсветки кода локац
   #      под ним — ТЕЛО else (else_body_block), т.е. строки ниже = КОД;
   #   7) bare `else` без хвоста — тело со следующих строк = КОД.
   # Водораздел «код-тело (6/7) vs мёртвый код (4/5)» = наличие однострочного хвоста.
+  # Якоря: arms 4–7 — `(?:^|(?<=\{))` (аудит п.21: раньше у 6/7 стоял только `^`,
+  #   и `{else !коммент` / `{else` на одной строке с `{` не ловились); arm 1 — только
+  #   `^` (invalid-условие после `{` штатно доходит до colon-brace arm 3); arms 2/3 —
+  #   осознанная пара caret/brace. Обе ветки якоря нулевой ширины и структурно
+  #   идентичны (одинаковая группа `(\s*)` после якоря) — альтернация безопасна.
   # braced-зеркало — multiline_actions_else_braced (в @begin-generated).
   multiline_actions_else: # @braced: auto
     # Строго В ПРЕДЕЛАХ СТРОКИ (`[ \t]`/`[^:\n\r]`): с прежними `\s*?` + `[^:]+`
@@ -648,14 +653,15 @@ contexts: # общие контексты подсветки кода локац
     # (elseMultiLine: `(":" ws)? commentStatement?`). В match берём ТОЛЬКО
     # открывающий `!` (capture → punct): тело комментария уходит в контекст
     # comment_after_else (pop по newline), поэтому внутри работают "…"/'…'/{…}
-    # и '@'-спецы — как после ':'. Якорь `^` + `[ \t]+` строго фиксирует позицию
-    # «сразу после else», поэтому NOT в теле (`x = !y`) не затрагивается.
+    # и '@'-спецы — как после ':'. Якорь `(?:^|(?<=\{))` (аудит п.21) + `[ \t]+`
+    # строго фиксирует позицию «сразу после else» (в начале строки или сразу за
+    # `{`), поэтому NOT в теле (`x = !y`) не затрагивается.
     # Список push: правый контекст — верхний, т.е. комментарий лежит НАД телом
     # else; после его pop'а по newline верхним становится тело.
     # `comment.qsp` есть и в capture: тело контекста использует meta_content_scope
     # (чтобы не накрыть `else`), поэтому сам `!` получает comment-scope только
     # через capture — ровно как у comment_after_colon.
-    - match: '^(\s*)(?i:(\belse\b))[ \t]+(!)'
+    - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))[ \t]+(!)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -668,8 +674,9 @@ contexts: # общие контексты подсветки кода локац
     # arm выше. Тело — СЛЕДУЮЩИЕ строки → КОД (фикс 1b: здесь НЕТ catch-all
     # `^.*`→comment). Выход по final-guard на `end`/`else`/`elseif`. Однострочные
     # формы (`else <stmt>` без ':') и колонные (`else:` / `else: <текст>` /
-    # `else <конд>:`) — выше.
-    - match: '^(\s*)(?i:(\belse\b))(?=[ \t]*$)'
+    # `else <конд>:`) — выше. Якорь `(?:^|(?<=\{))` — аудит п.21: `{else` в конце
+    # строки с `{` обязан ловиться так же, как колонный голый else.
+    - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))(?=[ \t]*$)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -920,7 +927,7 @@ contexts: # общие контексты подсветки кода локац
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
       push: else_dead_line_braced
-    - match: '^(\s*)(?i:(\belse\b))[ \t]+(!)'
+    - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))[ \t]+(!)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -928,7 +935,7 @@ contexts: # общие контексты подсветки кода локац
       push:
         - else_body_block_braced
         - comment_after_else
-    - match: '^(\s*)(?i:(\belse\b))(?=[ \t]*$)'
+    - match: '(?:^|(?<=\{))(\s*)(?i:(\belse\b))(?=[ \t]*$)'
       scope: meta.begin_else.qsp
       captures:
         2: keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
@@ -986,8 +993,9 @@ contexts: # общие контексты подсветки кода локац
   # операции (Решение-4/4B + P1.5: построчно идентичные сегменты `operacion`
   # и `operacion_subex` вынесены в operacion_word_two_signs_common,
   # operacion_ampersand_common и operacion_no_common; реально различающиеся
-  # группы — one_sign (unary `-` / `>`-exclusion / lookbehind-vs-\K) и
-  # comma with_out_left — оставлены локально; их слияние изменило бы подсветку.
+  # группы — one_sign (unary `-` / `>`-exclusion / lookbehind-vs-\K),
+  # comma с with_out_left и ampersand с with_out_left (п.31: \K не работает
+  # в pushed-контексте) — оставлены локально; их слияние изменило бы подсветку.
   operacion_word_two_signs_common:
     # подсветка словарных операторов
     - match: (?<={{left_operand}})\s*\b{{operacion_word}}\b(?!\s*{{right_operand}})
@@ -1005,7 +1013,10 @@ contexts: # общие контексты подсветки кода локац
       scope: keyword.operator.two-signs.qsp
 
   operacion_ampersand_common:
-    # Правила для амперсандов
+    # Правила для амперсандов. Аудит п.31: `\K`-вариант «без левого операнда»
+    # работает ТОЛЬКО в строках кода; в pushed-контексте `<< … >>` он не срабатывает
+    # (живой прогон 2026-10-30), поэтому operacion_subex больше НЕ включает этот
+    # контекст — у неё локальный lookbehind-двойник (как у one_sign/comma).
     - match: (^\s*?|\(\s*?|\{\s*?|\[\s*?)\K(\&)(?=\s*?{{right_operand}}*)
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
     - match: \&
@@ -1057,7 +1068,14 @@ contexts: # общие контексты подсветки кода локац
     - include: operacion_no_common
 
   numeric:
-    - match: \b\d+([A-Za-zа-яА-Я\$\%\._]+\d*)+\b # неправильные переменные, начинающиеся с цифр
+    # Аудит п.10: был класс `([A-Za-zа-яА-Я\$\%\._]+\d*)` — ASCII+кириллица без
+    # `Ё`/`ё` (вне `А-Я`), греческого и латиницы с диакритикой. `\p{L}` покрывает
+    # все буквы (тот же класс, что в `users_variables`, п.2).
+    # NB: цифра `\d` в класс НЕ добавлена (несмотря на формулировку аудита):
+    # проверено зондом — `\b\d+([\p{L}\d$%._]+\d*)+\b` на чистом `100`/backtracking
+    # (`\d+`→`1`, класс→`0`, `\d*`→`0`, `\b` в конце) ложно красит ЦЕЛОЕ число
+    # invalid'ом. Без `\d` внутри класса `100`/`42` — numeric, `1e5`/`1ё` — invalid.
+    - match: \b\d+([\p{L}\$\%\._]+\d*)+\b # неправильные переменные, начинающиеся с цифр
       scope: invalid.illegal.qsp avs_wrong_numeric
     - match: \b[0-9]+\b
       scope: constant.numeric.qsp avs_numeric
@@ -1253,9 +1271,9 @@ contexts: # общие контексты подсветки кода локац
     # Пунктуация ОДНОстрочных ( ) [ ] (п.1 аудита): раньше в подвыражении `<< … >>`
     # скобки были вообще без scope — `brackets_inline` подключался только в
     # `body_common_tail`. Включение ПОСЛЕДНИМ — как там: anchor-правила, которые
-    # начинают матч с `(`/`[`, должны пробоваться раньше. NB: `\K`-правило
-    # `(& x)` из `operacion_ampersand_common` в pushed-контексте НЕ срабатывает
-    # (п.31 аудита), поэтому порядок здесь — страховка, а не наблюдаемая разница.
+    # начинают матч с `(`/`[`, должны пробоваться раньше. NB (п.31 аудита,
+    # ЗАКРЫТ): «& без левого операнда» в subex — локальное lookbehind-правило
+    # (operacion_ampersand_common с `\K` здесь больше не инклюдится).
     - include: brackets_inline
 
   operacion_subex:
@@ -1265,7 +1283,8 @@ contexts: # общие контексты подсветки кода локац
     # Локально оставлены только реально отличающиеся группы: one_sign (нет
     # unary `-`; with_out_right несёт доп. exclusion `(>…)`; with_out_left —
     # lookbehind `(?<=(<|&|(|{|[))` вместо `(^|…)\K`, т.к. здесь нет `^` строки
-    # кода) и comma with_out_left (тот же lookbehind).
+    # кода) и comma with_out_left (тот же lookbehind) и ampersand (п.31:
+    # `\K`-версия общего контекста в pushed-контексте не срабатывает).
     - include: operacion_word_two_signs_common
     # подсветка однознаковых операторов
     - match: (?<={{left_operand}})\s*{{operacion_one_sign}}(?!(>|\s*{{right_operand}}))
@@ -1279,7 +1298,15 @@ contexts: # общие контексты подсветки кода локац
     - match: '{{left_ctx_lookbehind}}\s*(,)(?=\s*?{{right_operand}}*)'
       scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
     - include: operacion_comma_sign
-    - include: operacion_ampersand_common
+    # Правила для амперсандов (аудит п.31): локальный lookbehind-двойник вместо
+    # operacion_ampersand_common — его `\K`-правило в pushed-контексте не
+    # срабатывает (живой прогон 2026-10-30), поэтому `<<(& $a)>>` оставался
+    # без invalid. Семантика зеркальная: `&` сразу после <|&|(|{|[) без левого
+    # операнда — ошибка.
+    - match: '{{left_ctx_lookbehind}}\s*(\&)(?=\s*?{{right_operand}}*)'
+      scope: invalid.illegal.qsp avs_wrong_comma_with_out_left
+    - match: \&
+      scope: keyword.operator.ampersand.qsp
     - include: operacion_no_common
 
   # # # ------------------------ Подсветка комментариев ------------------------  # # #

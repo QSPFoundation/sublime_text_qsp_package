@@ -1,0 +1,15 @@
+// SYNTAX TEST "Packages/QSP/qsp.qsrc.sublime-syntax"
+! Фикстура аудита п.12 (формат qsrc): конец локации — ТОЛЬКО `--` (grammar
+! `endLocMarker = "--"`, как в qsps). БЫЛО `^\s*?(-)`: одиночный `-` в колонке 0
+! (строка-продолжение выражения `-2`) красился как конец локации, а отступ
+! допускался у обоих маркеров. Маркеры — строго колонка 0 (инвариант границ, п.11).
+-2
+// <- keyword.operator.one-sign.qsp -avs_locend
+  # было с отступом — не маркер начала
+//^ -avs_locstart
+# маркер начала в колонке 0
+// <- constant.character.qsp avs_locstart
+  -- было с отступом — не маркер конца
+//^^ -avs_locend
+-- маркер конца — только `--` в колонке 0
+// <- variable.parameter.url.qsp avs_locend

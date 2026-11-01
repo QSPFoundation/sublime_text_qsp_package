@@ -38,10 +38,15 @@ contexts:
       scope: meta.diff meta.gametext.qsp # TODO: заменить meta.diff на comment.block, когда сделаю сниппеты в плагинах
 
   location_def:
-    - match: ^(\s*?)(#)\s?(.+)$
+    # Аудит п.11: маркер `#` — строго колонка 0, как и `--` ниже (инвариант
+    # проекта: границы локаций не привязаны к отступу; в корпусе `_examples`
+    # отступных заголовков 0 — ужесточение бесплатное). БЫЛО `(\s*?)`: отступ
+    # «работал» в начале локации и не работал в конце — двойное толкование формата.
+    # Номера capture сдвинуты: бывшие 2/3 → 1/2 (группа отступа удалена).
+    - match: ^(#)\s?(.+)$
       captures:
-        2: keyword.declaration.location.qsp
-        3: entity.name.location.qsp meta.start_location.qsp
+        1: keyword.declaration.location.qsp
+        2: entity.name.location.qsp meta.start_location.qsp
       push:
         - meta_scope: meta.location.qsp
         # Fidelity к qsp_grammar.peg (п.6.6): endOfLoc = `"--" … newline` — `--` стоит

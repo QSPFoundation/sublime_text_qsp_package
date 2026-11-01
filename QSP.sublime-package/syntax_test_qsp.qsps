@@ -909,10 +909,58 @@ msg "<<$args[args['i']]>>"
 msg "<<($a + 1)>>"
 //     ^ punctuation.section.parens.begin.qsp
 //            ^ punctuation.section.parens.end.qsp
-! `(& …)` в подвыражении: `\K`-правило «& без левого операнда» в pushed-контексте
-! не срабатывает (п.31 аудита), поэтому `&` остаётся обычным оператором.
-! Когда п.31 починят, этот ассерт должен стать invalid.illegal.qsp.
+! `(& …)` в подвыражении (п.31, ЗАКРЫТ): в operacion_subex стоит локальный
+! lookbehind-двойник — `&` без левого операнда красится как invalid. (Прежняя
+! `\K`-версия из operacion_ampersand_common в pushed-контексте не срабатывала.)
 msg "<<(& $a)>>"
-//      ^ keyword.operator.ampersand.qsp
+//      ^ invalid.illegal.qsp avs_wrong_comma_with_out_left
+! тот же случай в ТЕЛЕ локации — вопрос п.31 «работает ли `\K`-версия в теле»
+! закрыт ассертом ниже (работает; фиксируем как регресс-страховку):
+$y = 5 + (& $a)
+//        ^ invalid.illegal.qsp avs_wrong_comma_with_out_left
 -- подвыражения << … >> ---------------------------------------------
+
+# else: braced-формы arms 6/7
+! п.21: "{else ..." на одной строке с "{" не ловилась — arms 6/7 якорились
+! только "^" (else красился generic kw_controls); теперь якорь тот же, что у
+! arms 4/5 (см. multiline_actions_else в синтаксисе). Строки "end"/"}" после
+! хедера — штатное закрытие региона и блока, их скоупы здесь НЕ тестируются.
+$z = {else !коммент
+//    ^^^^ keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
+//         ^ punctuation.definition.comment.begin.qsp
+end
+}
+$w = {else
+//    ^^^^ keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
+end
+}
+-- else: braced-формы ----------------------------------------------
+
+# numeric: класс букв (\p{L})
+! п.10: был класс "[A-Za-zа-яА-Я$%._]" — `ё`/`Ё` вне диапазонов "а-я"/"А-Я",
+! поэтому `1ёлка` НЕ ловился как «неправильный идентификатор». Теперь — все
+! буквы по классу букв Unicode (тот же, что в users_variables: п.2).
+! Чистые числа НЕ invalid: цифру в класс НЕ добавляли (с `\d` внутри backtracking
+! ложно красил `100` целиком — см. NB в правиле `numeric`).
+1ёлка = 2
+// <- invalid.illegal.qsp avs_wrong_numeric
+//^^ invalid.illegal.qsp avs_wrong_numeric
+1Ёлка = 2
+// <- invalid.illegal.qsp avs_wrong_numeric
+42 = 7
+// <- constant.numeric.qsp avs_numeric
+-- numeric: класс букв ----------------------------------------------
+
+# маркеры формата: `#` строго в колонке 0
+! п.11: БЫЛО `^(\s*?)(#)` — заголовок с отступом открывал локацию; теперь маркер,
+! как `--`, только в колонке 0 (инвариант границ локаций; отступных заголовков
+! в корпусе `_examples` — 0, ужесточение бесплатное).
+--
+
+  # было с отступом — это НЕ маркер локации
+//^ -keyword.declaration.location.qsp
+# а в колонке 0 — маркер работает
+// <- keyword.declaration.location.qsp
+pl "лок открыт заголовком из секции п.11"
+-- маркеры формата: `#` ---------------------------------------------
 
