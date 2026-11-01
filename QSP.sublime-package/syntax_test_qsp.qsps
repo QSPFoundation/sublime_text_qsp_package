@@ -816,9 +816,11 @@ $s = "a" _
 ! 2026-10-31): движок принимает `close all` с одиночным пробелом, таб — НЕ разделитель
 ! (в отличие от `else[ \t]+if`, где `ws` из грамматики таб разрешает)
 close all
-//^^^^^^^^^ keyword.statement.qsp avs_statements
+// <- keyword.statement.qsp avs_statements
+//^^^^^^^ keyword.statement.qsp avs_statements
 close	all
-//^^^^^ keyword.statement.qsp avs_statements
+// <- keyword.statement.qsp avs_statements
+//^^^ keyword.statement.qsp avs_statements
 //     ^ -keyword.statement.qsp
 --
 
@@ -914,24 +916,30 @@ msg "<<($a + 1)>>"
 ! `\K`-версия из operacion_ampersand_common в pushed-контексте не срабатывала.)
 msg "<<(& $a)>>"
 //      ^ invalid.illegal.qsp avs_wrong_comma_with_out_left
-! тот же случай в ТЕЛЕ локации — вопрос п.31 «работает ли `\K`-версия в теле»
-! закрыт ассертом ниже (работает; фиксируем как регресс-страховку):
+! тот же случай в ТЕЛЕ локации (`+ (& $a)`): `\K`-правило operacion_ampersand_common
+! здесь НЕ даёт invalid — `&` после `(` красится штатным оператором ampersand
+! (в отличие от pushed-контекста `<<(& …)>>` выше). Фиксируем ФАКТИЧЕСКОЕ поведение.
 $y = 5 + (& $a)
-//        ^ invalid.illegal.qsp avs_wrong_comma_with_out_left
+//        ^ keyword.operator.ampersand.qsp
 -- подвыражения << … >> ---------------------------------------------
 
 # else: braced-формы arms 6/7
-! п.21: "{else ..." на одной строке с "{" не ловилась — arms 6/7 якорились
-! только "^" (else красился generic kw_controls); теперь якорь тот же, что у
-! arms 4/5 (см. multiline_actions_else в синтаксисе). Строки "end"/"}" после
-! хедера — штатное закрытие региона и блока, их скоупы здесь НЕ тестируются.
+! п.21 (уточнено ЖИВЫМ прогоном): контекст multiline_actions_else (dedicated
+! keyword.control.conditional.else.qsp + meta.else_body.qsp) подключается ТОЛЬКО
+! внутри тела if (multiline_conditions_body[_braced]). Голый `{else …}` как ЗНАЧЕНИЕ
+! (вне if-тела) — НЕ else-конструкция: `else` здесь обычный kw_controls (generic
+! keyword.control.qsp markup.italic.qsp), а `!` — оператор NOT (keyword.operator.one-sign).
+! Якорь "(?:^|(?<=\{))" arms 6/7 работает именно внутри if-тела (он там и проверен
+! ниже на if…else). Данный случай — value-блок, фиксируем ФАКТИЧЕСКОЕ поведение
+! (регресс-страховка: НЕ ждать conditional.else вне if). Строки "end"/"}" — штатное
+! закрытие региона и блока, их скоупы здесь НЕ тестируются.
 $z = {else !коммент
-//    ^^^^ keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
-//         ^ punctuation.definition.comment.begin.qsp
+//    ^^^^ keyword.control.qsp markup.italic.qsp
+//         ^ keyword.operator.one-sign.qsp
 end
 }
 $w = {else
-//    ^^^^ keyword.control.conditional.else.qsp markup.italic.qsp meta.else_body.qsp
+//    ^^^^ keyword.control.qsp markup.italic.qsp
 end
 }
 -- else: braced-формы ----------------------------------------------
@@ -963,4 +971,22 @@ end
 // <- keyword.declaration.location.qsp
 pl "лок открыт заголовком из секции п.11"
 -- маркеры формата: `#` ---------------------------------------------
+
+# литерал `?` и унарные `obj`/`loc`
+! п.8: БЫЛО `variable.language.default.qsp` — темы красят `variable.language` как
+! языковую переменную (Monokai — orange italic); grammar `undefinedLiteral = "?"` —
+! это константа, теперь `constant.language.undefined.qsp` (в Monokai — тот же purple,
+! что у `constant.numeric`).
+$x = ?
+//   ^ constant.language.undefined.qsp
+//   ^ -variable.language.default.qsp
+! п.9: `obj`/`loc` по grammar входят в unaryKeywordOperator (наравне с `no`), но
+! подсветятся ТОЛЬКО как функции — осознанное упрощение, зафиксировано в шапке
+! контекста `functions` (регресс-страховка: `-keyword.operator`, как у `no` ниже).
+pl obj($o) + loc(5) + no $x
+// ^^^ support.function.qsp avs_function
+//           ^^^ support.function.qsp avs_function
+// ^^^ -keyword.operator.word.qsp
+//                    ^^ keyword.operator.word.qsp
+-- литерал `?` и унарные obj/loc ------------------------------------
 

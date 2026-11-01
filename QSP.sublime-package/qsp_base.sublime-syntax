@@ -226,8 +226,10 @@ contexts: # общие контексты подсветки кода локац
   # У invalid-правила цветового scope нет намеренно: там работает invalid.
   users_variables:
     # ? — символ дефолтного значения (QSP 5.8+), подсвечивается как пользовательская переменная
+    # Аудит п.8: grammar `undefinedLiteral = "?"` (qsp_grammar.peg:336) — это КОНСТАНТА,
+    # а не «языковая переменная». БЫЛО `variable.language.default.qsp`.
     - match: '\?'
-      scope: meta.user-variables.qsp variable.language.default.qsp
+      scope: constant.language.undefined.qsp
     - match: '{{users_variables}}(?=\s*\b(while|step|else|elseif|and|or|mod)\b)'
       scope: meta.user-variables.qsp variable.other.qsp
     - match: '{{users_variables}}(?=(\s+{{right_operand}}|\s*\({{right_operand}}))'
@@ -1142,6 +1144,16 @@ contexts: # общие контексты подсветки кода локац
     - match: (\$|%)(?={{system_vars_num}}\b)
       scope: invalid.illegal.qsp avs_illegal_$
 
+  # NB (аудит п.9, решение зафиксировано): `loc` и `obj` в qsp_grammar.peg входят
+  # в `unaryKeywordOperator = "no" | "obj" | "loc"` (наравне с `no`, которое красится
+  # как `keyword.operator.word.qsp` в operacion_no_common), но здесь они подсветятся
+  # ТОЛЬКО как функции (`functions_num` → `support.function.qsp`) — ОСОЗНАННОЕ
+  # УПРОЩЕНИЕ, не переоткрывать: в реальном коде они прежде всего функции, а
+  # разведение форм «оператор vs функция» требует анализа скобок/операндов и даёт
+  # малую пользу при риске ложных срабатываний. Отклонены варианты (а) добавить
+  # `obj|loc` keyword-операторами по аналогии с `no` и (б) различать `obj(…)` от
+  # `obj $x` контекстом. Пересматривать, только если появится корпус с унарным
+  # употреблением, где дефект подсветки заметен.
   functions:
       # # — числовой префикс перед строковой функцией → ошибка типа
     - match: (\#)(?=\b{{functions_string}}\b)
