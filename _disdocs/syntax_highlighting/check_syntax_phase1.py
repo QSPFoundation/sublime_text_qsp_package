@@ -37,7 +37,7 @@ if '--root' in sys.argv:
 BASE_DIR = os.path.join(ROOT, 'QSP.sublime-package') + '/'
 FILES = {'base': 'qsp_base.sublime-syntax',
          'qsps': 'qsp.sublime-syntax',
-         'qsrc': 'qsp.qsrc.sublime-syntax'}
+         'qloc': 'qsp.qloc.sublime-syntax'}
 
 data = {}
 for k, f in FILES.items():
@@ -148,7 +148,7 @@ for k, f in FILES.items():
 
 # переменные: нет ли висящих {{...}} на несуществующие имена
 all_vars = set(data['base'].get('variables', {}))
-for k in ('qsps', 'qsrc'):
+for k in ('qsps', 'qloc'):
     all_vars |= set(data[k].get('variables', {}))
 used_tpl = set()
 for k, f in FILES.items():

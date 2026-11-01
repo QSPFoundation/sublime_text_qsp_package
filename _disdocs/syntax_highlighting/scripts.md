@@ -24,7 +24,7 @@ python _disdocs/syntax_highlighting/check_all.py      # ожид.: RESULT: PASS
   сверка braced-региона (импортирует `gen_braced`). Отдельный запуск:
   `python …/check_syntax_phase1.py` (опция `--root <путь>`).
 - **`check_syntax_asserts.py`** — контроль scope-ассертов в `syntax_test_*.qsps`
-  и `syntax_test_*.qsrc` БЕЗ Sublime: ловит «инертные» ассерты без `//`, вылет
+  и `syntax_test_*.qloc` БЕЗ Sublime: ловит «инертные» ассерты без `//`, вылет
   кареток за конец строки, каретки на пробеле, слишком широкие спаны
   `punctuation.*`/`meta.*`, цели вне локаций, `<-` на отступленной цели.
   Запуск: без флага — отчёт (exit 1 при проблемах); `--write` — чинит механически.

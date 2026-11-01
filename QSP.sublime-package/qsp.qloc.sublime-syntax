@@ -5,7 +5,7 @@
 # Quest Soft Player Language:
 # https://qsp.org/
 #
-# Формат qsrc: ОДИН ФАЙЛ = ОДНА ЛОКАЦИЯ.
+# Формат qloc: ОДИН ФАЙЛ = ОДНА ЛОКАЦИЯ.
 #   - начало локации = начало файла, конец локации = конец файла;
 #   - весь файл подсвечивается как тело локации;
 #   - текста «между локациями» здесь нет;
@@ -18,20 +18,20 @@
 # `qsp_base.sublime-syntax` и подключена через `extends`.
 
 name: QSP-Loc # название языка
-# `source.qsp.qsrc`: селекторы матчатся по префиксу сегментов, поэтому
-# `source.qsp` (правила/темы qsps) действует и на `.qsrc`. Прежнее имя
-# `source.qsrc.qsp` имело обратный порядок и родителем считалось `source.qsrc`.
-scope: source.qsp.qsrc
+# `source.qsp.qloc`: селекторы матчатся по префиксу сегментов, поэтому
+# `source.qsp` (правила/темы qsps) действует и на `.qloc`. Прежнее имя
+# `source.qloc.qsp` имело обратный порядок и родителем считалось `source.qloc`.
+scope: source.qsp.qloc
 version: 2
 extends: qsp_base.sublime-syntax
-file_extensions: # расширения файлов (группа qsrc)
-  - qsrc
+file_extensions: # расширения файлов (группа qloc)
+  - qloc
 
 contexts:
   main: # весь файл — тело одной локации
     # `- include: qspdocs` сюда НЕ входит: doc-строка `!@ #… - …` трактуется как в
     # ТЕЛЕ qsps — обычный спец-комментарий (`avs_speccomments`), а не `meta.gametext`.
-    # Инвариант: qspdocs живёт ТОЛЬКО в тексте между локациями qsps (`diff`); в qsrc
+    # Инвариант: qspdocs живёт ТОЛЬКО в тексте между локациями qsps (`diff`); в qloc
     # такого текста нет, любое `!@ #…` — строка ТЕЛА → location_body.
     # qsps-подобные границы локации → самостоятельные statements (без push-блока);
     # оба маркера — строго колонка 0 (инвариант границ локаций, как в qsps).

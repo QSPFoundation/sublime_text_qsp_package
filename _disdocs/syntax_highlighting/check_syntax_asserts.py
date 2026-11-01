@@ -1,4 +1,4 @@
-"""Контроль scope-ассертов в `syntax_test_*.qsps`/`syntax_test_*.qsrc` БЕЗ Sublime (2026-10-29).
+"""Контроль scope-ассертов в `syntax_test_*.qsps`/`syntax_test_*.qloc` БЕЗ Sublime (2026-10-29).
 
 Зачем: прогон `Tools → Build With… → Syntax Test` нельзя автоматизировать
 (headless в этой сборке ST не поднимается), а фикстуры создавались генератором,
@@ -61,9 +61,9 @@ def audit(name: str, write: bool) -> int:
     raw = io.open(path, encoding="utf-8", newline="").read()
     chunks = raw.splitlines(keepends=True)
     problems = 0
-    # qsrc: ВЕСЬ файл — одна локация (границ `#`/`--` нет), поэтому «в локации»
+    # qloc: ВЕСЬ файл — одна локация (границ `#`/`--` нет), поэтому «в локации»
     # с первой строки; qsps-эвристика ниже (`#` открыла / `--` закрыла) — для qsps.
-    code, code_no, code_in_loc, in_loc = "", 0, False, name.endswith(".qsrc")
+    code, code_no, code_in_loc, in_loc = "", 0, False, name.endswith(".qloc")
     out = []
     for i, chunk in enumerate(chunks):
         body, eol = split_eol(chunk)
@@ -139,7 +139,7 @@ def audit(name: str, write: bool) -> int:
 
 def main() -> int:
     write = "--write" in sys.argv[1:]
-    files = sorted(p.name for p in list(PKG.glob("syntax_test_*.qsps")) + list(PKG.glob("syntax_test_*.qsrc")))
+    files = sorted(p.name for p in list(PKG.glob("syntax_test_*.qsps")) + list(PKG.glob("syntax_test_*.qloc")))
     total = sum(audit(f, write) for f in files)
     print(f"проверено файлов: {len(files)}; проблем: {total}")
     return 0 if total == 0 else 1

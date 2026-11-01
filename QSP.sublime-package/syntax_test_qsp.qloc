@@ -1,9 +1,9 @@
-// SYNTAX TEST "Packages/QSP/qsp.qsrc.sublime-syntax"
-! Фикстура аудита п.12 (формат qsrc): конец локации — ТОЛЬКО `--` (grammar
+// SYNTAX TEST "Packages/QSP/qsp.qloc.sublime-syntax"
+! Фикстура аудита п.12 (формат qloc): конец локации — ТОЛЬКО `--` (grammar
 ! `endLocMarker = "--"`, как в qsps). БЫЛО `^\s*?(-)`: одиночный `-` в колонке 0
 ! (строка-продолжение выражения `-2`) красился как конец локации, а отступ
 ! допускался у обоих маркеров. Маркеры — строго колонка 0 (инвариант границ, п.11).
-!@ #1 ... #2 - doc-строка в qsrc = спец-комментарий (п.25), НЕ meta.gametext
+!@ #1 ... #2 - doc-строка в qloc = спец-комментарий (п.25), НЕ meta.gametext
 //    ^ comment.qsp markup.italic.qsp avs_speccomments -meta.gametext.qsp
 //    ^ -entity.other.attribute-name.documentation.qsp
 -2
