@@ -990,3 +990,45 @@ pl obj($o) + loc(5) + no $x
 //                    ^^ keyword.operator.word.qsp
 -- литерал `?` и унарные obj/loc ------------------------------------
 
+# type-prefix: системные переменные (п.24)
+! Правила «префикс перед X» одного scope слиты в `(?x)`-сегменты; ассерты ниже
+! фиксируют scope ПРЕФИКСА 1:1 (одинаково до и после слияния) — это страховка от
+! того, что альтернация веток не изменила, какая ветка выигрывает на позиции.
+$t = $counter
+//   ^ variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
+$t = %args
+//   ^ variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
+$t = #nosave
+//   ^ variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
+$t = #args
+//   ^ variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
+! неверный префикс числовой/строковой цели → invalid
+$t = %counter
+//   ^ invalid.illegal.qsp avs_illegal_textvariables
+$t = #counter
+//   ^ invalid.illegal.qsp avs_illegal_textvariables
+$t = $nosave
+//   ^ invalid.illegal.qsp avs_illegal_$
+-- type-prefix: системные переменные ---------------------------
+
+# type-prefix: функции (п.24)
+! те же слитые группы: корректный префикс → support.function + пунктуация,
+! неверный префикс типа → invalid avs_wrong_type_prefix.
+$t = $desc
+//   ^ support.function.qsp punctuation.definition.function.qsp avs_function
+$t = %arrpack
+//   ^ support.function.qsp punctuation.definition.function.qsp avs_function
+$t = #rand
+//   ^ support.function.qsp punctuation.definition.function.qsp avs_function
+$t = #desc
+//   ^ invalid.illegal.qsp avs_wrong_type_prefix
+$t = #arrpack
+//   ^ invalid.illegal.qsp avs_wrong_type_prefix
+$t = $rand
+//   ^ invalid.illegal.qsp avs_wrong_type_prefix
+$t = %desc
+//   ^ invalid.illegal.qsp avs_wrong_type_prefix
+$t = $arrpack
+//   ^ invalid.illegal.qsp avs_wrong_type_prefix
+-- type-prefix: функции ----------------------------------------
+

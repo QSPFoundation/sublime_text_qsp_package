@@ -1125,16 +1125,19 @@ contexts: # общие контексты подсветки кода локац
     - match: (?<=[\w\.\$]\$)({{system_vars}}|{{system_vars_string}})
       scope: invalid.illegal.qsp avs_illegal_textvariables
 
-    - match: (\$)(?=\b({{system_vars_string}}|{{system_vars}})\b)
-      scope: variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
-
-    - match: (\%)(?=\b({{system_vars}})\b)
-      scope: variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
-    # # — числовой префикс перед числовой системной переменной → верно
-    - match: (\#)(?=\b({{system_vars_num}})\b)
-      scope: variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
-    # # — числовой префикс перед системной переменной любого типа → верно
-    - match: (\#)(?=\b({{system_vars}})\b)
+    # Аудит п.24: 4 правила «префикс перед системной переменной» одного scope слиты в
+    # один `(?x)`-сегмент. Ветки различаются только КЛАССОМ ПРЕФИКСА (`$`/`%`/`#`) и
+    # КЛАССОМ ЦЕЛИ; каждая матчит СВОЙ символ префикса (разные символы → одна ветка на
+    # позицию), поэтому альтернация НЕ расширяет набор позиций — грабли «^=literal» из
+    # памяти тут неприменимы (нет `^`-ветки и нет общего хвостового атома после веток).
+    # Порядок веток = прежнему порядку правил (1:1). Два `#`-правила (num / любой тип)
+    # объединены в одну ветку: цель `system_vars_num|system_vars` (disjunct, тот же scope).
+    - match: |-
+        (?x:
+          (\$)(?=\b({{system_vars_string}}|{{system_vars}})\b)
+          |(\%)(?=\b({{system_vars}})\b)
+          |(\#)(?=\b({{system_vars_num}}|{{system_vars}})\b)
+        )
       scope: variable.language.qsp punctuation.definition.variable.qsp avs_sysvar
 
     - match: \b({{system_vars_num}}|{{system_vars_string}}|{{system_vars}})\b
@@ -1155,20 +1158,20 @@ contexts: # общие контексты подсветки кода локац
   # `obj $x` контекстом. Пересматривать, только если появится корпус с унарным
   # употреблением, где дефект подсветки заметен.
   functions:
-      # # — числовой префикс перед строковой функцией → ошибка типа
-    - match: (\#)(?=\b{{functions_string}}\b)
+      # # — числовой префикс перед НЕчисловой функцией (string/tuple) → ошибка типа
+      # (аудит п.24: 2 правила одного префикса/scope слиты в одну ветку целей)
+    - match: (\#)(?=\b({{functions_string}}|{{functions_tuple}})\b)
       scope: invalid.illegal.qsp avs_wrong_type_prefix
-      # # — числовой префикс перед кортежной функцией → ошибка типа
-    - match: (\#)(?=\b{{functions_tuple}}\b)
-      scope: invalid.illegal.qsp avs_wrong_type_prefix
-      # правильно подсвечивает префикс типа перед строковыми функциями
-    - match: (\$)(?=({{functions_string}}\b|{{functions_alltypes}}\b))
-      scope: support.function.qsp punctuation.definition.function.qsp avs_function
-      # правильно подсвечивает префикс типа перед кортежными функциями
-    - match: (\%)(?=({{functions_tuple}}\b|{{functions_alltypes}}\b))
-      scope: support.function.qsp punctuation.definition.function.qsp avs_function
-      # # — числовой префикс перед числовой/универсальной функцией → верно
-    - match: (\#)(?=({{functions_num}}\b|{{functions_alltypes}}\b))
+      # Аудит п.24: корректный префикс типа перед функцией (`$`→string/alltypes,
+      # `%`→tuple/alltypes, `#`→num/alltypes) — 3 правила одного scope слиты в один
+      # `(?x)`-сегмент (каждая ветка матчит свой символ префикса → позиции не
+      # расширяются; порядок веток = прежний, дословные regex веток сохранены 1:1).
+    - match: |-
+        (?x:
+          (\$)(?=({{functions_string}}\b|{{functions_alltypes}}\b))
+          |(\%)(?=({{functions_tuple}}\b|{{functions_alltypes}}\b))
+          |(\#)(?=({{functions_num}}\b|{{functions_alltypes}}\b))
+        )
       scope: support.function.qsp punctuation.definition.function.qsp avs_function
       # подсветка непосредственно названий функций
     - match: |-
@@ -1181,14 +1184,15 @@ contexts: # общие контексты подсветки кода локац
           )\b
         )
       scope: support.function.qsp avs_function
-      # подсвечивает префикс типа перед названием числовых функций
-    - match: (\$|\%)(?=\b{{functions_num}}\b)
-      scope: invalid.illegal.qsp avs_wrong_type_prefix
-      # подсвечивает префикс % перед названием строковых функций
-    - match: (\%)(?=\b{{functions_string}}\b)
-      scope: invalid.illegal.qsp avs_wrong_type_prefix
-      # подсвечивает префикс $ перед названием кортежных функций
-    - match: (\$)(?=\b{{functions_tuple}}\b)
+      # Аудит п.24: НЕверный префикс типа перед функцией — 3 правила одного scope
+      # (`$`/`%` перед num, `%` перед string, `$` перед tuple) слиты в один `(?x)`-сегмент.
+      # `\$|\%` и ветки оставлены дословно (1:1), номера capture не меняются.
+    - match: |-
+        (?x:
+          (\$|\%)(?=\b{{functions_num}}\b)
+          |(\%)(?=\b{{functions_string}}\b)
+          |(\$)(?=\b{{functions_tuple}}\b)
+        )
       scope: invalid.illegal.qsp avs_wrong_type_prefix
 
   # NB (fidelity к qsp_grammar.peg, п.6.3): grammar `noteChar` исключает `()[]{}`
