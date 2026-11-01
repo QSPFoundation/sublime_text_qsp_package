@@ -1,4 +1,4 @@
-QSP-Game 
+QSP-Game Подсветка комментариев после end
 
 # after_end
 ! однострочный комментарий за end`ом
@@ -49,4 +49,3 @@ end !@ special comment " after
 end " is correct & *pl "work"
 *pl "Если строка закомментирована, комментарий сломан"
 -- after_end ---------------------------------
-
