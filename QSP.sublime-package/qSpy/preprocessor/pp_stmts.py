@@ -50,6 +50,14 @@ class PpVisitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
+    def visit_paren_block(self, stmt:'ParenBlock[R]') -> R:
+        ...
+
+    @abstractmethod
+    def visit_code_block(self, stmt:'CodeBlock[R]') -> R:
+        ...
+
+    @abstractmethod
     def visit_pp_literal(self, stmt:'PpLiteral[R]') -> R:
         ...
 
@@ -64,6 +72,22 @@ class BracketBlock(PpStmt[R]):
     right:PpToken
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_bracket_block(self)
+
+@dataclass(eq=False)
+class ParenBlock(PpStmt[R]):
+    left:PpToken
+    value:Optional['OtherStmt[R]']
+    right:PpToken
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_paren_block(self)
+
+@dataclass(eq=False)
+class CodeBlock(PpStmt[R]):
+    left:PpToken
+    value:Optional['OtherStmt[R]']
+    right:PpToken
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_code_block(self)
 
 @dataclass(eq=False)
 class StringLiteral(PpStmt[R]):

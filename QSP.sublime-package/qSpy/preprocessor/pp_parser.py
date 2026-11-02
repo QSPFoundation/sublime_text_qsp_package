@@ -173,9 +173,8 @@ class PpParser:
         self._eat_tokens(1)
         return stm.BracketBlock[None](left, value, right)
 
-    def _paren_block(self) -> stm.BracketBlock[None]:
+    def _paren_block(self) -> stm.ParenBlock[None]:
         """ блок в круглых скобках """
-        # Временно используем BracketBlock, так как структура ParenBlock отсутствует
         left:Tkn = self._curtok
         self._eat_tokens(1)
 
@@ -206,12 +205,10 @@ class PpParser:
 
         right:Tkn = self._curtok
         self._eat_tokens(1)
-        # Временно используем BracketBlock вместо ParenBlock
-        return stm.BracketBlock[None](left, value, right)
+        return stm.ParenBlock[None](left, value, right)
 
-    def _code_block(self) -> stm.BracketBlock[None]:
+    def _code_block(self) -> stm.CodeBlock[None]:
         """ блок в фигурных скобках """
-        # Временно используем BracketBlock, так как структура CodeBlock отсутствует
         left:Tkn = self._curtok
         self._eat_tokens(1)
 
@@ -242,8 +239,7 @@ class PpParser:
 
         right:Tkn = self._curtok
         self._eat_tokens(1)
-        # Временно используем BracketBlock вместо CodeBlock
-        return stm.BracketBlock[None](left, value, right)
+        return stm.CodeBlock[None](left, value, right)
 
     def _string_literal(self) -> stm.StringLiteral[None]:
         """ Получаем строку """

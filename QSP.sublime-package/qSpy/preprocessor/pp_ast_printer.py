@@ -51,6 +51,22 @@ class AstPrinter(stm.PpVisitor[AstNode]):
             'value': stmt.value.accept(self) if stmt.value is not None else None
         }
 
+    def visit_paren_block(self, stmt: stm.ParenBlock[AstNode]) -> AstNode:
+        return {
+            'type': 'stmt',
+            'class': 'ParenBlock',
+            'sub': stmt.left.ttype.name,
+            'value': stmt.value.accept(self) if stmt.value is not None else None
+        }
+
+    def visit_code_block(self, stmt: stm.CodeBlock[AstNode]) -> AstNode:
+        return {
+            'type': 'stmt',
+            'class': 'CodeBlock',
+            'sub': stmt.left.ttype.name,
+            'value': stmt.value.accept(self) if stmt.value is not None else None
+        }
+
     def visit_other_stmt(self, stmt: stm.OtherStmt[AstNode]) -> AstNode:
         chain:List[AstNode] = []
         for el in stmt.chain:

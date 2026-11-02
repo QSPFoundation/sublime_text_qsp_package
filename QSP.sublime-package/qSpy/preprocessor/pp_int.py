@@ -1,4 +1,4 @@
-from typing import List, Dict, Union, Literal, Tuple, cast
+from typing import List, Union, Literal, Tuple, cast
 
 from .pp_tokens import LineNum, PpToken, PpTokenType as tt
 from .pp_common import QspsLine, NoSaveComm, IncludeLine, MarkedLine
@@ -15,17 +15,6 @@ CommentSignal = Literal[
 LineMode = Tuple[NoSaveComm, IncludeLine, LineNum]
 
 class PpInt(stm.PpVisitor[AstNode]):
-
-    _QUOTES:Dict[tt, str] = {
-        tt.APOSTROPHE: "'",
-        tt.QUOTE: '"',
-        tt.LEFT_BRACE: '{',
-        tt.RIGHT_BRACE: '}',
-        tt.LEFT_BRACKET: '[',
-        tt.RIGHT_BRACKET: ']',
-        tt.LEFT_PAREN: '(',
-        tt.RIGHT_PAREN: ')'
-    }
 
     def __init__(self,
                  stmts:List[stm.PpStmt[AstNode]],
@@ -96,10 +85,10 @@ class PpInt(stm.PpVisitor[AstNode]):
         if comment_line:
             self._temporary.extend(comment_line)
         elif comment_validate == 'simple_spec_comm':
-            # специальный комментарий не попадёт в выходной файл, но перенос строки надо сохранить
-            if self._temporary[-2].strip() == '': self._temporary.pop(-2)
+            # специальный комментарий не попадёт в выходной файл, но перевод строки надо
+            # сохранить; убираем разделитель «&» с обрамляющими пробелами, который его предварял
+            self._strip_trailing_separator()
             self._temporary.append('\n')
-        if len(self._temporary) >= 2 and self._temporary[-2].strip() == '&': self._temporary.pop(-2)
         if len(''.join(self._temporary).split()) == 0: return # пропускаем пустые строки
         self._prepare_lines.extend(self._temporary)
         self._temporary.clear()
@@ -120,11 +109,11 @@ class PpInt(stm.PpVisitor[AstNode]):
  
     def visit_string_literal(self, stmt: stm.StringLiteral[AstNode]) -> AstNode:
         if stmt.left.include_line:
-            self._temporary.append(self._QUOTES[stmt.left.ttype])
+            self._temporary.append(stmt.left.lexeme)
         for s in stmt.value:
             s.accept(self)
         if stmt.left.include_line:
-            self._temporary.append(self._QUOTES[stmt.left.ttype])
+            self._temporary.append(stmt.left.lexeme)
 
     def visit_raw_string_line(self, stmt: stm.RawStringLine[AstNode]) -> AstNode:
         for tkn in stmt.value:
@@ -136,11 +125,22 @@ class PpInt(stm.PpVisitor[AstNode]):
         
 
     def visit_bracket_block(self, stmt: stm.BracketBlock[AstNode]) -> AstNode:
+        self._gen_block(stmt)
+
+    def visit_paren_block(self, stmt: stm.ParenBlock[AstNode]) -> AstNode:
+        self._gen_block(stmt)
+
+    def visit_code_block(self, stmt: stm.CodeBlock[AstNode]) -> AstNode:
+        self._gen_block(stmt)
+
+    def _gen_block(self, stmt:'stm.BracketBlock[AstNode] | stm.ParenBlock[AstNode] | stm.CodeBlock[AstNode]') -> None:
+        # Все три блока реконструируются одинаково: левый символ + тело + правый символ.
+        # Символ берётся напрямую из lexeme токена (он и есть соответствующая скобка).
         if stmt.left.include_line:
-            self._temporary.append(self._QUOTES[stmt.left.ttype])
+            self._temporary.append(stmt.left.lexeme)
         if stmt.value: stmt.value.accept(self)
         if stmt.right.include_line:
-            self._temporary.append(self._QUOTES[stmt.right.ttype])
+            self._temporary.append(stmt.right.lexeme)
 
     # outer handlers
     def _outer_comments_handler(self,
@@ -167,6 +167,18 @@ class PpInt(stm.PpVisitor[AstNode]):
             return 'base_comment'
 
     # aux funcs
+
+    def _strip_trailing_separator(self) -> None:
+        """Убирает с конца временной сборки разделитель «&» вместе с обрамляющими его
+        пробелами. Работаем по содержимому элементов, а не по жёстким индексам, поэтому
+        правка не зависит от точного числа токенов-пробелов вокруг «&» и безопасна на
+        коротких строках (прежний `[-2]` без защиты от IndexError)."""
+        while self._temporary and self._temporary[-1].strip() == '':
+            self._temporary.pop()
+        if self._temporary and self._temporary[-1].strip() == '&':
+            self._temporary.pop()
+            while self._temporary and self._temporary[-1].strip() == '':
+                self._temporary.pop()
 
     def _add_qsps_line(self, line_num:LineNum) -> None:
         self._prepare_lines.append(self._marked_lines[line_num][0])
