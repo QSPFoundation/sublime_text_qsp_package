@@ -157,11 +157,6 @@ class DirsParser:
 
         while not self._check_type(tt.NEWLINE):
             
-            # if self._check_type(tt.NOPP_STMT):
-            #     resolves.append(dir.NoppDir[None](self._curtok))
-            #     self._eat_tokens(1)
-            #     continue
-
             if self._check_type(tt.SAVECOMM_STMT):
                 resolves.append(dir.SaveCommDir[None](self._curtok))
                 self._eat_tokens(1)

@@ -125,7 +125,6 @@ class CondExprStmt(PpDir[R]):
         return visitor.visit_cond_expr_stmt(self)
 
 ConditionResolve = Union[
-    # NoppDir[R],
     SaveCommDir[R],
     NoSaveCommDir[R],
     OnDir[R],
