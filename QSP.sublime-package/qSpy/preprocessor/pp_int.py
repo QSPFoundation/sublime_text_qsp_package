@@ -6,15 +6,6 @@ from .pp_common import QspsLine, NoSaveComm, IncludeLine, MarkedLine
 from . import pp_stmts as stm
 
 AstNode = Union[None, bool, str]
-Modes = Dict[
-    Literal[
-        'pp',
-        'no_save_comm',
-        'open_if',
-        'include',
-        'loc'
-    ],
-    bool]
 CommentSignal = Literal[
     '', # комментарий исключён, удаляется
     'less_spec_comm', # Удаляется комментарий и вся цепочка операторов до него
@@ -22,14 +13,6 @@ CommentSignal = Literal[
     'base_comment' # обычный комментарий, сохраняется
 ]
 LineMode = Tuple[NoSaveComm, IncludeLine, LineNum]
-
-Context = Dict[
-    Literal[
-        'in_literal_string',
-        'loc_open'
-    ]
-    
-    , bool]
 
 class PpInt(stm.PpVisitor[AstNode]):
 
@@ -52,11 +35,6 @@ class PpInt(stm.PpVisitor[AstNode]):
         self._marked_lines:List[MarkedLine] = marked_lines
 
         self._temporary:List[str] = []
-
-        self._contexts:List[Context] = [{
-            'in_literal_string': False,
-
-        }]
 
     def run(self) -> None:
         """Обработка дерева разбора """
@@ -90,13 +68,11 @@ class PpInt(stm.PpVisitor[AstNode]):
         if include_line:
             line_num = stmt.name.lexeme_start[0]
             self._add_qsps_line(line_num)
-            self._loc('open')
 
     def visit_loc_close_dclrt(self, stmt: stm.PpQspLocClose[AstNode]) -> AstNode:
         # аналогично ^
         if stmt.name.include_line:
             self._add_qsps_line(stmt.name.lexeme_start[0])
-            self._loc('close')
 
     def visit_stmts_line(self, stmt: stm.StmtsLine[AstNode]) -> AstNode:
         # StmtsLine требует определить, сохраняем мы её, или нет.
@@ -143,15 +119,12 @@ class PpInt(stm.PpVisitor[AstNode]):
             s.accept(self)
  
     def visit_string_literal(self, stmt: stm.StringLiteral[AstNode]) -> AstNode:
-        self._new_context()
-        self._contexts[-1]['in_literal_string'] = True
         if stmt.left.include_line:
             self._temporary.append(self._QUOTES[stmt.left.ttype])
         for s in stmt.value:
             s.accept(self)
         if stmt.left.include_line:
             self._temporary.append(self._QUOTES[stmt.left.ttype])
-        self._contexts.pop()
 
     def visit_raw_string_line(self, stmt: stm.RawStringLine[AstNode]) -> AstNode:
         for tkn in stmt.value:
@@ -194,17 +167,6 @@ class PpInt(stm.PpVisitor[AstNode]):
             return 'base_comment'
 
     # aux funcs
-
-    def _loc_is_open(self) -> bool:
-        return self._contexts[-1]['loc_open']
-
-    def _loc(self, sets:Literal['open', 'close']) -> None:
-        self._contexts[-1]['loc_open'] = (sets == 'open')
-
-    def _new_context(self) -> None:
-        cur = self._contexts[-1]
-        self._contexts.append({})
-        self._contexts[-1].update(cur)
 
     def _add_qsps_line(self, line_num:LineNum) -> None:
         self._prepare_lines.append(self._marked_lines[line_num][0])

@@ -16,10 +16,8 @@
 
 ## Подсветка синтаксиса:
 
-Рабочие документы: `base_structure.md` (структура подсветки) и
-`_disdocs/syntax_highlighting/scripts.md` (что делает каждый проверочный скрипт и
-как его запустить). Единый гейт перед коммитом:
-`python _disdocs/syntax_highlighting/check_all.py`.
+Рабочие документы: `base_structure.md` (структура подсветки) и `_disdocs/syntax_highlighting/scripts.md` (что делает каждый проверочный скрипт и
+как его запустить). Единый гейт перед коммитом: `python _disdocs/syntax_highlighting/check_all.py`.
 
 Документы-носители рабочего контекста — `HANDOFF.md`, `refactoring_review.md`,
 `audit_todo.md` (аудит с чистого листа, срез `a575f38`, сверка с `qsp_grammar.peg`,
@@ -37,6 +35,7 @@ P0 → P3), `REFACTOR_PLAN.md`, `CONTEXT.md` — удалены по завер�
 * [x] закрыт дефект подсветки (был найден прогоном 2026-10-29): в ОДНОстрочных скобках не было пунктуации вовсе (`if ($a and $b):` — `(` без scope, `$arr[0]`, `@func(a)` — тоже). Фаза 10: новый контекст `brackets_inline` в `qsp_base.sublime-syntax` (4 правила, только scope — без push/meta) + `include` в КОНЦЕ `body_common_tail` (чтобы многострочный `brackets_multiline` и anchor-правила operacion вида `(& x)` выигрывали). Ассерт `syntax_test_qsp_multiline_headers.qsps:14` снова позитивный, добавлена локация `# однострочные скобки` (HANDOFF §1q)
 * [ ] (ОТЛОЖЕНО — делать после работы с телом плагина) цвет «игнорируемого текста между локациями» в qsps: сейчас `meta.diff`, цель — вид как у комментария. Варианты: A2 (стилизовать meta-токен через color-scheme), B (явный keybinding сниппета новой локации — тогда допустим `comment.block`), C (оставить как есть). Прямая замена `meta.diff`→`comment.block` провалилась: Sublime гасит tab-триггеры сниппетов в comment-scope
 * [ ] операторы для которых обязателен хотя бы один аргумент должны подсвечиваться ошибкой без аргумента
+* [ ] фолдинг локаций внутри qsps-файлов.
 * [ ] ???
 
 ## Постпроцессор или препроцессор
