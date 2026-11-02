@@ -16,7 +16,6 @@ Modes = Dict[
     Literal[
         'pp',
         'no_save_comm',
-        'open_if',
         'include',
     ],
     bool]
@@ -37,10 +36,14 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
 
         self._is_true:Optional[bool] = None # маркер выполнения условия
 
+        # Структурный стек открытых if: True — блок вычислен и выполнен, False — пропущен
+        # (pp был выключен на момент if). Глубина вложенности отвязана от вычисления условий,
+        # поэтому парный endif всегда снимает свой фрейм, а не внешний (исправление вложенных if).
+        self._if_stack:List[bool] = []
+
         self._modes:List[Modes] = [{
             'pp': global_pp, # on True preprocessor is work
             'no_save_comm': True, # on True spec-comments don't saves in file
-            'open_if': False, # on True condition block is open. На старте условие всегда закрыто!
             'include': True, # on True qsps-lines includes in result
         }]
 
@@ -55,17 +58,52 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
     # Statements
 
     def visit_pp_directive(self, stmt: stm.DirectiveStmt[AstNode]) -> AstNode:
-        # если (препроцессор включён) или (отключен блоком условия и это конец условия)
         sl = (stmt.pref.lexeme_start[0] if stmt.pref else stmt.lexeme.lexeme_start[0])
         el = stmt.end.get_end_pos()[0]
-        if self._pp_is_on() or self._is_endif(stmt.body):
-            stmt.body.accept(self) # выполняем
+        body = stmt.body
+
+        if isinstance(body, dir.ConditionDir):
+            # Каждый if структурно открывает блок, который обязан закрыться парным endif.
+            if self._pp_is_on():
+                # Условие вычисляется, режимы внутри применяются.
+                self._if_stack.append(True) # visit_condition_dir пушит фрейм режимов
+                body.accept(self)
+                self._marked_lines.extend(self._gen_output(sl, el, True)) # строка if убирается
+            else:
+                # pp выключён — блок пропускается, но фрейм заводится, чтобы парный
+                # endif снял именно его, а не внешний.
+                self._if_stack.append(False)
+                self._new_modes()
+                self._marked_lines.extend(self._gen_output(sl, el)) # строка if остаётся как есть
+            return
+
+        if isinstance(body, dir.EndifDir):
+            if self._if_stack:
+                executed = self._if_stack.pop()
+                self._modes.pop() # симметричный pop: и выполненный, и пропущенный if пушили фрейм
+                if executed:
+                    self._marked_lines.extend(self._gen_output(sl, el, True)) # endif убирается
+                else:
+                    self._marked_lines.extend(self._gen_output(sl, el)) # endif как есть (в pp-off)
+            else:
+                # Осиротевший endif (без парного if) — стек режимов не трогаем;
+                # при включённом pp строка убирается, иначе проходит как есть.
+                if self._pp_is_on():
+                    self._marked_lines.extend(self._gen_output(sl, el, True))
+                else:
+                    self._marked_lines.extend(self._gen_output(sl, el))
+            return
+
+        # Прочие директивы
+        if self._pp_is_on():
+            body.accept(self)
             self._marked_lines.extend(self._gen_output(sl, el, True))
-        elif self._is_on_dir(stmt.body):
-            # если это команда включения препроцессора, включаем
-            stmt.body.accept(self)
+        elif self._is_on_dir(body):
+            # !@pp:on возвращает препроцессор даже когда он был выключен
+            body.accept(self)
+            self._marked_lines.extend(self._gen_output(sl, el, True))
         else:
-            # препроцессор выключен,
+            # pp выключен — директива проходит в файл дословно
             self._marked_lines.extend(self._gen_output(sl, el))
 
     def visit_qsps_line(self, stmt: stm.QspsLineStmt[AstNode]) -> AstNode:
@@ -85,16 +123,14 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         # требует разрешения условия. Если условие верно, запускает цепочку переключения режимов
         self._is_true = cast(bool, stmt.condition.accept(self))
         self._new_modes()
-        self._modes[-1]['open_if'] = True # текущий - режим открытого условия
-        for dir in stmt.next_dirs:
-            dir.accept(self)
+        for d in stmt.next_dirs:
+            d.accept(self)
         self._is_true = None
 
     def visit_endif_dir(self, stmt: dir.EndifDir[AstNode]) -> None:
-        # здесь восстанавливаются значения, работавшие до выполнения условия
-        # Закрыватся условие очень просто. Удаляем последний элемент списка
-        if self._if_is_open():
-            self._modes.pop()
+        # endif обрабатывается структурно в visit_pp_directive (работа со стеком if/фреймов);
+        # сюда попадаем только если endif встретился вне контекста директивы-обёртки.
+        pass
 
 
     def visit_on_dir(self, stmt: dir.OnDir[AstNode]) -> AstNode:
@@ -200,9 +236,6 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         return True
 
     # aux funcs
-    def _if_is_open(self) -> bool:
-        return self._modes[-1]['open_if']
-
     def _includes(self) -> bool:
         """ True if next lines need include in output """
         return self._modes[-1]['include']
@@ -234,9 +267,6 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
 
     def _pp_is_on(self) -> bool:
         return self._modes[-1]['pp']
-
-    def _is_endif(self, body:dir.PpDir[AstNode]) -> bool:
-        return self._modes[-1]['open_if'] and isinstance(body, dir.EndifDir)
 
     def _is_on_dir(self, body:dir.PpDir[AstNode]) -> bool:
         return isinstance(body, dir.OnDir)
