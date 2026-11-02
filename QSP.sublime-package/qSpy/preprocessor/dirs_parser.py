@@ -309,9 +309,11 @@ class DirsParser:
         return self._curtok.ttype in t
 
     def _next_peek(self) -> Tkn:
-        """ Возващает следующий токен. """
-        sk = self._curtok_num
-        return self._tokens[sk + 1] 
+        """ Возвращает следующий токен; на EOF остаётся на последнем (EOF). """
+        nxt = self._curtok_num + 1
+        if nxt >= len(self._tokens):
+            return self._tokens[-1]
+        return self._tokens[nxt]
 
     def _eat_tokens(self, count:int) -> None:
         """ Поглощает токен. Т.е. передвигает указатель на следующий. """

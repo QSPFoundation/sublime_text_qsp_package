@@ -127,17 +127,28 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
 Принцип: сначала — не менять поведение, закрепить контуром (B-баги правятся точечно); затем —
 структурные упрощения; в конце — новый функционал (U1–U3). Каждая фаза = зелёные тесты + коммит.
 
-### Фаза 0. Контур проверки
-- Прогнать [`_pp_test_.py`](../../_examples/.tests/_pp_test_.py); зафиксировать текущий `expected.qsps` как
-  golden. Добавить минимальные фикстуры-сценарии на каждую проблему: B1, B2 (вложенный if), B4
-  (директива-подобная строка в многострочной литерe), U1 (`nopp`), сочетание `pp+savecomm`
-  и `pp+no include` ([preprocessor_todo.md:5-21](./preprocessor_todo.md)).
+### Фаза 0. Контур проверки — ГОТОВО
+- Золотой контур: [`_examples/.tests/_pp_golden_run.py`](../../_examples/.tests/_pp_golden_run.py)
+  (запуск из любого каталога: `python _examples/.tests/_pp_golden_run.py`). Гоняет `QspsPP('On')`
+  на [`pptest.qsps`](../../_examples/example_preprocessor/pptest.qsps), сверяет с
+  [`expected.qsps`](../../_examples/example_preprocessor/expected.qsps), пишет фактический вывод в
+  [`_baseline_output.qsps`](./_baseline_output.qsps).
+- Базовый golden (до Phase-1): `current == expected`, `out_lines=33`,
+  `golden_sha=4b36084f8f60baa3`, `errored=True` (3 штатных recovery-сообщения «Unexpected token,
+  get IDENTIFIER» на строках 37/47/65 — неизвестные директивы). Перед каждой фазой сверять этот sha:
+  совпал — поведение не изменилось; разошёлся — сравнить diff и подтвердить, что изменение намеренное.
+- Не заведено: отдельные фикстуры на B2 (вложенный if) / B4 (директива в многострочной литерe) /
+  сочетания `pp+savecomm`, `pp+no include` ([preprocessor_todo.md:5-21](./preprocessor_todo.md)) —
+  завести по мере подхода к этим пунктам (Фаза 3).
 
-### Фаза 1. Очевидные баги (микроправки, без смены архитектуры)
-- **B1** `main.py:66` → `= True`.
-- **Q3** поправить докстринг `errored()`.
-- **Q4** безопасные `_next_peek/_prev_peek` (границы).
-- **Q5** унифицировать подпись `mode` и контракт возврата выхода.
+### Фаза 1. Очевидные баги (микроправки, без смены архитектуры) — ГОТОВО (golden зелёный, sha не изменился)
+- **B1** [`main.py:66`](../../QSP.sublime-package/qSpy/preprocessor/main.py) → `self._error_check = True`. ✅
+- **Q3** докстринг `errored()` приведён в соответствие (сброс идёт в начале `pp_this_lines`). ✅
+- **Q4** `_next_peek`/`_prev_peek` в `dirs_parser.py` и `pp_parser.py` клампят границы (EOF/первый токен). ✅
+- **Q5** ОТСРОЧЕНО. Подпись `mode: Literal['Off','On']` корректна для того, что реально доходит до
+  `QspsPP` (builder отфильтровывает `'Hard-off'`). Унификация контракта возврата
+  (`fast_output` vs `get_output`, фолбэк `['\n']`) трогает debug-артефакты и путь пустого вывода —
+  поведенчески рискованна, переносится на Фазу 2 (общий слой) / отдельной правкой.
 
 ### Фаза 2. Общий слой типов/утилит (Q1)
 - Создать `pp_common.py` (или расширить `pp_tokens.py`): `MarkedLine`, `LineNum`, `QspsLine`,

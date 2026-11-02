@@ -34,7 +34,8 @@ class QspsPP:
         ...
 
     def errored(self) -> bool:
-        """ Returns true if pping is broken and resets PP state. """
+        """ Returns true if the last pping run hit a recoverable error.
+        State is reset at the start of each pp_this_lines() call. """
         return self._error_check
 
     def dirs_tokens(self) -> List[TokenNode]:
@@ -63,7 +64,7 @@ class QspsPP:
             self._dirs_scanner = DirsScaner(qsps_lines)
             self._dirs_scanner.scan_tokens()
             dirs_tokens = self._dirs_scanner.get_tokens()
-            if self._dirs_scanner.errored(): self._error_check 
+            if self._dirs_scanner.errored(): self._error_check = True
         except er.DirScannerRunError as e:
             # If alg is corrupted, return source-lines
             self._error_check = True

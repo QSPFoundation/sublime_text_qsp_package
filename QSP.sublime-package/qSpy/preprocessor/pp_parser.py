@@ -409,14 +409,18 @@ class PpParser:
         return self._curtok
 
     def _next_peek(self) -> Tkn:
-        """ Возващает следующий токен. """
-        sk = self._curtok_num
-        return self._tokens[sk + 1]
+        """ Возвращает следующий токен; на EOF остаётся на последнем (EOF). """
+        nxt = self._curtok_num + 1
+        if nxt >= len(self._tokens):
+            return self._tokens[-1]
+        return self._tokens[nxt]
 
     def _prev_peek(self) -> Tkn:
-        """ Возващает previous токен. """
-        sk = self._curtok_num
-        return self._tokens[sk - 1]
+        """ Возвращает предыдущий токен; на старте остаётся на первом. """
+        prv = self._curtok_num - 1
+        if prv < 0:
+            return self._tokens[0]
+        return self._tokens[prv]
 
     def _eat_tokens(self, count:int) -> None:
         """ Поглощает токен. Т.е. передвигает указатель на следующий. """
