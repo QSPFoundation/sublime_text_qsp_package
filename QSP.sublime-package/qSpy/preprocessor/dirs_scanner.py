@@ -17,6 +17,7 @@ class DirsScaner:
 
     _KEYWORDS:Dict[str, tt] = {
         "var": tt.VAR_STMT,
+        "const": tt.CONST_STMT,
         "on": tt.ON_STMT,
         "if": tt.IF_STMT,
         "off": tt.OFF_STMT,
@@ -166,6 +167,9 @@ class DirsScaner:
         elif c == ",":
             # разделитель списка меток в var(a, b, c)
             self._add_token(tt.COMMA)
+        elif c in ('-', '+') and self._next_in_line().isdigit():
+            # знаковое целое (значение константы/сравнения); собираем как единый IDENTIFIER
+            self._scan_funcs.append(self._identifier_expect)
         elif c == "=":
             # Либо это assignment либо начало equal
             if self._next_in_line() != "=":    # assignment

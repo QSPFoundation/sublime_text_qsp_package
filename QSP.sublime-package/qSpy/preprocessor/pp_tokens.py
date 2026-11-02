@@ -50,6 +50,7 @@ class PpTokenType(IntEnum):
     IF_STMT = auto()
     THEN_STMT = auto()
     VAR_STMT = auto()
+    CONST_STMT = auto() # объявление констант const(a = 1, b = "text")
 
     ON_STMT = auto()
     OFF_STMT = auto()

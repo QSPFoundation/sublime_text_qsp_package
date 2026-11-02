@@ -1,4 +1,5 @@
 from typing import List, Dict, Union, Literal, cast, Optional
+import re
 
 from .pp_tokens import LineNum
 from .pp_tokens import PpTokenType as tt
@@ -117,6 +118,12 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         # var(a, b, c = value, ...): каждый элемент применяется по той же семантике
         for item in stmt.assignments:
             item.accept(self)
+
+    def visit_consts_dir(self, stmt: dir.ConstsDir[AstNode]) -> AstNode:
+        # const(a = 1, b = "text", ...): каждая пара имя=литерал заводится в таблицу констант.
+        # Метку var не объявляет; подстановка @name выполняется в _gen_output по позиции.
+        for item in stmt.assignments:
+            self._ns.def_const(item.key.lexeme, item.value.lexeme)
 
     def visit_assignment_dir(self, stmt: dir.AssignmentDir[AstNode]) -> AstNode:
         # объявление переменной (с присвоением, опционально)
@@ -292,10 +299,24 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         self._modes[-1].update(cur)
 
     def _gen_output(self, strt_ln:LineNum, end_ln:LineNum, exclude:bool=False) -> List[MarkedLine]:
-        """ Генерируем список выходных строк. """
+        """ Генерируем список выходных строк. Текст каждой строки пропускается через
+        подстановку констант @name с таблицей, набранной к текущей позиции (строго после
+        объявления: DirsInt идёт по директивам в порядке позиций файла). """
         output_lines:List[MarkedLine] = []
         include = False if exclude else self._modes[-1]['include']
         no_save_comm = self._modes[-1]['no_save_comm'] and self._pp_is_on()
         for line in self._qsps_raw_lines[strt_ln:end_ln+1]:
-            output_lines.append((line, no_save_comm, include))
+            output_lines.append((self._subst_consts(line), no_save_comm, include))
         return output_lines
+
+    _CONST_RE = re.compile(r'@(\w+)')
+
+    def _subst_consts(self, line:QspsLine) -> QspsLine:
+        """ Заменяет каждое вхождение @<имя> на литерал уже объявленной константы.
+        Необъявленные @foo остаются как есть; рекурсии по результату подстановки нет. """
+        consts = self._ns.get_consts()
+        if not consts:
+            return line
+        def repl(m:'re.Match[str]') -> str:
+            return consts.get(m.group(1), m.group(0))
+        return self._CONST_RE.sub(repl, line)

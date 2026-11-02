@@ -115,6 +115,13 @@ class DirsAstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisi
             'value': [a.accept(self) for a in stmt.assignments]
         }
 
+    def visit_consts_dir(self, stmt: dir.ConstsDir[AstNode]) -> AstNode:
+        return {
+            'type': 'dir',
+            'class': 'ConstsDir',
+            'value': [a.accept(self) for a in stmt.assignments]
+        }
+
     def visit_condition_dir(self, stmt: dir.ConditionDir[AstNode]) -> AstNode:
         return {
             'type': 'dir',

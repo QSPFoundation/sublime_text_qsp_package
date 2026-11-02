@@ -51,6 +51,10 @@ class PpVisitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
+    def visit_consts_dir(self, stmt:'ConstsDir[R]') -> R:
+        ...
+
+    @abstractmethod
     def visit_condition_dir(self, stmt:'ConditionDir[R]') -> R:
         ...
 
@@ -110,6 +114,14 @@ class AssignmentsDir(PpDir[R]):
     assignments:List['AssignmentDir[R]']
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_assignments_dir(self)
+
+@dataclass(eq=False)
+class ConstsDir(PpDir[R]):
+    """ Список объявлений констант: const(a = 1, b = "text").
+    Каждый элемент обязан иметь value-литерал (число или строка); парсер это валидирует. """
+    assignments:List['AssignmentDir[R]']
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_consts_dir(self)
 
 @dataclass(eq=False)
 class ConditionDir(PpDir[R]):

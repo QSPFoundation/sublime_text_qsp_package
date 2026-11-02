@@ -1,4 +1,5 @@
 from typing import List, Optional, Any
+import re
 
 from .pp_tokens import PpToken as Tkn
 from .pp_tokens import PpTokenType as tt
@@ -125,6 +126,13 @@ class DirsParser:
             end_assignment = self._curtok # newline ещё не пожрали
             self._eat_tokens(1)
             return stm.DirectiveStmt[None](pref, lexeme, var_validation, end_assignment)
+
+        if self._check_type(tt.CONST_STMT):
+            self._eat_tokens(1) # пожираем токен объявления константы
+            consts_validation:dir.ConstsDir[None] = self._const_dir()
+            end_consts = self._curtok # newline ещё не пожрали
+            self._eat_tokens(1)
+            return stm.DirectiveStmt[None](pref, lexeme, consts_validation, end_consts)
 
         if self._check_type(tt.IF_STMT):
             self._eat_tokens(1) # пожирем IF_STMT
@@ -293,6 +301,48 @@ class DirsParser:
             return dir.AssignmentDir[None](key, value)
         # голый элемент — просто объявление метки
         return dir.AssignmentDir[None](key, None)
+
+    _INT_RE = re.compile(r'[+-]?\d+$')
+
+    def _const_dir(self) -> dir.ConstsDir[None]:
+        """Получаем директиву объявления констант: const(a = 1, b = "text", ...).
+        Список через запятую; каждый элемент обязан быть `ИМЯ = литерал-значение`. """
+        if not self._check_type(tt.LEFT_PAREN):
+            raise er.DirsParserError(self._curtok, f'Const parse. Expected LEFT_PAREN')
+        self._eat_tokens(1)
+        items:List[dir.AssignmentDir[None]] = []
+        while True:
+            items.append(self._const_item())
+            if self._check_type(tt.COMMA):
+                self._eat_tokens(1)
+                continue
+            break
+        if not self._check_type(tt.RIGHT_PAREN):
+            raise er.DirsParserError(self._curtok, f'Const parse. Expected RIGHT_PAREN or COMMA')
+        self._eat_tokens(1)
+        if not self._check_type(tt.NEWLINE):
+            raise er.DirsParserError(self._curtok, f'Const parse. Expected end of Directive')
+        return dir.ConstsDir[None](items)
+
+    def _const_item(self) -> dir.AssignmentDir[None]:
+        """Один элемент const: ИМЯ = литерал. ИМЯ — IDENTIFIER; значение — STRING
+        или целое (знаковое) число. const(label) и const(a = b) — невалидны."""
+        if not self._check_type(tt.IDENTIFIER):
+            raise er.DirsParserError(self._curtok, f'Const parse. Expected CONST NAME (IDENTIFIER)')
+        key = self._curtok
+        self._eat_tokens(1)
+        if not self._check_type(tt.ASSIGNMENT_OPERATOR):
+            raise er.DirsParserError(self._curtok, f'Const parse. Expected "=" (const needs a literal value)')
+        self._eat_tokens(1)
+        if self._check_type(tt.STRING):
+            value = self._curtok
+            self._eat_tokens(1)
+        elif self._check_type(tt.IDENTIFIER) and self._INT_RE.match(self._curtok.lexeme.strip()):
+            value = self._curtok
+            self._eat_tokens(1)
+        else:
+            raise er.DirsParserError(self._curtok, f'Const parse. Expected INTEGER or STRING literal value')
+        return dir.AssignmentDir[None](key, value)
 
     # aux operations
     def _is_eof(self) -> bool:

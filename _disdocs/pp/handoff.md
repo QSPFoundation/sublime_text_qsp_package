@@ -90,7 +90,7 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
 
 **U3. Значения в `var`/присваивании и множественные метки.**Числовые/строковые литералы
 и список через запятую (`var(a, b, c = label, 'string', 123)`) реализованы в Фазе 5 — см.
-[## Фазы](#). `const(...)` ([preprocessor_todo.md:53-68](./preprocessor_todo.md)) не реализовано.
+[## Фазы](#). `const(...)` ([preprocessor_todo.md:61-76](./preprocessor_todo.md)) реализовано в Фазе 5.
 `!@pp:change/by/endchange` (блоки замены, [preprocessor_todo.md:25-38](./preprocessor_todo.md)) — не реализовано,
 предложено отнести к постпроцессору.
 
@@ -234,8 +234,23 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
   Контур: [`_pp_var_multi_test.py`](../../_examples/.tests/_pp_var_multi_test.py) — 5 сценариев
   (голые метки, смешанный список из todo, пример владельца со строкой и числом, необъявленная метка,
   битый `var(a,,b)` без падения).
-- **Отложено (по указанию владельца):** `const(...)` — семантика/необходимость не утверждены;
-  `change/by/endchange` — черновик, не реализуем.
+- **U3 — константы `const(...)` и подстановка `@name`: ГОТОВО (golden не затронут, sha сохранён).**
+  Решения владельца: позиционная подстановка (строго после объявления), const — отдельная таблица
+  (метку var не объявляет), значение — целое знаковое число или строка; `const(a = b)`/`const(label)`
+  невалидны.
+  Токен `CONST_STMT` + ветка знакового числа в сканере
+  ([`pp_tokens.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_tokens.py),
+  [`dirs_scanner.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_scanner.py)); узел
+  [`pp_dir.ConstsDir`](../../QSP.sublime-package/qSpy/preprocessor/pp_dir.py);
+  разбор `_const_dir`/`_const_item` с валидацией литералов
+  ([`dirs_parser.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_parser.py)); таблица констант
+  `def_const`/`get_consts` ([`pp_environment.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_environment.py));
+  `visit_consts_dir` + подстановка `@(\w+)` в `_gen_output` по снимку таблицы на текущей позиции
+  ([`dirs_int.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_int.py)).
+  Контур: [`_pp_const_test.py`](../../_examples/.tests/_pp_const_test.py) — 8 сценариев
+  (строка, знаковые числа, порядок «строго после», const≠метка var, граница идентификатора,
+  невалидные `const(a=b)`/`const(label)`, атомарность списка).
+- **Отложено (по указанию владельца):** `change/by/endchange` — черновик, формат не решён, не реализуем.
 
 ### Фаза 6. Синхронизация документации
 - Сверить [`pp_scheme.pest`](./pp_scheme.pest) с фактическим поведением после фаз 3–5; расхождения
@@ -248,5 +263,6 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
 2. ~~U1: `nopp` — реализуем или вычёркиваем из спецификации?~~ ЗАКРЫТО: вычёркиваем, `off`/`on` достаточно.
 3. ~~U2: `ParenBlock`/`CodeBlock` — отдельные ноды или единая параметризованная?~~ ЗАКРЫТО: отдельные ноды (Фаза 4).
 4. U3: блоки `change` — препроцессор или постпроцессор? — ОТЛОЖЕНО владельцем (черновик, формат не решён).
-5. ~~U3: `const(...)` и множественные метки `var(a,b,c)`~~ — множественные метки ЗАКРЫТО (Фаза 5,
-   [`_pp_var_multi_test.py`](../../_examples/.tests/_pp_var_multi_test.py)). `const(...)` остаётся открытым.
+5. ~~U3: `const(...)` и множественные метки `var(a,b,c)`~~ — ОБА ЗАКРЫТО (Фаза 5,
+   [`_pp_var_multi_test.py`](../../_examples/.tests/_pp_var_multi_test.py) и
+   [`_pp_const_test.py`](../../_examples/.tests/_pp_const_test.py)).

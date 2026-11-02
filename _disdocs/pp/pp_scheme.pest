@@ -70,6 +70,7 @@ QspsPP {
 
   // --------------------------------- PreProcessors Directives --------------------------------- //
     PpDirective = (DefineVarDirective
+                | ConstDirective
                 | IfDirective
                 | savecommStmt
                 | noSavecommStmt
@@ -88,6 +89,7 @@ QspsPP {
     // complex
     IfDirective = ifStmt leftParen ConditionExpr rightParen thenStmt ConditionResolve+
     DefineVarDirective = varStmt leftParen DefineVarList rightParen
+    ConstDirective     = constStmt leftParen DefineConstList rightParen
 
     // define var: список меток через запятую; каждый элемент — метка или метка=значение.
     // Имя/значение — идентификатор (слово или число) либо строковый литерал.
@@ -95,6 +97,14 @@ QspsPP {
     DefineVarItem = dirValue (assignmentOperator dirValue)?
     dirValue = varName | stringLiteral
     dirComma = ","
+
+    // const: список через запятую; каждый элемент ОБЯЗАТЕЛЬНО `имя = литерал-значение`.
+    // Значение — целое (знаковое) число или строка; голый идентификатор (const(a = b)) невалиден.
+    // Подстановка @name выполняется строго после объявления (позиционно в тексте вывода).
+    DefineConstList = DefineConstItem (dirComma DefineConstItem)*
+    DefineConstItem = varName assignmentOperator constValue
+    constValue = intLiteral | stringLiteral
+    intLiteral = ("+" | "-")? ASCII_DIGIT+
 
     // Equal Expression /in priority/
     ConditionExpr = OrExpr
@@ -117,6 +127,7 @@ QspsPP {
     ifStmt = "if"
     thenStmt = ":"
     varStmt = "var"
+    constStmt = "const"
       // commands
       onStmt = "on"
       offStmt = "off"

@@ -7,6 +7,17 @@ class PpEnvironment:
             'True': True,
             'False': False
         }
+        # Таблица констант: имя -> литерал (число или строка как есть).
+        # Отделена от _labels: const не объявляет метку var.
+        self._consts:Dict[str, str] = {}
+
+    def def_const(self, name:str, literal:str) -> None:
+        """Объявление константы: имя -> текстовый литерал."""
+        name = name.strip()
+        self._consts[name] = literal
+
+    def get_consts(self) -> Dict[str, str]:
+        return self._consts
 
     def def_key_set_value(self, key:str, value:str='') -> None:
         self.def_var(key)
