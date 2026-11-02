@@ -240,8 +240,8 @@ class DirsParser:
             
     def _equal(self) -> expr.EqualType[None]:
         """ Получаем выражение сравнения """
-        if not self._check_type(tt.IDENTIFIER):
-            raise er.DirsParserError(self._curtok, f'Equal Parser. Expected first IDENTIFIER (ex. var name)')
+        if not self._match(tt.IDENTIFIER, tt.STRING):
+            raise er.DirsParserError(self._curtok, f'Equal Parser. Expected first IDENTIFIER/STRING (ex. var name)')
         operands:List[expr.VarName[None]] = [expr.VarName[None](self._curtok)]
         operators:List[Tkn] = []
         self._eat_tokens(1)
@@ -250,8 +250,8 @@ class DirsParser:
             operators.append(self._curtok)
             self._eat_tokens(1)
             
-            if not self._check_type(tt.IDENTIFIER):
-                raise er.DirsParserError(self._curtok, 'Equal Parser. Expected IDENTIFIER (ex. var name)')
+            if not self._match(tt.IDENTIFIER, tt.STRING):
+                raise er.DirsParserError(self._curtok, 'Equal Parser. Expected IDENTIFIER/STRING (ex. var name)')
 
             operands.append(expr.VarName[None](self._curtok))
             self._eat_tokens(1)
@@ -276,8 +276,8 @@ class DirsParser:
             return dir.AssignmentDir[None](key, None)
         if self._check_type(tt.ASSIGNMENT_OPERATOR):
             self._eat_tokens(1)
-            if not self._check_type(tt.IDENTIFIER):
-                raise er.DirsParserError(self._curtok, f'Assignment parse. Expected IDENTIFIER (ex. variable name)')
+            if not self._match(tt.IDENTIFIER, tt.STRING):
+                raise er.DirsParserError(self._curtok, f'Assignment parse. Expected IDENTIFIER or STRING (ex. variable name/value)')
             value = self._curtok
             self._eat_tokens(1)
             if not self._check_type(tt.RIGHT_PAREN):

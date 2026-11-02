@@ -204,11 +204,28 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
 - Не заведено: фикстура, прямо упражняющая скобочные блоки в теле локации (`pptest.qsps` их не содержит);
   правка `_QUOTES→.lexeme` доказуемо эквивалентна статически.
 
-### Фаза 5. Новый функционал по грамматике (U3)
-- **U1 `nopp`:** НЕ реализуем. Убрать упоминания из `pp_scheme.pest` и `preprocessor_todo.md`,
-  снести закомментированные заглушки в `dirs_parser.py` / `pp_dir.py` (`NoppDir`, `NOPP_STMT`).
-- **U3:** значения в `var` (числа/строки), далее — множественные метки и `const`; блоки
-  `change/by/endchange` — решить: препроцессор vs постпроцессор (доки склоняют к постпроцессору).
+### Фаза 5. Новый функционал по грамматике (U3) — ЧАСТИЧНО ГОТОВО
+- **U1 `nopp`:** ЗАКРЫТО. Закомментированные заглушки снесены из
+  [`dirs_parser.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_parser.py) (`_cond_resolves`) и
+  [`pp_dir.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_dir.py) (`ConditionResolve`). Упоминания
+  убраны из [`pp_scheme.pest`](./pp_scheme.pest) (`noppStmt`) и [`preprocessor_todo.md`](./preprocessor_todo.md).
+  Токена `NOPP_STMT` и класса `NoppDir` в коде не было (только комментарии) — проверено grep: ноль вхождений.
+- **U3 — строковые литералы в значениях `var`: ГОТОВО (golden не затронут, sha сохранён).**
+  Числа работали и раньше (цифры — word-chars → IDENTIFIER; `def_key_set_value` заводит значение и
+  меткой, и значением → `name==123` совпадает). Добавлена поддержка строк сквозняком:
+  токен `STRING` ([`pp_tokens.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_tokens.py)) →
+  распознавание `"..."`/`'...'` в сканере директив (`_dir_string_expect`,
+  [`dirs_scanner.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_scanner.py)) → приём в значении
+  `var` и в операндах сравнения ([`dirs_parser.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_parser.py))
+  → хранение литерала без объявления метки (`PpEnvironment.set_literal`,
+  [`pp_environment.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_environment.py)) →
+  разрешение `STRING`-операнда как литерала в [`dirs_int.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_int.py)
+  (`visit_assignment_dir`, `visit_var_name`). Строка завершается первой парной кавычкой; удвоенное
+  экранирование (`""`) в значениях директив сознательно НЕ поддержано (значения кратки).
+  Контур: [`_pp_var_string_test.py`](../../_examples/.tests/_pp_var_string_test.py) — 4 сценария
+  (равенство строки, литерал≠метка, апострофы+спецсимволы, несовпадение→без exclude).
+- **Отложено (по указанию владельца):** `const(...)` и множественные метки `var(a,b,c)` — семантика/
+  необходимость не утверждены; `change/by/endchange` — черновик, не реализуем.
 
 ### Фаза 6. Синхронизация документации
 - Сверить [`pp_scheme.pest`](./pp_scheme.pest) с фактическим поведением после фаз 3–5; расхождения
@@ -220,4 +237,5 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
 1. B4: лёгкий кросс-строчный контекст в `DirsScaner` или перенос разбора директив в стадию кода?
 2. ~~U1: `nopp` — реализуем или вычёркиваем из спецификации?~~ ЗАКРЫТО: вычёркиваем, `off`/`on` достаточно.
 3. ~~U2: `ParenBlock`/`CodeBlock` — отдельные ноды или единая параметризованная?~~ ЗАКРЫТО: отдельные ноды (Фаза 4).
-4. U3: блоки `change` — препроцессор или постпроцессор?
+4. U3: блоки `change` — препроцессор или постпроцессор? — ОТЛОЖЕНО владельцем (черновик, формат не решён).
+5. U3: `const(...)` и множественные метки `var(a,b,c)` — отложены; нужны утверждённая семантика и формат.

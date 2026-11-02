@@ -182,6 +182,9 @@ class DirsScaner:
             else:
                 ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER)
                 self._add_token(ttype)
+        elif c in ('"', "'"):
+            # строковый литерал-значение директивы (var(x = "...") , сравнение с "...")
+            self._scan_funcs.append(self._dir_string_expect)
         else:
             # любой другой символ включает выборку сырого текста до конца строки
             self._scan_funcs.append(self._raw_text_expect)
@@ -213,6 +216,22 @@ class DirsScaner:
             ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER)
             self._add_token(ttype)
             self._scan_funcs.pop()
+
+    def _dir_string_expect(self, c:Char) -> None:
+        """ Сборка строкового литерала-значения внутри директивы.
+        Строка завершается первой же встреченной кавычкой того же типа; экранирование
+        удвоенной кавычкой ("") здесь не поддержано — значения директив кратки и не
+        должны его требовать. Незакрытая строка -> DirScannerError -> восстановление как
+        сырая строка (директива пройдёт в файл дословно). """
+        quote = self._curlexeme[0] # открывающая кавычка уже в лексеме
+        if c == quote:
+            full = ''.join(self._curlexeme)
+            content = full[1:-1] # снимаем обрамляющие кавычки
+            self._tokens.append(Tkn(tt.STRING, content, self._start_lexeme))
+            self._curlexeme.clear()
+            self._scan_funcs.pop()
+        elif self._current_is_last_in_line():
+            raise er.DirScannerError("dir_string_expect: unterminated string literal")
 
     def _raw_text_expect(self, c:Char) -> None:
         """Поглощение токена сырого текста"""

@@ -29,6 +29,13 @@ class PpEnvironment:
 
         self._labels[key] = value
 
+    def set_literal(self, key:str, value:str) -> None:
+        """ Задаёт метке литеральное значение как есть, не объявляя value отдельной меткой.
+        Используется для var(name = "текст"): в _labels хранится сам текст без кавычек. """
+        key = key.strip()
+        if key in ('True', 'False'): return
+        self._labels[key] = value
+
     def get_var(self, key:str) -> Union[str, bool]:
         """ Извлекаем значение метки """
         return self._labels.get(key, False)

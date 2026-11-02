@@ -67,6 +67,7 @@ class PpTokenType(IntEnum):
     NOT_OPERATOR = auto()
 
     IDENTIFIER = auto() # любая переменная или её значение
+    STRING = auto() # строковый литерал-значение в директиве ("..." / '...')
 
     # EOF:
     EOF = auto()

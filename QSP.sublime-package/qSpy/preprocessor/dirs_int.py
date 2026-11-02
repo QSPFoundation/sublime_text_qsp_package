@@ -1,7 +1,7 @@
 from typing import List, Dict, Union, Literal, cast, Optional
 
-# from pp_tokens import PpTokenType as tt
 from .pp_tokens import LineNum
+from .pp_tokens import PpTokenType as tt
 from .pp_common import QspsLine, MarkedLine
 
 from . import dirs_stmts as stm
@@ -116,8 +116,15 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
     def visit_assignment_dir(self, stmt: dir.AssignmentDir[AstNode]) -> AstNode:
         # объявление переменной (с присвоением, опционально)
         key = stmt.key.lexeme
-        value = stmt.value.lexeme if stmt.value else ''
-        self._ns.def_key_set_value(key, value)
+        if stmt.value is None:
+            # просто заводим метку
+            self._ns.def_key_set_value(key)
+        elif stmt.value.ttype == tt.STRING:
+            # литеральное значение ("текст") — храним как есть, не объявляя метку из него
+            self._ns.set_literal(key, stmt.value.lexeme)
+        else:
+            # идентификатор-значение — метка ссылается на другую метку/число (как в label-цепочке)
+            self._ns.def_key_set_value(key, stmt.value.lexeme)
 
     def visit_condition_dir(self, stmt: dir.ConditionDir[AstNode]) -> AstNode:
         # требует разрешения условия. Если условие верно, запускает цепочку переключения режимов
@@ -192,6 +199,9 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
         return not bool(stmt.left.accept(self))
 
     def visit_var_name(self, stmt: expr.VarName[AstNode]) -> Union[str, bool]:
+        # строковый литерал-операнд — это значение как есть, а не имя метки
+        if stmt.value.ttype == tt.STRING:
+            return stmt.value.lexeme
         return self._ns.get_var(stmt.value.lexeme)
 
     def visit_equal_expr(self, stmt: expr.EqualExpr[AstNode]) -> bool:
