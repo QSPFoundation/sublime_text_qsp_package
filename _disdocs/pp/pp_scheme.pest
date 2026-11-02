@@ -98,11 +98,17 @@ QspsPP {
     dirValue = varName | stringLiteral
     dirComma = ","
 
-    // const: список через запятую; каждый элемент ОБЯЗАТЕЛЬНО `имя = литерал-значение`.
-    // Значение — целое (знаковое) число или строка; голый идентификатор (const(a = b)) невалиден.
+    // const: позиционный стиль (как var) — ровно один "=" внутри скобок:
+    // слева список имён через запятую, справа список литералов-значений через запятую;
+    // пары сопоставляются по позиции, число имён обязано равняться числу значений.
+    // Значение — целое (знаковое) число или строка. const(label) (без "="), нечисловое/
+    // неголое значение и несовпадение числа имён/значений — невалидны (recoverable-error).
     // Подстановка @name выполняется строго после объявления (позиционно в тексте вывода).
-    DefineConstList = DefineConstItem (dirComma DefineConstItem)*
-    DefineConstItem = varName assignmentOperator constValue
+    // Строковая константа обрамляется апострофами: вне '...'-литерала -> 'literal', внутри
+    // '...'-литерала -> ''literal'' (спаренные апострофы). Числовая — как есть, без кавычек.
+    DefineConstList = constNames assignmentOperator constValues
+    constNames = varName (dirComma varName)*
+    constValues = constValue (dirComma constValue)*
     constValue = intLiteral | stringLiteral
     intLiteral = ("+" | "-")? ASCII_DIGIT+
 

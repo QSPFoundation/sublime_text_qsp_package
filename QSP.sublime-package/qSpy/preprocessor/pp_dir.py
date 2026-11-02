@@ -117,8 +117,10 @@ class AssignmentsDir(PpDir[R]):
 
 @dataclass(eq=False)
 class ConstsDir(PpDir[R]):
-    """ Список объявлений констант: const(a = 1, b = "text").
-    Каждый элемент обязан иметь value-литерал (число или строка); парсер это валидирует. """
+    """Позиционный список объявлений констант: const(a, b, c = 'literal', 123, -1).
+    Ровно один `=`: слева имена, справа литералы-значения, пары сопоставлены по позиции
+    (число имений равно числу значений — валидирует парсер). Каждый элемент — AssignmentDir
+    с обязательным value-литералом (целое знаковое число или строка)."""
     assignments:List['AssignmentDir[R]']
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_consts_dir(self)

@@ -120,10 +120,15 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
             item.accept(self)
 
     def visit_consts_dir(self, stmt: dir.ConstsDir[AstNode]) -> AstNode:
-        # const(a = 1, b = "text", ...): каждая пара имя=литерал заводится в таблицу констант.
-        # Метку var не объявляет; подстановка @name выполняется в _gen_output по позиции.
+        # const(a, b, c = 'literal', 123, -1): позиции имён и значений сопоставлены парсером
+        # (числа совпадают); каждая пара имя=литерал заводится в таблицу констант со флагом
+        # «строковая» (значение — STRING-токен). Метку var не объявляет; подстановка @name
+        # выполняется в _gen_output по позиции (строковые константы обрамляются кавычками).
         for item in stmt.assignments:
-            self._ns.def_const(item.key.lexeme, item.value.lexeme)
+            # парсер гарантирует литерал-значение у каждой константы (AssignmentDir.value обязан быть задан)
+            if item.value is None:
+                raise er.DirsInterpreterError(f"const-элемент '{item.key.lexeme}' обязан иметь литерал-значение")
+            self._ns.def_const(item.key.lexeme, item.value.lexeme, item.value.ttype == tt.STRING)
 
     def visit_assignment_dir(self, stmt: dir.AssignmentDir[AstNode]) -> AstNode:
         # объявление переменной (с присвоением, опционально)
@@ -313,10 +318,69 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
 
     def _subst_consts(self, line:QspsLine) -> QspsLine:
         """ Заменяет каждое вхождение @<имя> на литерал уже объявленной константы.
-        Необъявленные @foo остаются как есть; рекурсии по результату подстановки нет. """
+        Строковая константа обрамляется апострофами: вне текстового литерала '...' — как
+        'literal'; внутри литерала '...' — как ''literal'' (спаренные апострофы = экранированный
+        апостроф, чтобы вложенный литерал отобразился дословно). Числовая константа вставляется
+        как есть, без кавычек, независимо от контекста. Необъявленные @foo остаются как есть;
+        рекурсии по результату подстановки нет. Комментарий/код — не различаются. """
         consts = self._ns.get_consts()
         if not consts:
             return line
-        def repl(m:'re.Match[str]') -> str:
-            return consts.get(m.group(1), m.group(0))
-        return self._CONST_RE.sub(repl, line)
+        inside_sq = self._single_quote_mask(line)
+        out:List[str] = []
+        pos = 0
+        for m in self._CONST_RE.finditer(line):
+            out.append(line[pos:m.start()])
+            pos = m.end()
+            entry = consts.get(m.group(1))
+            if entry is None:
+                out.append(m.group(0))  # необъявленная @foo — как есть
+                continue
+            value, is_string = entry
+            if not is_string:
+                out.append(value)  # число — как есть
+            elif inside_sq[m.start()]:
+                out.append("''" + value + "''")  # внутри '...' — спаренные апострофы
+            else:
+                out.append("'" + value + "'")  # вне — одиночные апострофы
+        out.append(line[pos:])
+        return ''.join(out)
+
+    @staticmethod
+    def _single_quote_mask(line:QspsLine) -> List[bool]:
+        """ По-символьная маска: True для символов внутри текстового литерала, ограниченного '...'.
+        Корректно учитывает двойные кавычки (апостроф внутри "..." — не разделитель) и
+        экранирование удвоением ('' внутри '...', "" внутри "..."). """
+        inside = [False] * len(line)
+        state = 0  # 0 — вне, 1 — внутри '...', 2 — внутри "..."
+        i = 0
+        n = len(line)
+        while i < n:
+            c = line[i]
+            if state == 0:
+                if c == "'":
+                    state = 1
+                elif c == '"':
+                    state = 2
+                i += 1
+            elif state == 1:
+                if c == "'":
+                    if i + 1 < n and line[i + 1] == "'":
+                        inside[i] = inside[i + 1] = True  # '' — экранированный апостроф
+                        i += 2
+                    else:
+                        state = 0  # закрывающая кавычка
+                        i += 1
+                else:
+                    inside[i] = True
+                    i += 1
+            else:  # state == 2 — внутри "...": одиночная кавычка не трогает состояние '...'
+                if c == '"':
+                    if i + 1 < n and line[i + 1] == '"':
+                        i += 2  # "" — экранированная кавычка
+                    else:
+                        state = 0
+                        i += 1
+                else:
+                    i += 1
+        return inside

@@ -120,9 +120,31 @@ try:
 except Exception as e:  # noqa
     fails.append(("scenario-5 no-crash", "no exception", f"{type(e).__name__}: {e}"))
 
+# --- Сценарий 6: знаковые числа в var — знак +/- допустим в identifier (как в const) ---
+# var(a, b = -5, 7): a — метка; b = -5 — метка со значением '-5'; 7 — голое число-метка.
+src6 = [
+    "# [t6]\n",
+    "!@pp:var(a, b = -5, 7)\n",
+    "!@pp:if(b==-5):exclude\n",   # b -> '-5'
+    "X\n",
+    "!@pp:endif\n",
+    "!@pp:if(7):exclude\n",        # голое число объявляет метку '7'
+    "Y\n",
+    "!@pp:endif\n",
+    "!@pp:if(a):exclude\n",        # a объявлена
+    "Z\n",
+    "!@pp:endif\n",
+    "KEPT\n",
+    "--- [t6] ---\n",
+]
+exp6 = ["# [t6]", "KEPT", "--- [t6] ---"]
+got6 = run(src6)
+if got6 != exp6:
+    fails.append(("scenario-6 signed-numbers-var", exp6, got6))
+
 if fails:
     for name, exp, got in fails:
         print(f"FAIL {name}:\n  expected: {exp}\n  got:      {got}")
     sys.exit(1)
 
-print("OK: var-multi tests 1..5 passed")
+print("OK: var-multi tests 1..6 passed")

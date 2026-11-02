@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Union, Tuple
 
 class PpEnvironment:
     """ Класс для обслуживания переменных в препроцессоре. """
@@ -7,16 +7,18 @@ class PpEnvironment:
             'True': True,
             'False': False
         }
-        # Таблица констант: имя -> литерал (число или строка как есть).
+        # Таблица констант: имя -> (литерал без кавычек, is_string).
         # Отделена от _labels: const не объявляет метку var.
-        self._consts:Dict[str, str] = {}
+        # is_string — значение было STRING-литералом (нужно для обрамления кавычками
+        # при подстановке); числа — False (подставляются как есть).
+        self._consts:Dict[str, Tuple[str, bool]] = {}
 
-    def def_const(self, name:str, literal:str) -> None:
-        """Объявление константы: имя -> текстовый литерал."""
+    def def_const(self, name:str, literal:str, is_string:bool) -> None:
+        """Объявление константы: имя -> (текстовый литерал, строковая ли она)."""
         name = name.strip()
-        self._consts[name] = literal
+        self._consts[name] = (literal, is_string)
 
-    def get_consts(self) -> Dict[str, str]:
+    def get_consts(self) -> Dict[str, Tuple[str, bool]]:
         return self._consts
 
     def def_key_set_value(self, key:str, value:str='') -> None:

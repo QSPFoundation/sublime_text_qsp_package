@@ -305,44 +305,59 @@ class DirsParser:
     _INT_RE = re.compile(r'[+-]?\d+$')
 
     def _const_dir(self) -> dir.ConstsDir[None]:
-        """Получаем директиву объявления констант: const(a = 1, b = "text", ...).
-        Список через запятую; каждый элемент обязан быть `ИМЯ = литерал-значение`. """
+        """Получаем директиву объявления констант в позиционном стиле (как var):
+        `const(a, b, c = 'literal', 123, -1)` — ровно один `=` внутри скобок: слева
+        список имён через запятую, справа список литералов-значений через запятую;
+        пары собираются по позиции. Число имён обязано совпадать с числом значений,
+        иначе директива невалидна (recoverable-error, ничего не заводится). """
         if not self._check_type(tt.LEFT_PAREN):
             raise er.DirsParserError(self._curtok, f'Const parse. Expected LEFT_PAREN')
         self._eat_tokens(1)
-        items:List[dir.AssignmentDir[None]] = []
+
+        names:List[Tkn] = []
         while True:
-            items.append(self._const_item())
+            if not self._check_type(tt.IDENTIFIER):
+                raise er.DirsParserError(self._curtok, f'Const parse. Expected CONST NAME (IDENTIFIER)')
+            names.append(self._curtok)
+            self._eat_tokens(1)
             if self._check_type(tt.COMMA):
                 self._eat_tokens(1)
                 continue
             break
+
+        # ровно один разделитель имён и значений
+        if not self._check_type(tt.ASSIGNMENT_OPERATOR):
+            raise er.DirsParserError(self._curtok, f'Const parse. Expected "=" (names = values)')
+        self._eat_tokens(1)
+
+        values:List[Tkn] = []
+        while True:
+            if self._check_type(tt.STRING):
+                values.append(self._curtok)
+                self._eat_tokens(1)
+            elif self._check_type(tt.IDENTIFIER) and self._INT_RE.match(self._curtok.lexeme.strip()):
+                values.append(self._curtok)
+                self._eat_tokens(1)
+            else:
+                raise er.DirsParserError(self._curtok, f'Const parse. Expected INTEGER or STRING literal value')
+            if self._check_type(tt.COMMA):
+                self._eat_tokens(1)
+                continue
+            break
+
         if not self._check_type(tt.RIGHT_PAREN):
             raise er.DirsParserError(self._curtok, f'Const parse. Expected RIGHT_PAREN or COMMA')
         self._eat_tokens(1)
         if not self._check_type(tt.NEWLINE):
             raise er.DirsParserError(self._curtok, f'Const parse. Expected end of Directive')
-        return dir.ConstsDir[None](items)
 
-    def _const_item(self) -> dir.AssignmentDir[None]:
-        """Один элемент const: ИМЯ = литерал. ИМЯ — IDENTIFIER; значение — STRING
-        или целое (знаковое) число. const(label) и const(a = b) — невалидны."""
-        if not self._check_type(tt.IDENTIFIER):
-            raise er.DirsParserError(self._curtok, f'Const parse. Expected CONST NAME (IDENTIFIER)')
-        key = self._curtok
-        self._eat_tokens(1)
-        if not self._check_type(tt.ASSIGNMENT_OPERATOR):
-            raise er.DirsParserError(self._curtok, f'Const parse. Expected "=" (const needs a literal value)')
-        self._eat_tokens(1)
-        if self._check_type(tt.STRING):
-            value = self._curtok
-            self._eat_tokens(1)
-        elif self._check_type(tt.IDENTIFIER) and self._INT_RE.match(self._curtok.lexeme.strip()):
-            value = self._curtok
-            self._eat_tokens(1)
-        else:
-            raise er.DirsParserError(self._curtok, f'Const parse. Expected INTEGER or STRING literal value')
-        return dir.AssignmentDir[None](key, value)
+        # позиционное сопоставление: количество имён обязано равняться количеству значений
+        if len(names) != len(values):
+            raise er.DirsParserError(self._curtok, f'Const parse. names/values count mismatch')
+        pairs:List[dir.AssignmentDir[None]] = [
+            dir.AssignmentDir[None](n, v) for n, v in zip(names, values)
+        ]
+        return dir.ConstsDir[None](pairs)
 
     # aux operations
     def _is_eof(self) -> bool:
