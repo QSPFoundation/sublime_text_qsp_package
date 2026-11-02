@@ -60,6 +60,7 @@ class PpTokenType(IntEnum):
     ENDIF_STMT = auto()
 
     ASSIGNMENT_OPERATOR = auto()
+    COMMA = auto() # разделитель списка меток в var(a, b, c)
     EQUAL_EQUAL = auto()
     EQUAL_NOT_EQUAL = auto()
     AND_OPERATOR = auto()

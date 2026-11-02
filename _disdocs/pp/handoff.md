@@ -88,11 +88,9 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
 костыль для восстановления скобок. Грамматика различает их
 ([pp_scheme.pest:60-62](./pp_scheme.pest)). Нужны отдельные ноды либо явное единое представление.
 
-**U3. Значения в `var`/присваивании ограничены идентификатором; константы не сделаны.**
-`_assignment_dir` ждёт `IDENTIFIER` справа ([`dirs_parser.py:282-294`](../../QSP.sublime-package/qSpy/preprocessor/dirs_parser.py)),
-то есть `!@pp:var(name = August)` работает лишь как метка-строка; числовые/кавычковые литералы и
-множественные метки (`var(a, b, c)`) — TODO ([preprocessor_todo.md:44-51](./preprocessor_todo.md)).
-`const(...)` ([preprocessor_todo.md:53-68](./preprocessor_todo.md)) не реализовано.
+**U3. Значения в `var`/присваивании и множественные метки.**Числовые/строковые литералы
+и список через запятую (`var(a, b, c = label, 'string', 123)`) реализованы в Фазе 5 — см.
+[## Фазы](#). `const(...)` ([preprocessor_todo.md:53-68](./preprocessor_todo.md)) не реализовано.
 `!@pp:change/by/endchange` (блоки замены, [preprocessor_todo.md:25-38](./preprocessor_todo.md)) — не реализовано,
 предложено отнести к постпроцессору.
 
@@ -204,7 +202,7 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
 - Не заведено: фикстура, прямо упражняющая скобочные блоки в теле локации (`pptest.qsps` их не содержит);
   правка `_QUOTES→.lexeme` доказуемо эквивалентна статически.
 
-### Фаза 5. Новый функционал по грамматике (U3) — ЧАСТИЧНО ГОТОВО
+### Фаза 5. Новый функционал по грамматике (U3) — ГОТОВО (кроме отложенного)
 - **U1 `nopp`:** ЗАКРЫТО. Закомментированные заглушки снесены из
   [`dirs_parser.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_parser.py) (`_cond_resolves`) и
   [`pp_dir.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_dir.py) (`ConditionResolve`). Упоминания
@@ -224,8 +222,20 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
   экранирование (`""`) в значениях директив сознательно НЕ поддержано (значения кратки).
   Контур: [`_pp_var_string_test.py`](../../_examples/.tests/_pp_var_string_test.py) — 4 сценария
   (равенство строки, литерал≠метка, апострофы+спецсимволы, несовпадение→без exclude).
-- **Отложено (по указанию владельца):** `const(...)` и множественные метки `var(a,b,c)` — семантика/
-  необходимость не утверждены; `change/by/endchange` — черновик, не реализуем.
+- **U3 — множественное объявление меток `var(a, b, c = label, 'string', 123)`: ГОТОВО
+  (golden не затронут, sha сохранён).** `var(...)` теперь принимает список через запятую.
+  Сканер директив выдаёт токен `COMMA` ([`pp_tokens.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_tokens.py),
+  [`dirs_scanner.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_scanner.py)); разбор
+  (`_assignment_dir`/`_assignment_item`, [`dirs_parser.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_parser.py))
+  собирает новый узел [`pp_dir.AssignmentsDir`](../../QSP.sublime-package/qSpy/preprocessor/pp_dir.py) — контейнер из
+  `AssignmentDir`. Каждый элемент применяется по прежней per-item семантике
+  (`visit_assignments_dir` → `visit_assignment_dir`, [`dirs_int.py`](../../QSP.sublime-package/qSpy/preprocessor/dirs_int.py));
+  голое имя/число/строка объявляет метку, `имя = значение` — присваивает (строка через `set_literal`).
+  Контур: [`_pp_var_multi_test.py`](../../_examples/.tests/_pp_var_multi_test.py) — 5 сценариев
+  (голые метки, смешанный список из todo, пример владельца со строкой и числом, необъявленная метка,
+  битый `var(a,,b)` без падения).
+- **Отложено (по указанию владельца):** `const(...)` — семантика/необходимость не утверждены;
+  `change/by/endchange` — черновик, не реализуем.
 
 ### Фаза 6. Синхронизация документации
 - Сверить [`pp_scheme.pest`](./pp_scheme.pest) с фактическим поведением после фаз 3–5; расхождения
@@ -238,4 +248,5 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
 2. ~~U1: `nopp` — реализуем или вычёркиваем из спецификации?~~ ЗАКРЫТО: вычёркиваем, `off`/`on` достаточно.
 3. ~~U2: `ParenBlock`/`CodeBlock` — отдельные ноды или единая параметризованная?~~ ЗАКРЫТО: отдельные ноды (Фаза 4).
 4. U3: блоки `change` — препроцессор или постпроцессор? — ОТЛОЖЕНО владельцем (черновик, формат не решён).
-5. U3: `const(...)` и множественные метки `var(a,b,c)` — отложены; нужны утверждённая семантика и формат.
+5. ~~U3: `const(...)` и множественные метки `var(a,b,c)`~~ — множественные метки ЗАКРЫТО (Фаза 5,
+   [`_pp_var_multi_test.py`](../../_examples/.tests/_pp_var_multi_test.py)). `const(...)` остаётся открытым.

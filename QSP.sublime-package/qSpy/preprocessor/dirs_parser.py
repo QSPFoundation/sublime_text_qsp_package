@@ -121,10 +121,10 @@ class DirsParser:
 
         if self._check_type(tt.VAR_STMT):
             self._eat_tokens(1) # пожираем токен объявления переменной
-            assignment_validation:dir.AssignmentDir[None] = self._assignment_dir()
+            var_validation:dir.AssignmentsDir[None] = self._assignment_dir()
             end_assignment = self._curtok # newline ещё не пожрали
             self._eat_tokens(1)
-            return stm.DirectiveStmt[None](pref, lexeme, assignment_validation, end_assignment)
+            return stm.DirectiveStmt[None](pref, lexeme, var_validation, end_assignment)
 
         if self._check_type(tt.IF_STMT):
             self._eat_tokens(1) # пожирем IF_STMT
@@ -258,37 +258,41 @@ class DirsParser:
             
         return expr.EqualExpr[None](operands, operators)
 
-    def _assignment_dir(self) -> dir.AssignmentDir[None]:
-        """Получаем директиву объявления переменной"""
-        # далее должен идти токен скобки
+    def _assignment_dir(self) -> dir.AssignmentsDir[None]:
+        """Получаем директиву объявления меток: var(a, b, c = value, ...).
+        Список через запятую; каждый элемент — ИМЯ или ИМЯ = ЗНАЧЕНИЕ. """
         if not self._check_type(tt.LEFT_PAREN):
             raise er.DirsParserError(self._curtok, f'Assignment parse. Expected LEFT_PAREN')
         self._eat_tokens(1) # поглотили токен скобки
-        # далее идёт идентификатор
-        if not self._check_type(tt.IDENTIFIER):
-            raise er.DirsParserError(self._curtok, f'Assignment parse. Expected VARIABLE NAME')
+        items:List[dir.AssignmentDir[None]] = []
+        while True:
+            items.append(self._assignment_item())
+            if self._check_type(tt.COMMA):
+                self._eat_tokens(1)
+                continue
+            break
+        if not self._check_type(tt.RIGHT_PAREN):
+            raise er.DirsParserError(self._curtok, f'Assignment parse. Expected RIGHT_PAREN or COMMA')
+        self._eat_tokens(1)
+        if not self._check_type(tt.NEWLINE): # директива должна заканчиваться переносом на новую строку
+            raise er.DirsParserError(self._curtok, f'Assignment parse. Expected end of Directive')
+        return dir.AssignmentsDir[None](items)
+
+    def _assignment_item(self) -> dir.AssignmentDir[None]:
+        """Один элемент списка: ИМЯ или ИМЯ = ЗНАЧЕНИЕ (ИМЯ/ЗНАЧЕНИЕ — IDENTIFIER либо STRING)."""
+        if not self._match(tt.IDENTIFIER, tt.STRING):
+            raise er.DirsParserError(self._curtok, f'Assignment parse. Expected VARIABLE NAME (IDENTIFIER/STRING)')
         key = self._curtok
         self._eat_tokens(1)
-        # далее могут идти три варианта
-        if self._check_type(tt.RIGHT_PAREN) and self._next_peek().ttype == tt.NEWLINE:
-            # правая скобка и newline означают, что объявление завершено
-            self._eat_tokens(1) # newline не пожираем
-            return dir.AssignmentDir[None](key, None)
         if self._check_type(tt.ASSIGNMENT_OPERATOR):
             self._eat_tokens(1)
             if not self._match(tt.IDENTIFIER, tt.STRING):
                 raise er.DirsParserError(self._curtok, f'Assignment parse. Expected IDENTIFIER or STRING (ex. variable name/value)')
             value = self._curtok
             self._eat_tokens(1)
-            if not self._check_type(tt.RIGHT_PAREN):
-                raise er.DirsParserError(self._curtok, f'Assignment parse. Expected RIGHT_PAREN')
-            self._eat_tokens(1)
-            if not self._check_type(tt.NEWLINE): # директива должна заканчиваться переносом на новую строку
-                raise er.DirsParserError(self._curtok, f'Assignment parse. Expected end of Directive')
-            # теперь, когда вся валидация пройдена возвращаем присвоение
             return dir.AssignmentDir[None](key, value)
-        # любой другой токен означает, что что-то сломано в комманде
-        raise er.DirsParserError(self._curtok, f'Assignment parse. Unexpected token in assignment')
+        # голый элемент — просто объявление метки
+        return dir.AssignmentDir[None](key, None)
 
     # aux operations
     def _is_eof(self) -> bool:

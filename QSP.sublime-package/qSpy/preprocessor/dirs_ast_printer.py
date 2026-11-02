@@ -108,6 +108,13 @@ class DirsAstPrinter(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisi
             'value': [self._token(stmt.key)] + ([self._token(stmt.value)] if stmt.value else [])
         }
 
+    def visit_assignments_dir(self, stmt: dir.AssignmentsDir[AstNode]) -> AstNode:
+        return {
+            'type': 'dir',
+            'class': 'AssignmentsDir',
+            'value': [a.accept(self) for a in stmt.assignments]
+        }
+
     def visit_condition_dir(self, stmt: dir.ConditionDir[AstNode]) -> AstNode:
         return {
             'type': 'dir',

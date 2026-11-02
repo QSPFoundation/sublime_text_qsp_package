@@ -47,6 +47,10 @@ class PpVisitor(ABC, Generic[R]):
         ...
 
     @abstractmethod
+    def visit_assignments_dir(self, stmt:'AssignmentsDir[R]') -> R:
+        ...
+
+    @abstractmethod
     def visit_condition_dir(self, stmt:'ConditionDir[R]') -> R:
         ...
 
@@ -98,6 +102,14 @@ class AssignmentDir(PpDir[R]):
     value:Optional[PpToken]
     def accept(self, visitor: 'PpVisitor[R]') -> R:
         return visitor.visit_assignment_dir(self)
+
+@dataclass(eq=False)
+class AssignmentsDir(PpDir[R]):
+    """ Список объявлений меток: var(a, b, c = label, 'string', 123).
+    Каждый элемент — либо просто метка (value is None), либо метка со значением. """
+    assignments:List['AssignmentDir[R]']
+    def accept(self, visitor: 'PpVisitor[R]') -> R:
+        return visitor.visit_assignments_dir(self)
 
 @dataclass(eq=False)
 class ConditionDir(PpDir[R]):

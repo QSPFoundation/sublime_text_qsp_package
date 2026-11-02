@@ -163,6 +163,9 @@ class DirsScaner:
             self._add_token(tt.LEFT_PAREN)
         elif c == ")":
             self._add_token(tt.RIGHT_PAREN)
+        elif c == ",":
+            # разделитель списка меток в var(a, b, c)
+            self._add_token(tt.COMMA)
         elif c == "=":
             # Либо это assignment либо начало equal
             if self._next_in_line() != "=":    # assignment

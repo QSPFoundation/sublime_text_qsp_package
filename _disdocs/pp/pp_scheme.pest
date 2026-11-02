@@ -87,10 +87,14 @@ QspsPP {
 
     // complex
     IfDirective = ifStmt leftParen ConditionExpr rightParen thenStmt ConditionResolve+
-    DefineVarDirective = varStmt leftParen DefineVarExpression rightParen
+    DefineVarDirective = varStmt leftParen DefineVarList rightParen
 
-    // define var
-    DefineVarExpression = varName (assignmentOperator varName)?
+    // define var: список меток через запятую; каждый элемент — метка или метка=значение.
+    // Имя/значение — идентификатор (слово или число) либо строковый литерал.
+    DefineVarList = DefineVarItem (dirComma DefineVarItem)*
+    DefineVarItem = dirValue (assignmentOperator dirValue)?
+    dirValue = varName | stringLiteral
+    dirComma = ","
 
     // Equal Expression /in priority/
     ConditionExpr = OrExpr

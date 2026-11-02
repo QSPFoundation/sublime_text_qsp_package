@@ -113,6 +113,11 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
 
     # Directives
 
+    def visit_assignments_dir(self, stmt: dir.AssignmentsDir[AstNode]) -> AstNode:
+        # var(a, b, c = value, ...): каждый элемент применяется по той же семантике
+        for item in stmt.assignments:
+            item.accept(self)
+
     def visit_assignment_dir(self, stmt: dir.AssignmentDir[AstNode]) -> AstNode:
         # объявление переменной (с присвоением, опционально)
         key = stmt.key.lexeme
