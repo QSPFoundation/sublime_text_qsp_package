@@ -24,7 +24,7 @@
 - [`pp_parser.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_parser.py) `PpParser` →
 - [`pp_int.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_int.py) `PpInt` — собирает выходные строки, применяя флаги разметки.
 
-Общее: [`pp_tokens.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_tokens.py) (токены/enum), [`pp_environment.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_environment.py) (метки), [`error.py`](../../QSP.sublime-package/qSpy/preprocessor/error.py), printing: `dirs_ast_printer.py`, `pp_ast_printer.py`.
+Общее: [`pp_tokens.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_tokens.py) (токены/enum), [`pp_common.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_common.py) (модель строк `QspsLine`/`MarkedLine` + хелперы `is_word_char`/`expected_chars`), [`pp_environment.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_environment.py) (метки), [`error.py`](../../QSP.sublime-package/qSpy/preprocessor/error.py), printing: `dirs_ast_printer.py`, `pp_ast_printer.py`.
 
 Вызов из [`builder.py`](../../QSP.sublime-package/qSpy/builder.py) (`pp_switch != 'Hard-off'` → создаётся `QspsPP`).
 
@@ -150,11 +150,19 @@ keyword-а, разбора, узла и `visit_nopp_dir` нет.
   (`fast_output` vs `get_output`, фолбэк `['\n']`) трогает debug-артефакты и путь пустого вывода —
   поведенчески рискованна, переносится на Фазу 2 (общий слой) / отдельной правкой.
 
-### Фаза 2. Общий слой типов/утилит (Q1)
-- Создать `pp_common.py` (или расширить `pp_tokens.py`): `MarkedLine`, `LineNum`, `QspsLine`,
-  `Point`, стек-хелперы, `_is_alnum`, `_add_expected_chars`.Parametrized фабрика ошибок
-  (`SyntaxError`-подобные vs `RuntimeError`-подобные) вместо 8 почти копий.
-- Перевести 4 файла на общий слой; поведение не меняется → golden тесты зелёные.
+### Фаза 2. Общий слой типов/утилит (Q1) — ГОТОВО (golden зелёный, sha не изменился)
+- создан [`pp_common.py`](../../QSP.sublime-package/qSpy/preprocessor/pp_common.py): модель строк
+  (`QspsLine`, `QspsLines`, `NoSaveComm`, `IncludeLine`, `MarkedLine`) + хелперы
+  (`is_word_char`, `expected_chars`). Единственный источник этих типов.
+- `dirs_scanner`/`pp_scanner`: убраны локальные дубли `QspsLine`/`MarkedLine`/`Point`,
+  методы `_is_alnum`/`_add_expected_chars` заменены на вызовы `pp_common`; мёртвый `_is_alnum`
+  в `pp_scanner` удалён.
+- `dirs_int`/`pp_int`/`main`: типы строк-модели импортируются из `pp_common` (не переобъявляются).
+- `error.py`: 6 почти-копий `*RunError` свёрнуты в базу `_RunError` (наследники различаются только
+  `label`); имена классов и текст `__str__` сохранены дословно → `except` в `main.py` работает.
+- Оставлено на потом: `SyntaxError`-семья не трогалась (у них разная сигнатура конструкторов —
+  не «копии»); мёртвый `Modes`/`loc` в `pp_int` — это B5, чинится в Фазе 3; унификация контракта
+  возврата (`fast_output`/`get_output`, `['\n']`, Q5) — отдельной правкой.
 
 ### Фаза 3. Корректность стадии директив (B2/B3/B4)
 - **B2/B3:** в `DirsInt` ввести счётчик глубины `if` (инкремент на `if`-директиве независимо от

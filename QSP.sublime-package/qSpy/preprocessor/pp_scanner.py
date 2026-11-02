@@ -1,24 +1,13 @@
-from typing import Callable, List, Tuple, Literal
+from typing import Callable, List, Literal
 
 from .pp_tokens import PpToken as tkn, TokenNode
 from .pp_tokens import PpTokenType as tt
+from .pp_tokens import LineNum, CharNum, Point
+from .pp_common import MarkedLine, expected_chars
 from . import error as er
-
-LineNum = int
-CharNum = int
-Point = Tuple[LineNum, CharNum]
 
 Char = str
 Stack = List[Char]
-
-QspsLine = str
-NoSaveComm = Literal[True, False]
-IncludeLine = Literal[True, False]
-MarkedLine = Tuple[
-    QspsLine,
-    NoSaveComm,
-    IncludeLine
-]
 
 class PpScanner:
     """ Scanner for QspsPP. """
@@ -175,10 +164,10 @@ class PpScanner:
             self._scan_funcs.append(self._loc_close_expect)
         elif c == '!' and cn+2 < self._line_len and self._line[0][cn:cn+3] == '!@<':
             # токен коммента под удаление строки
-            self._add_expected_chars('@<')
+            self._prepend_chars = expected_chars('@<')
             self._scan_funcs.append(self._less_spec_comm_tkn_expect)
         elif c == '!' and cn+1 < self._line_len and self._line[0][cn:cn+2] == '!@':
-            self._add_expected_chars('@')
+            self._prepend_chars = expected_chars('@')
             self._scan_funcs.append(self._spec_comm_tkn_expect)
         elif c == '!':
             # токен простого комментария
@@ -263,10 +252,6 @@ class PpScanner:
             self._scan_funcs.pop()
 
     # вспомогательные методы
-    def _is_alnum(self, s:str) -> bool:
-        """ is \\w ? """
-        return s.isalnum() or s == '_'
-
     def _current_is_last_in_line(self) -> bool:
         """ Является ли текущий символ последним в строке? """
         return self._curchar == self._line_len - 1
@@ -314,8 +299,3 @@ class PpScanner:
             self._line[2]))
 
         self._curlexeme.clear()
-
-    def _add_expected_chars(self, chars:str) -> None:
-        """Правильно добавляет ожидаемую последовательность символов. """
-        self._prepend_chars = list(chars)
-        self._prepend_chars.reverse()

@@ -12,7 +12,8 @@ from .dirs_int import DirsInt
 
 from .pp_scanner import PpScanner
 from .pp_parser import PpParser, PpStmt
-from .pp_int import MarkedLine, PpInt, QspsLine
+from .pp_int import PpInt
+from .pp_common import QspsLine, MarkedLine
 
 from . import error as er
 

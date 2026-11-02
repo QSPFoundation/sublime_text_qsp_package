@@ -1,6 +1,7 @@
 from typing import List, Dict, Union, Literal, Tuple, cast
 
 from .pp_tokens import LineNum, PpToken, PpTokenType as tt
+from .pp_common import QspsLine, NoSaveComm, IncludeLine, MarkedLine
 
 from . import pp_stmts as stm
 
@@ -14,14 +15,6 @@ Modes = Dict[
         'loc'
     ],
     bool]
-QspsLine = str
-NoSaveComm = Literal[True, False]
-IncludeLine = Literal[True, False]
-MarkedLine = Tuple[
-    QspsLine,
-    NoSaveComm,
-    IncludeLine
-]
 CommentSignal = Literal[
     '', # комментарий исключён, удаляется
     'less_spec_comm', # Удаляется комментарий и вся цепочка операторов до него

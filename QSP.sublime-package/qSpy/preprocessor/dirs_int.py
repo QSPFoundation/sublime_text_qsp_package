@@ -1,7 +1,8 @@
-from typing import List, Dict, Union, Literal, Tuple, cast, Optional
+from typing import List, Dict, Union, Literal, cast, Optional
 
 # from pp_tokens import PpTokenType as tt
 from .pp_tokens import LineNum
+from .pp_common import QspsLine, MarkedLine
 
 from . import dirs_stmts as stm
 from . import pp_expr as expr
@@ -19,14 +20,6 @@ Modes = Dict[
         'include',
     ],
     bool]
-QspsLine = str
-NoSaveComm = Literal[True, False]
-IncludeLine = Literal[True, False]
-MarkedLine = Tuple[
-    QspsLine,
-    NoSaveComm,
-    IncludeLine
-]
 
 class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[AstNode]):
     """ Интерпретатор директив препроцессора.

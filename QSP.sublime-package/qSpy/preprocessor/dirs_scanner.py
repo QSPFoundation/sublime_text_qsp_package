@@ -2,6 +2,7 @@ from typing import List, Dict, Tuple, Callable
 
 from .pp_tokens import PpToken as Tkn, TokenNode
 from .pp_tokens import PpTokenType as tt
+from .pp_common import QspsLine, QspsLines, is_word_char, expected_chars
 from . import error as er
 
 ScanHandler = Callable[[str], None]
@@ -9,8 +10,6 @@ HandlerStack = List[ScanHandler]
 
 Char = str
 CharsStack = List[Char]
-QspsLine = str
-QspsLines = List[QspsLine]
 
 
 class DirsScaner:
@@ -107,7 +106,7 @@ class DirsScaner:
                     self._add_token(tt.PREFORMATTER)
             elif c == "!" and self._line_len >= 5 and self._cur_line[0:5] == '!@pp:':
                 # Начало директивы препроцессора. Это однозначно, осталось поглотить токен.
-                self._add_expected_chars('@pp:')
+                self._prepend_chars = expected_chars('@pp:')
                 self._scan_funcs.append(self._pp_directive_stmt_expect)
             elif c == '\n':
                 self._add_token(tt.QSPS_LINE)
@@ -121,7 +120,7 @@ class DirsScaner:
             # если до этого мы поглощали токен преформатирования
             if c == "!" and len(self._cur_line[cn:]) > 5 and self._cur_line[cn:cn+5] == '!@pp:':
                 # имеем дело с диррективой
-                self._add_expected_chars('@pp:')
+                self._prepend_chars = expected_chars('@pp:')
                 self._scan_funcs.append(self._pp_directive_stmt_expect)
             elif c == '\n':
                 self._add_token(tt.QSPS_LINE)
@@ -175,10 +174,10 @@ class DirsScaner:
                 self._scan_funcs.append(self._qsps_line_expect)
             else:
                 self._scan_funcs.append(self._equal_expect)
-        elif self._is_alnum(c):
+        elif is_word_char(c):
             # если это \w, ожидается, что мы имеем дело с идентификатором
             # ключевым словом и т.п.
-            if self._is_alnum(self._next_in_line()):
+            if is_word_char(self._next_in_line()):
                 self._scan_funcs.append(self._identifier_expect)
             else:
                 ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER)
@@ -210,7 +209,7 @@ class DirsScaner:
         """ Сборка идентификатора директивы препроцессора. """
         # Если следующий символ не буква, не цифра и не символ подчёркивания, закрываем
         next_char = self._next_in_line()
-        if not self._is_alnum(next_char):
+        if not is_word_char(next_char):
             ttype:tt = self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER)
             self._add_token(ttype)
             self._scan_funcs.pop()
@@ -235,10 +234,6 @@ class DirsScaner:
             self._scan_funcs.pop() # отключаем поглощение
 
     # вспомогательные методы
-    def _is_alnum(self, s:str) -> bool:
-        """ is \\w ? """
-        return s.isalnum() or s == '_'
-
     def _current_is_last_in_line(self) -> bool:
         """ Является ли текущий символ последним в строке? """
         return self._current == self._line_len - 1
@@ -276,8 +271,3 @@ class DirsScaner:
             self._start_lexeme))
 
         self._curlexeme.clear()
-
-    def _add_expected_chars(self, chars:str) -> None:
-        """Правильно добавляет ожидаемую последовательность символов. """
-        self._prepend_chars = list(chars)
-        self._prepend_chars.reverse()
