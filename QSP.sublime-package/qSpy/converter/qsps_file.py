@@ -83,7 +83,7 @@ class QspsFile():
 				match = LOCATION_START.search(qsps_line)
 				if match:
 					# open location
-					mode['loc_name'] = match.group(1).replace('\r', '')
+					mode['loc_name'] = match.group(1).rstrip()
 					mode['region'] = (offset + match.start(1), offset + match.end(1))
 				else:
 					# если локация ещё не открыта, пропускаем строки
