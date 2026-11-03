@@ -81,8 +81,14 @@ class QspsLoc():
                 parse_string(qsps_line, mode)
 
         if start != end:
-            self._base_code = self._code[start+1:end]
-            self._run_on_visit = self._code[0:start]+self._code[end+1:]
+            if end == -1:
+                # `! BASE` открыт и не закрыт `! END BASE`: base не выделяем,
+                # весь код локации уходит в run_on_visit; сигнализация в консоль
+                print(f'Незакрытый блок "! BASE" в локации "{self._name}"')
+                self._run_on_visit = self._code[:]
+            else:
+                self._base_code = self._code[start+1:end]
+                self._run_on_visit = self._code[0:start]+self._code[end+1:]
         else:
             self._run_on_visit = self._code[:]
 
