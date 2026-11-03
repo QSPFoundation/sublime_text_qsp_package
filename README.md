@@ -727,11 +727,11 @@ UnicodeEncodeError: 'charmap' codec can't encode character '\u2191' in position 
 * [Обучение HTML и CSS, плюс немного JS](https://mega.nz/folder/WXhkWLSI#WmF8uN01JeuIyopuCtGlMw)
 
 **Новые версии плеера:**
-* werewolf (**qSpider**) — основной плеер, рекомендуемый к использованию: https://qsp.org/index.php?option=com_agora&task=topic&id=1291&Itemid=57
-* Nex (**Quest Navigator**): https://qsp.org/index.php?option=com_agora&task=topic&id=633&Itemid=57
-* **Sonnix** (Плеер с поддержкой webm): https://qsp.org/index.php?option=com_agora&task=topic&id=1192&p=1&prc=25&Itemid=57#p26813
-* Seedheartha (**Quest Player Fork для андроид**): https://qsp.org/index.php?option=com_agora&task=topic&id=128&p=10&prc=25&Itemid=57#p27855
-* mr_salt (**Questopia** для андроид) https://4pda.to/forum/index.php?showtopic=215110&st=400 
+* werewolf (**qSpider**) — основной плеер, рекомендуемый к использованию:
+	- [на гитхабе](https://github.com/QSPFoundation/qspider)
+	- [обсуждение](https://qsp.org/forum/1013-q-spider-pleer-dla-zapuska-qsp-igr-v-brauzere)
+* [l3ger0j](https://github.com/l3ger0j) — **Quasporium** для Андроид: https://github.com/QSPFoundation/quasporium
+* [rrockru](https://github.com/rrockru) — **QSPNext** (мультиплатформенный, можно играть в браузере): https://rrock.dev/qspnext/
 
 Поблагодарите отца-основателя платформы Байта: https://qsp.org/index.php?option=com_comprofiler&Itemid=20&user=66
 

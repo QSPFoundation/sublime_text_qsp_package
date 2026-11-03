@@ -130,8 +130,9 @@ class QspsLoc():
                     qsps_lines.append('END\n')
             qsps_lines.append("! END BASE\n")
         qsps_lines.extend(self._run_on_visit)
-        n = '\n' if self._run_on_visit[-1][-1] != '\n' else ''
-        qsps_lines.append(f"{n}-- {self._name} " + ("-" * 33))
+        if self._run_on_visit and self._run_on_visit[-1][-1] != '\n':
+            qsps_lines.append('\n')   # терминатор последней строки кода (защита от пустого run_on_visit)
+        qsps_lines.append(f'-- {self._name} ' + ('-' * 33) + '\n')
         return qsps_lines
     
     @staticmethod
