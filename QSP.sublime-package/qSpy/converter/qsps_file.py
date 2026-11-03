@@ -94,10 +94,21 @@ class QspsFile():
 				self._loc_symbols.append((mode['loc_name'], mode['region']))
 				mode['loc_name'] = ''
 				mode['src_lines'].clear()
+				mode['quote'].clear()	# стек и так пуст (guard выше) — сброс на всякий случай
 			else:
 				parse_string(qsps_line, mode)
 				mode['src_lines'].append(qsps_line)
 			offset += len(qsps_line)
+
+		if mode['loc_name'] != '':
+			# локация не закрыта маркером `--` до конца файла — принудительно закрываем
+			print(f'Неожиданный конец локации "{mode["loc_name"]}", файл: {self._input_file}')
+			if mode['src_lines']:
+				self._locations.append(QspsLoc(mode['loc_name'], mode['src_lines'], mode['region']))
+				self._loc_symbols.append((mode['loc_name'], mode['region']))
+			mode['loc_name'] = ''
+			mode['src_lines'].clear()
+			mode['quote'].clear()
 
 	def append_location(self, location:QspsLoc) -> None:
 		""" Add location in QspsFile """

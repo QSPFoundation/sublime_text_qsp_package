@@ -52,6 +52,28 @@ if __name__ == "__main__":
         parse_string('"', mode)
         assert mode['quote'] == [], f"Стек должен быть пуст после закрытия кавычки: {mode['quote']}"
 
+        # Тест 9: Кавычки внутри фигурных скобок учитываются (закрытый блок)
+        mode = {'open_base': False, 'quote': []}
+        parse_string("x = {'abc'}", mode)
+        assert mode['quote'] == [], f"Закрытый блок с апострофами внутри не должен оставлять слой: {mode['quote']}"
+
+        # Тест 10: Кавычки внутри фигурных скобок учитываются (незакрытая кавычка)
+        mode = {'open_base': False, 'quote': []}
+        parse_string('text = {"one', mode)
+        assert mode['quote'] == ['{', '"'], f"Ожидается слой фигурной скобки и кавычки: {mode['quote']}"
+        parse_string('two" }', mode)
+        assert mode['quote'] == [], f"Кавычка и скобка должны закрыться по слоям: {mode['quote']}"
+
+        # Тест 11: Вложенные фигурные скобки
+        mode = {'open_base': False, 'quote': []}
+        parse_string('{{}', mode)
+        assert mode['quote'] == ['{'], f"Ожидается одна незакрытая внешняя скобка: {mode['quote']}"
+
+        # Тест 12: Фигурные скобки внутри апострофов не учитываются
+        mode = {'open_base': False, 'quote': []}
+        parse_string("say = '{не {важно} для стека}' + 'text'", mode)
+        assert mode['quote'] == [], f"Скобки в апострофах должны игнорироваться: {mode['quote']}"
+
         # print("Все тесты parse_string пройдены корректно.")
 
     # Для ручного запуска

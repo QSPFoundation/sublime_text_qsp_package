@@ -9,18 +9,21 @@ from .tps import (
 QSP_CODREMOV = 5 # const of cyphering
 
 def parse_string(qsps_line:QspsLine, mode:ParseStringMode) -> None:
-    """ Parse opened string for location code and return open string chars """
+    """ Parse opened string for location code and return open string chars.
+
+        Модель слоёв стека `mode['quote']`:
+        - внутри `"..."` / `'...'` фигурные скобки не учитываются;
+        - внутри `{...}` кавычки и апострофы учитываются (свои слои стека);
+        - фигурные скобки могут быть вложенными друг в друга.
+        """
     for char in qsps_line:
         if not mode['quote']:
             if char in ('"', '\'', '{'): mode['quote'].append(char)
-        else:
-            if not char in ('"', "'", "{", "}"): continue
-            if char in ('"', '\'') and mode['quote'][-1] == char:
-                mode['quote'].pop()
-            elif char == '}' and mode['quote'][-1] == '{':
-                mode['quote'].pop()
-            elif char == '{' and not mode['quote'][-1] in ('"', '\''):
-                mode['quote'].append(char)
+        elif mode['quote'][-1] == '{':
+            if char in ('{', '"', '\''): mode['quote'].append(char)
+            elif char == '}': mode['quote'].pop()
+        elif char == mode['quote'][-1]:
+            mode['quote'].pop()
 
 def del_first_pref(lines:List[str]) -> List[str]:
 	"""
