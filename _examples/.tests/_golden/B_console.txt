@@ -1,0 +1,46 @@
+
+Base-Int Error! Do not use condition in Base Block.: [15] 	if sa = 1:
+Base-Int Error! Do not use condition in Base Block.: [18] 	  if lcase($sav2)='веник': add obj 'Веник'
+Base-Int Error! Do not use condition in Base Block.: [19] 	  if no obj 'Веник':
+Base-Int Error! Do not use condition in Base Block.: [26] 	if sa!1: msg 'Сначала первый вопрос!'  
+Base-Int Error! Do not use condition in Base Block.: [4] 	if (lcase($sav)= 'цветочный горшок')or(lcase($sav)='горшок'):
+Base-Int Error! Do not use condition in Base Block.: [8] 	if sa!1:
+Base-Int Error! Implicit Statement not work for Base Description.: [11] 	end
+Base-Int Error! Implicit Statement not work for Base Description.: [12] 	
+Base-Int Error! Implicit Statement not work for Base Description.: [13] END
+Base-Int Error! Implicit Statement not work for Base Description.: [16] 	  cha=2
+Base-Int Error! Implicit Statement not work for Base Description.: [16] END
+Base-Int Error! Implicit Statement not work for Base Description.: [17] 	  $sav2=input('Что осталось у в лапках у Бузюли в самом конце?')
+Base-Int Error! Implicit Statement not work for Base Description.: [19] END
+Base-Int Error! Implicit Statement not work for Base Description.: [22] 	  end
+Base-Int Error! Implicit Statement not work for Base Description.: [25] 	end
+Base-Int Error! Implicit Statement not work for Base Description.: [27] 	  
+Base-Int Error! Implicit Statement not work for Base Description.: [28] END
+Base-Int Error! Implicit Statement not work for Base Description.: [31] END
+Base-Int Error! Implicit Statement not work for Base Description.: [3] 	$sav = input('Какой предмет помог Укузе разбудить Бузюлю?')
+Base-Int Error! Implicit Statement not work for Base Description.: [3] END
+Base-Int Error! Implicit Statement not work for Base Description.: [5] 	  sa =1
+Base-Int Error! Implicit Statement not work for Base Description.: [7] 	end
+Base-Int Error! Unknown Statement in Base Block.: [10] 	  msg 'Начните сначала'
+Base-Int Error! Unknown Statement in Base Block.: [11] 	gosub 'menu'
+Base-Int Error! Unknown Statement in Base Block.: [12] 	goto 'norka'
+Base-Int Error! Unknown Statement in Base Block.: [15] 	goto 'proect'
+Base-Int Error! Unknown Statement in Base Block.: [18] 	goto 'saves'
+Base-Int Error! Unknown Statement in Base Block.: [20] 	    msg ($sav2 + ' - неправильный ответ, поэтому после загрузки у Вас ничего не останется!')
+Base-Int Error! Unknown Statement in Base Block.: [21] 	    msg 'Не печальтесь, это не принципиально.'
+Base-Int Error! Unknown Statement in Base Block.: [23] 	  msg 'Ну поехали!'
+Base-Int Error! Unknown Statement in Base Block.: [24] 	  goto 'zagruz'
+Base-Int Error! Unknown Statement in Base Block.: [2] 	goto 'Начало'
+Base-Int Error! Unknown Statement in Base Block.: [30] 	goto 'Начало'
+Base-Int Error! Unknown Statement in Base Block.: [6] 	  msg 'Правильно! Ответьте на второй вопрос!'
+Base-Int Error! Unknown Statement in Base Block.: [9] 	  msg 'Увы и ах! Все было не так!'
+Base-Int Error! Use multiline actions for Base Actions.: [10] ACT 'Начать!':
+Base-Int Error! Use multiline actions for Base Actions.: [14] ACT 'Вопрос2':
+Base-Int Error! Use multiline actions for Base Actions.: [14] ACT 'Проект':
+Base-Int Error! Use multiline actions for Base Actions.: [17] ACT 'Загрузить':
+Base-Int Error! Use multiline actions for Base Actions.: [1] ACT 'Обратно':
+Base-Int Error! Use multiline actions for Base Actions.: [29] ACT 'Вернуться':
+Base-Int Error! Use multiline actions for Base Actions.: [2] ACT 'Вопрос1':
+Base-Int Error! Use simple string for Expression.: [0] *P 'Вообще-то, планируется все это озвучить и даже нарисовать. Но сначала стоит дописать все до конца. Это - просто завязка сюжета, а что там будет дальше, я пока не знаю. Отзывы и идеи принимаются по адресу: t_tanusha@yahoo.com. '
+Base-Int Error! Use simple string for Expression.: [0] *P 'Если Вы проходили первую часть, ответьте на контрольные вопросы!
+Base-Int Error! Use simple string for Expression.: [0] *P 'Укузя 1.2
