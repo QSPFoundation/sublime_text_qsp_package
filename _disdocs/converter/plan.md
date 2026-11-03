@@ -125,15 +125,24 @@ Q10 решён (print — сток, наружу через accessor). Пины 
   `IDENTIFIER 'P '` (проверено в токен-дампе). QSP-движок регистронезависим → разойдётся
   с подсветкой и реальными qsps-файлами (в фикстуре уukuzya встречается и `*P`, и `*p`).
 
-### B9. `converters.QspsToQspBuiltinConv` — гонка в общем кэше
+### B9. `converters.QspsToQspBuiltinConv` — гонка в общем кэше — **ФИКС ПРИМЕНЁН (2026-11-04)**
 
-Классовый `_char_cache: CharCache = {}` мутируется из `ThreadPoolExecutor(max_workers=32)`
-в `encode_qsps_line`. Под CPython это benign-gonna-race (идемпотентная запись), но
-формально небезопасно и не документировано. Закомментированная диагностика потоков
-(строки 69–70, 73, 109–113) — мусор.
-**Также:** `*args` в `__init__` builtin-конвертера молча игнорируются;
-`handle_temp_file()` **никогда не вызывается** для builtin-конвертера (`convert_file` не
-зовёт) — мёртвая функция на живом месте.
+Классовый `_char_cache: CharCache = {}` мутировался из `ThreadPoolExecutor(max_workers=32)`
+в `encode_qsps_line`. Под GIL-CPython это был benign-race (идемпотентная запись), но формально
+небезопасно, а под **free-threaded CPython 3.14** (среда Sublime Text) — уже настоящий data
+race, и общий изменяемый dict к тому же душит масштабирование потоков.
+**Решение (C3, 2026-11-04):** удалены `_char_cache` и `encode_char`; кодирование `qsps→qsp`
+(чистый сдвиг кодовой точки на `-QSP_CODREMOV`) идёт через **неизменяемую** таблицу
+`ENCODE_TABLE` (`dict ordinal→ordinal` на BMP, строится один раз при импорте) + `str.translate`.
+Общего изменяемого состояния нет → гонки нет. `ThreadPoolExecutor` **оставлен** (3.14 реально
+параллелит потоки); отказ от него и замер скорости — отдельной веткой позже. Golden roundtrip
+— PASS (все снапшоты побайтово равны baseline).
+**Осталось в B9:** `*args` в `__init__` builtin-конвертера молча игнорируются (builder передаёт
+`_conv_path`/`_conv_args`); судьба `handle_temp_file()` builtin — рядом с Q8 (вызывается из
+`builder`, но НЕ из пути `convert_file` в `QSP.py`; удалить/подключить — решить вместе с Q8).
+_(Поправка к прежней формулировке: «закомментированной диагностики потоков» и `import threading`
+в файле нет — это было вычищено раньше; «никогда не вызывается» про `handle_temp_file` — неверно,
+он вызывается в `builder._qsps_build`, не вызывается только в пути `convert_file`.)_
 
 ### B10. `QspsToQspOuterConv`
 

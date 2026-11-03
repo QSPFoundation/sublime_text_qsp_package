@@ -1,4 +1,4 @@
-# python 3.8
+# CPython 3.14 (Sublime Text; free-threaded сборка — потоки параллелятся по-настоящему)
 import os
 from typing import Dict, List, Literal
 
@@ -9,6 +9,14 @@ from .tps import (
 )
 CharCache = Dict[GameChar, QspsChar]
 Encoding = Literal['utf-16-le', 'utf-8-sig', 'utf-8', 'cp1251']
+
+# Таблица декодирования «qsp ±5» (аналог B9 в converters.py): единый НЕизменяемый dict
+# ordinal→ordinal, строится один раз при импорте — вместо разделяемого ИЗМЕНЯЕМОГО _char_cache.
+# Декод qsp→qsps — чистый посимвольный сдвиг кодовой точки на +QSP_CODREMOV: символ cp уходит
+# в cp+QSP_CODREMOV (обратная операция к ENCODE_TABLE). str.translate только ЧИТАЕТ таблицу.
+# Покрывает BMP; астральные (> U+FFFF) translate оставляет без изменения (движок BMP-only).
+# cp1251-ветка (decode_cp1251_char) сюда не входит: там ПОБАЙТОВЫЙ сдвиг, а не сдвиг точки.
+DECODE_TABLE = {cp: cp + QSP_CODREMOV for cp in range(0, 0x10000)}
 
 class ValidationFormatError(ValueError):
 
@@ -21,7 +29,8 @@ class QspToQspsBuiltinConv():
 	"""Converter ".qsp" game files into qsps-files. Based on converter by Werewolf in JS.
 	stand `game-file` and run script for getting qsps-format file"""
 
-	_char_cache:CharCache = {}
+	# ВНИМАНИЕ: `_char_cache` упразднён (декод идёт через DECODE_TABLE); остаётся только
+	# `_cp1251_cache` для легаси-ветки cp1251 (побайтовый сдвиг).
 	_cp1251_cache:CharCache = {}
 
 	def __init__(self) -> None:
@@ -230,20 +239,8 @@ class QspToQspsBuiltinConv():
 
 	@staticmethod
 	def decode_qsp_line(qsp_line:GameLine) -> QspsLine:
-		""" Decode qsp-line. """
-		cache = QspToQspsBuiltinConv._char_cache
-		exit_lines:List[QspsLine] = []
-		_decode_char = QspToQspsBuiltinConv.decode_char
-
-		for char in qsp_line:
-			if char not in cache:
-				cache[char] = _decode_char(char)
-			exit_lines.append(cache[char])
-		return ''.join(exit_lines)
-
-	@staticmethod
-	def decode_char(point:GameChar) -> QspsChar:
-		return (chr(QSP_CODREMOV) if ord(point) == -QSP_CODREMOV else chr(ord(point) + QSP_CODREMOV))
+		""" Decode qsp-line: посимвольный сдвиг на +QSP_CODREMOV через неизменяемую DECODE_TABLE. """
+		return qsp_line.translate(DECODE_TABLE)
 
 	@staticmethod
 	def decode_cp1251_qsp_line(qsp_line:GameLine) -> QspsLine:

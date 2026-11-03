@@ -5,7 +5,7 @@ import concurrent.futures
 from typing import List, Optional
 
 from .tps import (
-    QspsLine, Path, GameChar, QspsChar, CharCache
+    QspsLine, Path
 )
 from .qsps_file import QspsFile
 from .qsp_location import QspsLoc
@@ -16,6 +16,15 @@ AppPath = Path
 AppParam = str
 
 GameLine = str # QSP-line string
+
+# Таблица кодирования «qsp ±5» (B9): единый НЕизменяемый dict ordinal→ordinal, строится
+# один раз при импорте — вместо прежнего разделяемого ИЗМЕНЯЕМОГО _char_cache. Кодирование
+# qsps→qsp — чистый посимвольный сдвиг кодовой точки на -QSP_CODREMOV: символ cp уходит в
+# cp-QSP_CODREMOV. str.translate только ЧИТАЕТ таблицу, поэтому при вызове encode_qsps_line
+# из ThreadPoolExecutor гонки нет. Диапазон: BMP начиная с QSP_CODREMOV+1 (точки ниже неё не
+# сдвигаются — на них chr() от отрицательного падал и раньше); астральные (> U+FFFF)
+# translate оставляет без изменения — QSP-движок фактически BMP-only.
+ENCODE_TABLE = {cp: cp - QSP_CODREMOV for cp in range(QSP_CODREMOV + 1, 0x10000)}
 
 class QspsToQspConverter(ABC):
 
@@ -47,8 +56,6 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
     #   - Получить строки, сконвертировать, вернуть сконвертированные: .convert_lines()
     #   - Получить файл, сконвертировать сохранить: .convert_file()
     #   - Получить строки, сконвертировать, сохранить: .convert_lines() + .save_to_file()
-
-    _char_cache:CharCache = {}
 
     def __init__(self, output_file:Path, save_temp_files:bool, *args:str) -> None:
         super().__init__(output_file, save_temp_files)
@@ -131,22 +138,10 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
             file.writelines(self._qsps_file.get_src())
 
     @staticmethod
-    def encode_char(point:QspsChar) -> GameChar:
-        """ Encode char. """
-        return chr(-QSP_CODREMOV) if ord(point) == QSP_CODREMOV else chr(ord(point) - QSP_CODREMOV)
-
-    @staticmethod
     def encode_qsps_line(qsps_line:QspsLine) -> GameLine:
-        """ Decode qsps_line to qsp_coded_line """
-        cache = QspsToQspBuiltinConv._char_cache
-        encode_char = QspsToQspBuiltinConv.encode_char
-
-        exit_line:List[GameChar] = []
-        for point in qsps_line:
-            if point not in cache:
-                cache[point] = encode_char(point)
-            exit_line.append(cache[point])
-        return ''.join(exit_line)
+        """ Encode qsps_line to qsp_coded_line: посимвольный сдвиг на -QSP_CODREMOV
+        через неизменяемую ENCODE_TABLE (B9: нет разделяемого состояния → нет гонки). """
+        return qsps_line.translate(ENCODE_TABLE)
 
 class QspsToQspOuterConv(QspsToQspConverter):
     """ Обёртка для запуска внешнего конвертера, с ориентированием на txt2gam """
