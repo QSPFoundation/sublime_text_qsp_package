@@ -242,11 +242,15 @@ class BaseParser:
             raise ParserError(self._curtok, 'Unexpectable EOF in multiline block')
 
     def _extract_line(self, *pop:tt) -> List[BaseStmt]:
-        """ извлекает строку операторов через амперсанд """
-        # if not pop: pop = (tt.NEWLINE, )
+        """ извлекает строку операторов через амперсанд."""
+        # `pop` — стоп-токены, на которых извлечение прекращается (они НЕ поглощаются):
+        # `_loop` передаёт WHILE/THEN, чтобы defines/steps остановились перед ними (B6).
         start_line = self._curtok.lexeme_start[0]
         chain:List[BaseStmt] = []
         while not self._is_eof():
+            if pop and self._match(*pop):
+                # стоп-токен задания — вернуть собранное, токен не поглощаем
+                return chain
             if not self._is_line_num(start_line):
                 # если текущий токен содержит иной номер строки, прерываем извлечение строки операторов
                 return chain
@@ -376,6 +380,9 @@ class BaseParser:
 
             if self._check_type(tt.LEFT_BRACE):
                 chain.append(self._braces())
+                # после возврата из рекурсии `}` вложенных скобок уже поглощён;
+                # идём на следующий виток, иначе внешний `}` съедается как литерал (B5)
+                continue
 
             chain.append(stm.Literal(self._curtok))
             self._eat_tokens(1)
@@ -406,6 +413,10 @@ class BaseParser:
         return stm.Comment(pref, open_, chain, line)
 
     def _literal(self) -> stm.Literal[None]:
+        # catch-all `_statement` может вызвать нас на EOF — не поглощаем его
+        # (иначе _eat_tokens уйдёт за границу списка / цикл не продвинется) (B6)
+        if self._is_eof():
+            raise ParserError(self._curtok, 'Unexpected EOF where literal expected.')
         value = self._curtok
         self._eat_tokens(1)
         return stm.Literal(value)

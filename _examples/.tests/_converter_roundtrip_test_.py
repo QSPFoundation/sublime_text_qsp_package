@@ -150,6 +150,43 @@ def pins():
     if len(q2.get_locations()) != 1:
         fails.append(f'B1 разбор изменился: локаций {len(q2.get_locations())} != 1')
 
+    # ---- пины base-подсистемы (Фаза 3: B5/B6/B7) ----
+    # B5: вложенные `{...}` парсятся структурно (без поедания внешнего `}`)
+    with contextlib.redirect_stdout(io.StringIO()):
+        l5 = QspsLoc('L5', ['! BASE\n', '*P {a{b}c}\n', '! END BASE\n'], None)
+        l5.split_base()
+    j5 = ' | '.join(l5.base_errors())
+    if 'EOF in braces' in j5:
+        fails.append(f'B5 вложенные braces не допарсены: {j5!r}')
+    if 'Use simple string' not in j5:
+        fails.append(f'B5 brace не дошёл до int-проверки: {j5!r}')
+
+    # B6: `loop ... while ... step ... then` в BASE — pop соблюдён, цикл не виснет/не падает
+    with contextlib.redirect_stdout(io.StringIO()):
+        l6 = QspsLoc('L6', ['! BASE\n', 'loop while (i < 5) step i += 1 then\n',
+                            "    msg 'x'\n", 'END\n', '! END BASE\n'], None)
+        l6.split_base()
+    if not any('Do not use cycles' in e for e in l6.base_errors()):
+        fails.append(f'B6 loop не распознан как Loop (pop не соблюдён): {l6.base_errors()!r}')
+
+    # B7: единый канал — ошибка с именем локации, desc сохранён, сборка не падает
+    with contextlib.redirect_stdout(io.StringIO()):
+        l7 = QspsLoc('myloc', ['! BASE\n', "*P 'desc'\n", 'if x: y\n', 'END\n', '! END BASE\n'], None)
+        l7.split_base()
+    e7 = l7.base_errors()
+    if not e7 or not all('myloc' in e for e in e7):
+        fails.append(f'B7 нет имени локации в ошибках: {e7!r}')
+    if l7.desc().strip() != 'desc':
+        fails.append(f'B7 desc потерян при ошибке другого оператора: {l7.desc()!r}')
+    # B7: ParserError из парсера ловится каналом (не роняет split_base наружу).
+    # незакрытый блочный `if` (без END) — balanced по кавычкам/скобкам, поэтому BASE
+    # извлекается штатно, а парсер кидает ParserError на EOF блока.
+    with contextlib.redirect_stdout(io.StringIO()):
+        l7b = QspsLoc('Lb', ['! BASE\n', "*P 'd'\n", 'if x:\n', '    y\n', '! END BASE\n'], None)
+        l7b.split_base()   # не должно бросить исключение наружу
+    if not any('EOF in multiline block' in e for e in l7b.base_errors()):
+        fails.append(f'B7 ParserError не пойман каналом: {l7b.base_errors()!r}')
+
     return fails
 
 

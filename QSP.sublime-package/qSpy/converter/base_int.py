@@ -23,14 +23,22 @@ class BaseInt(stm.BaseVisitor[AstNode]):
 
         self._actions:List[Action] = []
         self._desc_lines:List[str] = []
+        # единый канал ошибок base-разбора (B7/Q10): накапливаем, а не глотаем;
+        # печать — сток на уровне вызывающего (QspsLoc.split_base) с контекстом локации
+        self._errors:List[RuntimeIntError] = []
 
     def run(self) -> None:
-        """Обработка дерева разбора """
+        """Обработка дерева разбора."""
+        # Ошибки одного оператора не роняют весь прогон —
+        # собираются в self._errors (наружу через errors()); разбор продолжается.
         for stmt in self._stmts:
             try:
                 stmt.accept(self)
             except RuntimeIntError as e:
-                print(e)
+                self._errors.append(e)
+
+    def errors(self) -> List[RuntimeIntError]:
+        return self._errors
 
     def actions(self) -> List[Action]:
         return self._actions
@@ -46,7 +54,7 @@ class BaseInt(stm.BaseVisitor[AstNode]):
         if lexeme.lower() != '*p':
             raise RuntimeIntError(line, 'Expected *P stament for Base Description.')
         if not stmt.expression:
-            raise RuntimeError(line, 'Base Description print Expression not specified.')
+            raise RuntimeIntError(line, 'Base Description print Expression not specified.')
         expression = cast(str, stmt.expression.accept(self))
         self._desc_lines.append(expression)
 
@@ -54,6 +62,8 @@ class BaseInt(stm.BaseVisitor[AstNode]):
     def visit_expression(self, stmt:stm.Expression[AstNode]) -> str:
         l = stmt.line
         line = (self._src_lines[l], l)
+        if not stmt.chain:
+            raise RuntimeIntError(line, 'Empty Expression.')
         output:str = ''
         for s in stmt.chain:
             if not isinstance(s, stm.Literal):

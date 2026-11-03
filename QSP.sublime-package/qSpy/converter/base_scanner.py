@@ -106,8 +106,6 @@ class BaseScanner:
             self._add_token(tt.COMMA)
         elif c == '\n':
             self._add_token(tt.NEWLINE)
-        elif c in (' ', '\t'):
-            pass
         elif c == "!":
             self._add_token(tt.EXCLAMATION_SIGN)
         elif c == ":":
@@ -128,7 +126,9 @@ class BaseScanner:
             if self._is_alnum(self._next_in_line()):
                 self._scan_funcs.append(self._identifier_expect)
             else:
-                self._add_token(self._KEYWORDS.get(''.join(self._curlexeme), tt.IDENTIFIER))
+                # keyword-lookup регистронезависим (QSP-движок то же): без .lower()
+                # ASCII-ключи в _KEYWORDS не совпадали бы с `ACT`/`IF`/`END` (B8)
+                self._add_token(self._KEYWORDS.get(''.join(self._curlexeme).lower(), tt.IDENTIFIER))
         elif c in self._STMT_DELIMITERS:
             self._add_token(tt.DELIMITER)
         elif (not self._next_in_line() in self._STMT_DELIMITERS and

@@ -7,6 +7,7 @@ from . import base_scanner as scn
 from . import base_parser as psr
 from . import base_int as bint
 
+from .error import ParserError, RuntimeIntError
 from .tools import parse_string
 
 # const
@@ -30,6 +31,8 @@ class QspsLoc():
 
         self._run_on_visit:List[QspsLine] = [] # code of Run-on-visit field of location
 
+        self._base_errors:List[str] = []   # единый канал диагностики base-разбора (B7/Q10)
+
         self._extract_base()
 
     def name(self) -> LocName:
@@ -43,6 +46,10 @@ class QspsLoc():
 
     def run_on_visit(self) -> List[QspsLine]:
         return self._run_on_visit
+
+    def base_errors(self) -> List[str]:
+        """_DIAGNOSTICS: накопленные ошибки base-разбора этой локации (с именем локации). """
+        return self._base_errors
 
     def _extract_base(self) -> None:
         """ Extract qsps-lines of base from location code """
@@ -81,21 +88,36 @@ class QspsLoc():
             self._run_on_visit = self._code[:]
 
     def split_base(self) -> None:
-        """ Split base code to description and actions """
+        """ Split base code to description and actions.
+        Единый канал ошибок base-разбора (B7/Q10): ParserError (из парсера) и RuntimeIntError
+        (из интерпретатора) больше не роняют сборку и не глотаются молча — накапливаются в
+        self._base_errors и печатаются с именем локации (print — сток). Сборка продолжается. """
         if not self._base_code: return # базового описания или действий нет
-        scanner = scn.BaseScanner(self._base_code)
-        scanner.scan_tokens()
-        tokens = scanner.get_tokens()
+        try:
+            scanner = scn.BaseScanner(self._base_code)
+            scanner.scan_tokens()
+            tokens = scanner.get_tokens()
 
-        parser = psr.BaseParser(tokens)
-        parser.parse()
-        stmts = parser.get_statements()
+            parser = psr.BaseParser(tokens)
+            parser.parse()
+            stmts = parser.get_statements()
 
-        intr = bint.BaseInt(stmts, self._base_code)
-        intr.run()
+            intr = bint.BaseInt(stmts, self._base_code)
+            intr.run()
 
-        self._base_desc = intr.desc()
-        self._base_actions = intr.actions()
+            self._base_desc = intr.desc()
+            self._base_actions = intr.actions()
+            self._report_errors(intr.errors())
+        except (ParserError, RuntimeIntError) as e:
+            # ошибка разбора/лексора на всей локации — фиксируем и уходим, не роняя сборку
+            self._report_errors([e])
+
+    def _report_errors(self, errors) -> None:
+        """Печать-сток с контекстом локации + накопитель (Q10). Порядок потоков не важен."""
+        for e in errors:
+            msg = f'Локация "{self._name}": {e}'
+            print(msg)
+            self._base_errors.append(msg)
 
     def get_sources(self) -> List[QspsLine]:
         """ Return qsps-lines of location code, description and actions """

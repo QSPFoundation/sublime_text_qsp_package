@@ -717,6 +717,7 @@ UnicodeEncodeError: 'charmap' codec can't encode character '\u2191' in position 
 * Сайт с текстовыми играми и программами для создания игр: https://qsp.org
 * Наша группа в vk: https://vk.com/qsplayer
 * В дискорде: https://discord.gg/bbbdxhE9M2
+* Сообщество русскоязычной интерактивной литературы: [https://t.me/ifiction_group](https://t.me/ifiction_group)
 
 * [Обсуждение справочника "Как сделать? Ча.Во." на форуме](https://qsp.org/index.php?option=com_agora&task=topic&id=1280&p=1&prc=25&Itemid=57)
 * [Скачать справочник на mega.nz](https://mega.nz/folder/vG4XzSoZ#gf0jU0FFdWHpgJnN8eAaGA)
@@ -727,17 +728,23 @@ UnicodeEncodeError: 'charmap' codec can't encode character '\u2191' in position 
 * [Обучение HTML и CSS, плюс немного JS](https://mega.nz/folder/WXhkWLSI#WmF8uN01JeuIyopuCtGlMw)
 
 **Новые версии плеера:**
+
 * werewolf (**qSpider**) — основной плеер, рекомендуемый к использованию:
 	- [на гитхабе](https://github.com/QSPFoundation/qspider)
 	- [обсуждение](https://qsp.org/forum/1013-q-spider-pleer-dla-zapuska-qsp-igr-v-brauzere)
 * [l3ger0j](https://github.com/l3ger0j) — **Quasporium** для Андроид: https://github.com/QSPFoundation/quasporium
-* [rrockru](https://github.com/rrockru) — **QSPNext** (мультиплатформенный, можно играть в браузере): https://rrock.dev/qspnext/
+* [rrockru](https://github.com/rrockru) — **QSPNext** (мультиплатформенный, можно играть в браузере): [rrock/qspnext](https://rrock.dev/qspnext/)
 
-Поблагодарите отца-основателя платформы Байта: https://qsp.org/index.php?option=com_comprofiler&Itemid=20&user=66
+Поблагодарите отца-основателя платформы Байта:
+
+- **[Buy a coffee](https://buymeacoffee.com/varg "https://buymeacoffee.com/varg")**
+- **[Ethereum / EVM](https://brianmacdonald.github.io/Ethonate/address#0x4537B99e27deD6C8459C1eFCdE0E7fa48357e44D "https://brianmacdonald.github.io/Ethonate/address#0x4537B99e27deD6C8459C1eFCdE0E7fa48357e44D")**
+- **[PayPal](https://www.paypal.com/donate/?hosted_button_id=RB8B6EQW4FW6N "https://www.paypal.com/donate/?hosted_button_id=RB8B6EQW4FW6N")**
 
 ## Донаты
 
 **Донаты на развитие проекта и канала на ютубе**:
+
 * Закинуть сумму единоразово на [бусти/донат](https://boosty.to/aleksversus/donate)
 * Подписаться за нцать символических рублей (можно и бесплатно): https://boosty.to/aleksversus (на бусти я публикую различные новости, связанные с моей творческой деятельностью. Выход новых роликов на канале, статьи, отзывы, рецензии, рассказы, стихи и всё прочее по мере выхода).
 * На патреоне, символическая подписка в 1 бакс https://www.patreon.com/aleksversus. К сожалению, сейчас я не имею возможности пользоваться патреоном.
