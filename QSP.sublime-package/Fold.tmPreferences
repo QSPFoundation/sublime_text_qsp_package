@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Синтаксис-фолдинг локаций (ST4 build 4142+, настройка fold_style "auto").
+     Маркеры уже размечены в qsp.sublime-syntax: meta.start_location.qsp (имя
+     локации в `# …`) и meta.end_location.qsp (маркер `\-\-`) — отдельного scope
+     под фолдинг не заводим. Регион = между маркерами: свёрнутая локация
+     показывает строку `# имя` и строку `\-\-` (excludeTrailingNewlines).
+     Индентационный фолдинг выключен: тело локации в QSP не значимо по отступу. -->
+<plist version="1.0">
+<dict>
+	<key>scope</key>
+	<string>source.qsp - source.qsp.qloc</string>
+	<key>settings</key>
+	<dict>
+		<key>indentationFoldingEnabled</key>
+		<false/>
+		<key>foldScopes</key>
+		<array>
+			<dict>
+				<key>begin</key>
+				<string>meta.start_location.qsp</string>
+				<key>end</key>
+				<string>meta.end_location.qsp</string>
+				<key>excludeTrailingNewlines</key>
+				<true/>
+			</dict>
+		</array>
+	</dict>
+</dict>
+</plist>
