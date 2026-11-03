@@ -20,6 +20,11 @@ from .tools import parse_string
 # regexps:
 LOCATION_START = re.compile(r'^\#\s*(.+)\s*$')
 LOCATION_END = re.compile(r'^\-\-(.*)$')
+# Эталонный маркер конца локации — `-- <имя> ---...`: строка заканчивается
+# отдельным токеном из дефисов (>=3, как `---` в txt2gam/get_sources). Нужен для
+# диагностики «подозрительного закрытия» (B1/Q1): случайный `--`-комментарий в
+# колонке 0 формально легально закрывает локацию — предупреждаем, не меняя разбор.
+LOCATION_END_CLEAN = re.compile(r'(?:^|\s)-{3,}\s*$')
 
 PRINT_STRING = re.compile(r'^\*P\b')
 PRINT_LINE = re.compile(r'^\*PL\b')
@@ -77,6 +82,9 @@ class QspsFile():
 					# если локация ещё не открыта, пропускаем строки
 					pass
 			elif not mode['quote'] and LOCATION_END.search(qsps_line):
+				if not LOCATION_END_CLEAN.search(qsps_line):
+					# `--` закрыл локацию, но хвост не похож на маркер конца — диагностика
+					print(f'Подозрительное закрытие локации "{mode["loc_name"]}", файл: {self._input_file}')
 				# close location
 				self._locations.append(QspsLoc(mode['loc_name'], mode['src_lines'], mode['region']))
 				self._loc_symbols.append((mode['loc_name'], mode['region']))

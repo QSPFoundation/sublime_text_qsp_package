@@ -130,6 +130,26 @@ def pins():
     if j2.count('-- L ') != 1 or '\nb\n-- L ' not in j2:
         fails.append(f'B4 без-\\n: склейка нарушена: {j2!r}')
 
+    # B1/Q1: guard «подозрительного закрытия» — диагностика, разбор не меняет
+    # эталонный маркер `-- name ---...` -> шумов нет
+    logc = io.StringIO()
+    with contextlib.redirect_stdout(logc):
+        q = QspsFile(); q.set_src_lines(['# l\n', 'code\n', '-- l ' + '-' * 33 + '\n'])
+        q.split_to_locations()
+    if logc.getvalue().strip():
+        fails.append(f'B1 ложный guard на валидном маркере: {logc.getvalue()!r}')
+    if len(q.get_locations()) != 1:
+        fails.append(f'B1 валидный маркер: локаций {len(q.get_locations())} != 1')
+    # случайный `--`-комментарий в колонке 0 -> предупреждение + локация всё равно закрыта
+    logs = io.StringIO()
+    with contextlib.redirect_stdout(logs):
+        q2 = QspsFile(); q2.set_src_lines(['# l\n', 'code\n', '-- просто комментарий\n'])
+        q2.split_to_locations()
+    if 'одозрительное' not in logs.getvalue() or '"l"' not in logs.getvalue():
+        fails.append(f'B1 нет предупреждения на подозрительном закрытии: {logs.getvalue()!r}')
+    if len(q2.get_locations()) != 1:
+        fails.append(f'B1 разбор изменился: локаций {len(q2.get_locations())} != 1')
+
     return fails
 
 
