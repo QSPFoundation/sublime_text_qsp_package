@@ -44,18 +44,6 @@ class QspsLoc():
     def run_on_visit(self) -> List[QspsLine]:
         return self._run_on_visit
 
-    def change_name(self, new_name:str) -> None:
-        """ Set location name """
-        self._name = new_name
-
-    def change_code(self, new_code:List[QspsLine]) -> None:
-        """ Set run on visit code. """
-        self._run_on_visit = new_code
-
-    def add_code_line(self, code_line:QspsLine) -> None:
-        """ Append code line to run on visit code"""
-        self._run_on_visit.append(code_line)
-
     def _extract_base(self) -> None:
         """ Extract qsps-lines of base from location code """
         mode:BaseFindMode = {

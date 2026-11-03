@@ -56,17 +56,11 @@ class QspSplitter():
 
 		# pathes fields:
 		self._input_file:Path = ''
-		# self.qsp_game_path:Path = '' # abs path to QSP-file
 		self._root_folder:Path = '' # abs path to folder where sources are lies
-		# self._file_name:FileName = '' # QSP or qsps -file name without extension
-		# self._file_ext:FileExt = '' # QSP or qsps -file extension
 		self._qproj_file:Path = '' # path to .qproj-file for QSP-file
 		self._output_folder:Path = '' # abs path of output folder for splited files (root fold + file_name)
 
-		# self.qsps_file:Path = '' # abs path to qsps-file
-		
 		# data fields:
-		# self.qsp_to_qsps:QspToQspsBuiltinConv = None # object for converting game to qsps
 		self._qproj_data:QProjData = {}
 	
 	def split_file(self, input_file:str) -> None:
@@ -178,14 +172,6 @@ class QspSplitter():
 			COM.match(file_name) or LPT.match(file_name)):
 			return f'_{file_name}'
 		return BAD_CHARS.sub('_', file_name)
-
-	# def choose_mode(self, file_ext:str='') -> None: # TODO: delete???
-	# 	""" Choose mode by extension of file """
-	# 	if file_ext: self._file_ext = file_ext
-	# 	if self._file_ext in ('.qsp'):
-	# 		self._mode = 'game'
-	# 	elif self._file_ext in ('.qsps', '.qsp-txt', '.txt-qsp'):
-	# 		self._mode = 'txt'
 
 class FinderSplitter():
 	"""

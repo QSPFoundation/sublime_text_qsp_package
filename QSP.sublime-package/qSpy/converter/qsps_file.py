@@ -38,11 +38,6 @@ class QspsFile():
 		# files fields
 		self._input_file:Path = ''	# abspath of qsps-file
 
-	def add_src_lines(self, file_strings:List[QspsLine]) -> None:
-		""" Add source-lines at end of QspsFile. """
-		if not file_strings: return
-		self._src_lines.extend(file_strings)
-
 	def set_src_lines(self, file_strings:List[QspsLine]) -> None:
 		""" Add source-lines at end of QspsFile. """
 		if not file_strings:
@@ -62,13 +57,6 @@ class QspsFile():
 	def get_src(self) -> List[QspsLine]:
 		""" Return sources qsps-lines """
 		return self._src_lines
-
-	def get_src_line(self, qsps_line_number:int) -> QspsLine:
-		""" Return one line from source qsps-line """
-		return self._src_lines[qsps_line_number]
-
-	def get_src_lines(self, qsps_line_start:int, qsps_line_end:int) -> List[QspsLine]:
-		return self._src_lines[qsps_line_start:qsps_line_end]
 
 	def split_to_locations(self) -> None:
 		""" Split source strings to locations """

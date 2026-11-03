@@ -1,4 +1,3 @@
-# from tracemalloc import start
 from typing import List, Optional, Any
 
 from .base_tokens import BaseToken as Tkn, BaseTokenType as tt
@@ -32,9 +31,6 @@ class BaseParser:
         self._curtok:Tkn = self._tokens[0]
 
         self._tbuffer:Optional[Tkn] = None
-        self._eated_count:int = 0
-
-        self._loc_is_open:bool = False
 
         self._statements:List[BaseStmt] = [] # qsps_file entity
         
@@ -452,11 +448,6 @@ class BaseParser:
         # # запрещаем поглощать EOF
         # if self._curtok_num + count < len(self._tokens) - 1:
         self._curtok_num += count
-        self._curtok = self._tokens[self._curtok_num]
-
-    def _reset_curtok(self, start_declaration:int) -> None:
-        """ Сброс начала обработки токенов до указанного """
-        self._curtok_num = start_declaration
         self._curtok = self._tokens[self._curtok_num]
 
     def _is_line_num(self, line_num:int) -> bool:

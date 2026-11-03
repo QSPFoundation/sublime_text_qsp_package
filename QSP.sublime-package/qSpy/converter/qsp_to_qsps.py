@@ -1,6 +1,6 @@
 # python 3.8
 import os
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal
 
 from .tools import QSP_CODREMOV
 from .tps import (
@@ -38,7 +38,6 @@ class QspToQspsBuiltinConv():
 		self._qsps_lines:List[QspsLine] = []  # qsps text
 
 		self._encoding:Encoding = 'utf-16-le'
-		# self._cache:CharCache = self._char_cache
 		self._encode_handler = QspToQspsBuiltinConv.decode_qsp_line
 
 
@@ -99,10 +98,6 @@ class QspToQspsBuiltinConv():
 		self._file_name = os.path.splitext(base_name)[0]
 		self._output_file = os.path.join(self._output_folder, self._file_name+'.qsps')
 
-	def set_qsp_source_text(self, qsp_source_text:str) -> None:
-		""" Set qsp-source text. """
-		self.qsp_source_text = qsp_source_text
-
 	def split_qsp(self) -> None:
 		""" Split qsp-source on locations and decode them. """
 		qsp_lines = self._game_lines[:]
@@ -158,22 +153,6 @@ class QspToQspsBuiltinConv():
 	def get_locations(self) -> List[QspLocation]:
 		""" Get loactions list """
 		return self._locations
-
-	def get_location(self, index:int) -> QspLocation:
-		""" Get location by index. """
-		return self._locations[index]
-
-	def get_location_by_name(self, name:str) -> Optional[QspLocation]:
-		""" Get location by name. """
-		for loc in self._locations:
-			if loc['name'] == name:
-				return loc
-		return None
-
-	@staticmethod
-	def base_is_exist(location:QspLocation) -> bool:
-		""" Check if base description and actions are exist. """
-		return bool(location['actions'] or location['desc'])
 
 	@staticmethod
 	def convert_location(location:QspLocation) -> List[QspsLine]:
@@ -232,7 +211,7 @@ class QspToQspsBuiltinConv():
 		qsps_lines.extend([
 			(f"{indent}{line}").replace('\r\n', '\n')
 			for line in action['code']])
-		if qsps_lines[-1][-1] == '\n': qsps_lines.append(f'{indent}') # crutching format for txt2gam
+		if qsps_lines[-1][-1] == '\n': qsps_lines.append(f'{indent}') # РЕШЕНИЕ: костыль отступа перед `END` (для txt2gam); оставлять до закрытия Q7
 		qsps_lines.append('\nEND\n')
 		return qsps_lines
 

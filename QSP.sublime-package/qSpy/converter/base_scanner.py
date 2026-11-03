@@ -8,7 +8,7 @@ from .tps import (
 ScanHandler = Callable[[str], None]
 HandlerStack = List[ScanHandler]
 
-from .base_tokens import BaseToken as Tkn, BaseTokenType as tt, TokenNode
+from .base_tokens import BaseToken as Tkn, BaseTokenType as tt
 
 class BaseScanner:
     """ Scanner of Base block of location. """
@@ -48,12 +48,6 @@ class BaseScanner:
 
     def get_tokens(self) -> List[Tkn]:
         return self._tokens
-
-    def get_token_nodes(self) -> List[TokenNode]:
-        out_n:List[TokenNode] = []
-        for t in self._tokens:
-            out_n.append(t.get_as_node())
-        return out_n
 
     def scan_tokens(self) -> None:
         """ Find all dir-tokens in the file. """
@@ -206,17 +200,9 @@ class BaseScanner:
         """ Является ли текущий символ последним в строке? """
         return self._current == self._line_len - 1
 
-    def _next_is_last_in_line(self) -> bool:
-        """ Является ли следующий символ последним в строке? """
-        return self._current + 1 == self._line_len - 1
-
     def _set_start_lexeme(self) -> None:
         """ Устанавливаем начало лексемы. """
         self._start_lexeme = (self._line_num, self._current)
-
-    def _curline_is_last(self) -> bool:
-        """ Текущая строка последняя? """
-        return self._line_num == len(self._src_lines) - 1
 
     def _next_in_line(self) -> str:
         """ Возвращает следующий символ в строке """
@@ -224,12 +210,6 @@ class BaseScanner:
             return self._cur_line[self._current + 1]
         else:
             return '\0'
-
-    def _prev_in_line(self) -> str:
-        """ Возвращает предыдущий символ в строке """
-        if self._current > 0:
-            return self._cur_line[self._current - 1]
-        return '\0'
 
     def _prev(self, char_num:int = -1) -> Char:
         if char_num == -1: char_num = self._current

@@ -201,7 +201,7 @@ self._eat_tokens(1)
 | `base_int.py` | `_error()`, `_logic_error()` | methods не вызываются нигде |
 | `qsps_file.py` | `add_src_lines()`, `get_src_line()`, `get_src_lines()` | grep: вызовов нет |
 | `qsp_location.py` | `change_name()`, `change_code()`, `add_code_line()` | grep: вызовов нет |
-| `qsp_to_qsps.py` | `set_qsp_source_text()`, `get_location_by_name()`, `get_location()`, `base_is_exist()`, закомментированный `self._cache`, неиспользуемый `import os` | grep: вызовов нет (кроме определения) |
+| `qsp_to_qsps.py` | `set_qsp_source_text()`, `get_location_by_name()`, `get_location()`, `base_is_exist()`, закомментированный `self._cache` | grep: вызовов нет (кроме определения). **Поправка:** `import os` в этом файле ИСПОЛЬЗУЕТСЯ (`os.path.isfile/abspath/split/join`) — НЕ удалён |
 | `converters.py` | `QspsToQspBuiltinConv.handle_temp_file()` — не вызывается для builtin-пути; закомментированная диагностика потоков; `import threading` (закомментирован) | см. B9 |
 | `qsp_splitter.py` | закомментированный `choose_mode()`, закомментированные поля `__init__` | — |
 | `qsp_to_qsps.py:235` | `qsps_lines.append(f'{indent}')` — «костыль для txt2gam» | оставить до Q7, но пометить явным комментарием-решением |
@@ -252,9 +252,18 @@ self._eat_tokens(1)
   HEAD → правки B2/B3/B4 НЕ изменили конвертацию ukuzya (get_sources вне этих пайплайнов,
   BASE закрыты, в именах нет хвостовых пробелов).Изменений продукта в этой фазе нет.
 
-### Фаза 1 — удаление мёртвого кода (§2)
+### Фаза 1 — удаление мёртвого кода (§2) — ✅ ЗАКРЫТА (2026-11-03)
 - Мелкие однопроходные вычистки; никаких поведенческих изменений.
 - Ревью диффа глазами пользователя (память: объяснять изменения).
+- **Итог:** удалён весь подтверждённый мёртвый код §2, кроме трёх отложенных позиций:
+  `base_printer.py` (весь файл) — оставлен до решения Q8 (пользователь выбрал «оставить»);
+  `QspsToQspBuiltinConv.handle_temp_file()` — это реализация `@abstractmethod` базового класса,
+  её удаление/подключение — Фаза 4 (B9) рядом с Q8; локальная `_cl` (qsp_to_qsps) — Фаза 4 (B11).
+  Каскадом удалены осиротевшие `BaseToken.get_as_node()` + алиас `TokenNode` (жили только ради
+  `get_token_nodes`). Костыль-отступ `qsp_to_qsps` помечен комментарием-решением (ждёт Q7).
+- **Поправка к плану:** `import os` в `qsp_to_qsps.py` используется — не удалялся (в §2 ошибочно числился мёртвым).
+- Проверено: `compileall` зелёный; golden roundtrip `_converter_roundtrip_test_.py` — PASS
+  (все 4 снапшота побайтово == baseline, пины B2/B3/B4 ok) → поведение не изменилось.
 
 ### Фаза 2 — границы локаций и `QspsLoc` (B2–B4, B14)
 - ~~`rstrip` имён (B2)~~ — **B2 уже закрыт раньше фазы** (решение — в разделе B2 выше),

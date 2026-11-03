@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 import os, subprocess
 import concurrent.futures
-# import threading
 
 from typing import List, Optional
 
@@ -66,11 +65,8 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
         self._game_lines.append('SublimeText QSP-Package\n')
         self._game_lines.append(self.encode_qsps_line('No')+'\n')
         self._game_lines.append(self.encode_qsps_line(str(len(locs)))+'\n')
-        # decode locations (для диагностики потоков: список имён потоков, в которых выполнялась _encode_location)
-        # _thread_names_used: List[str] = []
 
         def _encode_location(loc:QspsLoc) -> List[GameLine]:
-            # _thread_names_used.append(threading.current_thread().name)
             loc.split_base()
             name = loc.name()
             desc = loc.desc()
@@ -97,7 +93,7 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
                 out_lines.append('\n')
                 act_code = del_first_pref(act['code'])
                 act_code[-1] = act_code[-1][:-1]
-                out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(''.join(act_code).replace('\n', '\r\n')))#))
+                out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(''.join(act_code).replace('\n', '\r\n')))
                 out_lines.append('\n')
             return out_lines
         with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
@@ -106,11 +102,6 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
             results = executor.map(_encode_location, locs)
             for encoded_lines in results:
                 self._game_lines.extend(encoded_lines)
-        # Диагностика: сколько потоков реально обработало локации
-        # _unique = len(set(_thread_names_used))
-        # print(f'[QspsToQsp] Локаций: {len(locs)}, уникальных потоков: {_unique}, имена: {sorted(set(_thread_names_used))}')
-        # for location in locs:
-        #     _encode_location(location)
         return self._game_lines
 
     def convert_lines(self, qsps_lines:List[QspsLine]) -> List[GameLine]:

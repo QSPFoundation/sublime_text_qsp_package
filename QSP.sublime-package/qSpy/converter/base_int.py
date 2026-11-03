@@ -130,11 +130,3 @@ class BaseInt(stm.BaseVisitor[AstNode]):
 
     def visit_end(self, stmt:stm.End[AstNode]) -> str:
         return stmt.name.lexeme
-
-
-    # обработчик ошибок. Пока просто выводим в консоль.
-    def _error(self, message:str) -> None:
-        print(f"Err. {message}.")
-
-    def _logic_error(self, message:str) -> None:
-        print(f"Logic error: {message}. Please, report to the developer.")
