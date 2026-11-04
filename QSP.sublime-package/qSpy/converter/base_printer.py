@@ -1,3 +1,7 @@
+# РЕШЕНИЕ Q8 (2026-11-04): debug-only инструмент. Никаких production-ссылок в пакете нет
+# и не планируется (MCP `qsp_diagnostics` живёт вне `qSpy/converter`, своя кодовая база;
+# подключение AST-дампа туда — вне объёма). Сознательно не удаляем: нужен для ручной
+# диагностики структуры BASE-AST при разработке парсера/интерпретатора.
 from typing import List, Dict, Union, Literal
 
 from . import base_tokens as tkn
