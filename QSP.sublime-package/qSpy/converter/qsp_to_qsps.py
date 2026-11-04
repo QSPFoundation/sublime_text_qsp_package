@@ -252,7 +252,7 @@ class QspToQspsBuiltinConv():
 		qsps_lines.extend([
 			(f"{indent}{line}").replace('\r\n', '\n')
 			for line in action['code']])
-		if qsps_lines[-1][-1] == '\n': qsps_lines.append(f'{indent}') # РЕШЕНИЕ: костыль отступа перед `END` (для txt2gam); оставлять до закрытия Q7
+		if qsps_lines[-1][-1] == '\n': qsps_lines.append(f'{indent}') # РЕШЕНИЕ Q7 (2026-11-04): костыль-таб перед `END` оставлен — qsps должен оставаться txt2gam-совместимым (Q11(A)); builtin-читателю все равно (base_scanner глотает whitespace перед END)
 		qsps_lines.append('\nEND\n')
 		return qsps_lines
 
