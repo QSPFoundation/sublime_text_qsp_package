@@ -405,9 +405,18 @@ Golden roundtrip — PASS (outer-путь тестом не гоняется, bu
 
 ### Фаза 5 — splitter (B13)
 
-- Вынести общий `_write_location(location_lines, loc_name, count)` из двух `_split_*`;
-  счётчик дедупа — по итоговому пути; `re.IGNORECASE` в COM/LPT; решение по рекурсии
-  `FinderSplitter` (обход `os.walk` — скорее всего да, проверить на perf больших проектах).
+- **п.5.1 (дедуп `_split_*`) — ✅ закрыт (2026-11-04):** общий блок (имя → fold/file →
+  дедуп → makedirs → запись) вынесен в `QspSplitter._write_location(loc_name, content_lines,
+  count)`; `_split_game`/`_split_qsps` остались только источником локаций + способом получить
+  строки (`convert_location(location)` vs `location.get_sources()`). TODO-merge снят.
+  Чистый структурный рефакторинг: проверка BEFORE==AFTER дайджестом дерева вывода на
+  `basesex.qsps`(txt,27файл)+`driveex.qsp`(game,134файл) — побайтово идентично.
+  Golden roundtrip — PASS.
+- **п.5.2 (счётчик дедупа) — остаток B13:** `count` ключуется базовым путём, `isfile` проверяет
+  базовый → повторный сплит перезапишет `name_1.qsps`. Исправить на `while isfile(итоговый путь)`.
+- **п.5.3 (`re.IGNORECASE` COM/LPT) — остаток B13:** `com1`/`lpt1` строчными не детектятся.
+- **п.5.4 (`FinderSplitter`) — остаток B13:** плоский `os.listdir` без рекурсии → `os.walk`;
+  `file_ext in ('.qsp')` — проверка по подстроке строки (баг) + не регистронезависимо.
 
 ### Фаза 6 — белые пятна (Q1–Q10)
 

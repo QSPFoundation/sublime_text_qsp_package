@@ -23,7 +23,8 @@
   Q5 — латаем сканер, Q10 — print-сток + накопитель)
 - [x] Фаза 4 — сборка/шифрование (B9–B12) — **ЗАКРЫТА 2026-11-04**: п.4.1–п.4.3 + п.4.4 (остатки
   B11 `read_from_file`, Q6, B12→Q11(A), EOL→CRLF) — всё принято. Golden roundtrip PASS (B переснят под CRLF).
-- [ ] Фаза 5 — splitter (B13)
+- [ ] Фаза 5 — splitter (B13) — **в процессе**: п.5.1 ✅ закрыт (2026-11-04, дедуп `_split_*` →
+  `_write_location`); остатки: п.5.2 (счётчик дедупа), п.5.3 (IGNORECASE COM/LPT), п.5.4 (FinderSplitter)
 - [ ] Фаза 6 — закрытие белых пятен (Q1–Q10)
 
 ## Ключевые findings (детали — в plan.md)
@@ -146,6 +147,15 @@
   канонный CRLF везде, побайтово одинаково на Win/Linux, устранён латентный двойной `'\r\r\n'`.
   Снапшот B переснят (git diff `--ignore-cr-at-eol` пуст — только CR); инвариант CRLF=168, lone-LF=0,
   CR-CR=0, lone-CR=0. Golden roundtrip — PASS.
+- **Фаза 5, п.5.1 закрыт (2026-11-04).** B13 (дедуп `_split_game`/`_split_qsps`): общий блок
+  (имя → fold/file из `_qproj_data` или fallback → расчёт `output_path` со счётчиком → `makedirs`
+  → `writelines`) вынесен в `QspSplitter._write_location(loc_name, content_lines, count)`.
+  `_split_game`/`_split_qsps` теперь различаются только источником локаций и способом получить
+  строки (`QspToQspsBuiltinConv.convert_location(location)` vs `location.get_sources()`).
+  TODO-merge снят. **Счётчик дедупа пока оставлен как есть** (его исправление — п.5.2).
+  Чистый структурный рефакторинг: BEFORE==AFTER подтверждён дайджестом дерева вывода
+  (txt `basesex.qsps` 27 файлов, game `driveex.qsp` 134 файла — sha идентичны до/после).
+  Golden roundtrip PASS. `todo.md` (посторонние правки подсветки) в коммит НЕ включён.
 
 ## Как проверять себя
 - Золотой контур: `_examples/examples_qsp_to_qsps/ukuzya_txt2gam.qsps` и
@@ -170,7 +180,15 @@ Q6=utf-16le без BOM канон, B12→Q11(A) — метаданные/пар�
 служебные строки оставлены намеренно с комментарием; EOL `.qsp`→CRLF — `game_lines` строятся с
 `'\r\n'`, `save_to_file` пишет с `newline=''`). Golden roundtrip PASS (4 снапшота == baseline,
 B переснят под CRLF: 168 CRLF, lone-LF/CR-CR/lone-CR = 0), пины B11-остаток + B12-корпус.
-**Дальше — Фаза 5 (splitter, B13).** Прежний контекст: golden roundtrip-тест
+**Дальше — Фаза 5 (splitter, B13), п.5.2–п.5.4** (остатки B13):
+- **п.5.2** — счётчик дедупа в `_write_location`: сейчас `count`+`isfile` по базовому пути →
+  повторный сплит перезапишет `name_1.qsps`; исправить на `while os.path.isfile(output_path)` по итогу.
+- **п.5.3** — `COM`/`LPT` без `re.IGNORECASE` → строчные `com1`/`lpt1` не детектятся (`correct_file_name`).
+- **п.5.4** — `FinderSplitter.search_n_split`: плоский `os.listdir` → `os.walk` (рекурсия);
+  `file_ext in ('.qsp')` — проверка по подстроке строки-не-кортежа (баг: ловит `.q`/`.sp` и т.п.,
+  но не ловит `.qsps` который в следующей ветке); приведение расширения к `.lower()`.
+
+Прежний контекст: golden roundtrip-тест
 `_examples/.tests/_converter_roundtrip_test_.py` + снапшоты `_examples/.tests/_golden/` (прогон:
 `python _examples/.tests/_converter_roundtrip_test_.py`; `--info` — сверка с txt2gam; `--update` — пересъёмка
 baseline). Пины B1/B2/B3/B4/B5/B6/B7/B11/B12-корпус в том же тесте. Остатки `--info` (EOL-диффы B,

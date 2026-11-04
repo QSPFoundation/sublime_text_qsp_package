@@ -111,7 +111,22 @@ class QspSplitter():
 			if CLOSE_FOLDER.match(line):
 				current_folder = ''
 
-	# TODO: May be MERGE _split_game and _split_qsps???
+	def _write_location(self, loc_name:LocName, content_lines:List[QspsLine], count:Dict[Path, int]) -> None:
+		""" Write one location to its qsps file: header + content, with dedup over output path. """
+		output_lines:List[QspsLine] = [f'QSP-Game {loc_name}\n\n']
+		if loc_name in self._qproj_data:
+			fold, file = self._qproj_data[loc_name]
+		else:
+			fold, file = self._output_folder, self.correct_file_name(loc_name)
+		output_path = _jont(fold, f'{file}.qsps')
+		if not output_path in count: count[output_path] = 0
+		if os.path.isfile(output_path):
+			count[output_path] += 1
+			output_path = _jont(fold, f'{file}_{count[output_path]}.qsps')
+		os.makedirs(fold, exist_ok=True)
+		output_lines.extend(content_lines)
+		with open(output_path, 'w', encoding='utf-8') as fp:
+			fp.writelines(output_lines)
 
 	def _split_game(self) -> None:
 		""" Split QSP-file, convert it, and write locations as files """
@@ -126,22 +141,7 @@ class QspSplitter():
 		count:Dict[Path, int] = {}
 
 		for location in q.get_locations():
-			output_lines:List[QspsLine] = []
-			loc_name = location['name']
-			output_lines.append(f'QSP-Game {loc_name}\n\n')
-			if loc_name in self._qproj_data:
-				fold, file = self._qproj_data[loc_name]
-			else:
-				fold, file = self._output_folder, self.correct_file_name(loc_name)
-			output_path = _jont(fold, f'{file}.qsps')
-			if not output_path in count: count[output_path] = 0
-			if os.path.isfile(output_path):
-				count[output_path] += 1
-				output_path = _jont(fold, f'{file}_{count[output_path]}.qsps')
-			os.makedirs(fold, exist_ok=True)
-			output_lines.extend(QspToQspsBuiltinConv.convert_location(location))
-			with open(output_path, 'w', encoding='utf-8') as fp:
-				fp.writelines(output_lines)
+			self._write_location(location['name'], QspToQspsBuiltinConv.convert_location(location), count)
 
 	def _split_qsps(self) -> None:
 		""" Split qsps-file and write locations as files """
@@ -149,25 +149,10 @@ class QspSplitter():
 		q.read_from_file(self._input_file)
 		q.split_to_locations()
 
-		count:Dict[Path, int]  = {}
+		count:Dict[Path, int] = {}
 
 		for location in q.get_locations():
-			output_lines:List[QspsLine] = []
-			loc_name = location.name()
-			output_lines.append(f'QSP-Game {loc_name}\n\n')
-			if loc_name in self._qproj_data:
-				fold, file = self._qproj_data[loc_name]
-			else:
-				fold, file = self._output_folder, self.correct_file_name(loc_name)
-			output_path = _jont(fold, f'{file}.qsps')
-			if not output_path in count: count[output_path] = 0
-			if os.path.isfile(output_path):
-				count[output_path] += 1
-				output_path = _jont(fold, f'{file}_{count[output_path]}.qsps')
-			os.makedirs(fold, exist_ok=True)
-			output_lines.extend(location.get_sources())
-			with open(output_path, 'w', encoding='utf-8') as fp:
-				fp.writelines(output_lines)
+			self._write_location(location.name(), location.get_sources(), count)
 
 	@staticmethod
 	def correct_file_name(file_name:str) -> str:
