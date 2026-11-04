@@ -178,6 +178,10 @@ class BuildQSP():
 
 		src_lines = qsp_module.src_lines()
 
+		# conv_path/conv_args — конфигурация внешнего конвертера (для builtin игнорируются).
+		# conv_args ВСЕГДА собирается в СТРОКУ (один argv-токен), а не в список: разбор и сборка —
+		# в project._set_converter() (c_param = str(raw_converter[1]); при converter-строке → ''),
+		# далее оседает в self._root['converter']['args'] и приходит сюда уже как str.
 		converter = self._converter(module_path,
 									self._save_temp_files, self._conv_path, self._conv_args)
 		converter.convert_lines(src_lines)

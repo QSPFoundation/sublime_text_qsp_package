@@ -28,7 +28,11 @@ ENCODE_TABLE = {cp: cp - QSP_CODREMOV for cp in range(QSP_CODREMOV + 1, 0x10000)
 
 class QspsToQspConverter(ABC):
 
-    def __init__(self, output_file:Path, save_temp_files:bool, *args:str) -> None:
+    def __init__(self, output_file:Path, save_temp_files:bool,
+                 conv_path:Path = '', conv_args:AppParam = '') -> None:
+        # conv_path/conv_args — конфигурация ВНЕШНЕго конвертера (нужна только QspsToQspOuterConv).
+        # Объявлены в базовом контракте, чтобы builder единообразно строил любой конвертер; сам
+        # базовый класс их не сохраняет (были `*args` — теряли имена и арность; решение B9).
         self._save_temp_files:bool = save_temp_files
 
         self._module_path:Path = output_file
@@ -57,7 +61,10 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
     #   - Получить файл, сконвертировать сохранить: .convert_file()
     #   - Получить строки, сконвертировать, сохранить: .convert_lines() + .save_to_file()
 
-    def __init__(self, output_file:Path, save_temp_files:bool, *args:str) -> None:
+    def __init__(self, output_file:Path, save_temp_files:bool,
+                 conv_path:Path = '', conv_args:AppParam = '') -> None:
+        # conv_path/conv_args приняты ради единой сигнатуры построения, но builtin-конвертеру не
+        # нужны: он кодирует в памяти и не запускает внешний процесс → намеренно игнорируются (B9).
         super().__init__(output_file, save_temp_files)
 
         self._qsps_file:Optional[QspsFile] = None
@@ -145,11 +152,12 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
 
 class QspsToQspOuterConv(QspsToQspConverter):
     """ Обёртка для запуска внешнего конвертера, с ориентированием на txt2gam """
-    def __init__(self, output_file:Path, save_temp_files:bool, *args:str) -> None:
+    def __init__(self, output_file:Path, save_temp_files:bool,
+                 conv_path:Path = '', conv_args:AppParam = '') -> None:
          super().__init__(output_file, save_temp_files)
 
-         self._conv_path:Path = args[0]
-         self._conv_args:AppParam = args[1]
+         self._conv_path:Path = conv_path
+         self._conv_args:AppParam = conv_args
 
     def convert_lines(self, qsps_lines:List[QspsLine]) -> List[GameLine]:
         """ Convert lines to game file by outer converter """

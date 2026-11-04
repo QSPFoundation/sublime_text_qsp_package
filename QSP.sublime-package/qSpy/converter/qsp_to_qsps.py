@@ -1,4 +1,3 @@
-# CPython 3.14 (Sublime Text; free-threaded сборка — потоки параллелятся по-настоящему)
 import os
 from typing import Dict, List, Literal
 
