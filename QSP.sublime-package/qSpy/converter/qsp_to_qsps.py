@@ -65,17 +65,16 @@ class QspToQspsBuiltinConv():
 		return self._output_file
 
 	def read_from_file(self, input_file:Path='') -> None:
-		""" Read qsp-file and set qsp-source text.
+		""" Read qsp-file and set qsp-source text."""
 
-		Подбор кодировки: проходит та, в которой первая строка читается как `QSPGAME`.
-		Не подходящий вариант (ошибка декода ИЛИ декод без ошибки, но заголовок не
-		`QSPGAME`) — **continue к следующей кодировке**, а не прерывание перебора.
-		После исчерпания списка — `ValidationFormatError` (тот же типизированный канал,
-		что и `split_qsp`; ловят `convert_file`/`_split_game`).
+		# Подбор кодировки: проходит та, в которой первая строка читается как `QSPGAME`.
+		# Не подходящий вариант (ошибка декода ИЛИ декод без ошибки, но заголовок не
+		# `QSPGAME`) — **continue к следующей кодировке**, а не прерывание перебора.
+		# После исчерпания списка — `ValidationFormatError` (тот же типизированный канал,
+		# что и `split_qsp`; ловят `convert_file`/`_split_game`).
 
-		Канон `.qsp` по реальным файлам QGen 4.3.0-b1 / txt2gam 0.4.0 — UTF-16LE без BOM,
-		CRLF (плюс легаси cp1251) — поэтому `utf-16-le` идёт первым.
-		"""
+		# Канон `.qsp` по реальным файлам QGen 4.3.0-b1 / txt2gam 0.4.0 — UTF-16LE без BOM,
+		# CRLF (плюс легаси cp1251) — поэтому `utf-16-le` идёт первым.
 		if not os.path.isfile(input_file):
 			print(f'Incorrect file path. {input_file}')
 			return

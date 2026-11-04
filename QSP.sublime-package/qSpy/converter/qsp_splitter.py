@@ -46,7 +46,7 @@ RESERVE_FILE_NAMES = (
 
 # расширения файлов-источников (сравнение по file_ext.lower() — регистронезависимо)
 QSP_EXTS  = ('.qsp',)
-QSPS_EXTS = ('.qsps', '.qsp-txt', '.txt-qsp')
+QSPS_EXTS = ('.qsps', '.qsp-txt', '.txt-qsp', '.qsrc')
 # output-root проектного сплита: `_src`-папка СОСЕДОМ с исходной (на одном уровне, не внутри),
 # в ней зеркалится дерево исходников; при пересплите дубли копятся (защита от случайного затирания)
 SRC_OUTPUT_DIR = '_src'
@@ -77,7 +77,8 @@ class QspSplitter():
 			print(f'[400] QspSplitter: File {input_file} is not exist.')
 			return
 
-		self._set_pathes(input_file)	
+		self._set_pathes(input_file)
+
 		if output_folder:
 			self._output_folder = output_folder
 		os.makedirs(self._output_folder, exist_ok=True)
