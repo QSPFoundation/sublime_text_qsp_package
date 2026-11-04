@@ -29,10 +29,11 @@ GOLD = os.path.join(HERE, '_golden')
 os.makedirs(GOLD, exist_ok=True)
 sys.path.insert(0, PKG)
 
-from qSpy.converter.qsp_to_qsps import QspToQspsBuiltinConv
+from qSpy.converter.qsp_to_qsps import QspToQspsBuiltinConv, ValidationFormatError
 from qSpy.converter.converters import QspsToQspBuiltinConv
 from qSpy.converter.qsps_file import QspsFile
 from qSpy.converter.qsp_location import QspsLoc
+from qSpy.converter.tools import QSP_CODREMOV
 
 A_IN  = os.path.join(EX, 'examples_qsp_to_qsps', 'ukuzya_old.qsp')
 A_REF = os.path.join(EX, 'examples_qsp_to_qsps', 'ukuzya_txt2gam.qsps')
@@ -52,7 +53,8 @@ def conv_A():
         c = QspToQspsBuiltinConv()
         c.read_from_file(A_IN)
         c.split_qsp()
-        lines = c.to_qsps()
+        c.to_qsps()                 # накапливает в c._qsps_lines (наружу ничего не возвращает)
+        lines = c._qsps_lines
     return ''.join(lines), log.getvalue()
 
 
@@ -187,6 +189,62 @@ def pins():
     if not any('EOF in multiline block' in e for e in l7b.base_errors()):
         fails.append(f'B7 ParserError не пойман каналом: {l7b.base_errors()!r}')
 
+    # ---- пины B11 (Фаза 4, п.4.3): split_qsp — типизированная ошибка на битом входе ----
+    def _enc(s):  # plain -> «±5», как хранится в .qsp (обратная к DECODE_TABLE)
+        return ''.join(chr(ord(ch) - QSP_CODREMOV) for ch in s)
+
+    # слишком короткий файл (<4 строк) -> ValidationFormatError
+    c1 = QspToQspsBuiltinConv()
+    c1._game_lines = ['QSPGAME\n', 'l2\n', 'pw\n']
+    c1._input_file = 'short.qsp'
+    try:
+        c1.split_qsp()
+        fails.append('B11 короткий файл: нет ValidationFormatError')
+    except ValidationFormatError:
+        pass
+
+    # заголовок не QSPGAME -> ValidationFormatError
+    c2 = QspToQspsBuiltinConv()
+    c2._game_lines = ['OLDHDR\n', 'l2\n', 'pw\n', 'x\n']
+    c2._input_file = 'old.qsp'
+    try:
+        c2.split_qsp()
+        fails.append('B11 неверный заголовок: нет ValidationFormatError')
+    except ValidationFormatError:
+        pass
+
+    # обрезанный файл (заявлено 2 локации, данных не хватает) -> ValidationFormatError
+    c3 = QspToQspsBuiltinConv()
+    c3._game_lines = ['QSPGAME\n', 'l2\n', _enc('pw') + '\n', _enc('2') + '\n', _enc('LocA') + '\n']
+    c3._input_file = 'trunc.qsp'
+    try:
+        c3.split_qsp()
+        fails.append('B11 обрезанный файл: нет ValidationFormatError')
+    except ValidationFormatError:
+        pass
+
+    # нечисловое поле числа локаций -> ValidationFormatError
+    c5 = QspToQspsBuiltinConv()
+    c5._game_lines = ['QSPGAME\n', 'l2\n', _enc('pw') + '\n', _enc('abc') + '\n']
+    c5._input_file = 'badint.qsp'
+    try:
+        c5.split_qsp()
+        fails.append('B11 нечисловое число локаций: нет ValidationFormatError')
+    except ValidationFormatError:
+        pass
+
+    # расхождение числа локаций (заявлено 1, распознано 0) -> только warning, без raise
+    c4 = QspToQspsBuiltinConv()
+    c4._game_lines = ['QSPGAME\n', 'l2\n', _enc('pw') + '\n', _enc('1') + '\n']
+    c4._input_file = 'mismatch.qsp'
+    logw = io.StringIO()
+    with contextlib.redirect_stdout(logw):
+        c4.split_qsp()  # не должно бросить
+    if 'локаций' not in logw.getvalue():
+        fails.append(f'B11 нет warning о расхождении числа локаций: {logw.getvalue()!r}')
+    if len(c4.get_locations()) != 0:
+        fails.append(f'B11 mismatch: разбор изменился {len(c4.get_locations())} != 0')
+
     return fails
 
 
@@ -266,7 +324,7 @@ def main():
         print('FAIL  pin:', m)
     ok = ok and not pf
     if not pf:
-        print('ok    пины B2/B3/B4')
+        print('ok    пины B1/B2/B3/B4/B5/B6/B7/B11')
 
     if args.info:
         info_vs_txt2gam(a_text, b_text)

@@ -56,10 +56,10 @@ class QspToQspsBuiltinConv():
 			return ''
 		try:
 			self.read_from_file(input_file)
+			self.split_qsp()
 		except ValidationFormatError as e:
 			print(e)
 			return ''
-		self.split_qsp()
 		self.to_qsps()
 		self.save_to_file()
 		return self._output_file
@@ -107,29 +107,38 @@ class QspToQspsBuiltinConv():
 		self._output_file = os.path.join(self._output_folder, self._file_name+'.qsps')
 
 	def split_qsp(self) -> None:
-		""" Split qsp-source on locations and decode them. """
+		""" Split qsp-source on locations and decode them.
+
+		Structurally broken input (слишком короткий / обрезанный файл, нечисловые
+		поля) → бросает ValidationFormatError. Расхождение заявленного
+		`_location_count` и фактического числа локаций — только console-warning
+		(разбор не отменяется).
+		"""
 		qsp_lines = self._game_lines[:]
+		if len(qsp_lines) < 4:
+			raise ValidationFormatError(self._encoding,
+				f"Слишком короткий qsp-файл: {len(qsp_lines)} стр. (нужно минимум 4): {self._input_file}")
 		header:GameLine = qsp_lines[0][0:7] # header pop
 		if header != 'QSPGAME':
-			print(f'Old qsp format is not support. Use Quest Generator for converting game in new format.')
-			return
+			raise ValidationFormatError(self._encoding,
+				'Old qsp format is not support. Use Quest Generator for converting game in new format.')
 
 		if qsp_lines[-1].strip() == '': qsp_lines.pop()
-		self._password = self._decode_string(qsp_lines[2][:-1])
-		self._location_count = self._decode_int(qsp_lines[3][:-1])
+		self._password = self._decode_string(self._line_at(qsp_lines, 2))
+		self._location_count = self._decode_int(self._line_at(qsp_lines, 3))
 		i = 4
 		while (i < len(qsp_lines)):
-			location_name = self._decode_string(qsp_lines[i][:-1])
-			location_desc = self._decode_string(qsp_lines[i+1][:-1])
-			location_code = self._decode_string(qsp_lines[i+2][:-1])
+			location_name = self._decode_string(self._line_at(qsp_lines, i))
+			location_desc = self._decode_string(self._line_at(qsp_lines, i+1))
+			location_code = self._decode_string(self._line_at(qsp_lines, i+2))
 			i += 3
 			actions:List[Action] = []
-			actions_count = self._decode_int(qsp_lines[i][:-1])
+			actions_count = self._decode_int(self._line_at(qsp_lines, i))
 			i += 1
 			for _ in range(actions_count):
-				action_image = self._decode_string(qsp_lines[i][:-1])
-				action_name = self._decode_string(qsp_lines[i+1][:-1])
-				action_code = self._decode_string(qsp_lines[i+2][:-1])
+				action_image = self._decode_string(self._line_at(qsp_lines, i))
+				action_name = self._decode_string(self._line_at(qsp_lines, i+1))
+				action_code = self._decode_string(self._line_at(qsp_lines, i+2))
 				actions.append({
 					"image": action_image,
 					"name": action_name,
@@ -143,20 +152,30 @@ class QspToQspsBuiltinConv():
 				"actions": actions
 			})
 
-	def to_qsps(self) -> List[QspsLine]:
-		""" Convert all game's locations to qsps-format. """
+		if len(self._locations) != self._location_count:
+			print(f'{self._input_file}: заявлено локаций {self._location_count}, '
+				f'распознано {len(self._locations)}')
+
+	def _line_at(self, qsp_lines:List[GameLine], idx:int) -> str:
+		""" Строка idx без перевода. Выход за границу (обрезанный файл) → ValidationFormatError. """
+		if idx >= len(qsp_lines):
+			raise ValidationFormatError(self._encoding,
+				f"Обрезанный qsp-файл: ожидалась строка {idx}, получено {len(qsp_lines)}: {self._input_file}")
+		return qsp_lines[idx][:-1]
+
+	def to_qsps(self) -> None:
+		""" Convert all game's locations to qsps-format. Накапливает результат в
+		`self._qsps_lines` (его читает `save_to_file`); наружу ничего не возвращает. """
 		if not self._locations:
 			print('QSP-Game is not formed. Prove QSP-file.') # TODO: Error
-			return []
+			return
 
-		_cl = QspToQspsBuiltinConv.convert_location
 		self._qsps_lines.append(f"QSP-Game {self._file_name}\n")
 		self._qsps_lines.append(f"Число локаций: {self._location_count}\n")
 		self._qsps_lines.append(f"Пароль на исходном файле: {self._password}\n")
 		self._qsps_lines.append('\n')
 		for loc in self._locations:
 			self._qsps_lines.extend(QspToQspsBuiltinConv.convert_location(loc))
-		return self._qsps_lines
 
 	def get_locations(self) -> List[QspLocation]:
 		""" Get loactions list """
@@ -229,8 +248,12 @@ class QspToQspsBuiltinConv():
 		return qsp_string.replace("'", "''")
 
 	def _decode_int(self, qsp_line:str) -> int:
-		""" Decode qsp-line to int. """
-		return int(self._encode_handler(qsp_line))
+		""" Decode qsp-line to int. Нечисловое поле → ValidationFormatError (битый формат). """
+		try:
+			return int(self._encode_handler(qsp_line))
+		except ValueError:
+			raise ValidationFormatError(self._encoding,
+				f"Ожидалось целое число, получено нечисловое поле: {self._input_file}")
 
 	def _decode_string(self, qsp_line:str) -> str:
 		""" Decode qsp-line to string. """

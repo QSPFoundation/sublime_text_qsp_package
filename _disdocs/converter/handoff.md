@@ -21,7 +21,8 @@
   закрыты раньше фаз; добавлен guard «подозрительного закрытия» B1/Q1; Q2 — строгий контракт BASE)
 - [x] Фаза 3 — base-подсистема (B5–B8) — **закрыта 2026-11-03** (фиксы B5–B8 + единый канал ошибок;
   Q5 — латаем сканер, Q10 — print-сток + накопитель)
-- [ ] Фаза 4 — сборка/шифрование (B9–B12) — **в работе**: п.4.1 (остатки B9) и п.4.2 (B10) закрыты 2026-11-04; дальше п.4.3 (B11)
+- [ ] Фаза 4 — сборка/шифрование (B9–B12) — **в работе**: п.4.1 (остатки B9), п.4.2 (B10) и
+  п.4.3 (B11: `split_qsp`-валидации) закрыты 2026-11-04; остался п.4.4 (B12 — ЗАБЛОКИРОВАН на Q6)
 - [ ] Фаза 5 — splitter (B13)
 - [ ] Фаза 6 — закрытие белых пятен (Q1–Q10)
 
@@ -38,7 +39,8 @@
 | B8 | `base_scanner`: мёртвая `elif`-ветка, регистр keywords | **исправлен частично** (elif + `.lower()`; `_curlexeme`-мусор — хрупкость, Q5) |
 | B9 | общий `_char_cache` + 32 потока без синхронизации | **исправлен** (ENCODE_TABLE, 2026-11-04) + п.4.1: `*args`→именованные `conv_path/conv_args`; `handle_temp_file` builtin — ЖИВОЙ (вызывается из builder), не мёртвый |
 | B10 | OuterConv: пустой `conv_args` в argv (`convert_file`), `convert_lines→[]`, `handle_temp_file` без guard | **исправлен (п.4.2, 2026-11-04)**; `OuterConv.convert_file` — неживой; subprocess-robustness → в todo.md |
-| B11–B13 | `split_qsp` валидации, потеря пароля на roundtrip, дубли/_split_*, COM-регистр | код-анализ (Фаза 4: п.4.3–4.4; Фаза 5) |
+| B11 | `split_qsp` — валидации; потеря пароля на roundtrip; `_cl`-огарок; возврат `to_qsps` | **п.4.3 исправлен (2026-11-04)** — `split_qsp` бросает `ValidationFormatError`; расхождение числа локаций — warning; `_cl` удалён; `to_qsps→None`. Остатки B11 (`read_from_file`/cp1251) → п.4.4 |
+| B12–B13 | потеря пароля на roundtrip, дубли/_split_*, COM-регистр | код-анализ (Фаза 4: п.4.4; Фаза 5) |
 | B12 | `.qsp→.qsps→.qsp` теряет пароль и line-2 заголовка; utf-16le без BOM | подтверждён частично |
 | B14 | `parse_string` не знает про комментарии: `! "` открывает кавычку до EOF | **исправлен** — см. «Решения» ниже |
 
@@ -109,6 +111,20 @@
   (пишет debug-дамп vs удаляет рабочий temp) — не баг, а роли; `save_temp_files` = «хранить промежуточные».
   subprocess-robustness (returncode/stderr/PIPE) **вынесена в `todo.md`** (секция Converter) — отложена. Golden
   roundtrip PASS (outer тестом не гоняется, builtin цел), поведение не изменилось.
+- **Фаза 4, п.4.3 закрыт (2026-11-04).** B11 (`QspToQspsBuiltinConv`) — три подпункта:
+  (а) `split_qsp` теперь **бросает `ValidationFormatError`** на структурно битом входе: файл
+  < 4 строк, заголовок не `QSPGAME`, обрезанный файл (новый `_line_at` guard на выход за границу),
+  нечисловое поле (`_decode_int` ловит `ValueError`); `_location_count` vs фактическое число локаций —
+  **только console-warning** (разбор не отменяется). Вызовы защищены: `convert_file` перенёс `split_qsp()`
+  внутрь `try`, `qsp_splitter._split_game` обёрнут в `try/except ValidationFormatError` (импорт добавлен).
+  (б) мёртвая локальная `_cl = ...convert_location` в `to_qsps` удалена; (в) `to_qsps` → **`-> None`**
+  (мутирует `self._qsps_lines`, который читает `save_to_file`; возврат нигде не использовался).
+  ОСТАТКИ B11 (не в объёме 4.3, отнесены в п.4.4): `read_from_file` — `ValidationFormatError` (подтип
+  `ValueError`) не ловится `except UnicodeDecodeError` и должен `continue` по перебору кодировок; cp1251 —
+  последняя «всегда успешная» попытка → UTF-8 без BOM читается кракозябрами (связано с Q6).
+  Golden roundtrip — PASS (4 снапшота == baseline, `A_console` пуст — на ukuzya warning не сработал, число
+  локаций совпало); добавлены пины B11 (короткий/битый заголовок/обрезанный/нечисловое поле → raise;
+  mismatch → warning без raise). `set_qsp_source_text` из B11 был удалён раньше, в Фазе 1.
 
 ## Как проверять себя
 - Золотой контур: `_examples/examples_qsp_to_qsps/ukuzya_txt2gam.qsps` и
@@ -126,20 +142,19 @@
    для Q6 (BOM) и формата заголовка.
 
 ## Следующий конкретный шаг
-**Фаза 4, п.4.1 (B9-остатки) и п.4.2 (B10) — ЗАКРЫТЫ (2026-11-04).** п.4.1: `*args`→именованные
-`conv_path/conv_args` (IndexError-риск убран), builtin намеренно игнорирует, коммент. в builder про сборку
-`conv_args` в строку, `handle_temp_file` builtin живой. п.4.2: OuterConv — guard пустого arg в `convert_file`
-(неживой метод), `convert_lines→[]` задокументирован, `handle_temp_file` + `isfile`-guard; subprocess → todo.md.
-Golden roundtrip PASS (поведение не менялось).
-**Дальше — п.4.3 (B11), `qsp_to_qsps.py` (`QspToQspsBuiltinConv`):**
-1) `split_qsp` — нет проверки длины `_game_lines` (`IndexError` на файле < 4 строк); `qsp_lines[2]/[3]` читаются
-   до цикла — нужен guard + внятная ошибка вместо падения;
-2) `_location_count` прочитан, но не валидируется против фактического числа распознанных локаций — сверить/предупредить;
-3) `to_qsps`: локальный `_cl = ...convert_location` не используется (мёртвый огарок) — удалить; метод объявлен
-   `-> List[QspsLine]`, но `convert_file` игнорирует возврат — решить назначение возврата.
-(`set_qsp_source_text` из B11 уже удалён в Фазе 1.)
-**Потом — п.4.4 (B12: пароль/line-2/служба-строки/utf-16le без BOM) ЗАБЛОКИРОВАН на Q6** — нужен этало́нный `.qsp`
-от пользователя (для BOM и формата заголовка). Прежний контекст: golden roundtrip-тест
-`_examples/.tests/_converter_roundtrip_test_.py` + снапшоты `_examples/.tests/_golden/` (прогон:
-`python _examples/.tests/_converter_roundtrip_test_.py`; `--info` — сверка с txt2gam; `--update` — пересъёмка baseline).
-Пины B1/B2/B3/B4/B5/B6/B7 в том же тесте. Осторожно: B12 может сменить снапшоты — тогда пересъёмка `--update`.
+**Фаза 4, п.4.1 (B9-остатки), п.4.2 (B10) и п.4.3 (B11) — ЗАКРЫТЫ (2026-11-04).** п.4.1: `*args`→именованные
+`conv_path/conv_args`. п.4.2: OuterConv-гарды. п.4.3: `split_qsp` бросает `ValidationFormatError` на битом
+входе (короткий/битый заголовок/обрезанный/нечисловое поле), mismatch числа локаций — warning, `_cl` удалён,
+`to_qsps→None`; вызовы `convert_file`/`_split_game` защищены. Golden roundtrip PASS, пины B11 добавлены.
+**Дальше — п.4.4 (B12 + остатки B11), `qsp_to_qsps.py`:**
+1) **остатки B11** (перенесены из 4.3): `read_from_file` — `ValidationFormatError` при неверном заголовке должен
+   не вылетать, а `continue` по списку кодировок (иначе первая же неподходящая кодировка срывает перебор);
+   caller-защита `_split_game` уже сделана в 4.3; cp1251 как последняя «всегда успешная» → UTF-8 без BOM даёт
+   кракозябры без предупреждения;
+2) **B12**: `.qsp→.qsps→.qsp` теряет пароль и line-2 заголовка; служебные строки (`Число локаций`, `Пароль`),
+   которые `split_to_locations` не парсит; `save_to_file` пишет utf-16le без BOM (Q6).
+**п.4.4 ЗАБЛОКИРОВАН на Q6** — нужен этало́нный `.qsp` от пользователя (для BOM и формата заголовка).
+Прежний контекст: golden roundtrip-тест `_examples/.tests/_converter_roundtrip_test_.py` + снапшоты
+`_examples/.tests/_golden/` (прогон: `python _examples/.tests/_converter_roundtrip_test_.py`; `--info` — сверка
+с txt2gam; `--update` — пересъёмка baseline). Пины B1/B2/B3/B4/B5/B6/B7/B11 в том же тесте. Осторожно: B12/остатки
+B11 могут сменить снапшоты (в т.ч. `A_console`) — тогда пересъёмка `--update` с фиксацией причины в plan.md.

@@ -4,7 +4,7 @@ import re
 
 from typing import Dict, List, Literal, Tuple
 
-from .qsp_to_qsps import QspToQspsBuiltinConv
+from .qsp_to_qsps import QspToQspsBuiltinConv, ValidationFormatError
 from .qsps_file import QspsFile
 
 from .tps import (
@@ -116,8 +116,12 @@ class QspSplitter():
 	def _split_game(self) -> None:
 		""" Split QSP-file, convert it, and write locations as files """
 		q = QspToQspsBuiltinConv()
-		q.read_from_file(self._input_file)
-		q.split_qsp()
+		try:
+			q.read_from_file(self._input_file)
+			q.split_qsp()
+		except ValidationFormatError as e:
+			print(e)
+			return
 
 		count:Dict[Path, int] = {}
 

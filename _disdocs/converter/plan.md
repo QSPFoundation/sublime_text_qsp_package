@@ -364,10 +364,18 @@ Golden roundtrip — PASS (outer-путь тестом не гоняется, bu
   (консистентно с `convert_lines`); `convert_lines` возврат `[]` задокументирован как намеренный;
   `handle_temp_file` + guard `isfile`. `OuterConv.convert_file` признан неживым (не вызывается). subprocess-robustness
   вынесена в `todo.md`. Golden roundtrip — PASS (outer не гоняется тестом, builtin цел).
-- **п.4.3 (B11):** валидации `split_qsp` (файл < 4 строк → `IndexError`; `_location_count` vs фактическое число),
-  удаление `_cl`-огарбка, возврат `to_qsps`. `set_qsp_source_text` уже удалён в Фазе 1.
-- **п.4.4 (B12):** служба-строки заголовка и потеря пароля/line-2 на roundtrip, utf-16le без BOM — после решения Q6
-  (нужен этало́нный `.qsp`).
+- **п.4.3 (B11) — ✅ закрыт (2026-11-04):** `split_qsp` бросает `ValidationFormatError` на
+  структурно битом входе (`_line_at` guard: файл < 4 строк / заголовок не `QSPGAME` / обрезанный
+  файл; `_decode_int` ловит `ValueError` на нечисловом поле). `_location_count` vs фактическое число
+  локаций — **только console-warning**. Вызовы защищены: `convert_file` перенёс `split_qsp()` внутрь
+  `try`, `qsp_splitter._split_game` обёрнут в `try/except ValidationFormatError`. Мёртвая `_cl` удалена;
+  `to_qsps` → `-> None` (мутирует `self._qsps_lines`). `set_qsp_source_text` уже удалён в Фазе 1.
+  **Остатки B11 перенесены в п.4.4** (`read_from_file`: `ValidationFormatError` должен `continue` по
+  перебору кодировок, а не вылетать; cp1251 «всегда успешна» → UTF-8 без BOM = кракозябры).
+  Golden roundtrip — PASS (4 снапшота == baseline, `A_console` пуст); пины B11 добавлены.
+- **п.4.4 (B12 + остатки B11):** служба-строки заголовка и потеря пароля/line-2 на roundtrip, utf-16le без BOM —
+  после решения Q6 (нужен этало́нный `.qsp`); плюс `read_from_file` (нет `continue` при неверном заголовке,
+  незащищённый `ValidationFormatError`) и cp1251-«всегда успешно» (UTF-8 без BOM → кракозябры).
 
 ### Фаза 5 — splitter (B13)
 
