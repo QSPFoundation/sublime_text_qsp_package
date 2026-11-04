@@ -23,9 +23,10 @@
   Q5 — латаем сканер, Q10 — print-сток + накопитель)
 - [x] Фаза 4 — сборка/шифрование (B9–B12) — **ЗАКРЫТА 2026-11-04**: п.4.1–п.4.3 + п.4.4 (остатки
   B11 `read_from_file`, Q6, B12→Q11(A), EOL→CRLF) — всё принято. Golden roundtrip PASS (B переснят под CRLF).
-- [ ] Фаза 5 — splitter (B13) — **в процессе**: п.5.1 ✅ (дедуп `_split_*` → `_write_location`),
-  п.5.2 ✅ (счётчик дедупа → while по итоговому пути), п.5.3 ✅ (IGNORECASE COM/LPT+RESERVE,
-  2026-11-04); остаток: п.5.4 (FinderSplitter)
+- [x] Фаза 5 — splitter (B13) — **ЗАКРЫТА 2026-11-04**: п.5.1 (дедуп `_split_*` → `_write_location`),
+  п.5.2 (счётчик дедупа → while по итоговому пути), п.5.3 (IGNORECASE COM/LPT+RESERVE),
+  п.5.4 (FinderSplitter: рекурсия+`_src`-сосед+регистр расширений). Golden roundtrip PASS,
+  пины B13-дедуп/B13-CASE/B13-FINDER.
 - [ ] Фаза 6 — закрытие белых пятен (Q1–Q10)
 
 ## Ключевые findings (детали — в plan.md)
@@ -176,6 +177,21 @@
   зафиксировано как есть. Проверено пином **B13-CASE** (com1→_com1, lpt2→_lpt2, con→_con,
   nul→_nul, PRN→_PRN; loc1/a/b без регрессии) — красный на HEAD для строчных, зелёный на фиксе.
   Golden roundtrip PASS.
+- **Фаза 5, п.5.4 закрыт (2026-11-04).** B13 (`FinderSplitter`): (а) фикс расширений — `('.qsp')`
+  был строкой-не-кортежом (ловил подстроки `.q`/`.sp`, не ловил `.QSP`) → константы
+  `QSP_EXTS`/`QSPS_EXTS` + `file_ext.lower()`; (б) рекурсия — `FinderSplitter(recursive=True)`
+  **по умолчанию ВКЛ**, `os.walk(topdown)` по всей `folder_path` с прунингом output-root, если он
+  внутри неё (плоский режим `os.listdir` — по флагу);
+  (в) output-root — optional-параметр `FinderSplitter(output_root=...)`. По умолчанию (`None`) — `_src`
+  (`SRC_OUTPUT_DIR`) **СОСЕДОМ** с `folder_path` (на одном уровне, вне обхода); если задан свой путь
+  ВНУТРИ `folder_path` — он исключается из обхода (для соседа prune — no-op). Зеркало дерева внутри
+  output-root, начиная с имени исходной папки (`_mirror_output`: `<root>/<proj>/<rel>/<base>/…`); `split_file` получил
+  optional `output_folder` (одиночный `QspSplitterCommand` не передаёт → in-place цел);
+  (г) пересплит = **накопление дублей, не затирание** (по решению пользователя): зеркало НЕ сносим,
+  защита от перезаписи в `_write_location` (п.5.2) даёт `name_1`,`name_2`… → случайная порча проекта
+  исключена. Проверено: пин **B13-FINDER** (красный на плоском HEAD: нет зеркала + нет накопления
+  дубля; зелёный на фиксе) + smoke (соседство `_src`, зеркало с именем proj, плоский).
+  Golden roundtrip PASS. **Фаза 5 ЗАКРЫТА.**
 
 ## Как проверять себя
 - Золотой контур: `_examples/examples_qsp_to_qsps/ukuzya_txt2gam.qsps` и
@@ -188,22 +204,18 @@
   + split_qsp()` (utf-16-le без BOM, CRLF; tt2.qsp — cp1251).
 
 ## Что нужно от пользователя (по порядку, для новых чатов)
-1. Ответы белых пятен plan.md §3. Закрыты: Q1–Q6, Q10, **Q11 (A: метаданные на roundtrip не
-   сохраняются — принято ограничение по txt2gam, служебные строки `to_qsps` оставлены намеренно)**. Остались: Q7
-   (костыль-отступ txt2gam + EOL-_known-fail` --info`), Q8 (судьба `base_printer.py`),
+1. Ответы белых пятен plan.md §3. Закрыты: Q1–Q6, Q10, **Q11 (A)**. Остались: Q7
+   (костыль-отступ txt2gam + EOL-known-fail `--info`), Q8 (судьба `base_printer.py`),
    Q9 (однострочные ACT).
 2. Подтверждение, что `base_printer.py` удаляем (Q8).
 
 ## Следующий конкретный шаг
-**Фаза 4 полностью ЗАКРЫТА (2026-11-04):** п.4.1–п.4.3 + п.4.4 (остатки B11 `read_from_file`,
-Q6=utf-16le без BOM канон, B12→Q11(A) — метаданные/пароль/line-2 на roundtrip не сохраняются,
-служебные строки оставлены намеренно с комментарием; EOL `.qsp`→CRLF — `game_lines` строятся с
-`'\r\n'`, `save_to_file` пишет с `newline=''`). Golden roundtrip PASS (4 снапшота == baseline,
-B переснят под CRLF: 168 CRLF, lone-LF/CR-CR/lone-CR = 0), пины B11-остаток + B12-корпус.
-**Дальше — Фаза 5 (splitter, B13), п.5.4** (остаток B13):
-- **п.5.4** — `FinderSplitter.search_n_split`: плоский `os.listdir` → `os.walk` (рекурсия);
-  `file_ext in ('.qsp')` — проверка по подстроке строки-не-кортежа (баг: ловит `.q`/`.sp` и т.п.,
-  но не ловит `.qsps` который в следующей ветке); приведение расширения к `.lower()`.
+**Фаза 5 (splitter, B13) полностью ЗАКРЫТА (2026-11-04):** п.5.1–п.5.4 приняты
+(дедуп `_split_*`→`_write_location`; счётчик дедупа→while по итоговому пути; IGNORECASE COM/LPT+RESERVE;
+FinderSplitter: рекурсия по умолчанию + output-root `_src` СОСЕДОМ с проектом (вне обхода) + зеркало
+дерева с именем proj + накопление дублей при пересплите (без затирания) + регистронезависимые расширения). Golden roundtrip PASS
+(снапшоты == baseline), пины B13-дедуп/B13-CASE/B13-FINDER.
+**Дальше — Фаза 6 (белые пятна Q1–Q10): остаться Q7/Q8/Q9 — нужны ответы пользователя (см. §3 плана).**
 
 Прежний контекст: golden roundtrip-тест
 `_examples/.tests/_converter_roundtrip_test_.py` + снапшоты `_examples/.tests/_golden/` (прогон:

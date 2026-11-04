@@ -34,7 +34,7 @@ from qSpy.converter.converters import QspsToQspBuiltinConv
 from qSpy.converter.qsps_file import QspsFile
 from qSpy.converter.qsp_location import QspsLoc
 from qSpy.converter.tools import QSP_CODREMOV
-from qSpy.converter.qsp_splitter import QspSplitter
+from qSpy.converter.qsp_splitter import QspSplitter, FinderSplitter
 
 A_IN  = os.path.join(EX, 'examples_qsp_to_qsps', 'ukuzya_old.qsp')
 A_REF = os.path.join(EX, 'examples_qsp_to_qsps', 'ukuzya_txt2gam.qsps')
@@ -328,6 +328,60 @@ def pins():
         if got != want:
             fails.append(f'B13-CASE correct_file_name({raw!r})={got!r} != {want!r}')
 
+    # ---- пин B13-FINDER (Фаза 5, п.5.4): рекурсия + output-root _src-СОСЕД + регистр расширений ----
+    # folder_path попадает в сплит; _src создаётся СОСЕДОМ (на одном уровне), зеркалится дерево
+    # (_src/<proj>/...); пересплит НЕ затирает — копятся дубликаты (защита от порчи проекта).
+    def _mk_qsps(path, locs):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.write(''.join(f'# {n}\nprint {n}\n-- {n} ' + '-' * 33 + '\n' for n in locs))
+    parent = tempfile.mkdtemp(prefix='_finder_pin_')
+    try:
+        proj = os.path.join(parent, 'proj')
+        src_root = os.path.join(parent, '_src')
+        _mk_qsps(os.path.join(proj, 'a.qsps'), ['x1', 'x2'])    # верхний уровень, 2 локации
+        _mk_qsps(os.path.join(proj, 'sub', 'b.qsps'), ['y1'])   # вложенный (рекурсия должна найти)
+        _mk_qsps(os.path.join(proj, 'C.QSPS'), ['z1'])          # верхний регистр расширения
+        def _tree(root):
+            t = set()
+            for r, _, fs in os.walk(root):
+                for fn in fs:
+                    t.add(os.path.relpath(os.path.join(r, fn), root).replace(chr(92), '/'))
+            return t
+        with contextlib.redirect_stdout(io.StringIO()):
+            FinderSplitter(mode=('txt',)).search_n_split(proj)
+        mirror = _tree(src_root)
+        for wantp in ('proj/a/x1.qsps', 'proj/a/x2.qsps', 'proj/sub/b/y1.qsps', 'proj/C/z1.qsps'):
+            if wantp not in mirror:
+                fails.append(f'B13-FINDER нет зеркала: {wantp}')
+        # _src — сосед, не внутри proj
+        if os.path.isdir(os.path.join(proj, '_src')):
+            fails.append('B13-FINDER: _src создана внутри proj, а не соседом')
+        # пересплит = накопление дублей, не затирание
+        with contextlib.redirect_stdout(io.StringIO()):
+            FinderSplitter(mode=('txt',)).search_n_split(proj)
+        mirror2 = _tree(src_root)
+        if 'proj/a/x1_1.qsps' not in mirror2:
+            fails.append('B13-FINDER: пересплит не накопил дубль (x1_1) — значит затёр вместо защиты')
+        # ---- сценарий: output_root ВНУТРИ folder_path → исключается из обхода ----
+        proj2 = os.path.join(parent, 'proj2')
+        out2 = os.path.join(proj2, 'out')            # output-root внутри исходной папки
+        _mk_qsps(os.path.join(proj2, 'a.qsps'), ['x1'])
+        _mk_qsps(os.path.join(proj2, 'sub', 'b.qsps'), ['y1'])
+        with contextlib.redirect_stdout(io.StringIO()):
+            FinderSplitter(mode=('txt',), output_root=out2).search_n_split(proj2)
+        with contextlib.redirect_stdout(io.StringIO()):
+            FinderSplitter(mode=('txt',), output_root=out2).search_n_split(proj2)  # 2-й прогон
+        mirror_o2 = _tree(out2)
+        for wantp in ('proj2/a/x1.qsps', 'proj2/sub/b/y1.qsps'):
+            if wantp not in mirror_o2:
+                fails.append(f'B13-FINDER(inside) нет зеркала: {wantp}')
+        # без исключения из обхода 2-й прогон вложился бы в out2 → proj2/out/...
+        if any(p.startswith('proj2/out/') for p in mirror_o2):
+            fails.append('B13-FINDER(inside): обход зашёл в output-root (нет исключения)')
+    finally:
+        shutil.rmtree(parent, ignore_errors=True)
+
     return fails
 
 
@@ -407,7 +461,7 @@ def main():
         print('FAIL  pin:', m)
     ok = ok and not pf
     if not pf:
-        print('ok    пины B1/B2/B3/B4/B5/B6/B7/B11/B12-корпус/B13-дедуп/B13-CASE')
+        print('ok    пины B1/B2/B3/B4/B5/B6/B7/B11/B12-корпус/B13-дедуп/B13-CASE/B13-FINDER')
 
     if args.info:
         info_vs_txt2gam(a_text, b_text)

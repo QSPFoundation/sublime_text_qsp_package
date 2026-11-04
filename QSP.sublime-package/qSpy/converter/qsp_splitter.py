@@ -44,6 +44,13 @@ RESERVE_FILE_NAMES = (
 	'CON', 'PRN', 'AUX', 'NUL', 'CLOCK$', '_',
 )
 
+# расширения файлов-источников (сравнение по file_ext.lower() — регистронезависимо)
+QSP_EXTS  = ('.qsp',)
+QSPS_EXTS = ('.qsps', '.qsp-txt', '.txt-qsp')
+# output-root проектного сплита: `_src`-папка СОСЕДОМ с исходной (на одном уровне, не внутри),
+# в ней зеркалится дерево исходников; при пересплите дубли копятся (защита от случайного затирания)
+SRC_OUTPUT_DIR = '_src' # TODO: пересмотреть реализацию опционального параметра
+
 
 class QspSplitter():
 	"""
@@ -63,13 +70,16 @@ class QspSplitter():
 		# data fields:
 		self._qproj_data:QProjData = {}
 	
-	def split_file(self, input_file:str) -> None:
-		""" Split the common file into separate location-files. """
+	def split_file(self, input_file:str, output_folder:Path|None = None) -> None:
+		""" Split the common file into separate location-files.
+		output_folder — override папки результата (проектный сплит в _src); иначе in-place. """
 		if not os.path.isfile(input_file):
 			print(f'[400] QspSplitter: File {input_file} is not exist.') # TODO: make error
 			return
 
 		self._set_pathes(input_file)	
+		if output_folder:
+			self._output_folder = output_folder
 		os.makedirs(self._output_folder, exist_ok=True)
 
 		self._read_qproj() # get output pathes for location placements
@@ -168,28 +178,66 @@ class QspSplitter():
 class FinderSplitter():
 	"""
 		Search and convert n split QSP-files, and/or split qsps-files.
+		Результат — в output-root с зеркалом дерева исходников внутри. По умолчанию output-root —
+		`_src`, созданная СОСЕДОМ с folder_path (на одном уровне → вне обхода). Можно задать свой
+		`output_root`; если он лежит внутри folder_path — он исключается из обхода (свои не перещепляем).
+		Пересплит не затирает: дубли накопляются (`_1`, `_2` ...) — защита от случайной порчи проекта.
 	"""
-	def __init__(self, mode:FinderMode = ('game', 'txt')):
+	def __init__(self, mode:FinderMode = ('game', 'txt'),
+				recursive:bool = True, output_root:Path|None = None):
 		self._folder_path = ''
+		self._output_root = ''
 		self._mode = mode
+		self._recursive = recursive
+		self._output_root_override = output_root  # задан → используем вместо `_src`-соседа
+
+	def _resolve_output_root(self) -> Path:
+		""" output-root: явный override (abs), иначе — дефолт `_src` соседом с folder_path. """
+		if self._output_root_override:
+			return _norm(os.path.abspath(self._output_root_override))
+		return _norm(_jont(os.path.dirname(self._folder_path), SRC_OUTPUT_DIR))
+
+	def _iter_source_files(self):
+		""" Отдать пути всех файлов-кандидатов (рекурсивно или плоско). """
+		if self._recursive:
+			for root, dirnames, files in os.walk(self._folder_path, topdown=True):
+				# если output-root лежит ВНУТРИ folder_path — не спускаемся в него (свои не перещепляем);
+				# для дефолта-соседа это no-op (путь никогда не совпадёт с дочерней папкой)
+				dirnames[:] = [d for d in dirnames if _norm(_jont(root, d)) != self._output_root]
+				for name in files:
+					yield _jont(root, name)
+			return
+		for name in os.listdir(self._folder_path):
+			path = _jont(self._folder_path, name)
+			if os.path.isfile(path):
+				yield path
+
+	def _mirror_output(self, input_file:Path) -> Path:
+		""" Папка результата внутри _src (соседа folder_path), зеркалящая путь исходника.
+		Зеркало начинается с имени исходной папки: _src/<proj>/... ≅ <proj>/... — дерево читается
+		однозначно и разные проекты в один _src не сливаются. """
+		project = os.path.basename(self._folder_path)
+		rel_dir = os.path.relpath(os.path.dirname(input_file), self._folder_path)  # 'main' или '.'
+		base = os.path.splitext(os.path.basename(input_file))[0]
+		return _norm(_jont(self._output_root, project, rel_dir, base))
 
 	def search_n_split(self, folder_path:Path):
 		self._folder_path = os.path.abspath(folder_path)
+		self._output_root = self._resolve_output_root()
 		qsp_files_list:List[Path] = []
 		qsps_files_list:List[Path] = []
-		for fold_or_file in os.listdir(self._folder_path):
-			path = _jont(self._folder_path, fold_or_file)
-			if os.path.isfile(path):
-				_, file_ext = os.path.splitext(fold_or_file)
-				if file_ext in ('.qsp'):
-					qsp_files_list.append(path)
-				elif file_ext in ('.qsps', '.qsp-txt', '.txt-qsp'):
-					qsps_files_list.append(path)
-		if 'game' in self._mode and qsp_files_list:
+		for path in self._iter_source_files():
+			file_ext = os.path.splitext(path)[1].lower()
+			if file_ext in QSP_EXTS:
+				qsp_files_list.append(path)
+			elif file_ext in QSPS_EXTS:
+				qsps_files_list.append(path)
+		# пересплит НЕ затирает зеркало: защита от перезаписи в _write_location копит дубликаты
+		if 'game' in self._mode:
 			for file in qsp_files_list:
-				QspSplitter('game').split_file(file)
-		if 'txt' in self._mode and qsps_files_list:
+				QspSplitter('game').split_file(file, self._mirror_output(file))
+		if 'txt' in self._mode:
 			for file in qsps_files_list:
-				QspSplitter('txt').split_file(file)
+				QspSplitter('txt').split_file(file, self._mirror_output(file))
 
 

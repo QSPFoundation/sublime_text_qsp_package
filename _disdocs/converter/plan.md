@@ -403,7 +403,7 @@ Golden roundtrip — PASS (outer-путь тестом не гоняется, bu
   - Golden roundtrip — PASS (4 снапшота; B_ukuzya.qsp.txt переснят под CRLF), пины B11-остаток +
     B12-корпус (все 12 реальных `.qsp` читаются без исключений).
 
-### Фаза 5 — splitter (B13)
+### Фаза 5 — splitter (B13) — ✅ ЗАКРЫТА (2026-11-04): п.5.1–п.5.4 приняты.
 
 - **п.5.1 (дедуп `_split_*`) — ✅ закрыт (2026-11-04):** общий блок (имя → fold/file →
   дедуп → makedirs → запись) вынесен в `QspSplitter._write_location(loc_name, content_lines,
@@ -423,8 +423,26 @@ Golden roundtrip — PASS (outer-путь тестом не гоняется, bu
   `CON`/`PRN`/`AUX`/`NUL`/`CLOCK$` тоже без учёта регистра). Строчные `com1`/`lpt2`/`con`/`nul`
   теперь экранируются в `_com1` и т.п. (`correct_file_name`). Проверено пином B13-CASE (красный
   на HEAD для строчных, зелёный на фиксе); Golden roundtrip PASS.
-- **п.5.4 (`FinderSplitter`) — остаток B13:** плоский `os.listdir` без рекурсии → `os.walk`;
-  `file_ext in ('.qsp')` — проверка по подстроке строки (баг) + не регистронезависимо.
+- **п.5.4 (`FinderSplitter`) — ✅ закрыт (2026-11-04):**
+  - расширения: `('.qsp')` (строка-не-кортеж, был баг подстрок) → константы `QSP_EXTS`/`QSPS_EXTS`,
+    сравнение `file_ext.lower()` — регистронезависимо (`.QSP`/`.QSPS` подхватываются).
+  - рекурсия: флаг `FinderSplitter(recursive=True)` — **по умолчанию ВКЛ**; обход `os.walk(topdown)`
+    всей `folder_path` с прунингом output-root, если он лежит внутри неё (плюс плоский режим
+    `os.listdir`, если выключить).
+  - output-root — optional-параметр `FinderSplitter(output_root=...)`. По умолчанию (`None`) — папка
+    **`_src`** (`SRC_OUTPUT_DIR`) **СОСЕДОМ** с `folder_path` (на одном уровне,
+    `os.path.dirname(folder_path)/_src`) → в обход не попадает, ислючать нечего. Если задан свой путь
+    и он ВНУТРИ `folder_path` — он исключается из обхода (`dirnames`-prune; для соседа — no-op).
+    Результат каждого исходника — **зеркало дерева** внутри output-root, начиная с имени
+    исходной папки (`_mirror_output`: `<root>/<proj>/<rel>/<base>/…`) → `<root>/proj ≅ proj`, разные
+    проекты в один root не сливаются. `QspSplitter.split_file` получил optional `output_folder`
+    (override); одиночный путь `QspSplitterCommand` его не передаёт → in-place не изменился.
+  - пересплит = **накопление дублей, не затирание** (решение пользователя): зеркало НЕ сносим;
+    защита от перезаписи в `_write_location` (п.5.2) на повторном сплите даёт `name_1`, `name_2` …
+    → случайная порча проекта исключена (ценой дублей при намеренном пересплите).
+  - Проверено пином B13-FINDER (красный на плоском HEAD: нет зеркала + нет накопления дубля;
+    зелёный на фиксе) + одноразовым smoke (соседство `_src`, зеркало с именем proj, плоский режим).
+    Golden roundtrip PASS.
 
 ### Фаза 6 — белые пятна (Q1–Q10)
 
