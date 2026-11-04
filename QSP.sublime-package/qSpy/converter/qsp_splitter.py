@@ -118,11 +118,13 @@ class QspSplitter():
 			fold, file = self._qproj_data[loc_name]
 		else:
 			fold, file = self._output_folder, self.correct_file_name(loc_name)
-		output_path = _jont(fold, f'{file}.qsps')
-		if not output_path in count: count[output_path] = 0
-		if os.path.isfile(output_path):
-			count[output_path] += 1
-			output_path = _jont(fold, f'{file}_{count[output_path]}.qsps')
+		base_path = _jont(fold, f'{file}.qsps')
+		n = count.get(base_path, 0)                    # старт дедупа с прошлой высокой точки, не с нуля
+		output_path = base_path if n == 0 else _jont(fold, f'{file}_{n}.qsps')
+		while os.path.isfile(output_path):            # защита от перезаписи: берем первый свободный путь
+			n += 1
+			output_path = _jont(fold, f'{file}_{n}.qsps')
+		count[base_path] = n
 		os.makedirs(fold, exist_ok=True)
 		output_lines.extend(content_lines)
 		with open(output_path, 'w', encoding='utf-8') as fp:

@@ -19,7 +19,7 @@
 #   --update                — перегенерировать снимки в `_golden/` (осознанное принятие baseline).
 #   --info                  — дополнительно напечатать сверку с txt2gam (информативно, не влияет на код выхода).
 
-import sys, os, io, argparse, contextlib, difflib, hashlib, glob
+import sys, os, io, argparse, contextlib, difflib, hashlib, glob, tempfile, shutil
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 EX   = os.path.dirname(HERE)                                  # _examples
@@ -34,6 +34,7 @@ from qSpy.converter.converters import QspsToQspBuiltinConv
 from qSpy.converter.qsps_file import QspsFile
 from qSpy.converter.qsp_location import QspsLoc
 from qSpy.converter.tools import QSP_CODREMOV
+from qSpy.converter.qsp_splitter import QspSplitter
 
 A_IN  = os.path.join(EX, 'examples_qsp_to_qsps', 'ukuzya_old.qsp')
 A_REF = os.path.join(EX, 'examples_qsp_to_qsps', 'ukuzya_txt2gam.qsps')
@@ -286,6 +287,38 @@ def pins():
         if len(cq.get_locations()) < 1:
             fails.append(f'B12-корпус: {os.path.basename(qf)} — распознано 0 локаций')
 
+    # ---- пин B13-дедуп (Фаза 5, п.5.2): защита от перезаписи при повторном сплите ----
+    # _write_location берёт ПЕРВЫЙ СВОБОДНЫЙ путь по итоговому имени; старт дедупа —
+    # с высокой точки count (не с нуля). Контракт: никогда не затирать существующий файл.
+    dedup_dir = tempfile.mkdtemp(prefix='_dedup_pin_')
+    try:
+        sp = QspSplitter('txt')
+        sp._output_folder = dedup_dir
+        sp._qproj_data = {}
+        cnt1 = {}                                        # прогон 1: два дубля одного имени
+        sp._write_location('dup', ['A\n'], cnt1)         # -> dup.qsps
+        sp._write_location('dup', ['B\n'], cnt1)         # -> dup_1.qsps
+        dup1_run1 = None
+        p1 = os.path.join(dedup_dir, 'dup_1.qsps')
+        if os.path.isfile(p1):
+            with open(p1, encoding='utf-8') as fh:
+                dup1_run1 = fh.read()
+        cnt2 = {}                                        # прогон 2: свежий count, файлы на диске
+        sp._write_location('dup', ['C\n'], cnt2)         # -> dup_2.qsps (не поверх dup_1!)
+        sp._write_location('dup', ['D\n'], cnt2)         # -> dup_3.qsps
+        got = sorted(os.listdir(dedup_dir))
+        if got != ['dup.qsps', 'dup_1.qsps', 'dup_2.qsps', 'dup_3.qsps']:
+            fails.append(f'B13-дедуп: дерево {got} != dup,dup_1,dup_2,dup_3')
+        # старый баг: повторный прогон затирал dup_1.qsps -> проверяем неизменность
+        if dup1_run1 is not None:
+            with open(p1, encoding='utf-8') as fh:
+                if fh.read() != dup1_run1:
+                    fails.append('B13-дедуп: dup_1.qsps перезаписан повторным прогоном (баг!)')
+        else:
+            fails.append('B13-дедуп: dup_1.qsps не создан в прогоне 1')
+    finally:
+        shutil.rmtree(dedup_dir, ignore_errors=True)
+
     return fails
 
 
@@ -365,7 +398,7 @@ def main():
         print('FAIL  pin:', m)
     ok = ok and not pf
     if not pf:
-        print('ok    пины B1/B2/B3/B4/B5/B6/B7/B11/B12-корпус')
+        print('ok    пины B1/B2/B3/B4/B5/B6/B7/B11/B12-корпус/B13-дедуп')
 
     if args.info:
         info_vs_txt2gam(a_text, b_text)
