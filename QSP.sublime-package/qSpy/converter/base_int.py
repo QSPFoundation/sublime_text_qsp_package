@@ -23,7 +23,7 @@ class BaseInt(stm.BaseVisitor[AstNode]):
 
         self._actions:List[Action] = []
         self._desc_lines:List[str] = []
-        # единый канал ошибок base-разбора (B7/Q10): накапливаем, а не глотаем;
+        # единый канал ошибок base-разбора: накапливаем, а не глотаем;
         # печать — сток на уровне вызывающего (QspsLoc.split_base) с контекстом локации
         self._errors:List[RuntimeIntError] = []
 
@@ -108,11 +108,9 @@ class BaseInt(stm.BaseVisitor[AstNode]):
         start_line = stmt.open.lexeme_start[0]
         close = stmt.close.name
         if close.ttype != tt.END_STMT:
-            # РЕШЕНИЕ Q9 (2026-11-04): base-подсистема поддерживает только многострочные
-            # ACT…END. Однострочный `ACT 'x': код` сюда приходит с close != END_STMT → считаем
-            # НЕ действий BASE: бросаем ошибку (non-fatal, копится в errors()) и НЕ добавляем в
-            # _actions → при сборке он молча не попадает в .qsp (и строка не остаётся в ран-код).
-            # Ограничение сознательно оставляем; диагностику уровня error не снижаем.
+            # Намеренная реализация: base-подсистема поддерживает только многострочные ACT…END.
+            # Однострочный `ACT 'x': код` приходит с close != END_STMT → это не действие BASE:
+            # ошибка (non-fatal, копится в errors()), в _actions не добавляется.
             raise RuntimeIntError((self._src_lines[start_line], start_line),
                 'Use multiline actions for Base Actions.')
         end_line = close.lexeme_start[0]

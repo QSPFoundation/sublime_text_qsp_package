@@ -1,4 +1,3 @@
-# from tracemalloc import start
 from typing import List, Optional, Any
 
 from .pp_tokens import PpToken as Tkn
@@ -56,8 +55,6 @@ class PpParser:
         if self._loc_is_open:
             if self._check_type(tt.LOC_CLOSE):
                 return self._close_loc()
-            # elif self._check_type(tt.LOC_OPEN):
-                # TODO: теоретически может появиться вариант с подобным началом локации
             elif self._match(tt.EXCLAMATION_SIGN, tt.SIMPLE_SPEC_COMM, tt.LESS_SPEC_COMM):
                 # комментарии трёх типов: обычный, спецкомментарий, спецкомментарий с удалением
                 return self._comment()

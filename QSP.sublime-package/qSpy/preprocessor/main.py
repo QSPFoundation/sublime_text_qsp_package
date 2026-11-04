@@ -20,7 +20,7 @@ from . import error as er
 class QspsPP:
     """ Препроцессор для файлов  """
     def __init__(self, mode:Literal['Off', 'On']) -> None:
-        # Препроцессор и окружение для директив общее для всех файлов:
+        # Препроцессор и окружение для директив — общие для всех файлов
         self._ns = PpEnvironment()
         self._pp:bool = (mode == 'On') # global switch on of preprocessor
 
@@ -89,7 +89,6 @@ class QspsPP:
             self._dirs_int = DirsInt(dirs_stmts, self._ns, qsps_lines, self._pp)
             self._dirs_int.run()
             marked_lines = self._dirs_int.get_marked_lines()
-            # if self._dirs_int.errored(): self._error_check = True
         except er.DirsInterpreterError as e:
             # If alg is corrupted, return source-lines
             self._error_check = True
@@ -127,7 +126,6 @@ class QspsPP:
                 # Pp return empty list of QspsLines, if all locations exclude
                 # QspsFile src need not empty list for changing, return this
                 return ['\n']
-            # if self._pp_int.errored(): self._error_check = True
         except er.PpInterpreterError as e:
             self._error_check = True
             print(e)

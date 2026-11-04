@@ -49,7 +49,7 @@ QSP_EXTS  = ('.qsp',)
 QSPS_EXTS = ('.qsps', '.qsp-txt', '.txt-qsp')
 # output-root проектного сплита: `_src`-папка СОСЕДОМ с исходной (на одном уровне, не внутри),
 # в ней зеркалится дерево исходников; при пересплите дубли копятся (защита от случайного затирания)
-SRC_OUTPUT_DIR = '_src' # TODO: пересмотреть реализацию опционального параметра
+SRC_OUTPUT_DIR = '_src'
 
 
 class QspSplitter():
@@ -74,7 +74,7 @@ class QspSplitter():
 		""" Split the common file into separate location-files.
 		output_folder — override папки результата (проектный сплит в _src); иначе in-place. """
 		if not os.path.isfile(input_file):
-			print(f'[400] QspSplitter: File {input_file} is not exist.') # TODO: make error
+			print(f'[400] QspSplitter: File {input_file} is not exist.')
 			return
 
 		self._set_pathes(input_file)	

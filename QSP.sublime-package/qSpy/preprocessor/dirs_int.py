@@ -39,7 +39,7 @@ class DirsInt(stm.PpVisitor[AstNode], dir.PpVisitor[AstNode], expr.PpVisitor[Ast
 
         # Структурный стек открытых if: True — блок вычислен и выполнен, False — пропущен
         # (pp был выключен на момент if). Глубина вложенности отвязана от вычисления условий,
-        # поэтому парный endif всегда снимает свой фрейм, а не внешний (исправление вложенных if).
+        # поэтому парный endif всегда снимает свой фрейм, а не внешний.
         self._if_stack:List[bool] = []
 
         self._modes:List[Modes] = [{

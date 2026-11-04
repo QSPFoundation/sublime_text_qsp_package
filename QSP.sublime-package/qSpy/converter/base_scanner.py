@@ -127,7 +127,7 @@ class BaseScanner:
                 self._scan_funcs.append(self._identifier_expect)
             else:
                 # keyword-lookup регистронезависим (QSP-движок то же): без .lower()
-                # ASCII-ключи в _KEYWORDS не совпадали бы с `ACT`/`IF`/`END` (B8)
+                # ASCII-ключи в _KEYWORDS не совпадали бы с `ACT`/`IF`/`END`
                 self._add_token(self._KEYWORDS.get(''.join(self._curlexeme).lower(), tt.IDENTIFIER))
         elif c in self._STMT_DELIMITERS:
             self._add_token(tt.DELIMITER)

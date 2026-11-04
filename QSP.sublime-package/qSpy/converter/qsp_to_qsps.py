@@ -9,7 +9,7 @@ from .tps import (
 CharCache = Dict[GameChar, QspsChar]
 Encoding = Literal['utf-16-le', 'utf-8-sig', 'utf-8', 'cp1251']
 
-# Таблица декодирования «qsp ±5» (аналог B9 в converters.py): единый НЕизменяемый dict
+# Таблица декодирования «qsp ±5»: единый НЕизменяемый dict
 # ordinal→ordinal, строится один раз при импорте — вместо разделяемого ИЗМЕНЯЕМОГО _char_cache.
 # Декод qsp→qsps — чистый посимвольный сдвиг кодовой точки на +QSP_CODREMOV: символ cp уходит
 # в cp+QSP_CODREMOV (обратная операция к ENCODE_TABLE). str.translate только ЧИТАЕТ таблицу.
@@ -28,8 +28,8 @@ class QspToQspsBuiltinConv():
 	"""Converter ".qsp" game files into qsps-files. Based on converter by Werewolf in JS.
 	stand `game-file` and run script for getting qsps-format file"""
 
-	# ВНИМАНИЕ: `_char_cache` упразднён (декод идёт через DECODE_TABLE); остаётся только
-	# `_cp1251_cache` для легаси-ветки cp1251 (побайтовый сдвиг).
+	# Кэш декода: остаётся только `_cp1251_cache` для легаси-ветки cp1251 (побайтовый
+	# сдвиг); обычный декод идёт через неизменяемую DECODE_TABLE.
 	_cp1251_cache:CharCache = {}
 
 	def __init__(self) -> None:
@@ -69,13 +69,12 @@ class QspToQspsBuiltinConv():
 
 		Подбор кодировки: проходит та, в которой первая строка читается как `QSPGAME`.
 		Не подходящий вариант (ошибка декода ИЛИ декод без ошибки, но заголовок не
-		`QSPGAME`) — **continue к следующей кодировке**, а не прерывание перебора
-		(остаток B11: неверный заголовок — подтип `ValueError`, раньше вылетал наружу).
+		`QSPGAME`) — **continue к следующей кодировке**, а не прерывание перебора.
 		После исчерпания списка — `ValidationFormatError` (тот же типизированный канал,
 		что и `split_qsp`; ловят `convert_file`/`_split_game`).
 
 		Канон `.qsp` по реальным файлам QGen 4.3.0-b1 / txt2gam 0.4.0 — UTF-16LE без BOM,
-		CRLF (плюс легаси cp1251) — поэтому `utf-16-le` идёт первым (решение Q6).
+		CRLF (плюс легаси cp1251) — поэтому `utf-16-le` идёт первым.
 		"""
 		if not os.path.isfile(input_file):
 			print(f'Incorrect file path. {input_file}')
@@ -177,13 +176,13 @@ class QspToQspsBuiltinConv():
 		""" Convert all game's locations to qsps-format. Накапливает результат в
 		`self._qsps_lines` (его читает `save_to_file`); наружу ничего не возвращает. """
 		if not self._locations:
-			print('QSP-Game is not formed. Prove QSP-file.') # TODO: Error
+			print('QSP-Game is not formed. Prove QSP-file.')
 			return
 
-		# РЕШЕНИЕ Q11(A) — намеренно: эти служебные строки описывают ИСХОДНЫЙ `.qsp` (число
-		# локаций, пароль) и стоят до первой `#`, т.е. НЕ являются частью qsps-контракта (qsps,
-		# как у txt2gam, несёт только локации). `QspsFile.split_to_locations` их намеренно не парсит →
-		# пароль/метаданные на build не восстанавливаются (см. converters.py, там же дефолт 'No').
+		# Намеренно: эти служебные строки описывают ИСХОДНЫЙ `.qsp` (число локаций, пароль)
+		# и стоят до первой `#`, т.е. НЕ являются частью qsps-контракта (qsps несёт только
+		# локации). `QspsFile.split_to_locations` их не парсит → пароль/метаданные на build
+		# не восстанавливаются.
 		self._qsps_lines.append(f"QSP-Game {self._file_name}\n")
 		self._qsps_lines.append(f"Число локаций: {self._location_count}\n")
 		self._qsps_lines.append(f"Пароль на исходном файле: {self._password}\n")
@@ -218,7 +217,6 @@ class QspToQspsBuiltinConv():
 			return []
 		_eqs = QspToQspsBuiltinConv.escape_qsp_string
 
-		# TODO: replace \r\n by \n, replace ' by '', wrap to *p '...'
 		desc_lines = description.split('\r\n')
 		last_line = desc_lines.pop()
 		qsps_lines = ["*P '"]
@@ -252,7 +250,7 @@ class QspToQspsBuiltinConv():
 		qsps_lines.extend([
 			(f"{indent}{line}").replace('\r\n', '\n')
 			for line in action['code']])
-		if qsps_lines[-1][-1] == '\n': qsps_lines.append(f'{indent}') # РЕШЕНИЕ Q7 (2026-11-04): костыль-таб перед `END` оставлен — qsps должен оставаться txt2gam-совместимым (Q11(A)); builtin-читателю все равно (base_scanner глотает whitespace перед END)
+		if qsps_lines[-1][-1] == '\n': qsps_lines.append(f'{indent}') # Намеренно: таб-отступ перед `END` оставлен — qsps должен оставаться txt2gam-совместимым
 		qsps_lines.append('\nEND\n')
 		return qsps_lines
 

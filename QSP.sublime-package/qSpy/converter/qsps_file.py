@@ -20,10 +20,9 @@ from .tools import parse_string
 # regexps:
 LOCATION_START = re.compile(r'^\#\s*(.+)\s*$')
 LOCATION_END = re.compile(r'^\-\-(.*)$')
-# Эталонный маркер конца локации — `-- <имя> ---...`: строка заканчивается
-# отдельным токеном из дефисов (>=3, как `---` в txt2gam/get_sources). Нужен для
-# диагностики «подозрительного закрытия» (B1/Q1): случайный `--`-комментарий в
-# колонке 0 формально легально закрывает локацию — предупреждаем, не меняя разбор.
+# Эталонный маркер конца локации — `-- <имя> ---...` (хвост из >=3 дефисов).
+# Нужен для диагностики «подозрительного закрытия»: случайный `--`-комментарий
+# в колонке 0 формально легально закрывает локацию — предупреждаем, не меняя разбор.
 LOCATION_END_CLEAN = re.compile(r'(?:^|\s)-{3,}\s*$')
 
 PRINT_STRING = re.compile(r'^\*P\b')
@@ -53,7 +52,7 @@ class QspsFile():
 	def read_from_file(self, input_file:Path) -> None:
 		""" Read qsps-file and set source strings """
 		if not os.path.isfile(input_file):
-			print(f'[801] File {input_file} is not exist.') # TODO: Set ERror
+			print(f'[801] File {input_file} is not exist.')
 			return
 		self._input_file = input_file
 		with open(self._input_file, 'r', encoding='utf-8-sig') as fp:

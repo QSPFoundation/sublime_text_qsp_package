@@ -17,7 +17,7 @@ AppParam = str
 
 GameLine = str # QSP-line string
 
-# Таблица кодирования «qsp ±5» (B9): единый НЕизменяемый dict ordinal→ordinal, строится
+# Таблица кодирования «qsp ±5»: единый НЕизменяемый dict ordinal→ordinal, строится
 # один раз при импорте — вместо прежнего разделяемого ИЗМЕНЯЕМОГО _char_cache. Кодирование
 # qsps→qsp — чистый посимвольный сдвиг кодовой точки на -QSP_CODREMOV: символ cp уходит в
 # cp-QSP_CODREMOV. str.translate только ЧИТАЕТ таблицу, поэтому при вызове encode_qsps_line
@@ -32,7 +32,7 @@ class QspsToQspConverter(ABC):
                  conv_path:Path = '', conv_args:AppParam = '') -> None:
         # conv_path/conv_args — конфигурация ВНЕШНЕго конвертера (нужна только QspsToQspOuterConv).
         # Объявлены в базовом контракте, чтобы builder единообразно строил любой конвертер; сам
-        # базовый класс их не сохраняет (были `*args` — теряли имена и арность; решение B9).
+        # базовый класс их не сохраняет (были `*args` — теряли имена и арность).
         self._save_temp_files:bool = save_temp_files
 
         self._module_path:Path = output_file
@@ -64,7 +64,7 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
     def __init__(self, output_file:Path, save_temp_files:bool,
                  conv_path:Path = '', conv_args:AppParam = '') -> None:
         # conv_path/conv_args приняты ради единой сигнатуры построения, но builtin-конвертеру не
-        # нужны: он кодирует в памяти и не запускает внешний процесс → намеренно игнорируются (B9).
+        # нужны: он кодирует в памяти и не запускает внешний процесс → намеренно игнорируются.
         super().__init__(output_file, save_temp_files)
 
         self._qsps_file:Optional[QspsFile] = None
@@ -73,7 +73,7 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
     def _qsps_entity_to_game_lines(self, qsps_file:QspsFile) -> List[GameLine]:
         """ Convert QspsFile to QSP-format.
 
-        Канон `.qsp` — CRLF (эталонные QGen/txt2gam, см. Q6): game_lines строятся уже с
+        Канон `.qsp` — CRLF (эталонные QGen/txt2gam): game_lines строятся уже с
         `'\r\n'`, а `save_to_file` пишет с `newline=''` (без платформенной трансляции) →
         идентичный побайтовый вывод на Windows/Linux и нет сдвоенного `'\r\r\n'`.
         """
@@ -83,7 +83,7 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
         # header of qsp-file
         self._game_lines.append(f'QSPGAME{NL}')
         self._game_lines.append(f'SublimeText QSP-Package{NL}')
-        # РЕШЕНИЕ Q11(A): qsps-формат (как в txt2gam) несёт только локации, без метаданных →
+        # Намеренно: qsps-формат (как в txt2gam) несёт только локации, без метаданных →
         # пароль/line-2 на build неоткуда восстановить, пишем дефолт намеренно.
         self._game_lines.append(self.encode_qsps_line('No') + NL)
         self._game_lines.append(self.encode_qsps_line(str(len(locs))) + NL)
@@ -144,11 +144,10 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
         if not output_file: output_file = self._module_path
         output_folder:Path = os.path.dirname(output_file)
         os.makedirs(output_folder, exist_ok=True)
-        # РЕШЕНИЕ Q6 (подтверждено реальными .qsp QGen 4.3.0-b1 / txt2gam 0.4.0): канон —
-        # UTF-16LE **без BOM** (плеер/QGen так и выдают). `'utf-16le'` в Python BOM не пишет →
-        # это намеренно корректный выбор, а не упущение (не 'utf-16', который добавил бы BOM).
-        # `newline=''` отключает платформенную подстановку конца строки: game_lines уже несут
-        # канонный CRLF (см. _qsps_entity_to_game_lines) → пишем побайтово, без двойного CR.
+        # Канон `.qsp` (реальные .qsp QGen 4.3.0-b1 / txt2gam 0.4.0) — UTF-16LE без BOM:
+        # `'utf-16le'` в Python BOM не пишет → намеренно корректный выбор (не 'utf-16',
+        # который добавил бы BOM). `newline=''` отключает платформенную подстановку конца
+        # строки: game_lines уже несут канонный CRLF → пишем побайтово, без двойного CR.
         with open(output_file, 'w', encoding='utf-16le', newline='') as file:
             file.writelines(self._game_lines)
 
@@ -160,7 +159,7 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
     @staticmethod
     def encode_qsps_line(qsps_line:QspsLine) -> GameLine:
         """ Encode qsps_line to qsp_coded_line: посимвольный сдвиг на -QSP_CODREMOV
-        через неизменяемую ENCODE_TABLE (B9: нет разделяемого состояния → нет гонки). """
+        через неизменяемую ENCODE_TABLE (нет разделяемого состояния → нет гонки). """
         return qsps_line.translate(ENCODE_TABLE)
 
 class QspsToQspOuterConv(QspsToQspConverter):
@@ -180,7 +179,7 @@ class QspsToQspOuterConv(QspsToQspConverter):
         _run = [self._conv_path, self._temp_file_path, self._module_path]
         if self._conv_args: _run.append(self._conv_args)
         subprocess.run(_run, stdout=subprocess.PIPE)
-        # Возврат [] — ОСОЗНАННО (решение B10): внешний конвертер пишет .qsp сам,
+        # Возврат [] — осознанно: внешний конвертер пишет .qsp сам,
         # in-memory game-строк не производит (product — файл на диске); builder возврат игнорирует.
         return []
 

@@ -91,8 +91,6 @@ class BaseParser:
                 # если неизвестный оператор парсился перед WHILE или THEN,                
                 break # не пожираем токен, он нам нужен
             args.append(self._expression())
-        # else: # оператор может окончиться и на конце файла: не пожираем токен
-        #     raise ParserError(self._curtok, 'Unexpectable EOF!')
 
         return stm.Unknown(pref, stmt, args, line)
 
@@ -102,35 +100,19 @@ class BaseParser:
         open_ = self._curtok
         self._eat_tokens(1)
 
-        # defines:List[BaseStmt[R]]
         defines = self._extract_line(tt.WHILE_STMT)
-
-        # while_stmt:BaseToken # while
-
         if not self._check_type(tt.WHILE_STMT):
             self._error('Expected : (WHILE_STMT). Getted ')
         while_stmt = self._curtok
         self._eat_tokens(1) # погл WHILE
-
-        # condition:Expression[R]
-
         condition = self._expression(tt.THEN, tt.STEP_STMT)
-
-        # step_stmt:Optional[BaseToken]
-
         if self._check_type(tt.STEP_STMT):
             step_stmt = self._curtok
             self._eat_tokens(1)
-
-            # steps:List[BaseStmt[R]]
             steps = self._extract_line(tt.THEN)
         else:
             step_stmt = None
             steps:List[BaseStmt] = []
-
-     
-        # content:List[BaseStmt[R]]
-        # close:BaseToken
 
         if not self._check_type(tt.THEN):
             self._error('Expected : (THEN_STMT). Getted ')
@@ -244,7 +226,7 @@ class BaseParser:
     def _extract_line(self, *pop:tt) -> List[BaseStmt]:
         """ извлекает строку операторов через амперсанд."""
         # `pop` — стоп-токены, на которых извлечение прекращается (они НЕ поглощаются):
-        # `_loop` передаёт WHILE/THEN, чтобы defines/steps остановились перед ними (B6).
+        # `_loop` передаёт WHILE/THEN, чтобы defines/steps остановились перед ними.
         start_line = self._curtok.lexeme_start[0]
         chain:List[BaseStmt] = []
         while not self._is_eof():
@@ -281,8 +263,6 @@ class BaseParser:
                 self._braces()
                 continue
             self._eat_tokens(1)
-        # else:
-        #     self._error('Unexpectable EOF in comment after END')
 
         return stm.End(pref, close, line) 
             
@@ -381,7 +361,7 @@ class BaseParser:
             if self._check_type(tt.LEFT_BRACE):
                 chain.append(self._braces())
                 # после возврата из рекурсии `}` вложенных скобок уже поглощён;
-                # идём на следующий виток, иначе внешний `}` съедается как литерал (B5)
+                # идём на следующий виток, иначе внешний `}` съедается как литерал
                 continue
 
             chain.append(stm.Literal(self._curtok))
@@ -414,7 +394,7 @@ class BaseParser:
 
     def _literal(self) -> stm.Literal[None]:
         # catch-all `_statement` может вызвать нас на EOF — не поглощаем его
-        # (иначе _eat_tokens уйдёт за границу списка / цикл не продвинется) (B6)
+        # иначе _eat_tokens уйдёт за границу списка / цикл не продвинется
         if self._is_eof():
             raise ParserError(self._curtok, 'Unexpected EOF where literal expected.')
         value = self._curtok

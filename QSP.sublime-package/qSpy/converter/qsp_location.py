@@ -31,7 +31,7 @@ class QspsLoc():
 
         self._run_on_visit:List[QspsLine] = [] # code of Run-on-visit field of location
 
-        self._base_errors:List[str] = []   # единый канал диагностики base-разбора (B7/Q10)
+        self._base_errors:List[str] = []   # единый канал диагностики base-разбора
 
         self._extract_base()
 
@@ -48,7 +48,7 @@ class QspsLoc():
         return self._run_on_visit
 
     def base_errors(self) -> List[str]:
-        """_DIAGNOSTICS: накопленные ошибки base-разбора этой локации (с именем локации). """
+        """накопленные ошибки base-разбора этой локации (с именем локации). """
         return self._base_errors
 
     def _extract_base(self) -> None:
@@ -89,7 +89,7 @@ class QspsLoc():
 
     def split_base(self) -> None:
         """ Split base code to description and actions.
-        Единый канал ошибок base-разбора (B7/Q10): ParserError (из парсера) и RuntimeIntError
+        Единый канал ошибок base-разбора: ParserError (из парсера) и RuntimeIntError
         (из интерпретатора) больше не роняют сборку и не глотаются молча — накапливаются в
         self._base_errors и печатаются с именем локации (print — сток). Сборка продолжается. """
         if not self._base_code: return # базового описания или действий нет
@@ -113,7 +113,7 @@ class QspsLoc():
             self._report_errors([e])
 
     def _report_errors(self, errors) -> None:
-        """Печать-сток с контекстом локации + накопитель (Q10). Порядок потоков не важен."""
+        """Печать-сток с контекстом локации + накопитель. Порядок потоков не важен."""
         for e in errors:
             msg = f'Локация "{self._name}": {e}'
             print(msg)
