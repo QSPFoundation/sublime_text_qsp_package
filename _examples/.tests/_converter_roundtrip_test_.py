@@ -19,7 +19,7 @@
 #   --update                — перегенерировать снимки в `_golden/` (осознанное принятие baseline).
 #   --info                  — дополнительно напечатать сверку с txt2gam (информативно, не влияет на код выхода).
 
-import sys, os, io, argparse, contextlib, difflib, hashlib
+import sys, os, io, argparse, contextlib, difflib, hashlib, glob
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 EX   = os.path.dirname(HERE)                                  # _examples
@@ -245,6 +245,47 @@ def pins():
     if len(c4.get_locations()) != 0:
         fails.append(f'B11 mismatch: разбор изменился {len(c4.get_locations())} != 0')
 
+    # B11-остаток (п.4.4): неверный заголовок в первой кодировке -> continue, а не обрыв подбора.
+    # UTF-8 с BOM: utf-16-le декодирует байты без исключения (чётная длина, нет суррогатов),
+    # но заголовок — mojibake. Старый код кинул бы ValidationFormatError и оборвал перебор;
+    # новый обязан пропустить utf-16-le и дойти до utf-8-sig.
+    bom_probe = os.path.join(GOLD, '_bom_enc_probe.qsp')
+    payload = 'QSPGAME\n2026-01-01 (pin)\nIj\n+\nX'  # utf8=31 (+BOM 3 = 34 → чётно для utf-16-le)
+    with open(bom_probe, 'wb') as f:
+        f.write(payload.encode('utf-8-sig'))
+    cb = QspToQspsBuiltinConv()
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            cb.read_from_file(bom_probe)
+        if cb._encoding != 'utf-8-sig':
+            fails.append(f'B11-остаток: подбор кодировок не дошёл до utf-8-sig (enc={cb._encoding!r})')
+    except ValidationFormatError as e:
+        fails.append(f'B11-остаток: неверный заголовок оборвал подбор кодировок ({e})')
+    finally:
+        if os.path.isfile(bom_probe):
+            os.remove(bom_probe)
+
+    # ---- пин эталонного корпуса реальных .qsp (п.4.4 / Q6): читатель+сплит проходят все ----
+    # 12 живых файлов QGen/txt2gam/cp1251 (utf-16le без BOM, CRLF + легаси cp1251): ни один не
+    # должен бросить; кодировка — из ожидаемого набора; локаций >= 1.
+    corpus = os.path.join(ROOT, '_disdocs', '_valid qgen qsp')
+    qsp_files = sorted(glob.glob(os.path.join(corpus, '*.qsp')))
+    if len(qsp_files) < 2:
+        fails.append(f'B12-корпус: мало эталонных .qsp ({len(qsp_files)}) в {corpus}')
+    for qf in qsp_files:
+        cq = QspToQspsBuiltinConv()
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                cq.read_from_file(qf)
+                cq.split_qsp()
+        except Exception as e:
+            fails.append(f'B12-корпус: {os.path.basename(qf)} → {type(e).__name__}: {e}')
+            continue
+        if cq._encoding not in ('utf-16-le', 'cp1251'):
+            fails.append(f'B12-корпус: {os.path.basename(qf)} — неожиданная кодировка {cq._encoding!r}')
+        if len(cq.get_locations()) < 1:
+            fails.append(f'B12-корпус: {os.path.basename(qf)} — распознано 0 локаций')
+
     return fails
 
 
@@ -324,7 +365,7 @@ def main():
         print('FAIL  pin:', m)
     ok = ok and not pf
     if not pf:
-        print('ok    пины B1/B2/B3/B4/B5/B6/B7/B11')
+        print('ok    пины B1/B2/B3/B4/B5/B6/B7/B11/B12-корпус')
 
     if args.info:
         info_vs_txt2gam(a_text, b_text)

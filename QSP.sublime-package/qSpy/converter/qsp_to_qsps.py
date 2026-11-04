@@ -65,7 +65,18 @@ class QspToQspsBuiltinConv():
 		return self._output_file
 
 	def read_from_file(self, input_file:Path='') -> None:
-		""" Read qsp-file and set qsp-source text. """
+		""" Read qsp-file and set qsp-source text.
+
+		Подбор кодировки: проходит та, в которой первая строка читается как `QSPGAME`.
+		Не подходящий вариант (ошибка декода ИЛИ декод без ошибки, но заголовок не
+		`QSPGAME`) — **continue к следующей кодировке**, а не прерывание перебора
+		(остаток B11: неверный заголовок — подтип `ValueError`, раньше вылетал наружу).
+		После исчерпания списка — `ValidationFormatError` (тот же типизированный канал,
+		что и `split_qsp`; ловят `convert_file`/`_split_game`).
+
+		Канон `.qsp` по реальным файлам QGen 4.3.0-b1 / txt2gam 0.4.0 — UTF-16LE без BOM,
+		CRLF (плюс легаси cp1251) — поэтому `utf-16-le` идёт первым (решение Q6).
+		"""
 		if not os.path.isfile(input_file):
 			print(f'Incorrect file path. {input_file}')
 			return
@@ -74,23 +85,22 @@ class QspToQspsBuiltinConv():
 		for enc in encodings:
 			try:
 				with open(self._input_file, 'r', encoding=enc) as fp:
-					self._game_lines = list(fp) # при ошибке присваивание не произойдёт
-				if enc == 'cp1251' and self._game_lines and self._game_lines[0].startswith('п»ї'):
-					raise UnicodeDecodeError(
-						'cp1251', b'\xef\xbb\xbf', 0, 3,
-						'UTF-8 BOM detected while decoding as cp1251'
-					)
-				if self._game_lines and not self._game_lines[0].startswith('QSPGAME'):
-					raise ValidationFormatError(enc,
-						f"Header is not QSPGAME while decoding as {self._game_lines[0][:7]}"
-					)
-				self._encoding = enc
-				if enc == 'cp1251': self._encode_handler = QspToQspsBuiltinConv.decode_cp1251_qsp_line
-				return
+					lines = list(fp)  # при UnicodeDecodeError присваивание не произойдёт
 			except UnicodeDecodeError as e:
-				print(e)
+				print(e)              # кодировка не подошла — пробуем следующую
 				continue
-		print('Unknown game encoding! Use txt2gam utilities for conversion.')
+			# Неверный заголовок в этой кодировке НЕ означает «файл битый»: те же байты в
+			# другой кодировке могут дать корректный `QSPGAME` → пропускаем вариант (continue).
+			# Он же отсекает и ложные срабатывания (UTF-8 BOM, прочитанный как cp1251).
+			if not lines or not lines[0].startswith('QSPGAME'):
+				continue
+			self._game_lines = lines
+			self._encoding = enc
+			if enc == 'cp1251': self._encode_handler = QspToQspsBuiltinConv.decode_cp1251_qsp_line
+			return
+		raise ValidationFormatError('unknown',
+			f"Неизвестная кодировка игры: заголовок `QSPGAME` не найден ни в одной из "
+			f"{', '.join(encodings)}. Используйте txt2gam для конвертации: {self._input_file}")
 
 	def save_to_file(self, output_file:Path='') -> None:
 		""" Save qsps-text to file. """
@@ -170,6 +180,10 @@ class QspToQspsBuiltinConv():
 			print('QSP-Game is not formed. Prove QSP-file.') # TODO: Error
 			return
 
+		# РЕШЕНИЕ Q11(A) — намеренно: эти служебные строки описывают ИСХОДНЫЙ `.qsp` (число
+		# локаций, пароль) и стоят до первой `#`, т.е. НЕ являются частью qsps-контракта (qsps,
+		# как у txt2gam, несёт только локации). `QspsFile.split_to_locations` их намеренно не парсит →
+		# пароль/метаданные на build не восстанавливаются (см. converters.py, там же дефолт 'No').
 		self._qsps_lines.append(f"QSP-Game {self._file_name}\n")
 		self._qsps_lines.append(f"Число локаций: {self._location_count}\n")
 		self._qsps_lines.append(f"Пароль на исходном файле: {self._password}\n")

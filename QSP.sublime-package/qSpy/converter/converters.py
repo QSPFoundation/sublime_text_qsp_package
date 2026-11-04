@@ -71,14 +71,22 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
         self._game_lines:List[GameLine] = []
 
     def _qsps_entity_to_game_lines(self, qsps_file:QspsFile) -> List[GameLine]:
-        """ Convert QspsFile to QSP-format """
+        """ Convert QspsFile to QSP-format.
+
+        Канон `.qsp` — CRLF (эталонные QGen/txt2gam, см. Q6): game_lines строятся уже с
+        `'\r\n'`, а `save_to_file` пишет с `newline=''` (без платформенной трансляции) →
+        идентичный побайтовый вывод на Windows/Linux и нет сдвоенного `'\r\r\n'`.
+        """
         self._qsps_file = qsps_file
         locs = qsps_file.get_locations()
+        NL = '\r\n'  # единый терминатор строки `.qsp` (CRLF)
         # header of qsp-file
-        self._game_lines.append('QSPGAME\n')
-        self._game_lines.append('SublimeText QSP-Package\n')
-        self._game_lines.append(self.encode_qsps_line('No')+'\n')
-        self._game_lines.append(self.encode_qsps_line(str(len(locs)))+'\n')
+        self._game_lines.append(f'QSPGAME{NL}')
+        self._game_lines.append(f'SublimeText QSP-Package{NL}')
+        # РЕШЕНИЕ Q11(A): qsps-формат (как в txt2gam) несёт только локации, без метаданных →
+        # пароль/line-2 на build неоткуда восстановить, пишем дефолт намеренно.
+        self._game_lines.append(self.encode_qsps_line('No') + NL)
+        self._game_lines.append(self.encode_qsps_line(str(len(locs))) + NL)
 
         def _encode_location(loc:QspsLoc) -> List[GameLine]:
             loc.split_base()
@@ -88,27 +96,27 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
             run_on_visit = loc.run_on_visit()
             if run_on_visit:
                 run_on_visit[-1] = run_on_visit[-1][:-1] # crunch for extra \n-char in end lines
-                code_lines:str = ''.join(run_on_visit).replace('\n', '\r\n')
+                code_lines:str = ''.join(run_on_visit).replace('\n', NL)
             else:
                 code_lines = ''
             out_lines:List[GameLine] = []
             out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(name))
-            out_lines.append('\n')
+            out_lines.append(NL)
             out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(desc))
-            out_lines.append('\n')
+            out_lines.append(NL)
             out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(code_lines))
-            out_lines.append('\n')
+            out_lines.append(NL)
             out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(str(len(actions))))
-            out_lines.append('\n')
+            out_lines.append(NL)
             for act in actions:
                 out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(act['image']))
-                out_lines.append('\n')
+                out_lines.append(NL)
                 out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(act['name']))
-                out_lines.append('\n')
+                out_lines.append(NL)
                 act_code = del_first_pref(act['code'])
                 act_code[-1] = act_code[-1][:-1]
-                out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(''.join(act_code).replace('\n', '\r\n')))
-                out_lines.append('\n')
+                out_lines.append(QspsToQspBuiltinConv.encode_qsps_line(''.join(act_code).replace('\n', NL)))
+                out_lines.append(NL)
             return out_lines
         with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
             # Используем executor.map для получения результатов в порядке отправки задач
@@ -136,7 +144,12 @@ class QspsToQspBuiltinConv(QspsToQspConverter):
         if not output_file: output_file = self._module_path
         output_folder:Path = os.path.dirname(output_file)
         os.makedirs(output_folder, exist_ok=True)
-        with open(output_file, 'w', encoding='utf-16le') as file:
+        # РЕШЕНИЕ Q6 (подтверждено реальными .qsp QGen 4.3.0-b1 / txt2gam 0.4.0): канон —
+        # UTF-16LE **без BOM** (плеер/QGen так и выдают). `'utf-16le'` в Python BOM не пишет →
+        # это намеренно корректный выбор, а не упущение (не 'utf-16', который добавил бы BOM).
+        # `newline=''` отключает платформенную подстановку конца строки: game_lines уже несут
+        # канонный CRLF (см. _qsps_entity_to_game_lines) → пишем побайтово, без двойного CR.
+        with open(output_file, 'w', encoding='utf-16le', newline='') as file:
             file.writelines(self._game_lines)
 
     def handle_temp_file(self) -> None:
