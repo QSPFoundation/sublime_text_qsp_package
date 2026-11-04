@@ -21,7 +21,7 @@
   закрыты раньше фаз; добавлен guard «подозрительного закрытия» B1/Q1; Q2 — строгий контракт BASE)
 - [x] Фаза 3 — base-подсистема (B5–B8) — **закрыта 2026-11-03** (фиксы B5–B8 + единый канал ошибок;
   Q5 — латаем сканер, Q10 — print-сток + накопитель)
-- [ ] Фаза 4 — сборка/шифрование (B9–B12) — **в работе**: п.4.1 (остатки B9) закрыт 2026-11-04; дальше п.4.2 (B10)
+- [ ] Фаза 4 — сборка/шифрование (B9–B12) — **в работе**: п.4.1 (остатки B9) и п.4.2 (B10) закрыты 2026-11-04; дальше п.4.3 (B11)
 - [ ] Фаза 5 — splitter (B13)
 - [ ] Фаза 6 — закрытие белых пятен (Q1–Q10)
 
@@ -37,7 +37,8 @@
 | B7 | `base_int`: `RuntimeError` вместо `RuntimeIntError`; ошибки глотаются `print` | **исправлен** (единый канал) |
 | B8 | `base_scanner`: мёртвая `elif`-ветка, регистр keywords | **исправлен частично** (elif + `.lower()`; `_curlexeme`-мусор — хрупкость, Q5) |
 | B9 | общий `_char_cache` + 32 потока без синхронизации | **исправлен** (ENCODE_TABLE, 2026-11-04) + п.4.1: `*args`→именованные `conv_path/conv_args`; `handle_temp_file` builtin — ЖИВОЙ (вызывается из builder), не мёртвый |
-| B10–B13 | OuterConv argv/contract, `split_qsp` валидации, потеря пароля на roundtrip, дубли/_split_*, COM-регистр | код-анализ (Фаза 4: п.4.2–4.4; Фаза 5) |
+| B10 | OuterConv: пустой `conv_args` в argv (`convert_file`), `convert_lines→[]`, `handle_temp_file` без guard | **исправлен (п.4.2, 2026-11-04)**; `OuterConv.convert_file` — неживой; subprocess-robustness → в todo.md |
+| B11–B13 | `split_qsp` валидации, потеря пароля на roundtrip, дубли/_split_*, COM-регистр | код-анализ (Фаза 4: п.4.3–4.4; Фаза 5) |
 | B12 | `.qsp→.qsps→.qsp` теряет пароль и line-2 заголовка; utf-16le без BOM | подтверждён частично |
 | B14 | `parse_string` не знает про комментарии: `! "` открывает кавычку до EOF | **исправлен** — см. «Решения» ниже |
 
@@ -101,6 +102,13 @@
   из `builder._qsps_build`, оставлен без изменений; связь с Q8 (`base_printer`) снята (то AST-дамп). Позиционный
   вызов из builder не менялся → golden roundtrip PASS (4 снапшота == baseline, пины ok), поведение не изменилось.
   Рассинхрон `OuterConv.convert_file` (пустой arg в argv без `if`) отнесён в п.4.2.
+- **Фаза 4, п.4.2 закрыт (2026-11-04).** B10 (`QspsToQspOuterConv`): (а) `convert_file` — guard `if self._conv_args`
+  на argv (консистентно с `convert_lines`), метод помечен **неживым** (в продукте не вызывается, только ради
+  `@abstractmethod`); (б) `convert_lines` возврат `[]` — TODO снят, задокументировано как намеренное (product — файл
+  на диске); (в) `handle_temp_file` — guard `os.path.isfile` (нет `FileNotFoundError`); «противоположность» builtin
+  (пишет debug-дамп vs удаляет рабочий temp) — не баг, а роли; `save_temp_files` = «хранить промежуточные».
+  subprocess-robustness (returncode/stderr/PIPE) **вынесена в `todo.md`** (секция Converter) — отложена. Golden
+  roundtrip PASS (outer тестом не гоняется, builtin цел), поведение не изменилось.
 
 ## Как проверять себя
 - Золотой контур: `_examples/examples_qsp_to_qsps/ukuzya_txt2gam.qsps` и
@@ -118,17 +126,20 @@
    для Q6 (BOM) и формата заголовка.
 
 ## Следующий конкретный шаг
-**Фаза 4, п.4.1 (остатки B9) — ЗАКРЫТ (2026-11-04).** `*args`→именованные `conv_path/conv_args` в ABC+обоих
-конвертерах (IndexError-риск убран); builtin намеренно игнорирует (коммент.); коммент. в builder о сборке
-`conv_args` в строку (`project._set_converter`); `handle_temp_file` builtin — живой, не трогали. Golden roundtrip PASS.
-**Дальше — п.4.2 (B10), `QspsToQspOuterConv`:**
-1) рассинхрон `convert_file` vs `convert_lines` — пустой `self._conv_args` лепится в argv без guardа (`if self._conv_args`);
-2) `convert_lines` возвращает `[]` с `# TODO` — контракт базового класса (List[GameLine]) не выполнен — решить: вернуть
-   реально прочитанные game-строки из temp-файла ИЛИ осознанно `[]` с документированием (outer пишет файл сам);
-3) `handle_temp_file` outer: `if not self._save_temp_files: os.remove(temp)` — инверсия относительно builtin и падает
-   `FileNotFoundError`, если temp не создавался (бо́льшая часть путей его не пишет). Нужно уточнить задуманный смысл.
-Остаток Фазы 4: п.4.3 (B11 — валидации `split_qsp`, `_cl`-огарбок, возврат `to_qsps`); п.4.4 (B12 — пароль/заголовок/BOM)
-**заблокирован на Q6** — нужен этало́нный `.qsp` от пользователя.Прежний контекст: golden roundtrip-тест
+**Фаза 4, п.4.1 (B9-остатки) и п.4.2 (B10) — ЗАКРЫТЫ (2026-11-04).** п.4.1: `*args`→именованные
+`conv_path/conv_args` (IndexError-риск убран), builtin намеренно игнорирует, коммент. в builder про сборку
+`conv_args` в строку, `handle_temp_file` builtin живой. п.4.2: OuterConv — guard пустого arg в `convert_file`
+(неживой метод), `convert_lines→[]` задокументирован, `handle_temp_file` + `isfile`-guard; subprocess → todo.md.
+Golden roundtrip PASS (поведение не менялось).
+**Дальше — п.4.3 (B11), `qsp_to_qsps.py` (`QspToQspsBuiltinConv`):**
+1) `split_qsp` — нет проверки длины `_game_lines` (`IndexError` на файле < 4 строк); `qsp_lines[2]/[3]` читаются
+   до цикла — нужен guard + внятная ошибка вместо падения;
+2) `_location_count` прочитан, но не валидируется против фактического числа распознанных локаций — сверить/предупредить;
+3) `to_qsps`: локальный `_cl = ...convert_location` не используется (мёртвый огарок) — удалить; метод объявлен
+   `-> List[QspsLine]`, но `convert_file` игнорирует возврат — решить назначение возврата.
+(`set_qsp_source_text` из B11 уже удалён в Фазе 1.)
+**Потом — п.4.4 (B12: пароль/line-2/служба-строки/utf-16le без BOM) ЗАБЛОКИРОВАН на Q6** — нужен этало́нный `.qsp`
+от пользователя (для BOM и формата заголовка). Прежний контекст: golden roundtrip-тест
 `_examples/.tests/_converter_roundtrip_test_.py` + снапшоты `_examples/.tests/_golden/` (прогон:
 `python _examples/.tests/_converter_roundtrip_test_.py`; `--info` — сверка с txt2gam; `--update` — пересъёмка baseline).
 Пины B1/B2/B3/B4/B5/B6/B7 в том же тесте. Осторожно: B12 может сменить снапшоты — тогда пересъёмка `--update`.

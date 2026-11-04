@@ -167,15 +167,23 @@ class QspsToQspOuterConv(QspsToQspConverter):
         _run = [self._conv_path, self._temp_file_path, self._module_path]
         if self._conv_args: _run.append(self._conv_args)
         subprocess.run(_run, stdout=subprocess.PIPE)
-        return [] # TODO: GameLines Return really need???
+        # Возврат [] — ОСОЗНАННО (решение B10): внешний конвертер пишет .qsp сам,
+        # in-memory game-строк не производит (product — файл на диске); builder возврат игнорирует.
+        return []
 
     def convert_file(self, input_file:str, output_file:str) -> None:
-        _run = [self._conv_path, input_file, output_file,
-                self._conv_args]
+        # НЕ живой путь: builder для outer использует convert_lines; convert_file внешнего
+        # конвертера нигде не вызывается, реализован только ради @abstractmethod-контракта.
+        # Пустой conv_args в argv не уходит (консистентно с convert_lines).
+        _run = [self._conv_path, input_file, output_file]
+        if self._conv_args: _run.append(self._conv_args)
         subprocess.run(_run, stdout=subprocess.PIPE)
 
     def handle_temp_file(self) -> None:
-        if not self._save_temp_files:
+        # temp-файл здесь — рабочий ВХОД txt2gam (в отличие от builtin, где handle_temp_file пишет
+        # debug-дамп). `save_temp_files` = «сохранять ли промежуточные файлы»: удаляем temp, только
+        # если не просили хранить и он реально создавался (guard от FileNotFoundError).
+        if not self._save_temp_files and os.path.isfile(self._temp_file_path):
             os.remove(self._temp_file_path)
 
     def save_to_file(self, output_file:Path = '') -> None:

@@ -154,13 +154,28 @@ race, и общий изменяемый dict к тому же душит мас
 _(Прежние формулировки «удалить/подключить рядом с Q8» и «никогда не вызывается» — неверны;
 `handle_temp_file` вызывается в `builder._qsps_build`, не вызывается только в `convert_file`-пути.)_
 
-### B10. `QspsToQspOuterConv`
+### B10. `QspsToQspOuterConv` — **ФИКС ПРИМЕНЁН (Фаза 4, п.4.2, 2026-11-04)**
 
 - `convert_file` всегда тащит `self._conv_args` (пустая строка `''` уходит в argv процесса).
 - `convert_lines` возвращает `[]` с `# TODO: GameLines Return really need???` — contract
   базового класса не выполнен.
 - `handle_temp_file` наоборот логике builtin: при `save_temp_files=False` удаляет файл,
   который мог не создаваться → `FileNotFoundError`.
+
+**Решения (п.4.2, 2026-11-04).** Уточнение: живой путь outer — **только `convert_lines`** (builder);
+`OuterConv.convert_file` в продукте **не вызывается нигде** (single-file команды `QSP.py` берут builtin).
+- `convert_file`: пустой `conv_args` больше **не уходит в argv** (guard `if self._conv_args`, как в
+  `convert_lines`) — рассинхрон веток устранён; реализация оставлена минимальной (только ради
+  `@abstractmethod`), помечена комментарием «не живой путь». Не расширялась.
+- `convert_lines`: возврат `[]` — **осознанно** (product — `.qsp` на диске, in-memory game-строк outer
+  не производит; builder возврат игнорирует). TODO снят, поставлен комментарий-решение.
+- `handle_temp_file`: добавлен guard `os.path.isfile` (нет `FileNotFoundError` при combos вне builder);
+  «противоположность» builtin (тот пишет debug-дамп, outer удаляет рабочий temp) — НЕ баг, а следствие
+  ролей; `save_temp_files` = «сохранять ли промежуточные файлы» читается одинаково. Задокументировано.
+- **Отложено (в `todo.md`, секция Converter):** robustness `subprocess.run` (дренаж stdout, сбор stderr,
+  проверка `returncode`) — вынесено из B10 в отдельную задачу на будущее.
+
+Golden roundtrip — PASS (outer-путь тестом не гоняется, builtin не затронут) → поведение не изменилось.
 
 ### B11. `qsp_to_qsps.py`
 
@@ -345,9 +360,10 @@ _(Прежние формулировки «удалить/подключить 
   в ABC + обоих конвертерах (индексация/`IndexError`-риск убраны); комментарий в builtin о намеренном
   игноре; комментарий в `builder` о сборке `conv_args` в строку (`project._set_converter`); `handle_temp_file`
   builtin признан живым (не трогали). Golden roundtrip — PASS, поведение не изменилось.
-- **п.4.2 (B10):** OuterConv — рассинхрон `convert_file` (пустой arg лепится в argv без `if`) vs `convert_lines`;
-  `convert_lines → []` (контракт базового класса не выполнен); перевернутая логика `handle_temp_file`
-  (`os.remove` при `save_temp_files=False` → `FileNotFoundError`, если файл не создавался).
+- **п.4.2 (B10) — ✅ закрыт (2026-11-04):** OuterConv — `convert_file` guard на пустой `conv_args`
+  (консистентно с `convert_lines`); `convert_lines` возврат `[]` задокументирован как намеренный;
+  `handle_temp_file` + guard `isfile`. `OuterConv.convert_file` признан неживым (не вызывается). subprocess-robustness
+  вынесена в `todo.md`. Golden roundtrip — PASS (outer не гоняется тестом, builtin цел).
 - **п.4.3 (B11):** валидации `split_qsp` (файл < 4 строк → `IndexError`; `_location_count` vs фактическое число),
   удаление `_cl`-огарбка, возврат `to_qsps`. `set_qsp_source_text` уже удалён в Фазе 1.
 - **п.4.4 (B12):** служба-строки заголовка и потеря пароля/line-2 на roundtrip, utf-16le без BOM — после решения Q6
