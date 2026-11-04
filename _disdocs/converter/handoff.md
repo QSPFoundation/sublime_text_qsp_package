@@ -24,8 +24,8 @@
 - [x] Фаза 4 — сборка/шифрование (B9–B12) — **ЗАКРЫТА 2026-11-04**: п.4.1–п.4.3 + п.4.4 (остатки
   B11 `read_from_file`, Q6, B12→Q11(A), EOL→CRLF) — всё принято. Golden roundtrip PASS (B переснят под CRLF).
 - [ ] Фаза 5 — splitter (B13) — **в процессе**: п.5.1 ✅ (дедуп `_split_*` → `_write_location`),
-  п.5.2 ✅ (счётчик дедупа → while по итоговому пути, 2026-11-04); остатки: п.5.3 (IGNORECASE COM/LPT),
-  п.5.4 (FinderSplitter)
+  п.5.2 ✅ (счётчик дедупа → while по итоговому пути), п.5.3 ✅ (IGNORECASE COM/LPT+RESERVE,
+  2026-11-04); остаток: п.5.4 (FinderSplitter)
 - [ ] Фаза 6 — закрытие белых пятен (Q1–Q10)
 
 ## Ключевые findings (детали — в plan.md)
@@ -168,6 +168,14 @@
   свои же файлы — отдельная семантика, вне B13). Проверено: постоянный пин **B13-дедуп** в
   `_converter_roundtrip_test_.py` (два дубля → dup/dup_1; повторный прогон → dup_2/dup_3, dup_1
   не тронут) — красный на HEAD, зелёный на фиксе. Golden roundtrip PASS.
+- **Фаза 5, п.5.3 закрыт (2026-11-04).** B13 (`correct_file_name` — регистр зарезервированных имён):
+  `COM`/`LPT` были без флага → строчные `com1`/`lpt2` не детектились (Windows-имя устройства ушло
+  бы в `open` и упало/испортилось). **Фикс:** `re.IGNORECASE` на `COM`/`LPT`; сверка
+  `RESERVE_FILE_NAMES` — через `file_name.upper()` (`CON`/`PRN`/`AUX`/`NUL`/`CLOCK$` резервируются
+  Windows без учёта регистра). Поведение `'_' -> '__'` (в RESERVE есть `'_'`) — не менялось,
+  зафиксировано как есть. Проверено пином **B13-CASE** (com1→_com1, lpt2→_lpt2, con→_con,
+  nul→_nul, PRN→_PRN; loc1/a/b без регрессии) — красный на HEAD для строчных, зелёный на фиксе.
+  Golden roundtrip PASS.
 
 ## Как проверять себя
 - Золотой контур: `_examples/examples_qsp_to_qsps/ukuzya_txt2gam.qsps` и
@@ -192,8 +200,7 @@ Q6=utf-16le без BOM канон, B12→Q11(A) — метаданные/пар�
 служебные строки оставлены намеренно с комментарием; EOL `.qsp`→CRLF — `game_lines` строятся с
 `'\r\n'`, `save_to_file` пишет с `newline=''`). Golden roundtrip PASS (4 снапшота == baseline,
 B переснят под CRLF: 168 CRLF, lone-LF/CR-CR/lone-CR = 0), пины B11-остаток + B12-корпус.
-**Дальше — Фаза 5 (splitter, B13), п.5.3–п.5.4** (остатки B13):
-- **п.5.3** — `COM`/`LPT` без `re.IGNORECASE` → строчные `com1`/`lpt1` не детектятся (`correct_file_name`).
+**Дальше — Фаза 5 (splitter, B13), п.5.4** (остаток B13):
 - **п.5.4** — `FinderSplitter.search_n_split`: плоский `os.listdir` → `os.walk` (рекурсия);
   `file_ext in ('.qsp')` — проверка по подстроке строки-не-кортежа (баг: ловит `.q`/`.sp` и т.п.,
   но не ловит `.qsps` который в следующей ветке); приведение расширения к `.lower()`.

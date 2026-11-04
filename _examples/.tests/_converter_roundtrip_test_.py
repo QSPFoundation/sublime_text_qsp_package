@@ -319,6 +319,15 @@ def pins():
     finally:
         shutil.rmtree(dedup_dir, ignore_errors=True)
 
+    # ---- пин B13-CASE (Фаза 5, п.5.3): зарезервированные Windows имена — регистронезависимо ----
+    # com1/lpt2/con/nul строчными тоже резервированы Windows -> правильный сплит обязан их экранировать.
+    for raw, want in [('com1', '_com1'), ('COM1', '_COM1'), ('lpt2', '_lpt2'),
+                      ('con', '_con'), ('nul', '_nul'), ('PRN', '_PRN'),
+                      ('loc1', 'loc1'), ('a/b', 'a_b')]:
+        got = QspSplitter.correct_file_name(raw)
+        if got != want:
+            fails.append(f'B13-CASE correct_file_name({raw!r})={got!r} != {want!r}')
+
     return fails
 
 
@@ -398,7 +407,7 @@ def main():
         print('FAIL  pin:', m)
     ok = ok and not pf
     if not pf:
-        print('ok    пины B1/B2/B3/B4/B5/B6/B7/B11/B12-корпус/B13-дедуп')
+        print('ok    пины B1/B2/B3/B4/B5/B6/B7/B11/B12-корпус/B13-дедуп/B13-CASE')
 
     if args.info:
         info_vs_txt2gam(a_text, b_text)

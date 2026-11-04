@@ -418,7 +418,11 @@ Golden roundtrip — PASS (outer-путь тестом не гоняется, bu
   high-water mark (ключ — базовый путь). Контракт «защита от перезаписи» сохранён: повторный
   сплит больше не затирает `name_1.qsps` (старый баг: проверка по базовому пути). Проверено
   пином B13-дедуп (красный на HEAD, зелёный на фиксе); Golden roundtrip PASS.
-- **п.5.3 (`re.IGNORECASE` COM/LPT) — остаток B13:** `com1`/`lpt1` строчными не детектятся.
+- **п.5.3 (`re.IGNORECASE` COM/LPT) — ✅ закрыт (2026-11-04):** `COM`/`LPT` скомпилированы с
+  `re.IGNORECASE`; сверка `RESERVE_FILE_NAMES` — через `file_name.upper()` (Windows резервирует
+  `CON`/`PRN`/`AUX`/`NUL`/`CLOCK$` тоже без учёта регистра). Строчные `com1`/`lpt2`/`con`/`nul`
+  теперь экранируются в `_com1` и т.п. (`correct_file_name`). Проверено пином B13-CASE (красный
+  на HEAD для строчных, зелёный на фиксе); Golden roundtrip PASS.
 - **п.5.4 (`FinderSplitter`) — остаток B13:** плоский `os.listdir` без рекурсии → `os.walk`;
   `file_ext in ('.qsp')` — проверка по подстроке строки (баг) + не регистронезависимо.
 

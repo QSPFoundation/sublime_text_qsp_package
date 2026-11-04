@@ -35,8 +35,8 @@ _norm = os.path.normpath
 OPEN_LOCATION = re.compile(r'\s*?<Location name="(.*?)"/>\s*')
 OPEN_FOLDER = re.compile(r'\s*?<Folder name="(.*?)">\s*')
 CLOSE_FOLDER = re.compile(r'\s*?<\/Folder>\s*')
-COM = re.compile(r'COM\d+')
-LPT = re.compile(r'LPT\d+')
+COM = re.compile(r'COM\d+', re.IGNORECASE)   # имена локаций QSP регистронезависимы: ловим и `com1`
+LPT = re.compile(r'LPT\d+', re.IGNORECASE)
 BAD_CHARS = re.compile(r'(&lt;|&gt;|&quot;|[<>*"\\\/:\?\|\'])')
 
 # const
@@ -159,7 +159,8 @@ class QspSplitter():
 	@staticmethod
 	def correct_file_name(file_name:str) -> str:
 		""" Replace invalid symbols in file name. """
-		if (file_name in RESERVE_FILE_NAMES or
+		# Зарезервированные Windows имена регистронезависимы → сверка через .upper()
+		if (file_name.upper() in RESERVE_FILE_NAMES or
 			COM.match(file_name) or LPT.match(file_name)):
 			return f'_{file_name}'
 		return BAD_CHARS.sub('_', file_name)
