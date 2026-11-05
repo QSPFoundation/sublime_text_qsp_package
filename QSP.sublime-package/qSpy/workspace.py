@@ -78,6 +78,7 @@ class QspWorkspace:
 
 	def replace_locs(self, old_path:str, new_path:str) -> None:
 		""" Change place of qsp-locations. """
+		if old_path == new_path: return None
 		while old_path in self._locs['places']:
 			i = self._locs['places'].index(old_path)
 			self._locs['places'][i] = new_path
@@ -174,42 +175,62 @@ class QspWorkspace:
 			i = self._qsps_files['pathes'].index(old_path)
 			self._qsps_files['pathes'][i] = new_path
 
-	def refresh_qsps_files(self, window_folders:List[AbsPath]) -> None:
-		""" refresh files mb in ws """
-		old = set(self.get_qsps_files()) # set[tuple(abs-path, hash)]
-		files_pathes:List[AbsPath] = []
-		for f in window_folders:
-			files_pathes.extend(qsp.get_files_list(f))
-		new:Set[Tuple[AbsPath, HashMD5]] = set()
-		for f in files_pathes:
-			new.add((f, self.get_hash(f))) # set[tuple(abs-path, hash)]
-		to_del:List[Tuple[AbsPath, HashMD5]] = list(old - new)
-		to_add:List[Tuple[AbsPath, HashMD5]] = list(new - old)
-		to_del_paths:List[AbsPath] = [path for path, _hash in to_del]
-		to_del_hashs:List[HashMD5] = [_hash for _, _hash in to_del]
-		# replace on new paths
-		for new_path, md5 in to_add[:]: # to_add = list[tuples(file_path, file_hash)]
-			if md5 in to_del_hashs:
-				i = to_del_hashs.index(md5)
-				old_path = to_del_paths[i]
-				self.replace_qsps_file(old_path, new_path)
-				self.replace_locs(old_path, new_path)
-				del to_del[i]
-				del to_del_hashs[i]
-				del to_del_paths[i]
-			else:
-				qsps_file = QspsFile()
-				qsps_file.read_from_file(new_path)
-				qsps_file.split_to_locations()
-				for loc_name, loc_region in qsps_file.get_loc_symbols():
-					# str, tuple(start, end)
-					self.add_loc(loc_name, loc_region, new_path)
-				self.add_qsps_file(new_path, md5)
+	def _reparse_locs(self, file_path:AbsPath) -> None:
+		""" (Re)read qsp-locations of an existing qsps-file into the locs mb. """
+		self.del_all_locs_by_place(file_path)
+		qsps_file = QspsFile()
+		qsps_file.read_from_file(file_path)
+		qsps_file.split_to_locations()
+		for loc_name, loc_region in qsps_file.get_loc_symbols():
+			# str, tuple(start, end)
+			self.add_loc(loc_name, loc_region, file_path)
 
-		# replace old files
-		for old_path, md5 in to_del:
-			self.del_all_locs_by_place(old_path)
-			self.del_qsps_file(old_path)
+	def refresh_qsps_files(self, window_folders:List[AbsPath]) -> None:
+		"""
+			Refresh files microbase in ws. File identity is the path, content identity
+			is the md5 hash - they are compared separately so that a rename is detected
+			only when the path actually changed and the content hash was kept.
+		"""
+		old:Dict[AbsPath, HashMD5] = dict(self.get_qsps_files()) # {abs_path: hash}
+		new:Dict[AbsPath, HashMD5] = {}
+		for folder in window_folders:
+			for f in qsp.get_files_list(folder):
+				new[f] = self.get_hash(f)
+
+		modified = [path for path in set(old) & set(new) if old[path] != new[path]]
+		removed_paths:Set[AbsPath] = set(old) - set(new) # deletion / rename source
+		added_paths:Set[AbsPath] = set(new) - set(old)   # new file / rename target
+
+		# index disappearing files by their content hash to detect renames
+		removed_by_hash:Dict[HashMD5, List[AbsPath]] = {}
+		for path in removed_paths:
+			removed_by_hash.setdefault(old[path], []).append(path)
+
+		renamed_sources:Set[AbsPath] = set()
+		for path in added_paths:
+			md5 = new[path]
+			candidates = removed_by_hash.get(md5)
+			if candidates:
+				# content moved from old path to a new path -> rename, keep locations
+				old_path = candidates.pop()
+				renamed_sources.add(old_path)
+				self.replace_locs(old_path, path)
+				self.replace_qsps_file(old_path, path)
+			else:
+				# brand-new file -> parse its locations
+				self._reparse_locs(path)
+				self.add_qsps_file(path, md5)
+
+		for path in modified:
+			# existing file, content changed -> re-derive its locations and refresh hash
+			self._reparse_locs(path)
+			self.refresh_md5(path)
+
+		for path in removed_paths:
+			# files that disappeared and were not consumed by a rename -> deleted
+			if path in renamed_sources: continue
+			self.del_all_locs_by_place(path)
+			self.del_qsps_file(path)
 
 	def refresh_md5(self, qsps_file_path:str) -> None:
 		""" Refreshing md5 of file by path """
@@ -236,9 +257,22 @@ class QspWorkspace:
 			Extract data from file to WS. ws_file_path - is abspath to ws-json file.
 			WARNING!!! All proves of project folder and exist of
 			ws-file must be done prev call this function!
+			Broken or structurally wrong file is tolerated: WS data is kept as is.
 		"""
-		with open(ws_file_path, "r", encoding="utf-8") as fp:
-			ws_json = json.load(fp) # get json struct ws from file
+		try:
+			with open(ws_file_path, "r", encoding="utf-8") as fp:
+				ws_json = json.load(fp) # get json struct ws from file
+		except (OSError, ValueError) as e: # ValueError covers json.JSONDecodeError
+			qsp.write_error_log(f'[WS] Can not read workspace file "{ws_file_path}": {e}')
+			return
+
+		if not isinstance(ws_json, dict) or 'locations' not in ws_json \
+										or 'files_paths' not in ws_json:
+			qsp.write_error_log(f'[WS] Workspace file has wrong structure: "{ws_file_path}"')
+			return
+
+		# structure validated -> treat the loaded data as the known WsJson shape
+		ws_json = cast(WsJson, ws_json)
 
 		if len(self._locs['hashes']) > 0:
 			self.__init__(self._all_ws)
@@ -251,7 +285,7 @@ class QspWorkspace:
 			# qsp_locs = list[qsp_loc];
 			# qsp_loc = list[name, list[start_point, end_point]]
 			for name, region in qsp_locs:
-				self.add_loc(name, tuple(region), place)
+				self.add_loc(name, cast(ViewRegion, tuple(region)), place)
 
 		for path, md5 in ws_json['files_paths'].items():
 			self._qsps_files['pathes'].append(path)
@@ -432,12 +466,17 @@ class QspWorkspace:
 	@staticmethod
 	def get_hash(file_path:str) -> str:
 		md5_hash = hashlib.new('md5')
-		with open(file_path, 'rb') as file:
-			while True:
-				data = file.read(1024)
-				if not data:
-					break
-				md5_hash.update(data)
+		try:
+			with open(file_path, 'rb') as file:
+				while True:
+					data = file.read(1024)
+					if not data:
+						break
+					md5_hash.update(data)
+		except OSError as e:
+			# file could be removed/locked between scan and hash read - dont break the loop
+			qsp.write_error_log(f'[WS] Can not hash "{file_path}": {e}')
+			return ''
 		return md5_hash.hexdigest()
 
 	@staticmethod
