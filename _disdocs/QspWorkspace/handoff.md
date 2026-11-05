@@ -121,9 +121,21 @@
 
 ✅ Блок датчика удалён из `QSP.py` (`# ВРЕМЕННО` … `plugin_unloaded` + `import time`).
 
-**Шаг 4 — реестр (4.1, 4.4; R1, R5):** `QspWorkspaceRegistry`/classmethod-accessor по `window.id()`
-со сверкой `identity` записи; `identity_of(window)` = `normcase(abspath(project_file_name()))` для
-диска; pop по своему ключу; после чего удалить маркер 2.5.
+**Шаг 4 — реестр (4.1, 4.4; R1/R2/R5), дробится на атомарные пункты (каждый — ручная приёмка и
+коммит автора, порядок A → B → C → D):**
+
+- **A ✅** *(сделан, ждёт коммита)* — задел без смены поведения: на `QspWorkspace` поля `_identity`/
+  `_scope` (дефолты; ни один вызов их пока не передаёт) + хелпер `identity_of(window)` =
+  `normcase(abspath(project_file_name()))` → `None` без `.sublime-project`. pyright: база 6 (в
+  `refresh_vars`), `QSP.py`/`project.py` чистые.
+- **B** — `QSP_WORKSPACES: Dict[int(window.id()), WS]`; единый accessor `for_window(window)` (создаёт,
+  пишет `_identity`/`_scope`, пересобирает при несовпадении `identity` — Д11) + `peek_for_window` (без
+  создания); миграция 5 команд + слушателей. Запись/чтение диска пока по-старому
+  (`qsp-project-workspace.json`) — v2-кэш в шаге 9. Самый объёмный, не делится.
+- **C** — закрытие: `pop` по `window.id()`; `on_pre_close_window` чистит RAM и для безпроектных окон
+  (Д24, И2); область из WS, не из `folders()` (Д9).
+- **D** — удалить маркер 2.5 (`close_project`/`project_is_closing`/`markers`) — не нужен после pop +
+  accessor (Д15).
 
 Дальше по списку коммитов: модель записи (4.2, 4.3) → живой индекс локаций (2.8, R5) →
 дубликаты/сканер (4.6, 4.5, 2.3, 2.4) → константы и лог (4.8, 4.9) → кэш v2 + инкрементальный скан

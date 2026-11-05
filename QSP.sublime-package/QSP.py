@@ -550,6 +550,18 @@ class QspTips(sublime_plugin.EventListener):
 		if (match is not None) and (word in keywords):
 			sublime.status_message(const.QSP_CMD_TIPS[word])
 
+
+def identity_of(window:sublime.Window) -> Optional[str]:
+	""" Дисковый ключ идентичности проекта (R1): normcase(abspath(.sublime-project)).
+		Возвращает None, если окну не сопоставлен .sublime-project (окно «Open Folder», пустое).
+		Задел шага 4 (п. B): сам WS этим ключом пока не оперирует. """
+	# TODO: возможно стоит сделать приватным
+	project_file = window.project_file_name()
+	if not project_file:
+		return None
+	return os.path.normcase(os.path.abspath(project_file))
+
+
 class QspWorkspaceHandlers(sublime_plugin.EventListener):
 	""" Manage a qsp-workspace in ram and in files """
 

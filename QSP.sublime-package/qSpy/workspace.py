@@ -37,8 +37,13 @@ class FindOverlapMb(TypedDict):
 	separator_instr: List[Point]
 
 class QspWorkspace:
-	def __init__(self, all_workspaces:WorkspacesPlaces) -> None:
+	def __init__(self, all_workspaces:WorkspacesPlaces,
+		identity:Optional[str]=None, scope:Optional[List[Path]]=None) -> None:
 		self._all_ws = all_workspaces # dict of all workspaces
+		# Идентичность и область (задел шага 4; R1/R2). Реальными значениями заполняются в п. B
+		# (accessor for_window); пока ни один вызов их не передаёт → дефолты без перемены поведения.
+		self._identity:Optional[str] = identity # дисковый ключ: identity_of(window) или None
+		self._scope:List[Path] = list(scope or []) # все папки окна на момент постройки (R2)
 		# microbase of locations
 		self._locs:QspLocsMb = {
 			'names': [],	# names of location [str]
