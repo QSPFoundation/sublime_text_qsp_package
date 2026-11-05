@@ -4,6 +4,9 @@
 `QSP.sublime-package/QSP.py` (класс `QspWorkspaceHandlers` + команды-потребители).
 Контекст модели данных — см. `structure.md`.
 
+Архитектурные решения (идентичность проекта, хранилище кэша, живой индекс сущностей) — см.
+`cache_architecture.md`: они меняют формулировки пунктов 2.1, 2.4, 2.5, 3.2 и добавляют 2.7–2.9.
+
 Приоритеты: **P0** — падающие/портящие данные баги; **P1** — белые дыры и хрупкость;
 **P2** — мёртвый код; **P3** — производительность и реструктуризация.
 Финальная приёмка, проверка и коммиты — вручную. Каждый пункт можно принимать отдельным коммитом
@@ -61,6 +64,11 @@
 Везде в коде `project_folder == folders[0]`. **Фикс:** единый способ получения `folders[0]`
 (см. 4.4); при отсутствии папок — ничего не делать; при закрытии **не создавать** WS.
 
+> Уточнение по снимкам (`cache_architecture.md`, Д1/Д2): `${folder}` всегда равен `folders[0]`, так что
+> «чужой ключ» возникает не из-за `extract_variables()`, а потому что сам `folders[0]` может быть
+> посторонней папкой (у JAD первой стоит `[lib]\easy.math.3`). Поэтому фикс — не «везде брать
+> `folders[0]`», а `identity_of(window)` + accessor без создания + `pop` при закрытии (R1/R5).
+
 ### 2.2 `on_associate_buffer_async` — IndexError на пустом окне
 `QSP.py:692-693`. `folders = window.folders(); project_folder = folders[0]` без проверки.
 **Фикс:** `if not folders: return`.
@@ -85,6 +93,21 @@
 Ветвления по типу встречаются по всему WS (`isinstance(place, int)` в `get_json_struct`, `clear_old_qsplocs`,
 `QspInvalidInput`, `QspShowDuplLocs`). **Фикс** (блок 4.2) — tagged-модель места локации.
 
+### 2.7 `on_post_save_async` индексирует файлы вне папок окна
+`QSP.py:674-691`: в отличие от `on_load_async`, здесь нет проверки `is_path_in_project_folders` →
+сохранение одиночного файла вне проекта заносит его локации и путь в WS проекта (нарушение И1 из
+`cache_architecture.md`). **Фикс:** та же проверка, что в `on_load_async`.
+
+### 2.8 `on_query_completions` пересканирует все вью на каждый запрос
+`QSP.py:480, 495`: синхронный `refresh_from_views(...)` из UI-пути (блокирует попап и мутирует WS),
+компенсирующий отсутствие живого обновления. Плюс метки берутся только из текущего вью
+(`QSP.py:449, 512`), а глобальные переменные в подсказках отсутствуют вовсе. **Фикс:** живое
+обновление индекса по `on_modified_async` (дебаунс) + чтение готового индекса в completion (R5/R7).
+
+### 2.9 `QspProject._work_dir_init` — IndexError на окне без папок
+`project.py:81-83`: при пустом `point_file` берётся `self._window_folders[0]` без проверки (тот же
+класс ошибки, что в 2.2). **Фикс:** ранний выход/фолбэк при пустом списке папок.
+
 ---
 
 ## P2 — мёртвый код (безопасно удалить)
@@ -97,6 +120,10 @@
 `workspace.py:57, 421`. Только запись, нет геттера/потребителя. Либо удалить, либо (если это
 затравка для фичи todo.md:53 «вести список переменных») — добавить публичный геттер и реального
 потребителя; иначе — удалить, поле ещё и накапливается без очистки между вью.
+
+> Отменено как «мёртвый код» (`cache_architecture.md`, R7): по вводной WS — индекс сущностей для
+> подсказок, поэтому имена глобальных переменных остаются и получают геттер + потребителя;
+> переносится в 2.8/R7. Между вью поле обязан очищаться `reset()` (4.3).
 
 ### 3.3 `QspWorkspace._log` и поле `save_temp_files`
 `workspace.py:59, 64-66`. `_log` нигде не вызывается; `save_temp_files` кормит только его.
@@ -163,13 +190,14 @@ INHIBIT_EXPLICIT_COMPLETIONS`; `find/find_all flags=2/4/1+2` — именова�
 ## Порядок работ (предлагаемые коммиты)
 
 1. `qwen fix(ws): guard replace_locs, get_hash, extract_from_file; fix dup-nav links` (P0 1.1-1.5)
-2. `qwen fix(ws): project_folder & empty-window guards in close/associate handlers` (P1 2.1-2.2)
-3. `qwen del(ws): remove dead absing/reling, _global_vars_names, _log/save_temp_files, _all_ws, dev cmd` (P2)
-4. `qwen ref(ws): unify workspace registry accessor (for_folder/load)` (P3 4.1, 4.4)
-5. `qwen ref(ws): LocRecord model, drop parallel lists + reset()` (P3 4.2, 4.3)
-6. `qwen ref(ws): rewrite locs_dupl; extract vars_scanner` (P3 4.6, 4.5; P1 2.3-2.4)
-7. `qwen ref(ws): sublime constants for flags; drop hardcoded logging` (P3 4.8, 4.9)
-8. (отдельно, объёмно) `qwen perf(ws): incremental scan by mtime` (P3 4.7)
+2. `qwen fix(ws): workspace identity + empty-window guards; drop out-of-folder indexing` (P1 2.1-2.2, 2.7, 2.9)
+3. `qwen del(ws): remove dead absing/reling, _log/save_temp_files, _all_ws, dev cmd` (P2 3.1, 3.3-3.5)
+4. `qwen ref(ws): registry with identity_of(window) + window.id() keys, load + pop` (P3 4.1, 4.4; R1, R5)
+5. `qwen ref(ws): SymbolRecord model, drop parallel lists + reset()` (P3 4.2, 4.3; R7)
+6. `qwen ref(ws): live index by on_modified_async; labels + global names in completions` (P1 2.8; R7)
+7. `qwen ref(ws): rewrite locs_dupl; extract vars_scanner` (P3 4.6, 4.5; P1 2.3-2.4)
+8. `qwen ref(ws): sublime constants for flags; drop hardcoded logging` (P3 4.8, 4.9)
+9. (отдельно, объёмно) `qwen perf(ws): cache v2 in cache_path + incremental scan by mtime` (P3 4.7; R3, R4)
 
 Регресс сверять по `_examples/.tests` (есть `_base test_.py`, golden-тесты). Каждый шаг —
 небольшой, приемка/коммит вручную.

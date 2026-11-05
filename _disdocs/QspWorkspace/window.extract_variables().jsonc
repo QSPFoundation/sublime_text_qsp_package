@@ -1,0 +1,172 @@
+// Снимки различных способов организации проектов. Снимаются скриптом, приведённом в комментарии
+// import json, os
+// w = sublime.active_window(); v = w.active_view(); vars_ = w.extract_variables()
+// print(json.dumps({
+//   'folders': w.folders(),
+//   'project_file': w.project_file_name(),
+//   'workspace_file': w.workspace_file_name(),
+//   'var_folder': vars_.get('folder'),
+//   'var_project_path': vars_.get('project_path'),
+//   'var_file_path': vars_.get('file_path'),
+//   'active_file': v.file_name() if v else None,
+//   'equal_folders0': vars_.get('folder') == (w.folders()[0] if w.folders() else None),
+//   'qsp_json_in_folders0': os.path.isfile(os.path.join(w.folders()[0], 'qsp-project.json')) if w.folders() else None,
+// }, ensure_ascii=False, indent=2))
+[
+// Самостоятельные снимки
+
+// Снимок 1. Пустое окно
+
+{
+  "folders": [],
+  "project_file": null,
+  "workspace_file": null,
+  "var_folder": null,
+  "var_project_path": null,
+  "var_file_path": null,
+  "active_file": null,
+  "equal_folders0": true,
+  "qsp_json_in_folders0": null
+},
+
+// Снимок 2. Одна папка на QSP-проект
+
+{
+  "folders": [
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw"
+  ],
+  "project_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw\\merphylaw.sublime-project",
+  "workspace_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw\\merphylaw.sublime-workspace",
+  "var_folder": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw",
+  "var_project_path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw",
+  "var_file_path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw\\_src\\03_bases_of_source",
+  "active_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\книги-игры\\qSpiderMerphyLaw\\_src\\03_bases_of_source\\base.txt.qsps",
+  "equal_folders0": true,
+  "qsp_json_in_folders0": true
+},
+
+// Снимок 3. Несколько QSP-проектов в одной папке
+
+{
+  "folders": [
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]"
+  ],
+  "project_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.lib.sublime-project",
+  "workspace_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.lib.sublime-workspace",
+  "var_folder": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]",
+  "var_project_path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]",
+  "var_file_path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.math.3\\[source]\\04_операции логические",
+  "active_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.math.3\\[source]\\04_операции логические\\01_em.byte.add.qsps",
+  "equal_folders0": true,
+  "qsp_json_in_folders0": false
+},
+
+// Снимок 4. Основной QSP-проект в одной папке,
+// вспомогательные QSP-проекты (модули) в другой/других папках
+{
+  "folders": [
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys",
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]"
+  ],
+  "project_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\avs.project.sublime-project",
+  "workspace_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\avs.project.sublime-workspace",
+  "var_folder": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys",
+  "var_project_path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys",
+  "var_file_path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\[source]",
+  "active_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\[source]\\qsp-project.json",
+  "equal_folders0": true,
+  "qsp_json_in_folders0": true
+},
+// Снимок 5. Основной QSP-проект в последней папке sublime-проекта
+{
+  "folders": [
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.math.3",
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.dialog",
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.database",
+    "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD"
+  ],
+  "project_file": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\JAD.sublime-project",
+  "workspace_file": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\JAD.sublime-workspace",
+  "var_folder": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]\\easy.math.3",
+  "var_project_path": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD",
+  "var_file_path": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package",
+  "active_file": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\QSP.sublime-package\\syntax_test_qsp.qsps",
+  "equal_folders0": true,
+  "qsp_json_in_folders0": false
+},
+
+// Снимки по сценарию
+
+// S1
+
+{
+  "folders": [
+    "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD"
+  ],
+  "project_file": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\JAD.sublime-project",
+  "workspace_file": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\JAD.sublime-workspace",
+  "var_folder": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD",
+  "var_project_path": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD",
+  "var_file_path": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD",
+  "active_file": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\JAD.sublime-project",
+  "equal_folders0": true,
+  "qsp_json_in_folders0": false
+},
+
+// S2 См. снимок 4 и снимок 5
+
+// S3 См S1 + снимок 5
+
+// S4
+{
+  "folders": [
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games"
+  ],
+  "project_file": null,
+  "workspace_file": null,
+  "var_folder": "D:\\my\\GameDev\\QuestSoftPlayer\\games",
+  "var_project_path": null,
+  "var_file_path": null,
+  "active_file": null,
+  "equal_folders0": true,
+  "qsp_json_in_folders0": false
+},
+
+// S5. В окне проекта открыт файл, не принадлежащий проекту (этот файл не должен учитываться в WS)
+// или я не правильно понял постановку вопроса
+
+{
+  "folders": [
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys",
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]"
+  ],
+  "project_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\avs.project.sublime-project",
+  "workspace_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\avs.project.sublime-workspace",
+  "var_folder": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys",
+  "var_project_path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys",
+  "var_file_path": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main",
+  "active_file": "D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\_examples\\example_project\\main\\[start].qsps",
+  "equal_folders0": true,
+  "qsp_json_in_folders0": true
+},
+
+// S6 то же самое S5???
+
+// S7
+{
+  "folders": [
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys",
+    "D:\\my\\GameDev\\QuestSoftPlayer\\games\\[lib]"
+  ],
+  "project_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\avs.project.sublime-project",
+  "workspace_file": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys\\avs.project.sublime-workspace",
+  "var_folder": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys",
+  "var_project_path": "D:\\my\\GameDev\\QuestSoftPlayer\\games\\Denny VS Badboys",
+  "var_file_path": null,
+  "active_file": null,
+  "equal_folders0": true,
+  "qsp_json_in_folders0": true
+},
+
+// S8 <- невозможно. При попытке открыть тот же проект просто фокус на окно проекта.
+]

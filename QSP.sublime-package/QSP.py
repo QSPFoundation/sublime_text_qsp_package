@@ -6,7 +6,7 @@ import os
 import re
 import json
 from typing import Dict, Optional, Union, List, Tuple, cast
-# import time
+import time
 
 # Importing my modules from qSpy package.
 from .qSpy.builder import BuildQSP
@@ -735,3 +735,63 @@ class QspDeveloperTestCommand(sublime_plugin.WindowCommand):
 		qsp_ws = QSP_WORKSPACES[project_folder]
 		print(qsp_ws.get_locs())
 		print(qsp_ws.get_qsps_files())
+
+# ------------------------- ВРЕМЕННО: датчик идентичности проекта -------------------------
+# Нужен, чтобы принять архитектурное решение об идентичности «проекта» и о хранилище
+# кэша QspWorkspace: обсуждение, данные и выводы — _disdocs/QspWorkspace/cache_architecture.md.
+# Отдельный EventListener — чтобы не трогать QspWorkspaceHandlers: Sublime вызывает
+# всех слушателей, поэтому датчик ничего не меняет в текущей логике и снимается одним удалением блока.
+
+QSP_PROBE:bool = True # выключатель датчика (вместе с ним не пишется ни лог, ни print)
+
+def _probe_dump(event:str, window:Optional[sublime.Window]=None) -> None:
+	""" Однострочный JSON-снимок идентичности окна: в консоль ST и в cache-лог. """
+	if not QSP_PROBE: return None
+	folders:List[str] = (window.folders() if window else [])
+	vars_:Dict[str,str] = (window.extract_variables() if window else {})
+	view:Optional[sublime.View] = (window.active_view() if window else None)
+	data:Dict[str,object] = {
+		'event': event,
+		'windows_n': len(sublime.windows()),
+		'folders': folders,
+		'project_file': (window.project_file_name() if window else None),
+		'workspace_file': (window.workspace_file_name() if window else None),
+		'var_folder': vars_.get('folder'),
+		'var_project_path': vars_.get('project_path'),
+		'active_file': (view.file_name() if view else None),
+		'ws_keys': list(QSP_WORKSPACES), # что реально лежит в реестре в момент события
+	}
+	line:str = json.dumps(data, ensure_ascii=False)
+	print(f'[QSP-PROBE] {line}')
+	try: # лог нужен потому что консоль живёт только до выхода из ST
+		probe_dir:str = os.path.join(sublime.cache_path(), 'QSP')
+		os.makedirs(probe_dir, exist_ok=True)
+		with open(os.path.join(probe_dir, 'identity-probe.log'), 'a', encoding='utf-8') as fp:
+			fp.write(f'{time.strftime("%Y-%m-%d %H:%M:%S")} {line}\n')
+	except OSError as e:
+		print(f'[QSP-PROBE] can not write log: {e}')
+	return None
+
+class QspProjectIdentityProbe(sublime_plugin.EventListener):
+	""" Временный датчик порядка событий и идентичности окна. См. блок выше. """
+	def on_load_project_async(self, window:sublime.Window) -> None:
+		_probe_dump('on_load_project_async', window)
+
+	def on_pre_close_project(self, window:sublime.Window) -> None:
+		_probe_dump('on_pre_close_project', window)
+
+	def on_close_window(self, window:sublime.Window) -> None:
+		_probe_dump('on_close_window', window)
+
+class QspProbeIdentityCommand(sublime_plugin.WindowCommand):
+	""" Снимок по требованию: window.run_command('qsp_probe_identity') """
+	def run(self) -> None:
+		_probe_dump('manual', self.window)
+
+def plugin_loaded() -> None:
+	_probe_dump('plugin_loaded')
+
+def plugin_unloaded() -> None:
+	_probe_dump('plugin_unloaded')
+
+# ------------------------- ВРЕМЕННО: датчик идентичности проекта -------------------------
