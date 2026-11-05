@@ -54,3 +54,44 @@ self.global_vars_names — множество, в котором пишутся 
 		+ единый воркспейс на всё.
 		+ общую папку можно открыть в другом редакторе.
 	- Минусы:
+
+# Интеграция плагина с QspWorkspace (рантайм)
+
+Здесь описано, как код плагина (`QSP.py`) фактически использует `QspWorkspace` (`qSpy/workspace.py`) в рантайме.
+
+## Глобальный реестр воркспейсов
+
+- Единственный источник истины — модульная переменная `QSP_WORKSPACES: WorkspacesPlaces = {}` (`QSP.py:714`).
+- Это `Dict[Path, QspWorkspace]`, где ключ — **первая папка окна** (`window.folders()[0]`), принятая за `project_folder`.
+- Один `QspWorkspace` живёт на одну корневую папку. Каждый экземпляр хранит ссылку на общий словарь `self._all_ws` (она нигде, кроме `extract_from_file` для само-сброса, не используется).
+- Рядом живёт `QSP_MARKERS` — словарь флагов, через которые `on_window_command` передаёт информация о переименовании/удалении файлов в асинхронные обработчики.
+
+## Источники воркспейса (три пути получения экземпляра)
+
+- `QspWorkspaceHandlers._get_qsp_ws(project_folder)` — вернуть существующий или создать **пустой** и положить в реестр.
+- `QspWorkspaceHandlers._extract_qsp_ws(project_folder)` — создать экземпляр и загрузить данные из `qsp-project-workspace.json`, **только если файл существует**; иначе возвращает `None`.
+- В `TextCommand`/`WindowCommand` (`QspLocalVarsHighlight`, `QspGlobalVarsHighlight`, `QspShowDuplLocs`, `QspInvalidInput`, `QspAutocomplete`, `QspDeveloperTestCommand`) получение воркспейса продублировано вручную (`QSP_WORKSPACES.get(...)` или `QspWorkspace(...)`), потому что до `_get_qsp_ws` из `EventListener` им доступа нет.
+
+## Персистентность
+
+- Файл `qsp-project-workspace.json` в корне `project_folder`. Структура `WsJson`: `{'locations': {path: [[name,[start,end]], ...]}, 'files_paths': {path: md5}}`.
+- Локации, принадлежащие безымянным вью (`place` — int id), в файл **не пишутся** (`get_json_struct` пропускает int-places).
+- Чтение — `extract_from_file`; запись — `save_to_file` (вызывается только при закрытии проекта). `save_to_file` выходит раньше времени, если `locations` пуст, поэтому «опустевший» воркспейс не перезаписывает старый файл.
+
+## Поток событий (жизненный цикл)
+
+1. Старт/перезагрузка плагина → `on_init(views)`; загрузка проекта → `on_load_project_async(window)`. Оба зовут `_refresh_ws(window)`:
+   - берёт `folders[0]`; `_extract_qsp_ws` (если есть json — грузим); далее `refresh_qsps_files(folders)` (полное сканирование папок + md5 +разбор новых qsps на локации) и `refresh_from_views(window.views(), folders)` (освежить открытые вью и почистить локации уже закрытых безымянных вью).
+2. Открытие файла во вью → `on_load_async(view)` → `refresh_qsplocs` + `refresh_vars` по этому вью.
+3. Сохранение → `on_post_save_async(view)` → `refresh_qsplocs`, обновление/добавление md5 файла, затем `refresh_from_views` по всем вью окна.
+4. Закрытие вью → `on_pre_close(view)` → для безымянного вью `del_all_locs_by_place(view.id())`; учитывает маркер `delete_files` (пересканировать папки) и «если файлов 0 — refresh_qsps_files».
+5. Переименование/создание файла → `on_window_command` ставит маркер `rename_path`; `on_associate_buffer_async` по маркеру делает `refresh_from_views` + `refresh_qsps_files` и сбрасывает маркер.
+6. Удаление файла → `on_window_command` складывает список файлов в маркер `delete_files`; реально пересканирование откладывается до `on_pre_close`.
+7. Закрытие проекта → `on_pre_close_project(window)` → `close_project()` (маркер) + `save_to_file(project_folder)`.
+
+## Модель данных и инварианты
+
+- `place` локации — это ЛИБО абсолютный путь к файлу (str), ЛИБО id безымянного вью (int). Смешение типов в одном поле — источник ветвлений почти в каждом методе.
+- Микробаза локаций — четыре **параллельных** списка (`names/regions/places/hashes`), где `hashes` хранит кортеж `(name, region, place)` и обязан синхронно обновляться с остальными (`add_loc`/`del_loc_by_index`/`loc_hash_update`). Индекс — «первичный ключ».
+- Дедупликация при добавлении проверяется линейным поиском `(name, region, place) in hashes`.
+- Переменные (`_local_vars`/`_global_vars`) — это `list[sublime.Region]`, пересчитываемые целиком на `refresh_vars(view)`; глобальные имена копятся в `_global_vars_names`.
