@@ -6,7 +6,6 @@ import os
 import re
 import json
 from typing import Dict, Optional, Union, List, Tuple, cast
-import time
 
 # Importing my modules from qSpy package.
 from .qSpy.builder import BuildQSP
@@ -572,6 +571,10 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			qsp_ws = QSP_WORKSPACES[project_folder] = QspWorkspace(QSP_WORKSPACES)
 		return qsp_ws
 
+	def _peek_qsp_ws(self, project_folder:str) -> Optional[QspWorkspace]:
+		""" Return the already exists workspace, or None. Never creates — no phantom entries. """
+		return QSP_WORKSPACES.get(project_folder)
+
 	def _extract_qsp_ws(self, project_folder:Optional[Path]=None) -> Union[QspWorkspace, None]:
 		""" extract ws from file if file is exist, and load in ram """
 		self._log('try extract WS from file')
@@ -614,15 +617,21 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 		self._refresh_ws(window)
 
-	# When project is closing, set workspace in closing project's status and save WS to file.
+	# When project is closing, save the already-built WS to file and drop it from the registry.
 	def on_pre_close_project(self, window:sublime.Window) -> None:
 		"""
 			Event of pre closing the project.
+			Флаш-точка (R5): сохраняем уже построенный WS окна и убираем запись из реестра.
+			Никогда НЕ создаёт WS — пустое/закрываемое окно не должно оставлять фантом (2.1).
 		"""
-		project_folder = window.extract_variables().get('folder', '')
-		qsp_ws = self._get_qsp_ws(project_folder)
+		folders = window.folders() # не extract_variables(): он даёт folders[0] и не различает пустое окно (Д1)
+		if not folders: return None # окно без папок: флашить нечего, создавать нечего
+		project_folder = folders[0]
+		qsp_ws = self._peek_qsp_ws(project_folder)
+		if qsp_ws is None: return None # живого WS для этого проекта нет — сохранять нечего
 		qsp_ws.close_project() # set WS in closing project status
 		qsp_ws.save_to_file(project_folder) # сохранение при закрытии проекта обязательно
+		QSP_WORKSPACES.pop(project_folder, None) # убрать запись, иначе реестр течёт при закрытии (Д10)
 
 # ----------------------------------- Events of work with project -----------------------------------
 
@@ -677,17 +686,19 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 		self._log('on_post_save_async')
 		if QspWorkspace.view_syntax_is_wrong(view): return None
+		window = view.window()
+		if not window: return None
 		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
 		if not project_folder: return None
 		if not current_qsps: return None
+		if not qsp.is_path_in_project_folders(current_qsps, window.folders()):
+			return None # И1 (2.7): файл вне папок окна не индексируем, как в on_load_async
 		qsp_ws = self._get_qsp_ws(project_folder)
 		qsp_ws.refresh_qsplocs(view, current_qsps) # TODO: возможно стоит удалить
 		if qsp_ws.qsps_file_is_exist(current_qsps):
 			qsp_ws.refresh_md5(current_qsps)
 		else:
 			qsp_ws.add_qsps_file(current_qsps, qsp_ws.get_hash(current_qsps))
-		window = view.window()
-		if not window: return
 		qsp_ws.refresh_from_views(window.views(), window.folders())
 
 	def on_associate_buffer_async(self, buffer:sublime.Buffer) -> None:
@@ -699,6 +710,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			window = buffer.primary_view().window()
 			if not window: return
 			folders = window.folders()
+			if not folders: return # окно без папок (2.2): folders[0] недоступен
 			project_folder = folders[0]
 			qsp_ws = self._get_qsp_ws(project_folder)
 			qsp_ws.refresh_from_views(window.views(), folders)
@@ -735,108 +747,3 @@ class QspDeveloperTestCommand(sublime_plugin.WindowCommand):
 		qsp_ws = QSP_WORKSPACES[project_folder]
 		print(qsp_ws.get_locs())
 		print(qsp_ws.get_qsps_files())
-
-# ------------------------- ВРЕМЕННО: датчик идентичности проекта -------------------------
-# Нужен, чтобы принять архитектурное решение об идентичности «проекта» и о хранилище
-# кэша QspWorkspace: обсуждение, данные и выводы — _disdocs/QspWorkspace/cache_architecture.md.
-# Отдельный EventListener — чтобы не трогать QspWorkspaceHandlers: Sublime вызывает
-# всех слушателей, поэтому датчик ничего не меняет в текущей логике и снимается одним удалением блока.
-
-QSP_PROBE:bool = True # выключатель датчика (вместе с ним не пишется ни лог, ни print)
-QSP_PROBE_REV:int = 3 # ревизия датчика: заодно видно, какой сборкой написана строка лога
-QSP_PROBE_DIR:str = '' # sublime.cache_path() один раз: в on_exit API уже может быть недоступен
-
-def _probe_dir() -> str:
-	global QSP_PROBE_DIR
-	if not QSP_PROBE_DIR:
-		QSP_PROBE_DIR = os.path.join(sublime.cache_path(), 'QSP')
-	return QSP_PROBE_DIR
-
-def _probe_dump(event:str, window:Optional[sublime.Window]=None, view:Optional[sublime.View]=None, api:bool=True) -> None:
-	""" Однострочный JSON-снимок идентичности: в консоль ST и в cache-лог.
-		Для событий уровня модуля окна нет — снимаются все окна сразу.
-		api=False: не зовём sublime-API (on_exit приходит уже после остановки API). """
-	if not QSP_PROBE: return None
-	data:Dict[str,object] = {'event': event, 'rev': QSP_PROBE_REV, 'ws_n': len(QSP_WORKSPACES)}
-	if api:
-		try:
-			windows:List[sublime.Window] = ([window] if window else list(sublime.windows()))
-			data['windows_n'] = len(sublime.windows())
-			data['ws_keys'] = list(QSP_WORKSPACES) # что реально лежит в реестре в момент события
-			wins:List[Dict[str,object]] = []
-			for w in windows:
-				av:Optional[sublime.View] = w.active_view()
-				wins.append({
-					'win_id': w.id(),
-					'folders': w.folders(),
-					'project_file': w.project_file_name(),
-					'workspace_file': w.workspace_file_name(),
-					'var_folder': w.extract_variables().get('folder'),
-					'active_file': (av.file_name() if av else None),
-					'views_n': len(w.views()),
-				})
-			data['wins'] = wins
-			if view is not None: # Э4: что за вью закрывается и живёт ли у него window
-				data['view'] = {
-					'buffer_id': view.buffer_id(),
-					'file': view.file_name(),
-					'valid': view.is_valid(),
-					'has_window': (view.window() is not None),
-					'syntax': view.settings().get('syntax'),
-				}
-		except Exception as e: # здесь on_exit может показать, что API уже нет
-			data['api_error'] = f'{type(e).__name__}: {e}'
-	else:
-		data['dir_cached'] = bool(QSP_PROBE_DIR)
-	try: # лог нужен потому что консоль живёт только до выхода из ST
-		line:str = json.dumps(data, ensure_ascii=False)
-		print(f'[QSP-PROBE] {line}')
-		probe_dir:str = _probe_dir()
-		os.makedirs(probe_dir, exist_ok=True)
-		with open(os.path.join(probe_dir, 'identity-probe.log'), 'a', encoding='utf-8') as fp:
-			fp.write(f'{time.strftime("%Y-%m-%d %H:%M:%S")} {line}\n')
-	except Exception as e: # датчик не должен ронять ни событие, ни плагин
-		print(f'[QSP-PROBE] failed on {event}: {type(e).__name__}: {e}')
-	return None
-
-class QspProjectIdentityProbe(sublime_plugin.EventListener):
-	""" Временный датчик порядка событий и идентичности окна. См. блок выше. """
-	def on_init(self, views:List[sublime.View]) -> None:
-		""" восстановление сессии: что уже открыто к моменту старта плагина """
-		_probe_dump('on_init')
-
-	def on_new_window(self, window:sublime.Window) -> None:
-		_probe_dump('on_new_window', window)
-
-	def on_load_project_async(self, window:sublime.Window) -> None:
-		_probe_dump('on_load_project_async', window)
-
-	def on_pre_close_project(self, window:sublime.Window) -> None:
-		_probe_dump('on_pre_close_project', window)
-
-	def on_pre_close_window(self, window:sublime.Window) -> None:
-		""" Э2: единственный хук закрытия окна (4050); on_close_window в API не существует """
-		_probe_dump('on_pre_close_window', window)
-
-	def on_pre_close(self, view:sublime.View) -> None:
-		""" Э4: приходит ли закрытие вью уже после закрытия проекта """
-		_probe_dump('on_pre_close(view)', view.window(), view)
-
-	def on_exit(self) -> None:
-		""" Э7: доходит ли on_exit (4050) при выходе из ST и работает ли в нём запись в файл """
-		_probe_dump('on_exit', api=False) # гарантированная строка: пишет ли файл без API
-		_probe_dump('on_exit_api', api=True) # а что на этом этапе отвечает сам API
-
-class QspProbeIdentityCommand(sublime_plugin.WindowCommand):
-	""" Снимок по требованию: window.run_command('qsp_probe_identity') """
-	def run(self) -> None:
-		_probe_dump('manual', self.window)
-
-def plugin_loaded() -> None:
-	_probe_dir() # путь лога держим с самого начала: он понадобится в on_exit
-	_probe_dump('plugin_loaded')
-
-def plugin_unloaded() -> None:
-	_probe_dump('plugin_unloaded')
-
-# ------------------------- ВРЕМЕННО: датчик идентичности проекта -------------------------

@@ -59,7 +59,11 @@
 
 ## P1 — белые дыры и хрупкость
 
-### 2.1 `on_pre_close_project` — фантомный WS и непоследовательный project_folder
+> Статус: **2.1, 2.2, 2.7, 2.9 реализованы и закоммичены** (минимальный P1-срез, `QSP.py` /
+> `project.py`). Переклейка реестра на `window.id()`/`identity` (шаг 4) и удаление маркера 2.5 —
+> отдельно; 2.3–2.6 ещё не делались.
+
+### 2.1 ✅ `on_pre_close_project` — фантомный WS и непоследовательный project_folder
 `QSP.py:609-616`. `project_folder` берётся из `extract_variables().get('folder','')` (пусто, если
 папок нет), затем `_get_qsp_ws('')` **создаёт пустой WS** в реестре и зовёт `save_to_file('')`.
 Везде в коде `project_folder == folders[0]`. **Фикс:** единый способ получения `folders[0]`
@@ -76,7 +80,7 @@
 > закрытых проектов из реестра не удаляются (Д10) — `pop` обязателен; при смене проекта в том же
 > окне `window.id()` сохраняется (Д11) — accessor обязан сверять `identity` записи.
 
-### 2.2 `on_associate_buffer_async` — IndexError на пустом окне
+### 2.2 ✅ `on_associate_buffer_async` — IndexError на пустом окне
 `QSP.py:692-693`. `folders = window.folders(); project_folder = folders[0]` без проверки.
 **Фикс:** `if not folders: return`.
 
@@ -106,7 +110,7 @@
 Ветвления по типу встречаются по всему WS (`isinstance(place, int)` в `get_json_struct`, `clear_old_qsplocs`,
 `QspInvalidInput`, `QspShowDuplLocs`). **Фикс** (блок 4.2) — tagged-модель места локации.
 
-### 2.7 `on_post_save_async` индексирует файлы вне папок окна
+### 2.7 ✅ `on_post_save_async` индексирует файлы вне папок окна
 `QSP.py:674-691`: в отличие от `on_load_async`, здесь нет проверки `is_path_in_project_folders` →
 сохранение одиночного файла вне проекта заносит его локации и путь в WS проекта (нарушение И1 из
 `cache_architecture.md`). **Фикс:** та же проверка, что в `on_load_async`.
@@ -119,7 +123,7 @@
 уже реализованным `refresh_qsplocs`) + чтение готового индекса в completion (R5/R7). Метки и
 глобальные в подсказках — **этап 2**, здесь только зафиксированы.
 
-### 2.9 `QspProject._work_dir_init` — IndexError на окне без папок
+### 2.9 ✅ `QspProject._work_dir_init` — IndexError на окне без папок
 `project.py:81-83`: при пустом `point_file` берётся `self._window_folders[0]` без проверки (тот же
 класс ошибки, что в 2.2). **Фикс:** ранний выход/фолбэк при пустом списке папок.
 
@@ -206,7 +210,7 @@ INHIBIT_EXPLICIT_COMPLETIONS`; `find/find_all flags=2/4/1+2` — именова�
 ## Порядок работ (предлагаемые коммиты)
 
 1. `qwen fix(ws): guard replace_locs, get_hash, extract_from_file; fix dup-nav links` (P0 1.1-1.5)
-2. `qwen fix(ws): workspace identity + empty-window guards; drop out-of-folder indexing` (P1 2.1-2.2, 2.7, 2.9)
+2. ✅ `qwen fix(ws): workspace identity + empty-window guards; drop out-of-folder indexing` (P1 2.1-2.2, 2.7, 2.9)
 3. `qwen del(ws): remove dead absing/reling, _log/save_temp_files, _all_ws, dev cmd` (P2 3.1, 3.3-3.5)
 4. `qwen ref(ws): registry with identity_of(window) + window.id() keys, load + pop` (P3 4.1, 4.4; R1, R5)
 5. `qwen ref(ws): SymbolRecord model, drop parallel lists + reset()` (P3 4.2, 4.3; R7)

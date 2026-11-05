@@ -79,6 +79,10 @@ class QspProject:
         self._point_file = point_file = self._args.get('point_file', '')
 
         if not point_file:
+            if not self._window_folders:
+                # окно без папок и без point_file: рабочий каталог определить нечем (2.9)
+                raise _SchemeProvingError(
+                    'No folders opened in window and no point_file: work dir is undefined.')
             self._work_dir = self._window_folders[0]
             return
 
