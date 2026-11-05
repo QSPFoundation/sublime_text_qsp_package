@@ -366,13 +366,22 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 		current_view = window.active_view()
 		if link.startswith('f:'):
 			link = link[2:]
-			if current_view is not None and current_view.file_name() == link:
+			# Separator can only be ':': the href is Sublime's own "file:line" format.
+			# A qsp path always ends with an extension, so a trailing ':<digits>' is only
+			# ever the line number (rsplit from the right -> safe on win/*nix alike).
+			head, sep, tail = link.rpartition(':')
+			line = tail if sep and tail.isdigit() else ''
+			path = head if line else link
+			if current_view is not None and current_view.file_name() == path:
 				window.focus_view(current_view)
-				point = current_view.text_point(int(link.split(':')[1]), 0)
-				current_view.sel().clear()
-				current_view.sel().add(sublime.Region(point, point))
+				if line:
+					point = current_view.text_point(int(line)-1, 0) # 1-based line -> 0-based row
+					current_view.sel().clear()
+					current_view.sel().add(sublime.Region(point, point))
+			elif line:
+				window.run_command('open_file', {'file': f'{path}:{line}', 'encoded_position': True})
 			else:
-				window.run_command('open_file', {'file': link, 'encoded_position': True})
+				window.run_command('open_file', {'file': path})
 		elif link.startswith('v:'):
 			link = link[2:]
 			parts = link.split('?')
