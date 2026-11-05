@@ -14,4 +14,4 @@ qsp-project-workspace.json
 # сюда подтягивается вручную; в этом репо не версионируется.
 _disdocs/syntax_highlighting/qsp_grammar.peg
 _disdocs/_valid qgen qsp/
-hist_*.md
+*/hist_*/

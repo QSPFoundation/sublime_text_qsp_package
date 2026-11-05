@@ -776,6 +776,10 @@ x = 5 & :не_метка
 :"текст"
 //^^^^^ -entity.name.qlabel.qsp
 
+  :метка & *pl 'команда'
+// ^^^^^ entity.name.qlabel.qsp
+//       ^ keyword.operator.ampersand.qsp
+//         ^^^^^^^^^^^^^ -entity.name.qlabel.qsp
 ! многострочный else БЕЗ двоеточия — тело подсвечивается кодом, а не комментарием
 if 1:
 	567

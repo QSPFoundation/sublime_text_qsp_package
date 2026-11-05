@@ -10,7 +10,7 @@
 python _disdocs/syntax_highlighting/check_all.py      # ожид.: RESULT: PASS
 ```
 
-- **`check_all.py`** — единый гейт перед коммитом (аудит п.29). Подряд зовёт три
+- **`check_all.py`** — единый гейт перед коммитом. Подряд зовёт три
   проверки ниже через `subprocess`, печатает общий вердикт; exit 0 — все зелёные,
   1 — хотя бы одна FAIL. Осознанно НЕ делает: `gen_braced.py --write` (это
   регенерация, не проверка) и живой Syntax Test в Sublime (headless не стартует).
