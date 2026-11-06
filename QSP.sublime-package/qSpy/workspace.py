@@ -12,7 +12,7 @@ from .plugtypes import (AbsPath, LocName, Path, ViewId, HashMD5)
 from .converter import ViewRegion
 
 Point = int
-WorkspacesPlaces = Dict[Path, 'QspWorkspace']
+WorkspacesRegistry = Dict[int, 'QspWorkspace'] # RAM-реестр: window.id() -> WS (R1, шаг 4.B)
 LocHash = Tuple[LocName, ViewRegion, Union[Path, ViewId]]
 
 class QspLocsMb(TypedDict):
@@ -37,11 +37,11 @@ class FindOverlapMb(TypedDict):
 	separator_instr: List[Point]
 
 class QspWorkspace:
-	def __init__(self, all_workspaces:WorkspacesPlaces,
+	def __init__(self, all_workspaces:WorkspacesRegistry,
 		identity:Optional[str]=None, scope:Optional[List[Path]]=None) -> None:
 		self._all_ws = all_workspaces # dict of all workspaces
-		# Идентичность и область (задел шага 4; R1/R2). Реальными значениями заполняются в п. B
-		# (accessor for_window); пока ни один вызов их не передаёт → дефолты без перемены поведения.
+		# Идентичность и область (R1/R2; шаг 4.B): заполняются accessor-ом for_window, которым
+		# создаётся WS; при несовпадении identity окна accessor пересобирает запись (Д11).
 		self._identity:Optional[str] = identity # дисковый ключ: identity_of(window) или None
 		self._scope:List[Path] = list(scope or []) # все папки окна на момент постройки (R2)
 		# microbase of locations
@@ -65,6 +65,11 @@ class QspWorkspace:
 		self.markers = {
 			'on_pre_close_project': False
 		}
+
+	@property
+	def identity(self) -> Optional[str]:
+		""" Дисковый ключ идентичности окна, которому принадлежит WS (R1); None без .sublime-project. """
+		return self._identity
 
 	def _log(self, string:str) -> None:
 		if self.save_temp_files:
@@ -280,7 +285,8 @@ class QspWorkspace:
 		ws_json = cast(WsJson, ws_json)
 
 		if len(self._locs['hashes']) > 0:
-			self.__init__(self._all_ws)
+			# сброс перед загрузкой из файла обязан пережить идентичность и область (шаг 4.B)
+			self.__init__(self._all_ws, self._identity, self._scope)
 			qsp.write_error_log(const.QSP_ERROR_MSG.WS_ALREADY_INIT)
 
 		for place, qsp_locs in ws_json['locations'].items():

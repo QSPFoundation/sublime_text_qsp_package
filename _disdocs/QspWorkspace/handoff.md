@@ -22,14 +22,13 @@
 
 - **Ветка:** `ws_ref`, ответвлена от `master` (`38aed01 qwen(ws): add tests for snapshot of projects  variants. for BIG REF WS.`). На момент создания ветки дерево было чистым — всё прежнее уже в
   `master`.
-- **Незакоммичено:** удаление блока датчика в `QSP.py` (`# ВРЕМЕННО` … `plugin_unloaded` + `import time`)
-  и актуализация планов (`refactor_plan.md`, этот handoff). Код и архитектура уже на `ws_ref` двумя
-  коммитами: `38fea66` (снапшот/логи/архитектура + датчик rev 3) и **`f401b82` — первый P1-коммит по
-  идентичности** (см. §6).
-- **Фаза:** первый рабочий срез по идентичности **сделан** (2.1, 2.2, 2.7, 2.9). Логика WS начала
-  меняться: появился accessor без создания `_peek_qsp_ws`, `pop` при закрытии, guard'ы пустых папок,
-  `is_path_in_project_folders` в save.
-- **Ближайшая цель:** шаг 4 — реестр с двумя ключами (4.1/4.4, R1/R5). Блок датчика уже удалён. См. §6.
+- **Незакоммичено:** шаг 4.B — реестр `QSP_WORKSPACES` переклеен на `window.id()`, accessor-ы
+  `for_window`/`peek_for_window`, миграция всех потребителей (см. §6). Шаг A закоммичен: `1cf4c80
+  qwen ref(ws): add identity and scope to QspWorkspace`; до него `1a75656` — первый P1-срез.
+- **Фаза:** шаг 4.B **сделан** (ждёт приёмки/коммита): RAM-ключ — `window.id()`, запись/чтение диска —
+  пока по-старому.
+  Логика WS: identity/scope пишутся при создании, пересборка при смене проекта (Д11), pop по id окна.
+- **Ближайшая цель:** шаг 4.C — закрытие окон (см. §6).
 
 ## 2. Каркас решений (детали и причины — по ссылкам)
 
@@ -122,16 +121,25 @@
 ✅ Блок датчика удалён из `QSP.py` (`# ВРЕМЕННО` … `plugin_unloaded` + `import time`).
 
 **Шаг 4 — реестр (4.1, 4.4; R1/R2/R5), дробится на атомарные пункты (каждый — ручная приёмка и
-коммит автора, порядок A → B → C → D):**
+коммит автора, порядок A → B → C → D):** (A и B сделаны, см. ниже)
 
-- **A ✅** *(сделан, ждёт коммита)* — задел без смены поведения: на `QspWorkspace` поля `_identity`/
+- **A ✅** *(закоммичен: `1cf4c80`)* — задел без смены поведения: на `QspWorkspace` поля `_identity`/
   `_scope` (дефолты; ни один вызов их пока не передаёт) + хелпер `identity_of(window)` =
   `normcase(abspath(project_file_name()))` → `None` без `.sublime-project`. pyright: база 6 (в
   `refresh_vars`), `QSP.py`/`project.py` чистые.
-- **B** — `QSP_WORKSPACES: Dict[int(window.id()), WS]`; единый accessor `for_window(window)` (создаёт,
-  пишет `_identity`/`_scope`, пересобирает при несовпадении `identity` — Д11) + `peek_for_window` (без
-  создания); миграция 5 команд + слушателей. Запись/чтение диска пока по-старому
-  (`qsp-project-workspace.json`) — v2-кэш в шаге 9. Самый объёмный, не делится.
+- **B ✅** *(сделан, ждёт коммита)* — `QSP_WORKSPACES: WorkspacesRegistry = Dict[int(window.id()), WS]`
+  (алиас в `workspace.py`, старый `WorkspacesPlaces` упразднён); единый accessor
+  `QspWorkspaceHandlers.for_window(window)` (staticmethod: создаёт, пишет `_identity`/`_scope` =
+  `window.folders()`, пересобирает при несовпадении `identity` — Д11) + `peek_for_window` (без
+  создания, `None` и при чужом `identity`); на `QspWorkspace` — read-only свойство `identity`.
+  Мигрированы все потребители: 5 команд (LocalVars/GlobalVars highlight, ShowDuplLocs, InvalidInput,
+  Autocomplete) + `QspDeveloperTestCommand` (ранее прямой `[folders[0]]` — KeyError-риск снят) +
+  все слушатели (`_get_qsp_ws`/`_peek_qsp_ws`/`_extract_qsp_ws` удалены, `_refresh_ws` через
+  accessor). `pop` в `on_pre_close_project` — по `window.id()`. `extract_from_file` при сбросе
+  сохраняет `_identity`/`_scope` (иначе `__init__` их затирал). Запись/чтение диска по-старому
+  (`qsp-project-workspace.json` в `folders[0]`) — v2-кэш в шаге 9. Статические хелперы
+  `QspWorkspace.project_folder`/`current_project_folder` остались в `workspace.py`, но потребителей
+  больше нет — снести в 4.4/C.
 - **C** — закрытие: `pop` по `window.id()`; `on_pre_close_window` чистит RAM и для безпроектных окон
   (Д24, И2); область из WS, не из `folders()` (Д9).
 - **D** — удалить маркер 2.5 (`close_project`/`project_is_closing`/`markers`) — не нужен после pop +

@@ -13,7 +13,7 @@ from .qSpy.converter import (
 	QspToQspsBuiltinConv, QspsToQspBuiltinConv,
 	QspSplitter, FinderSplitter
 )
-from .qSpy.workspace import LocHash, QspWorkspace, WorkspacesPlaces
+from .qSpy.workspace import LocHash, QspWorkspace, WorkspacesRegistry
 from .qSpy import function as qsp
 from .qSpy.project import QspProject
 # Import constants
@@ -285,11 +285,9 @@ class QspLocalVarsHighlightCommand(sublime_plugin.TextCommand):
 		view = self.view
 		# if not view: return
 		if QspWorkspace.view_syntax_is_wrong(view):	return None
-		project_folder = QspWorkspace.project_folder(view)
-		if project_folder and project_folder in QSP_WORKSPACES:
-			qsp_ws = cast(QspWorkspace, QSP_WORKSPACES.get(project_folder))
-		else:
-			qsp_ws  = QspWorkspace(QSP_WORKSPACES)
+		window = view.window()
+		if not window: return
+		qsp_ws = QspWorkspaceHandlers.for_window(window)
 		qsp_ws.refresh_vars(view)
 		view.run_command('qsp_hide_highlight')
 		view.add_regions('local_vars', qsp_ws.get_local_vars(), 'region.orangish', flags=256)
@@ -300,11 +298,9 @@ class QspGlobalVarsHighlightCommand(sublime_plugin.TextCommand):
 	def run(self, edit:sublime.Edit) -> None:
 		view = self.view
 		if QspWorkspace.view_syntax_is_wrong(view):	return None
-		project_folder = QspWorkspace.project_folder(view)
-		if project_folder and project_folder in QSP_WORKSPACES:
-			qsp_ws = cast(QspWorkspace, QSP_WORKSPACES.get(project_folder))
-		else:
-			qsp_ws  = QspWorkspace(QSP_WORKSPACES)
+		window = view.window()
+		if not window: return
+		qsp_ws = QspWorkspaceHandlers.for_window(window)
 		qsp_ws.refresh_vars(view)
 		view.run_command('qsp_hide_highlight')
 		view.add_regions('global_vars', qsp_ws.get_global_vars(), 'region.yellowish', flags=256)
@@ -327,8 +323,7 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 		if not window: return
 		all_views = window.views()
 		project_folders = window.folders()
-		project_folder = (project_folders[0] if project_folders else '')
-		qsp_ws = (QSP_WORKSPACES.get(project_folder) or QspWorkspace(QSP_WORKSPACES))
+		qsp_ws = QspWorkspaceHandlers.for_window(window)
 		qsp_ws.refresh_from_views(all_views, project_folders)
 		qsp_locs = qsp_ws.locs_dupl()
 		popup_msg = ''
@@ -413,9 +408,9 @@ class QspInvalidInput(sublime_plugin.EventListener):
 	"""
 	def on_modified(self, view:sublime.View) -> None:
 		if QspWorkspace.view_syntax_is_wrong(view):	return None
-		project_folder = QspWorkspace.project_folder(view)
-		if project_folder is None: return None
-		qsp_ws = QSP_WORKSPACES.get(project_folder, None)
+		window = view.window()
+		if not window: return None
+		qsp_ws = QspWorkspaceHandlers.peek_for_window(window)
 		if qsp_ws is None: return None
 		begin = view.sel()[0].begin()
 		end = view.sel()[0].end()
@@ -426,7 +421,7 @@ class QspInvalidInput(sublime_plugin.EventListener):
 			input_region = (sr_locname.begin(), sr_locname.end())
 			input_text = view.substr(sr_locname)
 			current_qsps = view.file_name()
-			project_folders = cast(sublime.Window, view.window()).folders()
+			project_folders = window.folders()
 			if qsp.is_path_in_project_folders(current_qsps, project_folders):
 				qsps_file_path = current_qsps
 			else:
@@ -469,9 +464,8 @@ class QspAutocomplete(sublime_plugin.EventListener):
 		window = view.window()
 		if not window: return
 		project_folders = window.folders()
-		project_folder = (project_folders[0] if project_folders else None)
-		if project_folder is None: return None # If project is not exist -> completions not work.
-		qsp_ws = QSP_WORKSPACES.get(project_folder, None)
+		if not project_folders: return None # If project is not exist -> completions not work.
+		qsp_ws = QspWorkspaceHandlers.peek_for_window(window)
 		if qsp_ws is None: return None
 		qsp_completions:List[sublime.CompletionItem] = []
 		# if syntshugarfunc
@@ -554,7 +548,7 @@ class QspTips(sublime_plugin.EventListener):
 def identity_of(window:sublime.Window) -> Optional[str]:
 	""" Дисковый ключ идентичности проекта (R1): normcase(abspath(.sublime-project)).
 		Возвращает None, если окну не сопоставлен .sublime-project (окно «Open Folder», пустое).
-		Задел шага 4 (п. B): сам WS этим ключом пока не оперирует. """
+		Шаг 4.B: accessor for_window/peek_for_window сверяют им запись окна при каждом обращении. """
 	# TODO: возможно стоит сделать приватным
 	project_file = window.project_file_name()
 	if not project_file:
@@ -573,45 +567,43 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			with open(log_file, 'a', encoding='utf-8') as fp:
 				fp.write(string + '\n')
 
-	def _get_qsp_ws(self, project_folder:str) -> QspWorkspace:
-		""" Create qsp workspace or return already exists """
-		if project_folder in QSP_WORKSPACES:
-			# if ws exist in dict of wss
-			qsp_ws = QSP_WORKSPACES[project_folder]
-		else:
-			# if ws dont exist in dict of wss
-			qsp_ws = QSP_WORKSPACES[project_folder] = QspWorkspace(QSP_WORKSPACES)
+	# ---- RAM-реестр (шаг 4.B; R1/R5): ключ — window.id(), диск — пока по-старому ----
+
+	@staticmethod
+	def for_window(window:sublime.Window) -> QspWorkspace:
+		""" Единый accessor с созданием: пишет WS его _identity/_scope; при несовпадении
+			identity пересобирает запись — window.id() переживает смену проекта в том же окне (Д11). """
+		wid = window.id()
+		identity = identity_of(window)
+		qsp_ws = QSP_WORKSPACES.get(wid)
+		if qsp_ws is None or qsp_ws.identity != identity:
+			qsp_ws = QSP_WORKSPACES[wid] = QspWorkspace(QSP_WORKSPACES, identity, list(window.folders()))
 		return qsp_ws
 
-	def _peek_qsp_ws(self, project_folder:str) -> Optional[QspWorkspace]:
-		""" Return the already exists workspace, or None. Never creates — no phantom entries. """
-		return QSP_WORKSPACES.get(project_folder)
-
-	def _extract_qsp_ws(self, project_folder:Optional[Path]=None) -> Union[QspWorkspace, None]:
-		""" extract ws from file if file is exist, and load in ram """
-		self._log('try extract WS from file')
-		project_folder = (project_folder or QspWorkspace.current_project_folder())
-		if not project_folder: return None
-		ws_file_path = os.path.join(project_folder, 'qsp-project-workspace.json')
-		if os.path.isfile(ws_file_path):
-			# если файл существует, извлекаем из файла ws
-			qsp_ws = QSP_WORKSPACES[project_folder] = QspWorkspace(QSP_WORKSPACES)
-			qsp_ws.extract_from_file(ws_file_path)
-			self._log('extract fin!')
-			return qsp_ws
-		return None
+	@staticmethod
+	def peek_for_window(window:sublime.Window) -> Optional[QspWorkspace]:
+		""" Accessor без создания (R5): None, если живого WS окна нет или он принадлежит
+			другому проекту — фантомных записей реестра не появляется (2.1). """
+		qsp_ws = QSP_WORKSPACES.get(window.id())
+		if qsp_ws is None or qsp_ws.identity != identity_of(window):
+			return None
+		return qsp_ws
 
 	def _refresh_ws(self, window:sublime.Window) -> None:
 		"""
 			Refresh workspace if it is exist.
+			Чтение диска — пока по-старому: qsp-project-workspace.json в folders[0] (v2-кэш — шаг 9).
 		"""
 		folders = window.folders()
 		if not folders or len(folders) == 0: return None
-		project_folder = folders[0]
-		qsp_ws = self._extract_qsp_ws(project_folder) # try to extract workspace from file
-		if qsp_ws is not None:
-			qsp_ws.refresh_qsps_files(folders)
-			qsp_ws.refresh_from_views(window.views(), folders)
+		ws_file_path = os.path.join(folders[0], 'qsp-project-workspace.json')
+		if not os.path.isfile(ws_file_path): return None
+		self._log('try extract WS from file')
+		qsp_ws = self.for_window(window)
+		qsp_ws.extract_from_file(ws_file_path)
+		self._log('extract fin!')
+		qsp_ws.refresh_qsps_files(folders)
+		qsp_ws.refresh_from_views(window.views(), folders)
 
 # ----------------------------------- Events of work with project -----------------------------------
 
@@ -638,12 +630,11 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 		folders = window.folders() # не extract_variables(): он даёт folders[0] и не различает пустое окно (Д1)
 		if not folders: return None # окно без папок: флашить нечего, создавать нечего
-		project_folder = folders[0]
-		qsp_ws = self._peek_qsp_ws(project_folder)
-		if qsp_ws is None: return None # живого WS для этого проекта нет — сохранять нечего
+		qsp_ws = self.peek_for_window(window)
+		if qsp_ws is None: return None # живого WS для этого окна нет — сохранять нечего
 		qsp_ws.close_project() # set WS in closing project status
-		qsp_ws.save_to_file(project_folder) # сохранение при закрытии проекта обязательно
-		QSP_WORKSPACES.pop(project_folder, None) # убрать запись, иначе реестр течёт при закрытии (Д10)
+		qsp_ws.save_to_file(folders[0]) # запись диска пока по-старому (v2-кэш — шаг 9)
+		QSP_WORKSPACES.pop(window.id(), None) # убрать запись, иначе реестр течёт при закрытии (Д10)
 
 # ----------------------------------- Events of work with project -----------------------------------
 
@@ -663,7 +654,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		if None in (current_qsps, project_folder): return None
 		if not qsp.is_path_in_project_folders(current_qsps, window.folders()):
 			return None
-		qsp_ws = self._get_qsp_ws(cast(Path, project_folder))
+		qsp_ws = self.for_window(window)
 		qsp_ws.refresh_qsplocs(view, current_qsps)
 		qsp_ws.refresh_vars(view)
 
@@ -678,7 +669,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		if not window: return
 		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
 		if project_folder is None: return None
-		qsp_ws = self._get_qsp_ws(project_folder)
+		qsp_ws = self.for_window(window)
 		if qsp_ws.project_is_closing(): return None # if not WS or project closing!
 		folders = window.folders()
 		# close the untitled view
@@ -705,7 +696,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		if not current_qsps: return None
 		if not qsp.is_path_in_project_folders(current_qsps, window.folders()):
 			return None # И1 (2.7): файл вне папок окна не индексируем, как в on_load_async
-		qsp_ws = self._get_qsp_ws(project_folder)
+		qsp_ws = self.for_window(window)
 		qsp_ws.refresh_qsplocs(view, current_qsps) # TODO: возможно стоит удалить
 		if qsp_ws.qsps_file_is_exist(current_qsps):
 			qsp_ws.refresh_md5(current_qsps)
@@ -723,8 +714,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			if not window: return
 			folders = window.folders()
 			if not folders: return # окно без папок (2.2): folders[0] недоступен
-			project_folder = folders[0]
-			qsp_ws = self._get_qsp_ws(project_folder)
+			qsp_ws = self.for_window(window)
 			qsp_ws.refresh_from_views(window.views(), folders)
 			qsp_ws.refresh_qsps_files(folders)
 			QSP_MARKERS['rename_path'] = False
@@ -744,7 +734,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 
 
 # variables
-QSP_WORKSPACES:WorkspacesPlaces = {} # all qsp WSs add to this dict, if you open project
+QSP_WORKSPACES:WorkspacesRegistry = {} # RAM-реестр: window.id() -> QspWorkspace (R1); доступ только через for_window/peek_for_window
 QSP_MARKERS:ts.QspPluginCommandMarkers = {
 	# editing files commands and events
 	'rename_path': False,
@@ -755,7 +745,7 @@ QSP_MARKERS:ts.QspPluginCommandMarkers = {
 class QspDeveloperTestCommand(sublime_plugin.WindowCommand):
 	""" Testing and proving datas """
 	def run(self):
-		project_folder = sublime.active_window().folders()[0]
-		qsp_ws = QSP_WORKSPACES[project_folder]
+		qsp_ws = QspWorkspaceHandlers.peek_for_window(self.window)
+		if qsp_ws is None: return
 		print(qsp_ws.get_locs())
 		print(qsp_ws.get_qsps_files())
