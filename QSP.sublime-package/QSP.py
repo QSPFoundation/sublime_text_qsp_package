@@ -626,15 +626,24 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 			Event of pre closing the project.
 			Флаш-точка (R5): сохраняем уже построенный WS окна и убираем запись из реестра.
-			Никогда НЕ создаёт WS — пустое/закрываемое окно не должно оставлять фантом (2.1).
+			Никогда НЕ создаёт WS (2.1); путь записи — из области WS, а не из окна: к моменту
+			закрытия window.folders() уже мог сузиться (Д9), а peek сверяет identity (Д11).
 		"""
-		folders = window.folders() # не extract_variables(): он даёт folders[0] и не различает пустое окно (Д1)
-		if not folders: return None # окно без папок: флашить нечего, создавать нечего
 		qsp_ws = self.peek_for_window(window)
-		if qsp_ws is None: return None # живого WS для этого окна нет — сохранять нечего
+		if qsp_ws is None: return None # живого WS этого окна нет — сохранять нечего, фантом не плодим
+		if not qsp_ws.scope: return None # на постройке папок не было — писать некуда
 		qsp_ws.close_project() # set WS in closing project status
-		qsp_ws.save_to_file(folders[0]) # запись диска пока по-старому (v2-кэш — шаг 9)
+		qsp_ws.save_to_file(qsp_ws.scope[0]) # запись диска пока по-старому (v2-кэш — шаг 9)
 		QSP_WORKSPACES.pop(window.id(), None) # убрать запись, иначе реестр течёт при закрытии (Д10)
+
+	# Closing the whole window. Для окна с проектом запись уже снята on_pre_close_project,
+	# которое приходит раньше (Д23); этот хук нужен лишь для безпроектных окон — к ним
+	# приходит только он (Д24). На диск ничего не пишется: файл кэша таким окнам не положен (И2).
+	def on_pre_close_window(self, window:sublime.Window) -> None:
+		"""
+			Event of pre closing the window (4050): чистка RAM-реестра по window.id().
+		"""
+		QSP_WORKSPACES.pop(window.id(), None)
 
 # ----------------------------------- Events of work with project -----------------------------------
 

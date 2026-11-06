@@ -22,13 +22,12 @@
 
 - **Ветка:** `ws_ref`, ответвлена от `master` (`38aed01 qwen(ws): add tests for snapshot of projects  variants. for BIG REF WS.`). На момент создания ветки дерево было чистым — всё прежнее уже в
   `master`.
-- **Незакоммичено:** шаг 4.B — реестр `QSP_WORKSPACES` переклеен на `window.id()`, accessor-ы
-  `for_window`/`peek_for_window`, миграция всех потребителей (см. §6). Шаг A закоммичен: `1cf4c80
-  qwen ref(ws): add identity and scope to QspWorkspace`; до него `1a75656` — первый P1-срез.
-- **Фаза:** шаг 4.B **сделан** (ждёт приёмки/коммита): RAM-ключ — `window.id()`, запись/чтение диска —
-  пока по-старому.
-  Логика WS: identity/scope пишутся при создании, пересборка при смене проекта (Д11), pop по id окна.
-- **Ближайшая цель:** шаг 4.C — закрытие окон (см. §6).
+- **Незакоммичено:** шаг 4.C — закрытие: флаш пишет файл по области из WS (Д9), добавлен
+  `on_pre_close_window` (чистка RAM и для безпроектных окон — Д24/И2). Шаги A/B закоммичены:
+  `1cf4c80` (identity/scope) и `a5f120e qwen ref(ws): workspace registry by window id` (B).
+- **Фаза:** шаг 4.C **сделан** (ждёт приёмки/коммита): путь записи — `qsp_ws.scope[0]`, а не
+  `window.folders()[0]`; поп по `window.id()` в обоих хуках закрытия.
+- **Ближайшая цель:** шаг 4.D — удалить маркер 2.5 (см. §6).
 
 ## 2. Каркас решений (детали и причины — по ссылкам)
 
@@ -121,13 +120,13 @@
 ✅ Блок датчика удалён из `QSP.py` (`# ВРЕМЕННО` … `plugin_unloaded` + `import time`).
 
 **Шаг 4 — реестр (4.1, 4.4; R1/R2/R5), дробится на атомарные пункты (каждый — ручная приёмка и
-коммит автора, порядок A → B → C → D):** (A и B сделаны, см. ниже)
+коммит автора, порядок A → B → C → D):** (A, B, C сделаны, см. ниже; D впереди)
 
 - **A ✅** *(закоммичен: `1cf4c80`)* — задел без смены поведения: на `QspWorkspace` поля `_identity`/
   `_scope` (дефолты; ни один вызов их пока не передаёт) + хелпер `identity_of(window)` =
   `normcase(abspath(project_file_name()))` → `None` без `.sublime-project`. pyright: база 6 (в
   `refresh_vars`), `QSP.py`/`project.py` чистые.
-- **B ✅** *(сделан, ждёт коммита)* — `QSP_WORKSPACES: WorkspacesRegistry = Dict[int(window.id()), WS]`
+- **B ✅** *(закоммичен: `a5f120e`)* — `QSP_WORKSPACES: WorkspacesRegistry = Dict[int(window.id()), WS]`
   (алиас в `workspace.py`, старый `WorkspacesPlaces` упразднён); единый accessor
   `QspWorkspaceHandlers.for_window(window)` (staticmethod: создаёт, пишет `_identity`/`_scope` =
   `window.folders()`, пересобирает при несовпадении `identity` — Д11) + `peek_for_window` (без
@@ -139,9 +138,16 @@
   сохраняет `_identity`/`_scope` (иначе `__init__` их затирал). Запись/чтение диска по-старому
   (`qsp-project-workspace.json` в `folders[0]`) — v2-кэш в шаге 9. Статические хелперы
   `QspWorkspace.project_folder`/`current_project_folder` остались в `workspace.py`, но потребителей
-  больше нет — снести в 4.4/C.
-- **C** — закрытие: `pop` по `window.id()`; `on_pre_close_window` чистит RAM и для безпроектных окон
-  (Д24, И2); область из WS, не из `folders()` (Д9).
+  больше нет — снести в 4.4 (в C не входило).
+- **C ✅** *(сделан, ждёт коммита)* — закрытие: `on_pre_close_project` больше не читает
+  `window.folders()` — guard на `qsp_ws.scope` (read-only property в `workspace.py`), запись диска по
+  `qsp_ws.scope[0]`: область берётся из WS, т.к. `folders()` к закрытию уже мог сузиться (Д9); guard
+  `if not qsp_ws.scope` — вместо прежнего «папок нет → выход».
+  `on_pre_close_window(window)` (4050): `QSP_WORKSPACES.pop(window.id(), None)` — для окон с
+  проектом за записью уже пришёл `on_pre_close_project` (Д23, поп — no-op), хук нужен лишь для
+  безпроектных окон (к ним приходит только он — Д24); на диск ничего не пишется (И2). Известный
+  нюанс: на прямой File→Exit per-window хуки не приходят вовсе (Д22) — флаш выхода с подготовленным
+  payload+path отложен к шагу 9 вместе с v2-кэшем.
 - **D** — удалить маркер 2.5 (`close_project`/`project_is_closing`/`markers`) — не нужен после pop +
   accessor (Д15).
 

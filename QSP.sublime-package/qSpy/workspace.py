@@ -71,6 +71,12 @@ class QspWorkspace:
 		""" Дисковый ключ идентичности окна, которому принадлежит WS (R1); None без .sublime-project. """
 		return self._identity
 
+	@property
+	def scope(self) -> List[Path]:
+		""" Все папки окна на момент постройки WS (R2). На закрытии область берётся отсюда,
+			а не из window.folders(): к моменту закрытия оно уже могло сузиться (Д9). """
+		return list(self._scope)
+
 	def _log(self, string:str) -> None:
 		if self.save_temp_files:
 			qsp.log(string)
