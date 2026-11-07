@@ -632,7 +632,6 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		qsp_ws = self.peek_for_window(window)
 		if qsp_ws is None: return None # живого WS этого окна нет — сохранять нечего, фантом не плодим
 		if not qsp_ws.scope: return None # на постройке папок не было — писать некуда
-		qsp_ws.close_project() # set WS in closing project status
 		qsp_ws.save_to_file(qsp_ws.scope[0]) # запись диска пока по-старому (v2-кэш — шаг 9)
 		QSP_WORKSPACES.pop(window.id(), None) # убрать запись, иначе реестр течёт при закрытии (Д10)
 
@@ -672,14 +671,15 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			Event of pre close the view.
 			Runed before closing the window, if you close window!
 		"""
-		# TODO: почему-то выполняется после закрывания окна!
+		# Д15: при закрытии окна с проектом хук приходит после on_pre_close_project,
+		# и view.window() уже None; pop уже снят — peek не воссоздаёт фантом (2.5).
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		window = view.window()
 		if not window: return
 		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
 		if project_folder is None: return None
-		qsp_ws = self.for_window(window)
-		if qsp_ws.project_is_closing(): return None # if not WS or project closing!
+		qsp_ws = self.peek_for_window(window)
+		if qsp_ws is None: return None # проекта уже нет в реестре, либо WS ещё не строили
 		folders = window.folders()
 		# close the untitled view
 		if current_qsps is None:
@@ -758,3 +758,17 @@ class QspDeveloperTestCommand(sublime_plugin.WindowCommand):
 		if qsp_ws is None: return
 		print(qsp_ws.get_locs())
 		print(qsp_ws.get_qsps_files())
+
+def foo():
+
+	w = sublime.active_window()
+	print("win_id", w.id())
+	print("folders", w.folders())
+	print("project", w.project_file_name())
+	print("keys", list(QSP_WORKSPACES.keys()))
+	ws = QSP_WORKSPACES.get(w.id())
+	if ws:
+		print("identity", ws.identity)
+		print("scope", ws.scope)
+	else:
+		print("no WS for this window")

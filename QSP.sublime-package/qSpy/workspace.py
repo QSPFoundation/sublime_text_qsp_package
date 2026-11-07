@@ -62,9 +62,6 @@ class QspWorkspace:
 		self._global_vars_names:Set[str] = set()  # set[variables names]
 		# modes
 		self.save_temp_files:bool = True
-		self.markers = {
-			'on_pre_close_project': False
-		}
 
 	@property
 	def identity(self) -> Optional[str]:
@@ -347,12 +344,6 @@ class QspWorkspace:
 				self.refresh_qsplocs(view, current_qsps)
 				self.refresh_vars(view)
 		self.clear_old_qsplocs(windows_views) # clear locs from untitled views
-
-	def close_project(self) -> None:
-		self.markers['on_pre_close_project'] = True
-
-	def project_is_closing(self) -> bool:
-		return self.markers['on_pre_close_project']
 
 # ---------------------------------------- WS functions ----------------------------------------
 

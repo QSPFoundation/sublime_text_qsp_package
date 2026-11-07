@@ -59,9 +59,8 @@
 
 ## P1 — белые дыры и хрупкость
 
-> Статус: **2.1, 2.2, 2.7, 2.9 реализованы и закоммичены** (минимальный P1-срез, `QSP.py` /
-> `project.py`). Переклейка реестра на `window.id()`/`identity` (шаг 4) и удаление маркера 2.5 —
-> отдельно; 2.3–2.6 ещё не делались.
+> Статус: **2.1, 2.2, 2.5, 2.7, 2.9 реализованы** (2.5 — шаг 4.D, ждёт коммита автора).
+> Переклейка реестра на `window.id()`/`identity` (шаг 4 A–C) сделана. 2.3, 2.4, 2.6, 2.8 ещё нет.
 
 ### 2.1 ✅ `on_pre_close_project` — фантомный WS и непоследовательный project_folder
 `QSP.py:609-616`. `project_folder` берётся из `extract_variables().get('folder','')` (пусто, если
@@ -95,7 +94,7 @@
 **Фикс:** хранить регионы переменных не в WS, а возвращать/кэшировать per-view
 (`view.id() -> regions`), либо вообще убрать из WS (переменные — не «проектная» правда).
 
-### 2.5 `close_project`/`project_is_closing` — маркер никогда не сбрасывается
+### 2.5 ✅ `close_project`/`project_is_closing` — маркер никогда не сбрасывается
 `workspace.py:300-304`, `markers`-dict `workspace.py:60-62`. Единственный флаг живёт в словаре.
 **Фикс:** заменить словарь на булево поле `self._closing`; либо вовсе убрать, если после
 реструктуризации закрытия WS не переживает окно (см. 4.x).
@@ -219,8 +218,7 @@ INHIBIT_EXPLICIT_COMPLETIONS`; `find/find_all flags=2/4/1+2` — именова�
 2. ✅ `qwen fix(ws): workspace identity + empty-window guards; drop out-of-folder indexing` (P1 2.1-2.2, 2.7, 2.9)
 3. `qwen del(ws): remove dead absing/reling, _log/save_temp_files, _all_ws, dev cmd` (P2 3.1, 3.3-3.5)
 4. `qwen ref(ws): registry with identity_of(window) + window.id() keys, load + pop` (P3 4.1, 4.4; R1, R5)
-   — в работе: A закоммичен (`1cf4c80`), B закоммичен (`a5f120e`), C сделан без коммита (закрытие:
-   scope из WS + on_pre_close_window), D впереди (маркер 2.5)
+   — A–C закоммичены автором; D сделан (маркер 2.5 снят, `on_pre_close` через peek), ждёт коммита
 5. `qwen ref(ws): SymbolRecord model, drop parallel lists + reset()` (P3 4.2, 4.3; R7)
 6. `qwen ref(ws): live loc index by on_modified_async; completion reads ready index` (P1 2.8; R5/R7 этап 1)
 7. `qwen ref(ws): rewrite locs_dupl; extract vars_scanner` (P3 4.6, 4.5; P1 2.3-2.4)
