@@ -2,7 +2,7 @@ import sublime			# type: ignore
 
 import os
 import json
-from typing import (Dict, Literal, Optional, Set, TypedDict, Union, List, Tuple, cast)
+from typing import (Dict, Literal, NamedTuple, Optional, Set, TypedDict, Union, List, Tuple, cast)
 import hashlib
 
 from .converter import QspsFile
@@ -13,13 +13,16 @@ from .converter import ViewRegion
 
 Point = int
 WorkspacesRegistry = Dict[int, 'QspWorkspace'] # RAM-реестр: window.id() -> WS (R1, шаг 4.B)
-LocHash = Tuple[LocName, ViewRegion, Union[Path, ViewId]]
+LocPlace = Union[Path, ViewId]
 
-class QspLocsMb(TypedDict):
-	names:List[LocName]
-	regions:List[ViewRegion]
-	places:List[Union[Path, ViewId]]
-	hashes:List[LocHash]
+class LocRecord(NamedTuple):
+	""" Одна локация в индексе WS (4.2). NamedTuple, чтобы запись нельзя было
+		разъехать по полям и чтобы прежний кортежный API (распаковка, [0]/[1]/[2]) жил. """
+	name: LocName
+	region: ViewRegion
+	place: LocPlace
+
+LocHash = LocRecord # алиас для потребителей (QSP.py); раньше это был Tuple тех же трёх полей
 
 class QspsFilesMb(TypedDict):
 	pathes:List[AbsPath]
@@ -44,24 +47,8 @@ class QspWorkspace:
 		# создаётся WS; при несовпадении identity окна accessor пересобирает запись (Д11).
 		self._identity:Optional[str] = identity # дисковый ключ: identity_of(window) или None
 		self._scope:List[Path] = list(scope or []) # все папки окна на момент постройки (R2)
-		# microbase of locations
-		self._locs:QspLocsMb = {
-			'names': [],	# names of location [str]
-			'regions': [],	# regions of locs initiate tuple[start, end]
-			'places': [],	# file path, where is qsp_locs [str]
-			'hashes': []	# all datas in tuple
-		}
-		# microbase of qsps-file's pathes
-		self._qsps_files:QspsFilesMb = {
-			'pathes': [],	# all files in project (abs pathes)
-			'hashes': []	# md5
-		}
-		# microbase of variables
-		self._local_vars:List[sublime.Region] = []	# list[sublime.Region]
-		self._global_vars:List[sublime.Region] = []	# list[sublime.Region]
-		self._global_vars_names:Set[str] = set()  # set[variables names]
-		# modes
 		self.save_temp_files:bool = True
+		self.reset() # индекс пустой; identity/scope уже заданы выше
 
 	@property
 	def identity(self) -> Optional[str]:
@@ -78,53 +65,48 @@ class QspWorkspace:
 		if self.save_temp_files:
 			qsp.log(string)
 
+	def reset(self) -> None:
+		""" Сброс индекса (4.3). identity, scope, ссылка на реестр и флаги режима не трогаются. """
+		self._locs:List[LocRecord] = []
+		self._qsps_files:QspsFilesMb = {
+			'pathes': [],	# all files in project (abs pathes)
+			'hashes': []	# md5
+		}
+		self._local_vars:List[sublime.Region] = []
+		self._global_vars:List[sublime.Region] = []
+		self._global_vars_names:Set[str] = set()
+
 # --------------------------------- qsp-locations mb functions ---------------------------------
 
-	def add_loc(self, name:LocName, region:ViewRegion, place:Union[Path, ViewId]) -> None:
+	def add_loc(self, name:LocName, region:ViewRegion, place:LocPlace) -> None:
 		""" Add new qsp-location to workspace """
-		if not (name, region, place) in self._locs['hashes']:
-			# one index for all fields
-			self._locs['names'].append(name)
-			self._locs['regions'].append(region)
-			self._locs['places'].append(place)
-			self._locs['hashes'].append((name, region, place))
+		rec = LocRecord(name, region, place)
+		if rec not in self._locs:
+			self._locs.append(rec)
 
 	def replace_locs(self, old_path:str, new_path:str) -> None:
 		""" Change place of qsp-locations. """
 		if old_path == new_path: return None
-		while old_path in self._locs['places']:
-			i = self._locs['places'].index(old_path)
-			self._locs['places'][i] = new_path
-			self.loc_hash_update(i)
+		self._locs = [
+			loc._replace(place=new_path) if loc.place == old_path else loc
+			for loc in self._locs
+		]
 
 	def del_loc_by_index(self, i:int) -> None:
 		""" Delete the qsp-location from workspace by index"""
-		if i < 0 or i > len(self._locs['names'])-1: return None
-		del self._locs['names'][i]
-		del self._locs['regions'][i]
-		del self._locs['places'][i]
-		del self._locs['hashes'][i]
+		if i < 0 or i > len(self._locs)-1: return None
+		del self._locs[i]
 
-	def del_all_locs_by_place(self, loc_place:Union[str, int]) -> None:
+	def del_all_locs_by_place(self, loc_place:LocPlace) -> None:
 		""" del all locations by place. loc_place - path at file with qsp_location """
-		while loc_place in self._locs['places']:
-			i = self._locs['places'].index(loc_place)
-			self.del_loc_by_index(i)
+		self._locs = [loc for loc in self._locs if loc.place != loc_place]
 
-	def loc_hash_update(self, i:int) -> None:
-		""" Обновляем хэш локации """
-		self._locs['hashes'][i] = (
-			self._locs['names'][i],
-			self._locs['regions'][i],
-			self._locs['places'][i]
-		)
+	def get_locs(self) -> List[LocRecord]:
+		return list(self._locs)
 
-	def get_locs(self) -> List[LocHash]:
-		return self._locs['hashes'].copy()
-	
 	def get_locs_names(self) -> List[LocName]:
 		"""	Extract all qsp-location's names. """
-		return self._locs['names'].copy()
+		return [loc.name for loc in self._locs]
 
 	def refresh_qsplocs(self, view:sublime.View, current_qsps:Optional[Path]) -> None:
 		"""	Refresh list of QSP-locations created on this view """
@@ -137,25 +119,26 @@ class QspWorkspace:
 	def clear_old_qsplocs(self, views:List[sublime.View]) -> None:
 		""" Delete locations from WS, if this views don't exist. """
 		view_ids = [v.id() for v in views]
-		for place in self._locs['places']:
-			if isinstance(place, int) and not place in view_ids:
-				self.del_all_locs_by_place(place)
+		self._locs = [
+			loc for loc in self._locs
+			if not (isinstance(loc.place, int) and loc.place not in view_ids)
+		]
 
-	def locs_dupl(self) -> List[LocHash]: # list[tuples(name, region, place)] *[1]
+	def locs_dupl(self) -> List[LocRecord]:
 		""" Get qsp-locations with duplicate names. """
-		qsp_locs:List[LocHash] = [] # list[tuples(name, region, place)]
-		exclude_hashes:List[LocHash] = []
-		for i, loc_hash in enumerate(self._locs['hashes']):
-			loc_name, _, _ = loc_hash
-			if (not loc_hash in exclude_hashes) and (loc_name in self._locs['names'][i+1:]):
-				qsp_locs.append(loc_hash)
-				exclude_hashes.append(loc_hash)
+		qsp_locs:List[LocRecord] = []
+		exclude:List[LocRecord] = []
+		names = [loc.name for loc in self._locs]
+		for i, loc in enumerate(self._locs):
+			if (loc not in exclude) and (loc.name in names[i+1:]):
+				qsp_locs.append(loc)
+				exclude.append(loc)
 				u = i + 1
-				while u < len(self._locs['hashes']) and loc_name in self._locs['names'][u:]:
-					u = self._locs['names'].index(loc_name, u)
-					qsp_locs.append(self._locs['hashes'][u]) # add duplicate to out list
-					exclude_hashes.append(self._locs['hashes'][u])
-					u += 1 # search next location
+				while u < len(self._locs) and loc.name in names[u:]:
+					u = names.index(loc.name, u)
+					qsp_locs.append(self._locs[u])
+					exclude.append(self._locs[u])
+					u += 1
 		return qsp_locs
 
 # --------------------------------- qsp-locations mb functions ---------------------------------
@@ -287,9 +270,8 @@ class QspWorkspace:
 		# structure validated -> treat the loaded data as the known WsJson shape
 		ws_json = cast(WsJson, ws_json)
 
-		if len(self._locs['hashes']) > 0:
-			# сброс перед загрузкой из файла обязан пережить идентичность и область (шаг 4.B)
-			self.__init__(self._all_ws, self._identity, self._scope)
+		if self._locs:
+			self.reset() # identity/scope живут на объекте, __init__ на себе больше не зовём (4.3)
 			qsp.write_error_log(const.QSP_ERROR_MSG.WS_ALREADY_INIT)
 
 		for place, qsp_locs in ws_json['locations'].items():
@@ -309,11 +291,10 @@ class QspWorkspace:
 		qsp_ws_out:WsJson = { 'locations': {}, 'files_paths': {} }
 		qsp_locs_out = qsp_ws_out['locations']
 		qsp_files_out = qsp_ws_out['files_paths']
-		for qsp_loc in self._locs['hashes']:
-			qsps_file_path = qsp_loc[2]
-			if isinstance(qsps_file_path, int): continue
-			if not qsps_file_path in qsp_locs_out: qsp_locs_out[qsps_file_path] = []
-			qsp_locs_out[qsps_file_path].append((qsp_loc[0], qsp_loc[1]))
+		for loc in self._locs:
+			if isinstance(loc.place, int): continue
+			if loc.place not in qsp_locs_out: qsp_locs_out[loc.place] = []
+			qsp_locs_out[loc.place].append((loc.name, loc.region))
 		for i, qsps_file_path in enumerate(self._qsps_files['pathes']):
 			# TODO: здесь часть путей должна преобразовываться в относительные
 			# перед возвращением в виде json-структуры.

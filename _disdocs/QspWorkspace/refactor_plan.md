@@ -173,13 +173,13 @@
 > `on_pre_close_window` чистит RAM для безпроектных окон (Д24/И2). Осталось: маркер (D);
 > v2-загрузка с диска и флаш `on_exit` — шаг 9.
 
-### 4.2 Модель данных локаций — убрать параллельные списки
+### 4.2 ✅ Модель данных локаций — убрать параллельные списки
 `names/regions/places/hashes` (`workspace.py:43-48, 70-106`) — 4 синхронно мутируемых списка,
 `hashes` дублирует остальные три. **Фикс:** один `list[LocRecord]` (dataclass/NamedTuple:
 `name, region, place`) либо `dict[id] -> LocRecord`. Убрать `loc_hash_update`, инвариант
 синхронности становится недостижимым. `get_locs()` собирает кортежи по требованию.
 
-### 4.3 `reset()` вместо вызова `__init__` на себе
+### 4.3 ✅ `reset()` вместо вызова `__init__` на себе
 `workspace.py:243-245`. Добавить явный метод `clear()/reset()`.
 
 ### 4.4 Единый `project_folder`
@@ -218,8 +218,9 @@ INHIBIT_EXPLICIT_COMPLETIONS`; `find/find_all flags=2/4/1+2` — именова�
 2. ✅ `qwen fix(ws): workspace identity + empty-window guards; drop out-of-folder indexing` (P1 2.1-2.2, 2.7, 2.9)
 3. `qwen del(ws): remove dead absing/reling, _log/save_temp_files, _all_ws, dev cmd` (P2 3.1, 3.3-3.5)
 4. `qwen ref(ws): registry with identity_of(window) + window.id() keys, load + pop` (P3 4.1, 4.4; R1, R5)
-   — A–C закоммичены автором; D сделан (маркер 2.5 снят, `on_pre_close` через peek), ждёт коммита
+   — A–D закоммичены автором
 5. `qwen ref(ws): SymbolRecord model, drop parallel lists + reset()` (P3 4.2, 4.3; R7)
+   — сделан как LocRecord (этап 1; SymbolRecord — этап 2), ждёт коммита автора
 6. `qwen ref(ws): live loc index by on_modified_async; completion reads ready index` (P1 2.8; R5/R7 этап 1)
 7. `qwen ref(ws): rewrite locs_dupl; extract vars_scanner` (P3 4.6, 4.5; P1 2.3-2.4)
 8. `qwen ref(ws): sublime constants for flags; drop hardcoded logging` (P3 4.8, 4.9)
