@@ -33,12 +33,17 @@
     `<sublime.cache_path()>/QSP/workspaces/<base>-<hash8>.json` (`version:2, identity, scope, built,
     files{mtime,size,md5}, locations`), инкрементальный скан, `touch_file` на save, флаш на
     `on_pre_close_project`/`on_exit()` (чистый IO), Open Folder без файла (И2), legacy → `.bak` (R6).
-- **Фаза:** 2.1–2.10, 3.1–3.5, 4.2/4.3, 4.5–4.9, 4.7 закрыты и закоммичены.
+- **Фаза:** 2.1–2.10, 3.1–3.5, 4.2/4.3, 4.5–4.9, 4.7 закрыты и закоммичены. **Follow-up R3 (шаг 1) —
+  команды/палитра реализованы в рабочем дереве, коммит не делал автор, приёмка за автором:**
+  `QspShowWorkspaceCacheCommand`/`QspResetWorkspaceCacheCommand` в `QSP.py`,
+  `QspWorkspace.rebind(identity, scope)` в `qSpy/workspace.py`, `Default.sublime-commands` (новые + прочие
+  неслужебные команды). `index.json` и чистка сироток — отложены.
 - **Техдолг (не блокирует):** `workspace.load_from_cache` типизирован через `Any`/касты — перевести
   на `object`/`RawJson`+сужение без `Any`; в `vars_scanner.py` 6 pre-existing
   `reportOptionalMemberAccess` по `sprtr_region`.
-- **Ближайшая цель (follow-up R3):** `index.json`, команды `qsp_show_workspace_cache` /
-  `qsp_reset_workspace_cache`; затем хвост 4.1/4.4. Замер/подбор дебаунса 2.8 — по необходимости.
+- **Ближайшая цель:** принять/закоммитить follow-up R3 (шаг 1) после приёмки; затем follow-up R3 шаг 2 —
+  `index.json` + чистка сироток (R6, `project_history()`/возраст); затем хвост 4.1/4.4. Замер/подбор
+  дебаунса 2.8 — по необходимости.
 
 ## 2. Каркас решений (детали и причины — по ссылкам)
 
@@ -46,7 +51,7 @@
 |---|---|---|
 | R1 | Два ключа вместо одного: RAM-реестр — `window.id()`, диск — `identity = normcase(abspath(project_file_name()))` | принято |
 | R2 | Область индекса — **все** папки окна; ничего за их пределами | принято |
-| R3 | Кэш в `<sublime.cache_path()>/QSP/workspaces/<base>-<hash8>.json`; окна «Open Folder» на диск не пишут | **реализовано (коммит 9, имена подтверждены)**; follow-up: `index.json`, команды `qsp_show_workspace_cache`/`qsp_reset_workspace_cache` |
+| R3 | Кэш в `<sublime.cache_path()>/QSP/workspaces/<base>-<hash8>.json`; окна «Open Folder» на диск не пишут | **реализовано (коммит 9, имена подтверждены)**; follow-up шаг 1 (команды show/reset + `Default.sublime-commands`) **реализован в дереве, ждёт приёмки/коммита**; follow-up: `index.json`, чистка сироток (R6) |
 | R4 | Схема `version: 2`: `identity`, `scope`, `built`, `files{mtime,size,md5}`, `locations` | принято (только локации) |
 | R5 | Живой индекс в RAM; файл — только закрытие/восстановление; pop + accessor без создания | **принято** (Э7–Э9, Э5 подтверждены, см. §2.3 арх. документа) |
 | R6 | Старый `qsp-project-workspace.json` → `.bak`, без импорта; сиротки по возрасту через `project_history()` | принято |

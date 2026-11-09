@@ -1,0 +1,18 @@
+[
+  { "caption": "QSP: Build and Run", "command": "qsp_build", "args": { "qsp_mode": "--br" } },
+  { "caption": "QSP: Build", "command": "qsp_build", "args": { "qsp_mode": "--build" } },
+  { "caption": "QSP: Run", "command": "qsp_build", "args": { "qsp_mode": "--run" } },
+  { "caption": "QSP: New Project", "command": "qsp_new_project" },
+  { "caption": "QSP: New Game File", "command": "qsp_new_game" },
+  { "caption": "QSP: Convert QSP -> QSPS", "command": "qsp_to_qsps" },
+  { "caption": "QSP: Convert QSPS -> QSP", "command": "qsps_to_qsp" },
+  { "caption": "QSP: Decode QSP Line", "command": "decode_qsp_line" },
+  { "caption": "QSP: Split File", "command": "qsp_splitter" },
+  { "caption": "QSP: Split Project", "command": "qsp_split_project" },
+  { "caption": "QSP: Analyze", "command": "qsp_analyzer" },
+  { "caption": "QSP: Highlight Local Vars", "command": "qsp_local_vars_highlight" },
+  { "caption": "QSP: Highlight Global Vars", "command": "qsp_global_vars_highlight" },
+  { "caption": "QSP: Show Duplicate Locations", "command": "qsp_show_dupl_locs" },
+  { "caption": "QSP: Show Workspace Cache", "command": "qsp_show_workspace_cache" },
+  { "caption": "QSP: Reset Workspace Cache", "command": "qsp_reset_workspace_cache" }
+]

@@ -117,6 +117,13 @@ class QspWorkspace:
 		self._files:Dict[AbsPath, FileMeta] = {} # R4/4.7: path -> {mtime,size,md5}
 		self._built = False
 
+	def rebind(self, identity:Optional[str], scope:Optional[List[Path]]) -> None:
+		""" Перепривязать WS к текущему окну (R1): обновить identity/scope и целевой путь кэша.
+			Индекс не трогает — вызывающий сам решает reset/rebuild. """
+		self._identity = identity
+		self._scope = list(scope or [])
+		self._cache_path = cache_file_path(identity) if identity else None
+
 # --------------------------------- qsp-locations mb functions ---------------------------------
 
 	def add_loc(self, name:LocName, region:ViewRegion, place:LocPlace) -> None:

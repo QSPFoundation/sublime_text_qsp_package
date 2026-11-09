@@ -13,7 +13,7 @@ from .qSpy.converter import (
 	QspToQspsBuiltinConv, QspsToQspBuiltinConv,
 	QspSplitter, FinderSplitter
 )
-from .qSpy.workspace import FilePlace, LocHash, QspWorkspace, ViewPlace, WorkspacesRegistry, flush_workspaces_on_exit
+from .qSpy.workspace import FilePlace, LocHash, QspWorkspace, ViewPlace, WorkspacesRegistry, cache_file_path, flush_workspaces_on_exit
 from .qSpy.vars_scanner import scan_vars
 from .qSpy import function as qsp
 from .qSpy.project import QspProject
@@ -548,6 +548,53 @@ def identity_of(window:sublime.Window) -> Optional[str]:
 	if not project_file:
 		return None
 	return os.path.normcase(os.path.abspath(project_file))
+
+
+class QspShowWorkspaceCacheCommand(sublime_plugin.WindowCommand):
+	""" Показать файл кэша воркспейса активного окна (R3). """
+
+	def run(self) -> None:
+		identity = identity_of(self.window)
+		if identity is None:
+			sublime.status_message('[QSP] Файл кэша не ведётся: окну не сопоставлен .sublime-project (И2).')
+			return
+		path = cache_file_path(identity)
+		if path and os.path.isfile(path):
+			self.window.open_file(path)
+			sublime.status_message(f'[QSP] Файл кэша: {path}')
+		else:
+			sublime.status_message(f'[QSP] Файла кэша нет: {path}')
+
+
+class QspResetWorkspaceCacheCommand(sublime_plugin.WindowCommand):
+	""" Сбросить кэш воркспейса активного окна и пересобрать индекс (R3). """
+
+	def run(self) -> None:
+		window = self.window
+		identity = identity_of(window)
+		path = cache_file_path(identity) if identity else None
+		if path and os.path.isfile(path):
+			try:
+				os.remove(path)
+			except OSError as e:
+				sublime.status_message(f'[QSP] Не удалось удалить кэш: {e}')
+				return
+		# Пересборка RAM-индекса тем же путём, что восстановление окна (R1/R4/R5, Д11).
+		qsp_ws = QspWorkspaceHandlers.for_window(window)
+		qsp_ws.rebind(identity, list(window.folders()))
+		qsp_ws.reset()
+		folders = window.folders()
+		if folders:
+			qsp_ws.refresh_qsps_files(folders)
+			qsp_ws.refresh_from_views(window.views(), folders)
+		if identity is not None:
+			saved = qsp_ws.save_to_cache()
+			if saved:
+				sublime.status_message(f'[QSP] Кэш воркспейса пересобран и сохранён: {saved}')
+			else:
+				sublime.status_message('[QSP] Кэш воркспейса пересобран, но сохранить файл не удалось.')
+		else:
+			sublime.status_message('[QSP] Кэш воркспейса пересобран в памяти. Для сохранения кэша на диск нужен .sublime-project (И2).')
 
 
 class QspWorkspaceHandlers(sublime_plugin.EventListener):
