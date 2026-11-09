@@ -59,8 +59,9 @@
 
 ## P1 — белые дыры и хрупкость
 
-> Статус: **2.1–2.5, 2.7–2.10, 4.2/4.3, 4.5/4.6 реализованы** (2.8 — коммит 6; 2.3/2.4/4.5 — коммит 7,
-> вариант a, см. ниже). 2.6 ещё нет. Переклейка реестра (шаг 4 A–D) закоммичена.
+> Статус: **2.1–2.5, 2.7–2.10, 3.2/3.3, 4.2/4.3, 4.5/4.6, 4.8/4.9 реализованы** (2.8 — коммит 6;
+> 2.3/2.4/4.5/3.2 — коммит 7, вариант a; 3.3/4.8/4.9 — коммит 8). 2.6, 3.1/3.4/3.5 ещё нет.
+> Переклейка реестра (шаг 4 A–D) закоммичена.
 
 ### 2.1 ✅ `on_pre_close_project` — фантомный WS и непоследовательный project_folder
 `QSP.py:609-616`. `project_folder` берётся из `extract_variables().get('folder','')` (пусто, если
@@ -157,13 +158,15 @@ on-demand; команды хайлайта (`QspLocalVarsHighlightCommand`/`QspG
 вариант a). Если на этапе 2 имена глобальных пойдут в индекс сущностей (R7) — восстановить с
 очисткой в `reset()` (4.3).
 
-### 3.3 `QspWorkspace._log` и поле `save_temp_files`
-`workspace.py:59, 64-66`. `_log` нигде не вызывается; `save_temp_files` кормит только его.
-Удалить оба (не путать с одноимённым полем схемы билдера в `plugtypes` — оно живое).
+### 3.3 ✅ `QspWorkspace._log` и поле `save_temp_files`
+`workspace.py` (ранее). `_log` нигде не вызывался; `save_temp_files` кормил только его.
+Удалены (4.9). (Не путать с одноимённым полем схемы билдера в `plugtypes` — оно живое.)
 
-### 3.4 Ссылка `self._all_ws`
-`workspace.py:41, 244`. Используется только для само-сброса через `self.__init__(self._all_ws)`
-в `extract_from_file`. После введения нормального `reset()` (4.3) — удалить поле.
+### 3.4 `_all_ws`
+`workspace.py:45`. Параметр конструктора `all_workspaces` по-прежнему принимает реестр и сохраняется
+в `self._all_ws`, но поле используется только для приёма аргумента; после введения `reset()` (4.3)
+само-сброса через `self.__init__` нет. Удалить поле/аргумент, когда accessor перестанет его
+передавать.
 
 ### 3.5 `QspDeveloperTestCommand`
 `QSP.py:722-728`. Дебажный `print` с прямым `QSP_WORKSPACES[...]` (KeyError-риск). Удалить или
@@ -215,15 +218,17 @@ on-demand; команды хайлайта (`QspLocalVarsHighlightCommand`/`QspG
 (todo.md:54, history.md «Не исправлено»). **Фикс:** кэш по mtime, не перехэшировать неизменённое;
 разбор новых файлов — не в горячем пути `on_init` целиком (объём — отдельно, по возможности).
 
-### 4.8 Магические числа → константы Sublime
-`flags=256` → `sublime.DRAW_NO_OUTLINE`; `2048+256+32` → `DRAW_SQUIGGLY_UNDERLINE |
-DRAW_NO_OUTLINE | DRAW_NO_FILL`; `return (…, 24)` → `INHIBIT_WORD_COMPLETIONS |
-INHIBIT_EXPLICIT_COMPLETIONS`; `find/find_all flags=2/4/1+2` — именовать. См.
+### 4.8 ✅ Магические числа → константы Sublime
+`flags=256` → `sublime.DRAW_NO_OUTLINE`; `2048+256+32` → `DRAW_SQUIGGLY_UNDERLINE | DRAW_NO_OUTLINE |
+DRAW_NO_FILL`; `return (…, 24)` → `INHIBIT_WORD_COMPLETIONS | INHIBIT_EXPLICIT_COMPLETIONS`;
+`find/find_all` в `vars_scanner.py` именованы (`LITERAL`/`IGNORECASE`). См.
 `_disdocs/hist_docs_for_review/sublime_api_workspace.md`.
 
-### 4.9 Логирование через жёсткий путь
-`function.log` и `QspWorkspaceHandlers._log` пишут в `D:\my\GameDev\...\qsp-workspace-log.log` —
-на чужой машине упадёт. **Фикс:** убрать хардкод, лог в ST-консоль (`print`) за настройкой.
+### 4.9 ✅ Логирование через жёсткий путь
+`function.log` и `QspWorkspaceHandlers._log` писали в жёсткий Windows-путь — на чужой машине падает.
+**Сделано:** `function.log` удалён (единственный вызов был мёртвый `QspWorkspace._log`, см. 3.3);
+`QspWorkspaceHandlers._log` пишет в консоль ST (`print('[QSP WS] ...')`) под тем же флагом
+`_log_it`. `QspWorkspace._log`/`save_temp_files` удалены (3.3).
 
 ---
 
@@ -239,7 +244,7 @@ INHIBIT_EXPLICIT_COMPLETIONS`; `find/find_all flags=2/4/1+2` — именова�
 6. `qwen ref(ws): live loc index by on_modified_async; completion reads ready index` (P1 2.8; R5/R7 этап 1)
    — сделан (250 мс — кандидат, замер при приёмке), ждёт приёмки/коммита автора
 7. `qwen ref(ws): rewrite locs_dupl; extract vars_scanner` (P3 4.6, 4.5; P1 2.3-2.4) — **сделан (вариант a: переменные не хранятся в WS), ждёт приёмки/коммита автора**; 3.2 снят удалением
-8. `qwen ref(ws): sublime constants for flags; drop hardcoded logging` (P3 4.8, 4.9)
+8. `qwen ref(ws): sublime constants for flags; drop hardcoded logging` (P3 4.8, 4.9) — **сделан, ждёт приёмки/коммита автора**; попутно сняты 3.3 (`save_temp_files`/`QspWorkspace._log`) и мёртвое поле `_all_ws` очищено из состояния (аргумент конструктора пока остаётся для совместимости вызова)
 9. (отдельно, объёмно) `qwen perf(ws): cache v2 in cache_path + incremental scan by mtime` (P3 4.7; R3, R4)
 
 Регресс сверять по `_examples/.tests` (есть `_base test_.py`, golden-тесты). Каждый шаг —

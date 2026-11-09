@@ -36,12 +36,10 @@ class WsJson(TypedDict):
 class QspWorkspace:
 	def __init__(self, all_workspaces:WorkspacesRegistry,
 		identity:Optional[str]=None, scope:Optional[List[Path]]=None) -> None:
-		self._all_ws = all_workspaces # dict of all workspaces
 		# Идентичность и область (R1/R2; шаг 4.B): заполняются accessor-ом for_window, которым
 		# создаётся WS; при несовпадении identity окна accessor пересобирает запись (Д11).
 		self._identity:Optional[str] = identity # дисковый ключ: identity_of(window) или None
 		self._scope:List[Path] = list(scope or []) # все папки окна на момент постройки (R2)
-		self.save_temp_files:bool = True
 		self.reset() # индекс пустой; identity/scope уже заданы выше
 
 	@property
@@ -54,10 +52,6 @@ class QspWorkspace:
 		""" Все папки окна на момент постройки WS (R2). На закрытии область берётся отсюда,
 			а не из window.folders(): к моменту закрытия оно уже могло сузиться (Д9). """
 		return list(self._scope)
-
-	def _log(self, string:str) -> None:
-		if self.save_temp_files:
-			qsp.log(string)
 
 	def reset(self) -> None:
 		""" Сброс индекса (4.3). identity, scope, ссылка на реестр и флаги режима не трогаются.

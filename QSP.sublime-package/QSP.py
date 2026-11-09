@@ -287,7 +287,7 @@ class QspLocalVarsHighlightCommand(sublime_plugin.TextCommand):
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		local_vars, _ = scan_vars(view)
 		view.run_command('qsp_hide_highlight')
-		view.add_regions('local_vars', local_vars, 'region.orangish', flags=256)
+		view.add_regions('local_vars', local_vars, 'region.orangish', flags=sublime.DRAW_NO_OUTLINE)
 
 class QspGlobalVarsHighlightCommand(sublime_plugin.TextCommand):
 	""" Find and high light global variables command """
@@ -297,7 +297,7 @@ class QspGlobalVarsHighlightCommand(sublime_plugin.TextCommand):
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		_, global_vars = scan_vars(view)
 		view.run_command('qsp_hide_highlight')
-		view.add_regions('global_vars', global_vars, 'region.yellowish', flags=256)
+		view.add_regions('global_vars', global_vars, 'region.yellowish', flags=sublime.DRAW_NO_OUTLINE)
 
 class QspHideHighlightCommand(sublime_plugin.TextCommand):
 
@@ -430,7 +430,7 @@ class QspInvalidInput(sublime_plugin.EventListener):
 			view.add_regions('wrong_location', [sr_locname],
 				scope="region.redish",
 				annotations=[content],
-				flags=2048+256+32)
+				flags=sublime.DRAW_SQUIGGLY_UNDERLINE | sublime.DRAW_NO_OUTLINE | sublime.DRAW_NO_FILL)
 			# sublime.message_dialog(content)
 		elif begin == end and sr_lblname is not None:
 			input_text = view.substr(sr_lblname)
@@ -442,7 +442,7 @@ class QspInvalidInput(sublime_plugin.EventListener):
 				view.add_regions('wrong_location', [sr_lblname],
 					scope="region.redish",
 					annotations=[content],
-					flags=2048+256+32)
+					flags=sublime.DRAW_SQUIGGLY_UNDERLINE | sublime.DRAW_NO_OUTLINE | sublime.DRAW_NO_FILL)
 
 class QspAutocomplete(sublime_plugin.EventListener):
 	""" Autocomplete and helptips. """
@@ -475,7 +475,7 @@ class QspAutocomplete(sublime_plugin.EventListener):
 						kind=sublime.KIND_FUNCTION
 					)
 					qsp_completions.append(d)
-			return (qsp_completions, 24)
+			return (qsp_completions, sublime.INHIBIT_WORD_COMPLETIONS | sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 		# if calable operator call location
 		elif view.match_selector(locations[0]-1, 'callable_locs.qsp'):
 			qsp_loc_names = qsp_ws.get_locs_names() # -> list of loc names
@@ -492,7 +492,7 @@ class QspAutocomplete(sublime_plugin.EventListener):
 						kind=sublime.KIND_FUNCTION
 					)
 					qsp_completions.append(d)
-			return (qsp_completions, 24)
+			return (qsp_completions, sublime.INHIBIT_WORD_COMPLETIONS | sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 		elif view.match_selector(locations[0]-1, 'label_to_jump.qsp'):
 			qsp_all_lbls = QspWorkspace.get_qsplbls(view)
 			scope_region = view.expand_to_scope(locations[0]-1, 'label_to_jump.qsp')
@@ -508,7 +508,7 @@ class QspAutocomplete(sublime_plugin.EventListener):
 						kind=sublime.KIND_MARKUP
 					)
 					qsp_completions.append(d)
-			return (qsp_completions, 24)
+			return (qsp_completions, sublime.INHIBIT_WORD_COMPLETIONS | sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 		else:
 			return None
 
@@ -560,9 +560,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 
 	def _log(self, string:str) -> None:
 		if self._log_it:
-			log_file = 'D:\\my\\GameDev\\QuestSoftPlayer\\projects\\JAD\\qsp-workspace-log.log'
-			with open(log_file, 'a', encoding='utf-8') as fp:
-				fp.write(string + '\n')
+			print('[QSP WS] ' + string)
 
 	# ---- RAM-реестр (шаг 4.B; R1/R5): ключ — window.id(), диск — пока по-старому ----
 

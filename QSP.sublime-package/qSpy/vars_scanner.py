@@ -23,9 +23,9 @@ def scan_vars(view: sublime.View) -> Tuple[List[sublime.Region], List[sublime.Re
 			],
 			"separator_region":
 			[
-				view.find('=', start_find, flags=1 + 2),
-				view.find('while', start_find, flags=1 + 2),
-				view.find('}', start_find, flags=1 + 2)
+				view.find('=', start_find, flags=sublime.LITERAL | sublime.IGNORECASE),
+				view.find('while', start_find, flags=sublime.LITERAL | sublime.IGNORECASE),
+				view.find('}', start_find, flags=sublime.LITERAL | sublime.IGNORECASE)
 			],
 			"separator_instr":
 			[]
@@ -47,7 +47,7 @@ def scan_vars(view: sublime.View) -> Tuple[List[sublime.Region], List[sublime.Re
 		""" Selector, """
 		return view.match_selector(y.begin(), x) and y.begin() < z
 
-	kw_regions = view.find_all('local', flags=2 + 4)
+	kw_regions = view.find_all('local', flags=sublime.IGNORECASE)
 	vars_regions: List[sublime.Region] = []
 
 	for r in kw_regions:
@@ -93,11 +93,11 @@ def scan_vars(view: sublime.View) -> Tuple[List[sublime.Region], List[sublime.Re
 	local_vars: List[sublime.Region] = []
 	# 2.3: без искусственного потолка итераций — естественная остановка по границам/неудачному find
 	while start_point < end_point:
-		find_var = view.find(user_variable, start_point, flags=2)
+		find_var = view.find(user_variable, start_point, flags=sublime.IGNORECASE)
 		if find_var.begin() == -1:
 			break
 		if find_var.begin() < edge_point:
-			for var in view.find_all(view.substr(find_var).replace('$', r'\$') + r'\b', flags=2):
+			for var in view.find_all(view.substr(find_var).replace('$', r'\$') + r'\b', flags=sublime.IGNORECASE):
 				if not find_var.begin() > var.begin() and view.match_selector(var.begin(), 'meta.user-variables.qsp'):
 					local_vars.append(var)
 		start_point = find_var.end() + 1
@@ -109,7 +109,7 @@ def scan_vars(view: sublime.View) -> Tuple[List[sublime.Region], List[sublime.Re
 			else:
 				break
 	global_vars: List[sublime.Region] = []
-	for var in view.find_all(user_variable, flags=2):
+	for var in view.find_all(user_variable, flags=sublime.IGNORECASE):
 		if not var in local_vars and view.match_selector(var.begin(), 'meta.user-variables.qsp'):
 			global_vars.append(var)
 	return local_vars, global_vars
