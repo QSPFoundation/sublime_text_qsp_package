@@ -14,6 +14,7 @@ from .qSpy.converter import (
 	QspSplitter, FinderSplitter
 )
 from .qSpy.workspace import LocHash, QspWorkspace, WorkspacesRegistry
+from .qSpy.vars_scanner import scan_vars
 from .qSpy import function as qsp
 from .qSpy.project import QspProject
 # Import constants
@@ -283,27 +284,20 @@ class QspLocalVarsHighlightCommand(sublime_plugin.TextCommand):
 
 	def run(self, edit:sublime.Edit) -> None:
 		view = self.view
-		# if not view: return
-		if QspWorkspace.view_syntax_is_wrong(view):	return None
-		window = view.window()
-		if not window: return
-		qsp_ws = QspWorkspaceHandlers.for_window(window)
-		qsp_ws.refresh_vars(view)
+		if QspWorkspace.view_syntax_is_wrong(view): return None
+		local_vars, _ = scan_vars(view)
 		view.run_command('qsp_hide_highlight')
-		view.add_regions('local_vars', qsp_ws.get_local_vars(), 'region.orangish', flags=256)
+		view.add_regions('local_vars', local_vars, 'region.orangish', flags=256)
 
 class QspGlobalVarsHighlightCommand(sublime_plugin.TextCommand):
 	""" Find and high light global variables command """
 
 	def run(self, edit:sublime.Edit) -> None:
 		view = self.view
-		if QspWorkspace.view_syntax_is_wrong(view):	return None
-		window = view.window()
-		if not window: return
-		qsp_ws = QspWorkspaceHandlers.for_window(window)
-		qsp_ws.refresh_vars(view)
+		if QspWorkspace.view_syntax_is_wrong(view): return None
+		_, global_vars = scan_vars(view)
 		view.run_command('qsp_hide_highlight')
-		view.add_regions('global_vars', qsp_ws.get_global_vars(), 'region.yellowish', flags=256)
+		view.add_regions('global_vars', global_vars, 'region.yellowish', flags=256)
 
 class QspHideHighlightCommand(sublime_plugin.TextCommand):
 
@@ -656,7 +650,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 	def on_load_async(self, view:sublime.View) -> None:
 		"""
 			Event of load file (view).
-			When file is loading, refresh vars and locs in ws.
+			When file is loading, refresh locs in ws (vars — on-demand через scan_vars, 2.4/4.5).
 		"""
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		window = view.window()
@@ -667,7 +661,6 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			return None
 		qsp_ws = self.for_window(window)
 		qsp_ws.refresh_qsplocs(view, current_qsps)
-		qsp_ws.refresh_vars(view)
 
 	def on_modified_async(self, view:sublime.View) -> None:
 		""" Живой индекс локаций (2.8, R5/И3): изменение текста сдвигает срок перескана этого вью.

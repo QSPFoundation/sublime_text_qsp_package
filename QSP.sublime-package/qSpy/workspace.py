@@ -2,7 +2,7 @@ import sublime			# type: ignore
 
 import os
 import json
-from typing import (Dict, Literal, NamedTuple, Optional, Set, TypedDict, Union, List, Tuple, cast)
+from typing import (Dict, NamedTuple, Optional, Set, TypedDict, Union, List, Tuple, cast)
 import hashlib
 
 from .converter import QspsFile
@@ -11,7 +11,6 @@ from . import const as const
 from .plugtypes import (AbsPath, LocName, Path, ViewId, HashMD5)
 from .converter import ViewRegion
 
-Point = int
 WorkspacesRegistry = Dict[int, 'QspWorkspace'] # RAM-реестр: window.id() -> WS (R1, шаг 4.B)
 LocPlace = Union[Path, ViewId]
 
@@ -33,11 +32,6 @@ class WsJson(TypedDict):
 		Path, List[Tuple[AbsPath, ViewRegion]]
 	]
 	files_paths: Dict[Path, HashMD5]
-
-class FindOverlapMb(TypedDict):
-	separator_name: List[Literal['assign', 'while', 'brace']]
-	separator_region: List[sublime.Region]
-	separator_instr: List[Point]
 
 class QspWorkspace:
 	def __init__(self, all_workspaces:WorkspacesRegistry,
@@ -66,15 +60,13 @@ class QspWorkspace:
 			qsp.log(string)
 
 	def reset(self) -> None:
-		""" Сброс индекса (4.3). identity, scope, ссылка на реестр и флаги режима не трогаются. """
+		""" Сброс индекса (4.3). identity, scope, ссылка на реестр и флаги режима не трогаются.
+			Регионы переменных в WS не хранятся (2.4, 4.5): сканируются on-demand функцией scan_vars. """
 		self._locs:List[LocRecord] = []
 		self._qsps_files:QspsFilesMb = {
 			'pathes': [],	# all files in project (abs pathes)
 			'hashes': []	# md5
 		}
-		self._local_vars:List[sublime.Region] = []
-		self._global_vars:List[sublime.Region] = []
-		self._global_vars_names:Set[str] = set()
 
 # --------------------------------- qsp-locations mb functions ---------------------------------
 
@@ -314,134 +306,9 @@ class QspWorkspace:
 			current_qsps = view.file_name()
 			if _conditional_is_true(current_qsps, window_folders):
 				self.refresh_qsplocs(view, current_qsps)
-				self.refresh_vars(view)
 		self.clear_old_qsplocs(windows_views) # clear locs from untitled views
 
 # ---------------------------------------- WS functions ----------------------------------------
-
-
-# ---------------------------------- variables mb function in WS ----------------------------------
-	def refresh_vars(self, view:sublime.View) -> None:
-		def _find_overlap_main(start_find:int):
-			maximal = view.size()+1
-			mini_data_base:FindOverlapMb = {
-				"separator_name": [
-					'assign',
-					'while',
-					'brace'
-				],
-				"separator_region":
-				[
-					view.find('=', start_find, flags=1+2),
-					view.find('while', start_find, flags=1+2),
-					view.find('}', start_find, flags=1+2)
-				],
-				"separator_instr":
-				[]
-			}
-			for i, _ in enumerate(mini_data_base['separator_name']):
-				region = mini_data_base['separator_region'][i]
-				mini_data_base['separator_instr'].append(
-					region.begin() if region.begin()!=-1 else maximal)
-			minimal = min(mini_data_base['separator_instr'])
-			if minimal != maximal:
-				i = mini_data_base['separator_instr'].index(minimal)
-				sprtr_type = mini_data_base['separator_name'][i]
-				sprtr_region = mini_data_base['separator_region'][i]
-				return sprtr_type, sprtr_region
-			else:
-				return None, None
-
-		def _safe_f(x:str, y:sublime.Region, z:Point) -> bool:
-			""" Selector, """
-			return view.match_selector(y.begin(),x) and y.begin()<z
-
-		kw_regions = view.find_all('local', flags=2+4)
-		vars_regions:List[sublime.Region] = []
-		
-		for r in kw_regions:
-			if not view.match_selector(r.begin(), 'keyword.declaration.variables.qsp'):
-				continue
-			# not use 'local' in string and comment scopes
-			start_region = r.end()
-			end_line = view.line(r).end()
-			end_region = end_line
-			start_find = start_region
-			# print(view.substr(sublime.Region(start_region, end_region)))
-			while start_find < end_line:
-				sprtr_type, sprtr_region = _find_overlap_main(start_find)
-				if sprtr_type == 'assign':
-					if _safe_f('keyword.operator.one-sign.qsp', cast(sublime.Region, sprtr_region), end_line):
-						end_region = sprtr_region.begin()-1
-						break
-					else:
-						start_find = sprtr_region.end()
-				elif sprtr_type == 'while':
-					if _safe_f('keyword.control.qsp', cast(sublime.Region, sprtr_region), end_line):
-						end_region = sprtr_region.begin()-1
-						break
-					else:
-						start_find = sprtr_region.end()
-				elif sprtr_type == 'brace':
-					if _safe_f('avs_brace_end', cast(sublime.Region, sprtr_region), end_line):
-						end_region = sprtr_region.begin()-1
-						break
-					else:
-						start_find = sprtr_region.end()
-				else:
-					end_region = end_line
-					break
-				# break
-			vars_regions.append(sublime.Region(start_region, end_region))
-			# print(view.substr(sublime.Region(start_region, end_region)))
-		if len(vars_regions) == 0: return None
-
-		user_variable = r'\$?[A-Za-zА-Яа-я_][\w\.]*'
-		# uv_regions = view.find_all(user_variable, 2)
-		# start = 0
-		# for uv in uv_regions[0:25]:
-		# 	f = view.find(user_variable, start, 2)
-		# 	start = f.end()
-		# 	print(view.substr(f))
-		# 	print(view.substr(uv))
-		start_point = vars_regions[0].begin()
-		edge_point = vars_regions[0].end()
-		end_point = vars_regions[-1].end()
-		i = 1
-		u = 0
-		local_vars:List[sublime.Region] = []
-		while start_point < end_point and not u > 999:
-			u += 1
-			find_var = view.find(user_variable, start_point, flags=2)
-			if find_var.begin()!=-1 and find_var.begin() < edge_point:
-				# print(start_point, view.substr(find_var), find_var)
-				for var in view.find_all(view.substr(find_var).replace('$', r'\$')+r'\b', flags=2):
-					if not find_var.begin() > var.begin() and view.match_selector(var.begin(), 'meta.user-variables.qsp'):
-						# print(var, view.substr(var))
-						local_vars.append(var)
-			start_point = find_var.end()+1
-			if start_point > edge_point:
-				if i < len(vars_regions):
-					start_point = vars_regions[i].begin()
-					edge_point = vars_regions[i].end()
-					i += 1
-				else:
-					break
-		self._local_vars = local_vars # list[sublime.Region]
-		global_vars:List[sublime.Region] = []
-		for var in view.find_all(user_variable, flags=2):
-			if not var in local_vars and view.match_selector(var.begin(), 'meta.user-variables.qsp'):
-				global_vars.append(var)
-				self._global_vars_names.add(view.substr(var))
-		self._global_vars = global_vars
-
-	def get_local_vars(self) -> List[sublime.Region]:
-		return self._local_vars
-
-	def get_global_vars(self) -> List[sublime.Region]:
-		return self._global_vars
-
-# ---------------------------------- variables mb function in WS ----------------------------------
 
 	@staticmethod
 	def get_hash(file_path:str) -> str:
