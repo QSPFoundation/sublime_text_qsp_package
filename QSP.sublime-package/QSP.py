@@ -13,7 +13,7 @@ from .qSpy.converter import (
 	QspToQspsBuiltinConv, QspsToQspBuiltinConv,
 	QspSplitter, FinderSplitter
 )
-from .qSpy.workspace import LocHash, QspWorkspace, WorkspacesRegistry
+from .qSpy.workspace import FilePlace, LocHash, QspWorkspace, ViewPlace, WorkspacesRegistry
 from .qSpy.vars_scanner import scan_vars
 from .qSpy import function as qsp
 from .qSpy.project import QspProject
@@ -323,24 +323,26 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 		popup_msg = ''
 		for i, qsp_loc in enumerate(qsp_locs): # int, tuple in list[qsp_loc]
 			qsp_loc_name, qsp_loc_region, qsp_loc_place = qsp_loc
-			if not isinstance(qsp_loc_place, int) and os.path.isfile(qsp_loc_place):
-				count = ''
-				with open(qsp_loc_place, 'r', encoding='utf-8') as file:
-					string = file.read()
-				match = re.search(
-					r'^\#\s*'+re.escape(qsp_loc_name)+'$',
-					string,
-					flags=re.MULTILINE)
-				if match is not None: count = ':'+str(len(string[:match.start()].split('\n')))
-				file_name = os.path.basename(qsp_loc_place)
-				popup_msg += f'{i+1}. {qsp_loc_name}. <a href="f:{qsp_loc_place}{count}">'
-				popup_msg += f'{file_name}{count}</a><br>'
-			elif not isinstance(qsp_loc_place, int) and not os.path.isfile(qsp_loc_place):
-				qsp_ws.del_all_locs_by_place(qsp_loc_place)
-				continue
+			if isinstance(qsp_loc_place, FilePlace):
+				file_path = qsp_loc_place.path
+				if os.path.isfile(file_path):
+					count = ''
+					with open(file_path, 'r', encoding='utf-8') as file:
+						string = file.read()
+					match = re.search(
+						r'^\#\s*'+re.escape(qsp_loc_name)+'$',
+						string,
+						flags=re.MULTILINE)
+					if match is not None: count = ':'+str(len(string[:match.start()].split('\n')))
+					file_name = os.path.basename(file_path)
+					popup_msg += f'{i+1}. {qsp_loc_name}. <a href="f:{file_path}{count}">'
+					popup_msg += f'{file_name}{count}</a><br>'
+				else:
+					qsp_ws.del_all_locs_by_place(qsp_loc_place)
+					continue
 			else:
 				for v in all_views:
-					if v.id() == qsp_loc_place:
+					if v.id() == qsp_loc_place.vid:
 						popup_msg += f'{i+1}. {qsp_loc_name}. <a href="v:{v.id()}?'
 						popup_msg += f'{qsp_loc_region[0]}">untitled ({v.id()})</a><br>'
 						break
@@ -417,11 +419,11 @@ class QspInvalidInput(sublime_plugin.EventListener):
 			current_qsps = view.file_name()
 			project_folders = window.folders()
 			if qsp.is_path_in_project_folders(current_qsps, project_folders):
-				qsps_file_path = current_qsps
+				qsps_file_place = FilePlace(cast(Path, current_qsps))
 			else:
-				qsps_file_path = view.id()
+				qsps_file_place = ViewPlace(view.id())
 			def _filting_qsplocs(qsp_loc:LocHash) -> bool:
-				return qsp_loc[1] != input_region or qsp_loc[2] != qsps_file_path
+				return qsp_loc[1] != input_region or qsp_loc[2] != qsps_file_place
 			all_locations = qsp_ws.get_locs()
 			loc_names = [loc[0] for loc in filter(_filting_qsplocs, all_locations)]
 			if not input_text in loc_names:
@@ -572,7 +574,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		identity = identity_of(window)
 		qsp_ws = QSP_WORKSPACES.get(wid)
 		if qsp_ws is None or qsp_ws.identity != identity:
-			qsp_ws = QSP_WORKSPACES[wid] = QspWorkspace(QSP_WORKSPACES, identity, list(window.folders()))
+			qsp_ws = QSP_WORKSPACES[wid] = QspWorkspace(identity, list(window.folders()))
 		return qsp_ws
 
 	@staticmethod
@@ -703,7 +705,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		folders = window.folders()
 		# close the untitled view
 		if current_qsps is None:
-			qsp_ws.del_all_locs_by_place(view.id())
+			qsp_ws.del_all_locs_by_place(ViewPlace(view.id()))
 		elif not qsp.is_path_in_project_folders(current_qsps, folders):
 			return None
 		if current_qsps in QSP_MARKERS['delete_files']:
@@ -770,14 +772,6 @@ QSP_MARKERS:ts.QspPluginCommandMarkers = {
 	'delete_files': [],
 	'save_log_file': False
 }
-
-class QspDeveloperTestCommand(sublime_plugin.WindowCommand):
-	""" Testing and proving datas """
-	def run(self):
-		qsp_ws = QspWorkspaceHandlers.peek_for_window(self.window)
-		if qsp_ws is None: return
-		print(qsp_ws.get_locs())
-		print(qsp_ws.get_qsps_files())
 
 def foo():
 

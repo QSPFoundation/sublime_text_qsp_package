@@ -12,16 +12,24 @@ from .plugtypes import (AbsPath, LocName, Path, ViewId, HashMD5)
 from .converter import ViewRegion
 
 WorkspacesRegistry = Dict[int, 'QspWorkspace'] # RAM-реестр: window.id() -> WS (R1, шаг 4.B)
-LocPlace = Union[Path, ViewId]
+
+class FilePlace(NamedTuple):
+	""" Место локации — файл на диске (2.6, tagged). """
+	path: Path
+
+class ViewPlace(NamedTuple):
+	""" Место локации — безымянный буфер (2.6, tagged), идентифицируется view.id(). """
+	vid: ViewId
+
+LocPlace = Union[FilePlace, ViewPlace]
 
 class LocRecord(NamedTuple):
-	""" Одна локация в индексе WS (4.2). NamedTuple, чтобы запись нельзя было
-		разъехать по полям и чтобы прежний кортежный API (распаковка, [0]/[1]/[2]) жил. """
+	""" Одна локация в индексе WS (2.6, 4.2). """
 	name: LocName
 	region: ViewRegion
 	place: LocPlace
 
-LocHash = LocRecord # алиас для потребителей (QSP.py); раньше это был Tuple тех же трёх полей
+LocHash = LocRecord # алиас для потребителей (QSP.py)
 
 class QspsFilesMb(TypedDict):
 	pathes:List[AbsPath]
@@ -34,8 +42,7 @@ class WsJson(TypedDict):
 	files_paths: Dict[Path, HashMD5]
 
 class QspWorkspace:
-	def __init__(self, all_workspaces:WorkspacesRegistry,
-		identity:Optional[str]=None, scope:Optional[List[Path]]=None) -> None:
+	def __init__(self, identity:Optional[str]=None, scope:Optional[List[Path]]=None) -> None:
 		# Идентичность и область (R1/R2; шаг 4.B): заполняются accessor-ом for_window, которым
 		# создаётся WS; при несовпадении identity окна accessor пересобирает запись (Д11).
 		self._identity:Optional[str] = identity # дисковый ключ: identity_of(window) или None
@@ -73,8 +80,9 @@ class QspWorkspace:
 	def replace_locs(self, old_path:str, new_path:str) -> None:
 		""" Change place of qsp-locations. """
 		if old_path == new_path: return None
+		new_place = FilePlace(new_path)
 		self._locs = [
-			loc._replace(place=new_path) if loc.place == old_path else loc
+			loc._replace(place=new_place) if loc.place == FilePlace(old_path) else loc
 			for loc in self._locs
 		]
 
@@ -96,7 +104,7 @@ class QspWorkspace:
 
 	def refresh_qsplocs(self, view:sublime.View, current_qsps:Optional[Path]) -> None:
 		"""	Refresh list of QSP-locations created on this view """
-		qsps_path = (view.id() if not current_qsps else current_qsps) # abs_path
+		qsps_path: LocPlace = FilePlace(current_qsps) if current_qsps else ViewPlace(view.id())
 		self.del_all_locs_by_place(qsps_path)
 		for s in view.symbol_regions():
 			if s.name.startswith('Локация: '): # TODO: привязка к тому, что символ начинается с Локация не очень удобна!
@@ -104,10 +112,10 @@ class QspWorkspace:
 
 	def clear_old_qsplocs(self, views:List[sublime.View]) -> None:
 		""" Delete locations from WS, if this views don't exist. """
-		view_ids = [v.id() for v in views]
+		view_ids = {v.id() for v in views}
 		self._locs = [
 			loc for loc in self._locs
-			if not (isinstance(loc.place, int) and loc.place not in view_ids)
+			if not (isinstance(loc.place, ViewPlace) and loc.place.vid not in view_ids)
 		]
 
 	def locs_dupl(self) -> List[LocRecord]:
@@ -150,13 +158,13 @@ class QspWorkspace:
 
 	def _reparse_locs(self, file_path:AbsPath) -> None:
 		""" (Re)read qsp-locations of an existing qsps-file into the locs mb. """
-		self.del_all_locs_by_place(file_path)
+		self.del_all_locs_by_place(FilePlace(file_path))
 		qsps_file = QspsFile()
 		qsps_file.read_from_file(file_path)
 		qsps_file.split_to_locations()
 		for loc_name, loc_region in qsps_file.get_loc_symbols():
 			# str, tuple(start, end)
-			self.add_loc(loc_name, loc_region, file_path)
+			self.add_loc(loc_name, loc_region, FilePlace(file_path))
 
 	def refresh_qsps_files(self, window_folders:List[AbsPath]) -> None:
 		"""
@@ -202,7 +210,7 @@ class QspWorkspace:
 		for path in removed_paths:
 			# files that disappeared and were not consumed by a rename -> deleted
 			if path in renamed_sources: continue
-			self.del_all_locs_by_place(path)
+			self.del_all_locs_by_place(FilePlace(path))
 			self.del_qsps_file(path)
 
 	def refresh_md5(self, qsps_file_path:str) -> None:
@@ -257,8 +265,9 @@ class QspWorkspace:
 			# TODO: должны оставаться только у файлов, хранящихся на других дисках!!!
 			# qsp_locs = list[qsp_loc];
 			# qsp_loc = list[name, list[start_point, end_point]]
+			file_place = FilePlace(place) # кэш хранит только файловые места (R4)
 			for name, region in qsp_locs:
-				self.add_loc(name, cast(ViewRegion, tuple(region)), place)
+				self.add_loc(name, cast(ViewRegion, tuple(region)), file_place)
 
 		for path, md5 in ws_json['files_paths'].items():
 			self._qsps_files['pathes'].append(path)
@@ -269,9 +278,10 @@ class QspWorkspace:
 		qsp_locs_out = qsp_ws_out['locations']
 		qsp_files_out = qsp_ws_out['files_paths']
 		for loc in self._locs:
-			if isinstance(loc.place, int): continue
-			if loc.place not in qsp_locs_out: qsp_locs_out[loc.place] = []
-			qsp_locs_out[loc.place].append((loc.name, loc.region))
+			if not isinstance(loc.place, FilePlace): continue
+			place_path = loc.place.path
+			if place_path not in qsp_locs_out: qsp_locs_out[place_path] = []
+			qsp_locs_out[place_path].append((loc.name, loc.region))
 		for i, qsps_file_path in enumerate(self._qsps_files['pathes']):
 			# TODO: здесь часть путей должна преобразовываться в относительные
 			# перед возвращением в виде json-структуры.
@@ -354,26 +364,6 @@ class QspWorkspace:
 			if exclude_inputting is None or s.region != exclude_inputting:
 				if s.name.startswith('Метка: '): qsp_labels.append(s.name[7:])
 		return qsp_labels
-
-	@staticmethod
-	def absing_path(project_folder:str, other_path:str) -> str: # -> abs other path
-		"""
-			get project_folder - abs path, other_path: rel or abs path
-			return abs path of otherpath
-		"""
-		if os.path.abspath(os.path.join(project_folder, other_path)) == project_folder:
-			return project_folder
-		elif os.path.abspath(other_path) == other_path:
-			return other_path
-		else:
-			return os.path.abspath(os.path.join(project_folder, other_path))
-
-	@staticmethod
-	def reling_path(project_folder:str, other_path:str) -> str: # rel other path, or abs if not possible
-		if os.path.commonprefix([project_folder, other_path]) != '':
-			return os.path.relpath(other_path, project_folder)
-		else:
-			return other_path
 
 	@staticmethod
 	def view_syntax_is_wrong(view:sublime.View) -> bool:

@@ -147,6 +147,32 @@ KIND_FUNCTION: int
 KIND_MARKUP: int
 HTML: int
 
+# Region drawing flags
+DRAW_EMPTY: int
+HIDE_ON_MINIMAP: int
+DRAW_EMPTY_AS_OVERWRITE: int
+DRAW_NO_FILL: int
+DRAW_NO_OUTLINE: int
+DRAW_SOLID_UNDERLINE: int
+DRAW_STIPPLED_UNDERLINE: int
+DRAW_SQUIGGLY_UNDERLINE: int
+HIDDEN: int
+PERSISTENT: int
+NO_UNDO: int
+
+# Completion flags
+INHIBIT_WORD_COMPLETIONS: int
+INHIBIT_EXPLICIT_COMPLETIONS: int
+INHIBIT_REORDER: int
+DYNAMIC_COMPLETIONS: int
+
+# find / find_all flags
+LITERAL: int
+IGNORECASE: int
+WHOLEWORD: int
+REVERSE: int
+WRAP: int
+
 # Functions
 def platform() -> Literal['linux', 'osx', 'windows']: ...
 def packages_path() -> str: ...
