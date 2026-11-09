@@ -1,97 +1,90 @@
-self.all_ws — ссылка на словарь со всеми рабочими областями
+# QspWorkspace — актуальная структура (stage 1, R7)
 
-# микробазы
+Техническая документация реализации `QspWorkspace` после рефакторинга stage 1 (локации, R7). Источник истины по плану/решениям — `handoff.md`, `refactor_plan.md`, `cache_architecture.md` в этой папке. Stage 2 (метки/глобальные переменные/прочие символы, автодополнение) — отдельная работа.
 
-## microbase of locations
+## Назначение
 
-Колонками микробазы являются списки. Таким образом запись о каждой локации — это запись в каждом списке под одинаковом индексе
+`QspWorkspace` (`QSP.sublime-package/qSpy/workspace.py`) хранит для окна ST **индекс QSP-локаций проекта**: имена, регионы, место (файл на диске или untitled-view), а также метаданные индексированных `.qsp-txt`/`.qsps` файлов для инкрементального обновления. Используется командами/листенерами плагина (`QSP.py`) для автодополнения имён локаций, поиска дубликатов локаций, подсветки невалидного ввода имени локации. Переменные не хранятся в WS и сканируются по требованию (`qSpy/vars_scanner.py: scan_vars`).
 
-self.loc_names - названия локаций по порядку
-self.loc_regions - регионы в которых размещаются названия локаций `список[start, end]` — номера символов
-self.loc_places — путь к файлу, где находится локация 
-self.loc_hashs — все вышеперечисленные данные в виде кортежа
+## Инварианты
 
-### add_loc
+- **И1.** Область индексации — все папки окна (`window.folders()`), рекурсивно; `*.qsp-txt`/`*.qsps`/`.qsps`. Плюс untitled `qsps`-буферы (только в RAM). За пределами папок окна индексации нет.
+- **И2.** Окну без `.sublime-project` (`identity == None`, Open Folder) WS живёт только в RAM, файловый кэш не ведётся.
+- **И3.** Живой индекс локаций во вью: правки текста отражаются через debounced `on_modified_async`.
+- **И4.** Несовпадение с диском (mtime/size/md5) → перескан затронутых файлов при `refresh_qsps_files`.
 
-Добавление локации в микробазу происходит записью во все списки соответствующих данных
+## Идентичность, scope, реестр (R1/R2, 4.1/4.4)
 
-### del_loc_by_index
+- **RAM-ключ реестра** — `window.id()` (целое на время жизни окна), не первая папка.
+- **`identity`** — `normcase(abspath(window.project_file_name()))` или `None` (нет `.sublime-project`). Используется как диск-идентичность/ключ кэша.
+- **`scope`** — список папок окна `window.folders()` (все папки, не `folders[0]`).
+- Реестр: `QSP_WORKSPACES: Dict[int, QspWorkspace]` в `qSpy.workspace`.
+- Доступ **только** через аксессоры модуля (identity-checked, Д11):
+  - `identity_of(window)`, `folders_of(window)`;
+  - `for_window(window) -> QspWorkspace` — вернуть/создать, при смене identity (например Save Project As) перепривязать (`rebind`) и сбросить индекс;
+  - `peek_for_window(window) -> Optional[QspWorkspace]` — вернуть существующий без создания, с проверкой identity (используется там, где создание/реактивация нежелательны, напр. debounced-колбэк, листенеры автодополнения/валидации).
+- Ручное создание `QspWorkspace(...)` вне аксессоров/реестра не используется.
 
-Удаление локации из микробазы по её числовому индексу. Т.е. удаление соответствующих записей из всех списков под одним индексом.
+## Модель данных (`qSpy/workspace.py`)
 
-### loc_hash_update
+```text
+LocName  = str
+ViewRegion = Tuple[int, int]         # (begin, end), границы view.symbol_regions()
+FilePlace(path: str) | ViewPlace(vid: int)  # место локации (NamedTuple)
+LocRecord(name, region, place)       # NamedTuple — запись микробазы локаций
+FileMeta = {mtime, size, md5}        # метаданные индексированного файла (R4)
+```
 
-Обновление, а фактически замена, хэша локации по её числовому индексу в микробазе.
+Состояние экземпляра:
+- `_identity: Optional[str]`, `_scope: List[Path]`, `_cache_path: Optional[str]` (цель v2-кэша);
+- `_locs: List[LocRecord]` — единственная микробаза локаций (вместо параллельных списков names/regions/places/hashes);
+- `_files: Dict[AbsPath, FileMeta]` — известные qsps-файлы и их метаданные;
+- `_built: bool` — индекс построен для текущей identity/scope (флаг принятого кэша/завершённого построения).
 
-## microbase of files_path
+### API локаций
+- `add_loc(name, region, place)` — добавить, если `(name, region, place)` ещё нет;
+- `replace_locs(old_path, new_path)` — перепривязать локации файла (переименование/ассоциация буфера);
+- `del_loc_by_index(i)`, `del_all_locs_by_place(place)`;
+- `get_locs()`, `get_locs_names()`;
+- `refresh_qsplocs(view, current_qsps)` — перескан локаций одного вью по `view.symbol_regions()` (символы `Локация: …`); место — `FilePlace(path)` или `ViewPlace(view.id())` для untitled;
+- `clear_old_qsplocs(views)` — удалить локации `ViewPlace`, чьих вью больше нет;
+- `locs_dupl() -> List[LocRecord]` — записи имён локаций, встречающихся >1 раза (плоский список по группам, порядок групп по первому появлению, 4.6).
 
-self.files_paths — все файлы проекта (относительные или абсолютные пути)
-self.files_hashs — хэшсуммы для всех файлов проекта
+### Файлы и инкрементальный индекс (R4, 4.7)
+- `refresh_qsps_files(window_folders)` — строит актуальный список qsps по `scope/folders`, мигрирует legacy-кэш (`_migrate_legacy_cache`), затем инкрементально сверяет с `_files`: `mtime+size` без изменений → пропуск; иначе md5 — совпал → обновить только метаданные, изменился → `_reparse_locs`; новые/удалённые с общим md5 трактуются как переименование (`replace_locs`). Ставит `_built = True`.
+- `_reparse_locs(file_path)` — перечитать локации файла (`QspsFile`) и заменить в `_locs`.
+- `get_qsps_files() -> List[(path, md5)]`, `qsps_file_is_exist`, `get_hash`.
+- `refresh_from_views(windows_views, window_folders)` — `refresh_qsplocs` по всем QSP-вью окна + `clear_old_qsplocs`.
 
-## microbase of variables
+## Персистентность и диск (R3/R4/R6)
 
-self.local_vars — список регионов, в которых прописаны названия локальных переменных `list[sublime.Region]`
-self.global_vars  — список регионов, в которых прописаны названия глобальных переменных  `list[sublime.Region]`
-self.global_vars_names — множество, в котором пишутся названия глобальных переменных `set[variables names]`
+Каталог кэша: `<sublime.cache_path()>/QSP/workspaces/`.
 
-# Mean
+- **Файл кэша v2** (`cache_file_path(identity) -> <base>-<hash8>.json`): `CacheJson {version=2, identity, scope, built, files{path: FileMeta}, locations{file_path: [[name,(begin,end)], ...]}}`. Записываются только локации из файлов (`FilePlace`); untitled/view-локации не персистятся. Атомарная запись `.tmp` + `os.replace` (`_flush_payload`), чистый IO (без `sublime.*`) — безопасно для `on_exit`.
+- `cache_payload()`, `save_to_cache()` (пишет только если есть identity, `_built` и cache_path; обновляет `index.json`), `load_from_cache()` (валидирует identity/scope и метаданные файлов на диске; несовпадение/ошибка → отклонён, индекс не принят). `rebind(identity, scope)` перепривязывает WS к окну без сброса индекса.
+- **Legacy** `<scope[0]>/qsp-project-workspace.json` (v1, у `folders[0]`): одноразовая миграция при первом `refresh_qsps_files` при отсутствии v2 — переименование в `.bak` (`_migrate_legacy_cache`).
+- **`index.json` v1** (неавторитативный, `index_file_path()`): `entries{identity: {file, scope, ts}}`, обновляется `update_index_entry/remove_index_entry` при save/flush/reset. Повреждённый/чужой формат игнорируется и пересоздаётся по факту записей.
+- **`prune_orphan_caches(force=False)`**: async на close (throttled `PRUNE_INTERVAL_DAYS=7`), удаляет сиротки `*.json` (кроме `index.json`), чей identity отсутствует в `sublime.project_history()` и на диске, при возрасте кэша > `ORPHAN_MAX_AGE_DAYS=90`.
+- **`flush_workspaces_on_exit(workspaces)`** / `QspWorkspace.flush_on_exit()`: флаш всех живых WS на выходе ST — только чистый IO (`_flush_payload` + `update_index_entry`), без `sublime.*` (Д20–Д22).
 
-Воркспейс нужен только для технических моментов, поэтому его расположение по умолчанию - это самая первая папка в проекте. Реализация воркспейса по идее не должна интересовать пользователей плагина, это понятно.
+## Интеграция с плагином (`QSP.py`)
 
-Варианты организации проектов:
+### Жизненный цикл (`QspWorkspaceHandlers`, `EventListener`)
 
-- Проект игры в отдельной папке (отдельный репозиторий):
-	- Диздоки, деплой, исходники
-	- СТ-проект
-	- воркспейс-кэш (собирается из всех папок ST-проекта)
-	- отдельные папки библиотек для учёта имён локаций и прочего!
-- Общий СТ-проект для нескольких модулей (библиотеки). Вариант 1: общая папка для библиотек:
-	- Общая папка - не репозиторий
-	- СТ-проект в общей папке
-	- воркспейс-кэш в общей папке
-	- каждая библиотека в своей подпапке (репозитории).
-	- Плюсы:
-		+ единый воркспейс на всё.
-		+ общую папку можно открыть в другом редакторе.
-	- Минусы:
+- `_refresh_ws(window)`: `for_window` → `load_from_cache()` → `refresh_qsps_files(folders)` → `refresh_from_views(views, folders)`; окно без папок пропускается.
+- `_flush_ws(window)`, `_cleanup_window(window)`: flush RAM → диск (`save_to_cache`, запись только при `_built`+identity) затем async `prune_orphan_caches`.
+- `_markers[wid]` — локальные маркеры окна (переименование/удаление файлов) вместо глобального реестра.
+- События: `on_init`/`on_load_project_async` → `_refresh_ws`; `on_load_async` → `refresh_qsplocs` сохранённого QSP-вью в папках окна; `on_post_save_async` → `refresh_qsplocs` + `refresh_qsps_files` + `refresh_from_views`; `on_modified_async` → debounced (`_LOCS_DEBOUNCE_MS = 250`, per-view поколение в `_locs_gen`) вызов `refresh_qsplocs` только этого вью (через `peek_for_window`, без создания WS; stale/закрытые гасит колбэк); `on_pre_close_project`/`on_pre_close_window` → flush+cleanup; `on_exit` → `flush_workspaces_on_exit(QSP_WORKSPACES)` (только IO).
 
-# Интеграция плагина с QspWorkspace (рантайм)
+### Команды и потребители
+- `QspShowWorkspaceCacheCommand` — открыть v2-кэш активного окна; при отсутствии identity сообщает, что кэш не ведётся (И2).
+- `QspResetWorkspaceCacheCommand` — `rebind`+сброс RAM, удаление файла кэша и записи index, перестроение как `_refresh_ws`, немедленный `save_to_cache` при наличии `.sublime-project`.
+- `QspShowDuplLocsCommand` — `peek_for_window` → `locs_dupl()`, вывод в output panel.
+- Автодополнение имён локаций (`QspAutocomplete`) — `peek_for_window` → `get_locs_names()` в scope `meta.start_location.qsp`.
+- Валидация ввода (`QspInvalidInput`) — сверка имени локации с `get_locs_names()`.
+- Подсветка переменных (`QspLocalVarsHighlightCommand`, `QspGlobalVarsHighlightCommand`) — on-demand `scan_vars(view)`, WS не используется.
 
-Здесь описано, как код плагина (`QSP.py`) фактически использует `QspWorkspace` (`qSpy/workspace.py`) в рантайме.
-
-## Глобальный реестр воркспейсов
-
-- Единственный источник истины — модульная переменная `QSP_WORKSPACES: WorkspacesPlaces = {}` (`QSP.py:714`).
-- Это `Dict[Path, QspWorkspace]`, где ключ — **первая папка окна** (`window.folders()[0]`), принятая за `project_folder`.
-- Один `QspWorkspace` живёт на одну корневую папку. Каждый экземпляр хранит ссылку на общий словарь `self._all_ws` (она нигде, кроме `extract_from_file` для само-сброса, не используется).
-- Рядом живёт `QSP_MARKERS` — словарь флагов, через которые `on_window_command` передаёт информация о переименовании/удалении файлов в асинхронные обработчики.
-
-## Источники воркспейса (три пути получения экземпляра)
-
-- `QspWorkspaceHandlers._get_qsp_ws(project_folder)` — вернуть существующий или создать **пустой** и положить в реестр.
-- `QspWorkspaceHandlers._extract_qsp_ws(project_folder)` — создать экземпляр и загрузить данные из `qsp-project-workspace.json`, **только если файл существует**; иначе возвращает `None`.
-- В `TextCommand`/`WindowCommand` (`QspLocalVarsHighlight`, `QspGlobalVarsHighlight`, `QspShowDuplLocs`, `QspInvalidInput`, `QspAutocomplete`, `QspDeveloperTestCommand`) получение воркспейса продублировано вручную (`QSP_WORKSPACES.get(...)` или `QspWorkspace(...)`), потому что до `_get_qsp_ws` из `EventListener` им доступа нет.
-
-## Персистентность
-
-- Файл `qsp-project-workspace.json` в корне `project_folder`. Структура `WsJson`: `{'locations': {path: [[name,[start,end]], ...]}, 'files_paths': {path: md5}}`.
-- Локации, принадлежащие безымянным вью (`place` — int id), в файл **не пишутся** (`get_json_struct` пропускает int-places).
-- Чтение — `extract_from_file`; запись — `save_to_file` (вызывается только при закрытии проекта). `save_to_file` выходит раньше времени, если `locations` пуст, поэтому «опустевший» воркспейс не перезаписывает старый файл.
-
-## Поток событий (жизненный цикл)
-
-1. Старт/перезагрузка плагина → `on_init(views)`; загрузка проекта → `on_load_project_async(window)`. Оба зовут `_refresh_ws(window)`:
-   - берёт `folders[0]`; `_extract_qsp_ws` (если есть json — грузим); далее `refresh_qsps_files(folders)` (полное сканирование папок + md5 +разбор новых qsps на локации) и `refresh_from_views(window.views(), folders)` (освежить открытые вью и почистить локации уже закрытых безымянных вью).
-2. Открытие файла во вью → `on_load_async(view)` → `refresh_qsplocs` + `refresh_vars` по этому вью.
-3. Сохранение → `on_post_save_async(view)` → `refresh_qsplocs`, обновление/добавление md5 файла, затем `refresh_from_views` по всем вью окна.
-4. Закрытие вью → `on_pre_close(view)` → для безымянного вью `del_all_locs_by_place(view.id())`; учитывает маркер `delete_files` (пересканировать папки) и «если файлов 0 — refresh_qsps_files».
-5. Переименование/создание файла → `on_window_command` ставит маркер `rename_path`; `on_associate_buffer_async` по маркеру делает `refresh_from_views` + `refresh_qsps_files` и сбрасывает маркер.
-6. Удаление файла → `on_window_command` складывает список файлов в маркер `delete_files`; реально пересканирование откладывается до `on_pre_close`.
-7. Закрытие проекта → `on_pre_close_project(window)` → `close_project()` (маркер) + `save_to_file(project_folder)`.
-
-## Модель данных и инварианты
-
-- `place` локации — это ЛИБО абсолютный путь к файлу (str), ЛИБО id безымянного вью (int). Смешение типов в одном поле — источник ветвлений почти в каждом методе.
-- Микробаза локаций — четыре **параллельных** списка (`names/regions/places/hashes`), где `hashes` хранит кортеж `(name, region, place)` и обязан синхронно обновляться с остальными (`add_loc`/`del_loc_by_index`/`loc_hash_update`). Индекс — «первичный ключ».
-- Дедупликация при добавлении проверяется линейным поиском `(name, region, place) in hashes`.
-- Переменные (`_local_vars`/`_global_vars`) — это `list[sublime.Region]`, пересчитываемые целиком на `refresh_vars(view)`; глобальные имена копятся в `_global_vars_names`.
+## Ограничения stage 1 / техдолг
+- В индексе и кэше только локации (R7). Метки/глобалы/прочие символы — stage 2.
+- Типизация `load_from_cache` без `Any` — техдолг.
+- `PRUNE_INTERVAL_DAYS`/`ORPHAN_MAX_AGE_DAYS` — константы, кандидаты в настройки.

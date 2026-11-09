@@ -12,7 +12,10 @@ from . import const as const
 from .plugtypes import (AbsPath, LocName, Path, ViewId, HashMD5)
 from .converter import ViewRegion
 
-WorkspacesRegistry = Dict[int, 'QspWorkspace'] # RAM-реестр: window.id() -> WS (R1, шаг 4.B)
+WorkspacesRegistry = Dict[int, 'QspWorkspace'] # RAM-реестр: window.id() -> WS (R1)
+
+# Единый RAM-реестр (4.1/4.4): доступ только через for_window/peek_for_window.
+QSP_WORKSPACES:WorkspacesRegistry = {}
 
 WS_VERSION = 2
 CACHE_DIR_NAME = os.path.join('QSP', 'workspaces') # <sublime.cache_path()>/QSP/workspaces/
@@ -77,6 +80,38 @@ def cache_file_path(identity: str) -> Optional[str]:
 	base = os.path.splitext(os.path.basename(identity))[0] or 'workspace'
 	hash8 = hashlib.sha1(identity.encode('utf-8')).hexdigest()[:8]
 	return os.path.join(cache_dir(), f'{base}-{hash8}.json')
+
+# ---------------------------------------- идентичность/реестр (4.1/4.4, R1) ----------------------------------------
+
+def identity_of(window:sublime.Window) -> Optional[str]:
+	""" Дисковый ключ идентичности проекта (R1): normcase(abspath(.sublime-project)).
+		Возвращает None, если окну не сопоставлен .sublime-project (окно «Open Folder», пустое). """
+	project_file = window.project_file_name()
+	if not project_file:
+		return None
+	return os.path.normcase(os.path.abspath(project_file))
+
+def folders_of(window:sublime.Window) -> List[Path]:
+	""" Папки окна (4.4, R2). Единая точка вместо разнобоя folders[0]/extract_variables. """
+	return list(window.folders())
+
+def for_window(window:sublime.Window) -> 'QspWorkspace':
+	""" Единый accessor с созданием (4.1/4.4, R1/R5): пишет WS его _identity/_scope; при
+		несовпадении identity пересобирает запись — window.id() переживает смену проекта (Д11). """
+	wid = window.id()
+	identity = identity_of(window)
+	qsp_ws = QSP_WORKSPACES.get(wid)
+	if qsp_ws is None or qsp_ws.identity != identity:
+		qsp_ws = QSP_WORKSPACES[wid] = QspWorkspace(identity, folders_of(window))
+	return qsp_ws
+
+def peek_for_window(window:sublime.Window) -> Optional['QspWorkspace']:
+	""" Accessor без создания (R5): None, если живого WS окна нет или он принадлежит другому
+		проекту — фантомных записей реестра не появляется (2.1). """
+	qsp_ws = QSP_WORKSPACES.get(window.id())
+	if qsp_ws is None or qsp_ws.identity != identity_of(window):
+		return None
+	return qsp_ws
 
 def _migrate_legacy_cache(scope: List[Path]) -> None:
 	""" R6: старый <scope[0]>/qsp-project-workspace.json -> .bak (без импорта). """
@@ -405,29 +440,6 @@ class QspWorkspace:
 			return ''
 		return md5_hash.hexdigest()
 
-	@staticmethod
-	def project_folder(view:sublime.View) -> Optional[Path]:
-		""" Get project folder from view. """
-		window = view.window()
-		if not window: return
-		folders = window.folders()
-		return (folders[0] if folders else None)
-
-	@staticmethod
-	def current_project_folder() -> Union[str, None]:
-		""" Get path of current project folder if exist. """
-		folders = sublime.active_window().folders()
-		return (folders[0] if folders else None)
-
-	@staticmethod
-	def get_main_pathes(view:sublime.View) -> Tuple[Union[Path, None], Union[Path, None]]:
-		""" Get current qsps-file path and project_folder path. """
-		current_qsps = view.file_name()
-		window = view.window()
-		if not window: return current_qsps, None
-		folders = window.folders()
-		project_folder = (folders[0] if folders else None)
-		return current_qsps, project_folder
 
 	@staticmethod
 	def get_qsplbls(view:sublime.View, exclude_inputting:Optional[sublime.Region]=None) -> List[str]: # View, Region -> list

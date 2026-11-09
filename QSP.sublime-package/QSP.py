@@ -14,8 +14,9 @@ from .qSpy.converter import (
 	QspSplitter, FinderSplitter
 )
 from .qSpy.workspace import (
-	FilePlace, LocHash, QspWorkspace, ViewPlace, WorkspacesRegistry,
-	cache_file_path, flush_workspaces_on_exit, prune_orphan_caches, remove_index_entry,
+	FilePlace, LocHash, QspWorkspace, ViewPlace,
+	QSP_WORKSPACES, cache_file_path, flush_workspaces_on_exit, for_window, identity_of,
+	peek_for_window, prune_orphan_caches, remove_index_entry,
 )
 from .qSpy.vars_scanner import scan_vars
 from .qSpy import function as qsp
@@ -320,7 +321,7 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 		if not window: return
 		all_views = window.views()
 		project_folders = window.folders()
-		qsp_ws = QspWorkspaceHandlers.for_window(window)
+		qsp_ws = for_window(window)
 		qsp_ws.refresh_from_views(all_views, project_folders)
 		qsp_locs = qsp_ws.locs_dupl()
 		popup_msg = ''
@@ -409,7 +410,7 @@ class QspInvalidInput(sublime_plugin.EventListener):
 		if QspWorkspace.view_syntax_is_wrong(view):	return None
 		window = view.window()
 		if not window: return None
-		qsp_ws = QspWorkspaceHandlers.peek_for_window(window)
+		qsp_ws = peek_for_window(window)
 		if qsp_ws is None: return None
 		begin = view.sel()[0].begin()
 		end = view.sel()[0].end()
@@ -464,7 +465,7 @@ class QspAutocomplete(sublime_plugin.EventListener):
 		if not window: return
 		project_folders = window.folders()
 		if not project_folders: return None # If project is not exist -> completions not work.
-		qsp_ws = QspWorkspaceHandlers.peek_for_window(window)
+		qsp_ws = peek_for_window(window)
 		if qsp_ws is None: return None
 		qsp_completions:List[sublime.CompletionItem] = []
 		# if syntshugarfunc
@@ -542,16 +543,6 @@ class QspTips(sublime_plugin.EventListener):
 			sublime.status_message(const.QSP_CMD_TIPS[word])
 
 
-def identity_of(window:sublime.Window) -> Optional[str]:
-	""" Дисковый ключ идентичности проекта (R1): normcase(abspath(.sublime-project)).
-		Возвращает None, если окну не сопоставлен .sublime-project (окно «Open Folder», пустое).
-		Шаг 4.B: accessor for_window/peek_for_window сверяют им запись окна при каждом обращении. """
-	# TODO: возможно стоит сделать приватным
-	project_file = window.project_file_name()
-	if not project_file:
-		return None
-	return os.path.normcase(os.path.abspath(project_file))
-
 
 class QspShowWorkspaceCacheCommand(sublime_plugin.WindowCommand):
 	""" Показать файл кэша воркспейса активного окна (R3). """
@@ -585,7 +576,7 @@ class QspResetWorkspaceCacheCommand(sublime_plugin.WindowCommand):
 			if identity:
 				remove_index_entry(identity)
 		# Пересборка RAM-индекса тем же путём, что восстановление окна (R1/R4/R5, Д11).
-		qsp_ws = QspWorkspaceHandlers.for_window(window)
+		qsp_ws = for_window(window)
 		qsp_ws.rebind(identity, list(window.folders()))
 		qsp_ws.reset()
 		folders = window.folders()
@@ -616,28 +607,6 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		if self._log_it:
 			print('[QSP WS] ' + string)
 
-	# ---- RAM-реестр (шаг 4.B; R1/R5): ключ — window.id(), диск — пока по-старому ----
-
-	@staticmethod
-	def for_window(window:sublime.Window) -> QspWorkspace:
-		""" Единый accessor с созданием: пишет WS его _identity/_scope; при несовпадении
-			identity пересобирает запись — window.id() переживает смену проекта в том же окне (Д11). """
-		wid = window.id()
-		identity = identity_of(window)
-		qsp_ws = QSP_WORKSPACES.get(wid)
-		if qsp_ws is None or qsp_ws.identity != identity:
-			qsp_ws = QSP_WORKSPACES[wid] = QspWorkspace(identity, list(window.folders()))
-		return qsp_ws
-
-	@staticmethod
-	def peek_for_window(window:sublime.Window) -> Optional[QspWorkspace]:
-		""" Accessor без создания (R5): None, если живого WS окна нет или он принадлежит
-			другому проекту — фантомных записей реестра не появляется (2.1). """
-		qsp_ws = QSP_WORKSPACES.get(window.id())
-		if qsp_ws is None or qsp_ws.identity != identity_of(window):
-			return None
-		return qsp_ws
-
 	def _refresh_ws(self, window:sublime.Window) -> None:
 		"""
 			Восстановить WS окна (R3/R4/R5, 4.7): загрузить v2-кэш из cache_path, затем
@@ -645,7 +614,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 		folders = window.folders()
 		if not folders: return None
-		qsp_ws = self.for_window(window)
+		qsp_ws = for_window(window)
 		qsp_ws.load_from_cache() # принимает кэш v2 (или остаётся пустым/не built)
 		qsp_ws.refresh_qsps_files(folders) # инкрементальный скан, выставляет built
 		qsp_ws.refresh_from_views(window.views(), folders)
@@ -673,7 +642,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			Флаш-точка (R5): сохраняем уже построенный WS окна в cache_path и убираем запись из реестра.
 			Никогда НЕ создаёт WS (2.1); путь берётся из identity WS (cache_path подготовлен заранее).
 		"""
-		qsp_ws = self.peek_for_window(window)
+		qsp_ws = peek_for_window(window)
 		if qsp_ws is None: return None # живого WS этого окна нет — сохранять нечего, фантом не плодим
 		qsp_ws.save_to_cache() # v2 в cache_path; None для без identity/unbuilt — безопасно (И2/R4)
 		QSP_WORKSPACES.pop(window.id(), None) # убрать запись, иначе реестр течёт при закрытии (Д10)
@@ -703,11 +672,12 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		window = view.window()
 		if not window: return
-		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
-		if None in (current_qsps, project_folder): return None
-		if not qsp.is_path_in_project_folders(current_qsps, window.folders()):
+		current_qsps = view.file_name()
+		folders = window.folders()
+		if not folders or not current_qsps: return None
+		if not qsp.is_path_in_project_folders(current_qsps, folders):
 			return None
-		qsp_ws = self.for_window(window)
+		qsp_ws = for_window(window)
 		qsp_ws.refresh_qsplocs(view, current_qsps)
 
 	def on_modified_async(self, view:sublime.View) -> None:
@@ -728,7 +698,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		window = view.window()
 		if not window: return None # вью/окно уже закрыто (Д15)
-		qsp_ws = self.peek_for_window(window)
+		qsp_ws = peek_for_window(window)
 		if qsp_ws is None: return None # accessor без создания (R5): WS этого окна ещё не строили
 		current_qsps = view.file_name()
 		# И1: именованный файл вне папок окна не индексируем; безымянный буфер — в RAM (place=view.id())
@@ -746,11 +716,11 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		window = view.window()
 		if not window: return
-		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
-		if project_folder is None: return None
-		qsp_ws = self.peek_for_window(window)
-		if qsp_ws is None: return None # проекта уже нет в реестре, либо WS ещё не строили
+		current_qsps = view.file_name()
 		folders = window.folders()
+		if not folders: return None
+		qsp_ws = peek_for_window(window)
+		if qsp_ws is None: return None # проекта уже нет в реестре, либо WS ещё не строили
 		# close the untitled view
 		if current_qsps is None:
 			qsp_ws.del_all_locs_by_place(ViewPlace(view.id()))
@@ -770,14 +740,15 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		window = view.window()
 		if not window: return None
-		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
-		if not project_folder or not current_qsps: return None
-		if not qsp.is_path_in_project_folders(current_qsps, window.folders()):
+		current_qsps = view.file_name()
+		folders = window.folders()
+		if not folders or not current_qsps: return None
+		if not qsp.is_path_in_project_folders(current_qsps, folders):
 			return None # И1 (2.7): файл вне папок окна не индексируем, как в on_load_async
-		qsp_ws = self.for_window(window)
+		qsp_ws = for_window(window)
 		qsp_ws.refresh_qsplocs(view, current_qsps) # TODO: возможно стоит удалить
 		qsp_ws.touch_file(current_qsps) # 4.7: перечитать локации файла и обновить mtime/size/md5
-		qsp_ws.refresh_from_views(window.views(), window.folders())
+		qsp_ws.refresh_from_views(window.views(), folders)
 
 	def on_exit(self) -> None:
 		""" Выход из ST (4050): флаш всех живых WS чистым IO без sublime-API (R5, Д20-Д22). """
@@ -793,7 +764,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			if not window: return
 			folders = window.folders()
 			if not folders: return # окно без папок (2.2): folders[0] недоступен
-			qsp_ws = self.for_window(window)
+			qsp_ws = for_window(window)
 			qsp_ws.refresh_from_views(window.views(), folders)
 			qsp_ws.refresh_qsps_files(folders)
 			QSP_MARKERS['rename_path'] = False
@@ -813,7 +784,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 
 
 # variables
-QSP_WORKSPACES:WorkspacesRegistry = {} # RAM-реестр: window.id() -> QspWorkspace (R1); доступ только через for_window/peek_for_window
+# RAM-реестр (4.1/4.4): QSP_WORKSPACES в qSpy.workspace; доступ только через for_window/peek_for_window.
 QSP_MARKERS:ts.QspPluginCommandMarkers = {
 	# editing files commands and events
 	'rename_path': False,
