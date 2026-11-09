@@ -470,7 +470,6 @@ class QspAutocomplete(sublime_plugin.EventListener):
 		qsp_completions:List[sublime.CompletionItem] = []
 		# if syntshugarfunc
 		if view.match_selector(locations[0]-1, 'variable.function.qsp'):
-			qsp_ws.refresh_from_views(window.views(), project_folders)
 			qsp_loc_names = qsp_ws.get_locs_names() # -> list of loc names
 			for loc_name in qsp_loc_names:
 				if prefix.lower() in loc_name.lower():
@@ -485,7 +484,6 @@ class QspAutocomplete(sublime_plugin.EventListener):
 			return (qsp_completions, 24)
 		# if calable operator call location
 		elif view.match_selector(locations[0]-1, 'callable_locs.qsp'):
-			qsp_ws.refresh_from_views(window.views(), project_folders)
 			qsp_loc_names = qsp_ws.get_locs_names() # -> list of loc names
 			scope_region = view.expand_to_scope(locations[0]-1, 'callable_locs.qsp')
 			if not scope_region: return
@@ -560,6 +558,11 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 	""" Manage a qsp-workspace in ram and in files """
 
 	_log_it = False
+
+	# Живой индекс локаций (2.8, R5/И3): дебаунс per-view счётчиком поколений таймеров.
+	# Задержка — кандидат, подтвердить замером при ручной приёмке (handoff §4.3).
+	_LOCS_DEBOUNCE_MS = 250
+	_locs_gen:Dict[int, int] = {} # view.id() -> поколение последнего таймера; чистится его же колбэком
 
 	def _log(self, string:str) -> None:
 		if self._log_it:
@@ -665,6 +668,32 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		qsp_ws = self.for_window(window)
 		qsp_ws.refresh_qsplocs(view, current_qsps)
 		qsp_ws.refresh_vars(view)
+
+	def on_modified_async(self, view:sublime.View) -> None:
+		""" Живой индекс локаций (2.8, R5/И3): изменение текста сдвигает срок перескана этого вью.
+			Дебаунс per-view счётчиком поколений: каждая правка планирует свой таймер, устаревшие
+			гасятся в колбэке (отмены таймеров API не даёт). Пересканируется только этот вью. """
+		if QspWorkspace.view_syntax_is_wrong(view): return None
+		vid = view.id()
+		gen = self._locs_gen.get(vid, 0) + 1
+		self._locs_gen[vid] = gen
+		sublime.set_timeout_async(lambda: self._refresh_qsplocs_debounced(view, gen), self._LOCS_DEBOUNCE_MS)
+
+	def _refresh_qsplocs_debounced(self, view:sublime.View, gen:int) -> None:
+		""" Перескан локаций одного вью тем же refresh_qsplocs, если правка была последней. """
+		vid = view.id()
+		if self._locs_gen.get(vid) != gen: return None # таймер устарел: есть более новая правка
+		self._locs_gen.pop(vid, None) # последний таймер вью: чистим, чтобы словарь не рос
+		if QspWorkspace.view_syntax_is_wrong(view): return None
+		window = view.window()
+		if not window: return None # вью/окно уже закрыто (Д15)
+		qsp_ws = self.peek_for_window(window)
+		if qsp_ws is None: return None # accessor без создания (R5): WS этого окна ещё не строили
+		current_qsps = view.file_name()
+		# И1: именованный файл вне папок окна не индексируем; безымянный буфер — в RAM (place=view.id())
+		if current_qsps is not None and not qsp.is_path_in_project_folders(current_qsps, window.folders()):
+			return None
+		qsp_ws.refresh_qsplocs(view, current_qsps)
 
 	def on_pre_close(self, view:sublime.View) -> None:
 		"""

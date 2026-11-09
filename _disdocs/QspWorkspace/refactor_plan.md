@@ -59,8 +59,9 @@
 
 ## P1 — белые дыры и хрупкость
 
-> Статус: **2.1, 2.2, 2.5, 2.7, 2.9 реализованы** (2.5 — шаг 4.D, ждёт коммита автора).
-> Переклейка реестра на `window.id()`/`identity` (шаг 4 A–C) сделана. 2.3, 2.4, 2.6, 2.8 ещё нет.
+> Статус: **2.1, 2.2, 2.5, 2.7, 2.8, 2.9, 2.10 реализованы** (2.8/2.10 — шаг 6, ждут приёмки/коммита
+> автора; остальные закоммичены). Переклейка реестра на `window.id()`/`identity` (шаг 4 A–D)
+> закоммичена. 2.3, 2.4, 2.6 ещё нет.
 
 ### 2.1 ✅ `on_pre_close_project` — фантомный WS и непоследовательный project_folder
 `QSP.py:609-616`. `project_folder` берётся из `extract_variables().get('folder','')` (пусто, если
@@ -114,7 +115,7 @@
 сохранение одиночного файла вне проекта заносит его локации и путь в WS проекта (нарушение И1 из
 `cache_architecture.md`). **Фикс:** та же проверка, что в `on_load_async`.
 
-### 2.8 `on_query_completions` пересканирует все вью на каждый запрос
+### 2.8 ✅ `on_query_completions` пересканирует все вью на каждый запрос
 `QSP.py:480, 495`: синхронный `refresh_from_views(...)` из UI-пути (блокирует попап и мутирует WS),
 компенсирующий отсутствие живого обновления. Плюс метки берутся только из текущего вью
 (`QSP.py:449, 512`), а глобальные переменные в подсказках отсутствуют вовсе. **Фикс (только
@@ -122,9 +123,25 @@
 уже реализованным `refresh_qsplocs`) + чтение готового индекса в completion (R5/R7). Метки и
 глобальные в подсказках — **этап 2**, здесь только зафиксированы.
 
+> Реализовано (коммит 6, ждёт приёмки): оба `refresh_from_views` из `on_query_completions` сняты;
+> живое обновление — `QspWorkspaceHandlers.on_modified_async` с per-view дебаунсом (счётчик
+> поколений `_locs_gen`, модульный `sublime.set_timeout_async`; `_LOCS_DEBOUNCE_MS = 250` —
+> кандидат до замера) → перескан одного вью через `refresh_qsplocs` с проверками синтаксиса,
+> живого окна, И1 и `peek_for_window` без создания. `QspInvalidInput` не тронут (черновая правка
+> с переносом подсветки в async отменена).
+
 ### 2.9 ✅ `QspProject._work_dir_init` — IndexError на окне без папок
 `project.py:81-83`: при пустом `point_file` берётся `self._window_folders[0]` без проверки (тот же
 класс ошибки, что в 2.2). **Фикс:** ранний выход/фолбэк при пустом списке папок.
+
+### 2.10 ✅ `is_path_in_project_folders` — не проверяла вложенность (Д27)
+`function.py:67-80`: `if os.path.commonpath([path, folder])` — непустой общий корень есть у любых
+путей одного диска, поэтому функция возвращала `True` для любого файла на том же диске. И1
+нарушалась во всех проверках (`on_load_async`, `on_post_save_async`/2.7, `refresh_from_views`,
+`on_modified_async`/2.8): чужой файл индексировался, а после закрытия его вью имя оставалось в
+индексе (`on_pre_close` снимает локации только безымянных буферов). **Фикс:** `normcase(abspath)`
+обоих путей и сравнение `commonpath == папка` (вложенность); `ValueError`-фолбэк для разных дисков
+сохранён. Обнаружено приёмкой 2.8 (сценарий И1 «чужой файл», 09.11); исправлено в том же срезе.
 
 ---
 
@@ -220,8 +237,9 @@ INHIBIT_EXPLICIT_COMPLETIONS`; `find/find_all flags=2/4/1+2` — именова�
 4. `qwen ref(ws): registry with identity_of(window) + window.id() keys, load + pop` (P3 4.1, 4.4; R1, R5)
    — A–D закоммичены автором
 5. `qwen ref(ws): SymbolRecord model, drop parallel lists + reset()` (P3 4.2, 4.3; R7)
-   — сделан как LocRecord (этап 1; SymbolRecord — этап 2), ждёт коммита автора
+   — сделан как LocRecord (этап 1; SymbolRecord — этап 2), закоммичен автором (`e640063`)
 6. `qwen ref(ws): live loc index by on_modified_async; completion reads ready index` (P1 2.8; R5/R7 этап 1)
+   — сделан (250 мс — кандидат, замер при приёмке), ждёт приёмки/коммита автора
 7. `qwen ref(ws): rewrite locs_dupl; extract vars_scanner` (P3 4.6, 4.5; P1 2.3-2.4)
 8. `qwen ref(ws): sublime constants for flags; drop hardcoded logging` (P3 4.8, 4.9)
 9. (отдельно, объёмно) `qwen perf(ws): cache v2 in cache_path + incremental scan by mtime` (P3 4.7; R3, R4)

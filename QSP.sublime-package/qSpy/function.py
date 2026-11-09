@@ -70,9 +70,13 @@ def is_path_in_project_folders(path:Optional[Path],
 		Prove that path is existed in project_folders.
 	"""
 	if path is None: return False
+	abs_path = os.path.normcase(os.path.abspath(path))
 	for folder in project_folders:
 		try:
-			if os.path.commonpath([os.path.abspath(path), os.path.abspath(folder)]):
+			abs_folder = os.path.normcase(os.path.abspath(folder))
+			# Д27: вложенность — это commonpath == сама папка. Просто непустой commonpath
+			# есть у любых путей одного диска (общий корень) — это не проверка вложенности.
+			if os.path.commonpath([abs_path, abs_folder]) == abs_folder:
 				return True
 		except ValueError as e: # если файлы лежат на разных дисках. TODO: убрать вывод в консоль
 			write_error_log(f'[203] Different pathes of folder and file. Error "{str(e)}". path: {path}. folder: {folder}.')
