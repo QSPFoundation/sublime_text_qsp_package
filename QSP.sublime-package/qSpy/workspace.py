@@ -125,21 +125,12 @@ class QspWorkspace:
 		]
 
 	def locs_dupl(self) -> List[LocRecord]:
-		""" Get qsp-locations with duplicate names. """
-		qsp_locs:List[LocRecord] = []
-		exclude:List[LocRecord] = []
-		names = [loc.name for loc in self._locs]
-		for i, loc in enumerate(self._locs):
-			if (loc not in exclude) and (loc.name in names[i+1:]):
-				qsp_locs.append(loc)
-				exclude.append(loc)
-				u = i + 1
-				while u < len(self._locs) and loc.name in names[u:]:
-					u = names.index(loc.name, u)
-					qsp_locs.append(self._locs[u])
-					exclude.append(self._locs[u])
-					u += 1
-		return qsp_locs
+		""" Имена локаций, встречающиеся более одного раза (4.6). Плоский список записей
+			по группам дубликатов, порядок групп — по первому появлению имени. """
+		groups:Dict[LocName, List[LocRecord]] = {}
+		for loc in self._locs:
+			groups.setdefault(loc.name, []).append(loc)
+		return [loc for recs in groups.values() if len(recs) >= 2 for loc in recs]
 
 # --------------------------------- qsp-locations mb functions ---------------------------------
 
