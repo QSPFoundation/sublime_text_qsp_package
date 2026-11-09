@@ -21,20 +21,24 @@
 ## 1. Где сейчас работа
 
 - **Ветка:** `ws_ref`. На момент создания ветки дерево было чистым — всё прежнее уже в `master`.
-- **Незакоммичено (ожидают приёмки/коммита автора):**
-  - коммит 6 — 2.8: живой индекс локаций + 2.10 (Д27). Осталось: повтор И1 «чужой файл» и замер
-    дебаунса (§4.3).
-  - коммит 7 (вариант a) — 4.6 `locs_dupl`; 4.5/2.3/2.4/3.2: `qSpy/vars_scanner.py:scan_vars`.
-  - коммит 8 — 4.8 константы ST + 4.9/3.3 логи без хардкода.
-  - **текущий срез (мелкий мёртвый код + 2.6 + typings)** — 2.6: `place` стал tagged
-    `FilePlace(path)|ViewPlace(vid)` (`isinstance(int/str)` убраны в WS/QSP); 3.1 удалены
-    `absing_path`/`reling_path`; 3.4 убран аргумент `all_workspaces` конструктора (accessor
-    передаёт `(identity, scope)`); 3.5 удалён `QspDeveloperTestCommand`; в `typings/sublime.pyi`
-    добавлены константы `DRAW_*`/`INHIBIT_*`/флаги find. Правки: `workspace.py`, `QSP.py`,
-    `typings/sublime.pyi`.
-- **Фаза:** сделан коммит 8; ждёт приёмки.
-- **Ближайшая цель:** мёртвый код 3.1/3.4/3.5 (и при желании 2.6) — или сразу коммит 9
-  (v2-кэш + mtime, R3/R4/4.7, объёмный).
+- **Приёмка коммитов 6–9 + мелкого среза (09.11.2026): пройдена, ошибок не найдено, быстродействие
+  повысилось. Коммиты сделаны.**
+  - коммит 6 — 2.8 живой индекс локаций + 2.10 (Д27): `bac61db`. Дебаунс `_LOCS_DEBOUNCE_MS=250`
+    — кандидат, замер/подбор при необходимости.
+  - коммит 7 — 4.6 `locs_dupl`; 4.5/2.3/2.4/3.2 `vars_scanner.scan_vars` (вариант a): `cc971eb`,
+    `72dd1aa`.
+  - коммит 8 — 4.8 константы ST + 4.9/3.3 логи без хардкода: `068dc52`.
+  - коммит 8+ — 2.6 `FilePlace|ViewPlace`, 3.1/3.4/3.5, typings ST: `f0aba62`.
+  - коммит 9 — 4.7 v2-кэш + mtime (R3/R4/R5): `61c35f4`. Кэш
+    `<sublime.cache_path()>/QSP/workspaces/<base>-<hash8>.json` (`version:2, identity, scope, built,
+    files{mtime,size,md5}, locations`), инкрементальный скан, `touch_file` на save, флаш на
+    `on_pre_close_project`/`on_exit()` (чистый IO), Open Folder без файла (И2), legacy → `.bak` (R6).
+- **Фаза:** 2.1–2.10, 3.1–3.5, 4.2/4.3, 4.5–4.9, 4.7 закрыты и закоммичены.
+- **Техдолг (не блокирует):** `workspace.load_from_cache` типизирован через `Any`/касты — перевести
+  на `object`/`RawJson`+сужение без `Any`; в `vars_scanner.py` 6 pre-existing
+  `reportOptionalMemberAccess` по `sprtr_region`.
+- **Ближайшая цель (follow-up R3):** `index.json`, команды `qsp_show_workspace_cache` /
+  `qsp_reset_workspace_cache`; затем хвост 4.1/4.4. Замер/подбор дебаунса 2.8 — по необходимости.
 
 ## 2. Каркас решений (детали и причины — по ссылкам)
 
@@ -42,7 +46,7 @@
 |---|---|---|
 | R1 | Два ключа вместо одного: RAM-реестр — `window.id()`, диск — `identity = normcase(abspath(project_file_name()))` | принято |
 | R2 | Область индекса — **все** папки окна; ничего за их пределами | принято |
-| R3 | Кэш в `<sublime.cache_path()>/QSP/workspaces/<base>-<hash8>.json` + `index.json`; окна «Open Folder» на диск не пишут | направлено (имена файлов подтвердить) |
+| R3 | Кэш в `<sublime.cache_path()>/QSP/workspaces/<base>-<hash8>.json`; окна «Open Folder» на диск не пишут | **реализовано (коммит 9, имена подтверждены)**; follow-up: `index.json`, команды `qsp_show_workspace_cache`/`qsp_reset_workspace_cache` |
 | R4 | Схема `version: 2`: `identity`, `scope`, `built`, `files{mtime,size,md5}`, `locations` | принято (только локации) |
 | R5 | Живой индекс в RAM; файл — только закрытие/восстановление; pop + accessor без создания | **принято** (Э7–Э9, Э5 подтверждены, см. §2.3 арх. документа) |
 | R6 | Старый `qsp-project-workspace.json` → `.bak`, без импорта; сиротки по возрасту через `project_history()` | принято |
@@ -83,10 +87,9 @@
    `on_pre_close_window`; безпроектное окно — только window), **Э8** (RAM-WS безпроектного окна
    строится лениво по первому `.qsps`), **Э5-подтверждение** (`plugin_unloaded` приходит при выгрузке
    пакета, но не на выход).
-2. **СНЯТО — Flush на выходе из ST:** `on_exit()` доходит и пишет файл чистым Python-IO (Д20/Д21);
-   вариант (1) «смириться и пересобирать по mtime» больше **не** нужен как единственный — R5 принят
-   с точками `on_pre_close_project` (основная) + `on_exit` (резерв, по подготовленным payload+path);
-   таймер-автосейв (вариант 3) не вводим. Можно писать `save/load` (§6).
+2. **СНЯТО — Flush на выходе из ST (реализовано, коммит 9):** `on_pre_close_project` пишет v2 в
+   `cache_path` (атомарно, по подготовленному `_cache_path`); `on_exit()` (4050) флашит все живые WS
+   чистым Python-IO без sublime-API (Д20–Д22). Таймер-автосейв не вводим.
 3. **Дебаунс `on_modified_async` — механизм реализован (коммит 6), задержка ждёт замера.**
    Механизм: per-view счётчик поколений (`QspWorkspaceHandlers._locs_gen`), каждая правка планирует
    свой таймер через `sublime.set_timeout_async`, устаревшие гасятся в колбэке; словарь чистится

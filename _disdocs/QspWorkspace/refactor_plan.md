@@ -17,7 +17,7 @@
 
 ## P0 — логические ошибки, портящие данные
 
-> Статус: 1.1–1.5 реализованы в `workspace.py` / `QSP.py` (ждут приёмки/коммита вручную).
+> Статус: 1.1–1.5 реализованы в `workspace.py` / `QSP.py` (**приёмка 09.11 пройдена, закоммичены**).
 
 ### 1.1 ✅ `replace_locs` — бесконечный цикл при `new_path == old_path`
 `workspace.py:79-84`. Пока `old_path in places` заменяем на `new_path`; если пути равны — условие
@@ -59,9 +59,12 @@
 
 ## P1 — белые дыры и хрупкость
 
-> Статус: **2.1–2.10, 3.1–3.5, 4.2/4.3, 4.5/4.6, 4.8/4.9 реализованы** (2.8 — коммит 6; 2.3/2.4/4.5/3.2
-> — коммит 7, вариант a; 3.3/4.8/4.9 — коммит 8; 2.6/3.1/3.4/3.5 — текущий срез). Переклейка реестра
-> (шаг 4 A–D) закоммичена. Остались 4.7 (mtime, R3/R4, объёмно) и общая зачистка 4.1/4.4.
+> Статус: **2.1–2.10, 3.1–3.5, 4.2/4.3, 4.5–4.9, 4.7 (R3/R4/R5) — приёмка 09.11 пройдена, ошибок
+> не найдено, быстродействие повысилось, коммиты 6–9 + срез сделаны** (6: `bac61db`, 7:
+> `cc971eb`/`72dd1aa`, 8: `068dc52`, 8+: `f0aba62`, 9: `61c35f4`). Переклейка реестра (4.A–D, коммит
+> 5) закоммичена ранее. Остались: follow-up R3 (`index.json`, `qsp_show/reset_workspace_cache`),
+> хвост 4.1/4.4, замер дебаунса 2.8; техдолг — типизация `load_from_cache` без `Any`,
+> pre-existing `reportOptionalMemberAccess` в `vars_scanner`.
 
 ### 2.1 ✅ `on_pre_close_project` — фантомный WS и непоследовательный project_folder
 `QSP.py:609-616`. `project_folder` берётся из `extract_variables().get('folder','')` (пусто, если
@@ -214,10 +217,16 @@ on-demand; команды хайлайта (`QspLocalVarsHighlightCommand`/`QspG
 (`defaultdict/setdefault`), возврат групп с `len>=2` в плоском списке; порядок групп — по первому
 появлению. Сигнатура и форма результата прежние.
 
-### 4.7 Инкрементальное сканирование
-Старт проходит `get_hash` по каждому файлу и синхронно `QspsFile.read+split` по каждому новому
-(todo.md:54, history.md «Не исправлено»). **Фикс:** кэш по mtime, не перехэшировать неизменённое;
-разбор новых файлов — не в горячем пути `on_init` целиком (объём — отдельно, по возможности).
+### 4.7 ✅ Инкрементальное сканирование (R3/R4, коммит 9)
+Старт: `load_from_cache()` читает v2 из `<cache_path>/QSP/workspaces/<base>-<hash8>.json` (по
+`identity`), отбрасывая мёртвые пути (Д6) и принимая только `version==2, built==true`; иначе —
+полный перескан. `refresh_qsps_files()` сверяет файлы по **mtime+size** (не хэширует неизменённое):
+при смене содержимого — перепарс локаций и новый md5, при том же md5 — только метаданные;
+добавление/удаление/переименование (общий md5) сохраняют локации где возможно. Запись: атомарный
+флаш v2 (`payload` + `_cache_path` подготовлен заранее) на `on_pre_close_project` и на `on_exit()`
+(чистый IO без sublime-API, R5/Д20–Д22). Окно без `.sublime-project` на диск не пишет (И2). Старый
+`<scope[0]>/qsp-project-workspace.json` уводится в `.bak` (R6). **Не сделано (follow-up R3):**
+`index.json`, команды `qsp_show_workspace_cache`/`qsp_reset_workspace_cache`.
 
 ### 4.8 ✅ Магические числа → константы Sublime
 `flags=256` → `sublime.DRAW_NO_OUTLINE`; `2048+256+32` → `DRAW_SQUIGGLY_UNDERLINE | DRAW_NO_OUTLINE |
@@ -242,11 +251,11 @@ DRAW_NO_FILL`; `return (…, 24)` → `INHIBIT_WORD_COMPLETIONS | INHIBIT_EXPLIC
    — A–D закоммичены автором
 5. `qwen ref(ws): SymbolRecord model, drop parallel lists + reset()` (P3 4.2, 4.3; R7)
    — сделан как LocRecord (этап 1; SymbolRecord — этап 2), закоммичен автором (`e640063`)
-6. `qwen ref(ws): live loc index by on_modified_async; completion reads ready index` (P1 2.8; R5/R7 этап 1)
-   — сделан (250 мс — кандидат, замер при приёмке), ждёт приёмки/коммита автора
-7. `qwen ref(ws): rewrite locs_dupl; extract vars_scanner` (P3 4.6, 4.5; P1 2.3-2.4) — **сделан (вариант a: переменные не хранятся в WS), ждёт приёмки/коммита автора**; 3.2 снят удалением
-8. `qwen ref(ws): sublime constants for flags; drop hardcoded logging` (P3 4.8, 4.9) — **сделан, ждёт приёмки/коммита автора**; попутно сняты 3.3 (`save_temp_files`/`QspWorkspace._log`) и мёртвое поле `_all_ws` очищено из состояния (аргумент конструктора пока остаётся для совместимости вызова)
-9. (отдельно, объёмно) `qwen perf(ws): cache v2 in cache_path + incremental scan by mtime` (P3 4.7; R3, R4)
+6. ✅ `qwen ref(ws): live loc index by on_modified_async; completion reads ready index` (P1 2.8; R5/R7 этап 1) — `bac61db` (250 мс — кандидат, замер при необходимости), приёмка пройдена
+7. ✅ `qwen ref(ws): rewrite locs_dupl; extract vars_scanner` (P3 4.6, 4.5; P1 2.3-2.4) — `cc971eb`/`72dd1aa` (вариант a), приёмка пройдена; 3.2 снят удалением
+8. ✅ `qwen ref(ws): sublime constants for flags; drop hardcoded logging` (P3 4.8, 4.9) — `068dc52`, приёмка пройдена; попутно 3.3
+9. ✅ `qwen perf(ws): cache v2 in cache_path + incremental scan by mtime` (P3 4.7; R3, R4) — `61c35f4`, приёмка пройдена (ошибок не найдено, быстродействие выше)
+10. (follow-up) R3: `index.json`, `qsp_show_workspace_cache`/`qsp_reset_workspace_cache`; хвост 4.1/4.4
 
 Регресс сверять по `_examples/.tests` (есть `_base test_.py`, golden-тесты). Каждый шаг —
 небольшой, приемка/коммит вручную.

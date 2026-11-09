@@ -2,7 +2,8 @@ import sublime			# type: ignore
 
 import os
 import json
-from typing import (Dict, NamedTuple, Optional, Set, TypedDict, Union, List, Tuple, cast)
+import time
+from typing import (Any, Dict, NamedTuple, Optional, Set, TypedDict, Union, List, Tuple, cast)
 import hashlib
 
 from .converter import QspsFile
@@ -12,6 +13,10 @@ from .plugtypes import (AbsPath, LocName, Path, ViewId, HashMD5)
 from .converter import ViewRegion
 
 WorkspacesRegistry = Dict[int, 'QspWorkspace'] # RAM-реестр: window.id() -> WS (R1, шаг 4.B)
+
+WS_VERSION = 2
+CACHE_DIR_NAME = os.path.join('QSP', 'workspaces') # <sublime.cache_path()>/QSP/workspaces/
+LEGACY_WS_FILE = 'qsp-project-workspace.json'       # старый кэш в корне проекта (R6 -> .bak)
 
 class FilePlace(NamedTuple):
 	""" Место локации — файл на диске (2.6, tagged). """
@@ -31,15 +36,57 @@ class LocRecord(NamedTuple):
 
 LocHash = LocRecord # алиас для потребителей (QSP.py)
 
-class QspsFilesMb(TypedDict):
-	pathes:List[AbsPath]
-	hashes:List[HashMD5]
+class FileMeta(TypedDict):
+	mtime: float
+	size: int
+	md5: HashMD5
 
-class WsJson(TypedDict):
-	locations: Dict[
-		Path, List[Tuple[AbsPath, ViewRegion]]
-	]
-	files_paths: Dict[Path, HashMD5]
+class CacheJson(TypedDict, total=False):
+	""" Схема кэша v2 на диске (R3/R4). """
+	version: int
+	identity: str
+	scope: List[Path]
+	built: bool
+	files: Dict[Path, FileMeta]
+	locations: Dict[Path, List[Tuple[LocName, ViewRegion]]]
+
+# ---- вспомогательные функции кэша (R3/R4) ----
+
+def cache_dir() -> str:
+	""" Каталог кэша воркспейсов: <sublime.cache_path()>/QSP/workspaces (R3). """
+	return os.path.join(sublime.cache_path(), CACHE_DIR_NAME)
+
+def cache_file_path(identity: str) -> Optional[str]:
+	""" Путь к файлу кэша по identity: <base>-<hash8>.json (R3). None при пустом identity. """
+	if not identity:
+		return None
+	base = os.path.splitext(os.path.basename(identity))[0] or 'workspace'
+	hash8 = hashlib.sha1(identity.encode('utf-8')).hexdigest()[:8]
+	return os.path.join(cache_dir(), f'{base}-{hash8}.json')
+
+def _migrate_legacy_cache(scope: List[Path]) -> None:
+	""" R6: старый <scope[0]>/qsp-project-workspace.json -> .bak (без импорта). """
+	if not scope:
+		return
+	legacy = os.path.join(scope[0], LEGACY_WS_FILE)
+	if not os.path.isfile(legacy):
+		return
+	bak = legacy + '.bak'
+	try:
+		if not os.path.exists(bak):
+			os.rename(legacy, bak)
+		else:
+			os.rename(legacy, legacy + f'.{int(time.time())}.bak')
+	except OSError as e:
+		qsp.write_error_log(f'[WS] Can not rename legacy cache "{legacy}": {e}')
+
+def _stat_file(path: str) -> Optional[Tuple[float, int]]:
+	""" (mtime, size) или None, если файл недоступен. """
+	try:
+		st = os.stat(path)
+		return (st.st_mtime, st.st_size)
+	except OSError:
+		return None
 
 class QspWorkspace:
 	def __init__(self, identity:Optional[str]=None, scope:Optional[List[Path]]=None) -> None:
@@ -47,7 +94,10 @@ class QspWorkspace:
 		# создаётся WS; при несовпадении identity окна accessor пересобирает запись (Д11).
 		self._identity:Optional[str] = identity # дисковый ключ: identity_of(window) или None
 		self._scope:List[Path] = list(scope or []) # все папки окна на момент постройки (R2)
-		self.reset() # индекс пустой; identity/scope уже заданы выше
+		self._built:bool = False # R4: WS реально построен для identity (пустой пишем только если True)
+		# Целевой путь кэша готовим заранее (R5, Д20-Д22): on_exit пишет чистым IO без sublime-API.
+		self._cache_path:Optional[str] = cache_file_path(identity) if identity else None
+		self.reset() # индекс пустой; identity/scope/built/cache_path уже заданы
 
 	@property
 	def identity(self) -> Optional[str]:
@@ -64,10 +114,8 @@ class QspWorkspace:
 		""" Сброс индекса (4.3). identity, scope, ссылка на реестр и флаги режима не трогаются.
 			Регионы переменных в WS не хранятся (2.4, 4.5): сканируются on-demand функцией scan_vars. """
 		self._locs:List[LocRecord] = []
-		self._qsps_files:QspsFilesMb = {
-			'pathes': [],	# all files in project (abs pathes)
-			'hashes': []	# md5
-		}
+		self._files:Dict[AbsPath, FileMeta] = {} # R4/4.7: path -> {mtime,size,md5}
+		self._built = False
 
 # --------------------------------- qsp-locations mb functions ---------------------------------
 
@@ -126,178 +174,181 @@ class QspWorkspace:
 			groups.setdefault(loc.name, []).append(loc)
 		return [loc for recs in groups.values() if len(recs) >= 2 for loc in recs]
 
-# --------------------------------- qsp-locations mb functions ---------------------------------
+# ----------------------------------- файлы и кэш (R3/R4, 4.7) -----------------------------------
 
-# ----------------------------------- qsps-files mb functions -----------------------------------
+	def get_qsps_files(self) -> List[Tuple[AbsPath, HashMD5]]:
+		""" Совместимый снимок (path, md5) по известным файлам. """
+		return [(p, m['md5']) for p, m in self._files.items()]
 
-	def get_qsps_files(self) -> List[Tuple[AbsPath, HashMD5]]: # list of tuples!
-		"""
-			Return list of qsps-files from WS:
-			list[tuples(path_of_file:str, hash_of_file:str)]
-		"""
-		# all pathes in list of pathes are abs. Dont need use absing func.
-		return list(zip(self._qsps_files['pathes'], self._qsps_files['hashes']))
+	def qsps_file_is_exist(self, qsps_file_path: str) -> bool:
+		return qsps_file_path in self._files
 
-	def add_qsps_file(self, qsps_file_path:str, qsps_file_hash:str) -> None:
-		""" Add qsps-file to WS """
-		self._qsps_files['pathes'].append(qsps_file_path)
-		self._qsps_files['hashes'].append(qsps_file_hash)
+	def qsps_files_number(self) -> int:
+		return len(self._files)
 
-	def del_qsps_file(self, path:str) -> None:
-		if path in self._qsps_files['pathes']:
-			i = self._qsps_files['pathes'].index(path)
-			del self._qsps_files['pathes'][i]
-			del self._qsps_files['hashes'][i]
+	def touch_file(self, qsps_file_path: AbsPath) -> None:
+		""" Файл изменён (save): перечитать локации и обновить метаданные (mtime/size/md5).
+			Если файла ещё нет в индексе — добавить. """
+		stat = _stat_file(qsps_file_path)
+		if stat is None:
+			return
+		self._reparse_locs(qsps_file_path)
+		self._files[qsps_file_path] = {'mtime': stat[0], 'size': stat[1], 'md5': self.get_hash(qsps_file_path)}
 
-	def replace_qsps_file(self, old_path:str, new_path:str) -> None:
-		""" When replace the phisically file, or rename it,
-		this func replace old file by new in WS. """
-		if old_path in self._qsps_files['pathes']:
-			i = self._qsps_files['pathes'].index(old_path)
-			self._qsps_files['pathes'][i] = new_path
-
-	def _reparse_locs(self, file_path:AbsPath) -> None:
+	def _reparse_locs(self, file_path: AbsPath) -> None:
 		""" (Re)read qsp-locations of an existing qsps-file into the locs mb. """
 		self.del_all_locs_by_place(FilePlace(file_path))
 		qsps_file = QspsFile()
 		qsps_file.read_from_file(file_path)
 		qsps_file.split_to_locations()
 		for loc_name, loc_region in qsps_file.get_loc_symbols():
-			# str, tuple(start, end)
 			self.add_loc(loc_name, loc_region, FilePlace(file_path))
 
-	def refresh_qsps_files(self, window_folders:List[AbsPath]) -> None:
-		"""
-			Refresh files microbase in ws. File identity is the path, content identity
-			is the md5 hash - they are compared separately so that a rename is detected
-			only when the path actually changed and the content hash was kept.
-		"""
-		old:Dict[AbsPath, HashMD5] = dict(self.get_qsps_files()) # {abs_path: hash}
-		new:Dict[AbsPath, HashMD5] = {}
+	def refresh_qsps_files(self, window_folders: List[AbsPath]) -> None:
+		""" Инкрементальное обновление индекса файлов (4.7, R4).
+			mtime+size не изменились -> файл не трогаем. Иначе сверяем md5: сменился ->
+			перепарсить локации, тот же md5 -> только обновить метаданные. Новые/исчезнувшие
+			обрабатываем с учётом переименования (общий md5). """
+		_migrate_legacy_cache(self._scope)
+		old_meta = dict(self._files)
+		# текущее состояние файлов на диске: path -> (mtime, size)
+		current: Dict[AbsPath, Tuple[float, int]] = {}
 		for folder in window_folders:
 			for f in qsp.get_files_list(folder):
-				new[f] = self.get_hash(f)
+				st = _stat_file(f)
+				if st is not None:
+					current[f] = st
 
-		modified = [path for path in set(old) & set(new) if old[path] != new[path]]
-		removed_paths:Set[AbsPath] = set(old) - set(new) # deletion / rename source
-		added_paths:Set[AbsPath] = set(new) - set(old)   # new file / rename target
+		old_paths = set(old_meta)
+		cur_paths = set(current)
+		removed_paths: Set[AbsPath] = old_paths - cur_paths
+		added_paths: Set[AbsPath] = cur_paths - old_paths
+		common_paths = old_paths & cur_paths
 
-		# index disappearing files by their content hash to detect renames
-		removed_by_hash:Dict[HashMD5, List[AbsPath]] = {}
+		# индекс исчезнувших по md5 для детекта переименований
+		removed_by_hash: Dict[HashMD5, List[AbsPath]] = {}
 		for path in removed_paths:
-			removed_by_hash.setdefault(old[path], []).append(path)
+			removed_by_hash.setdefault(old_meta[path]['md5'], []).append(path)
 
-		renamed_sources:Set[AbsPath] = set()
+		renamed_sources: Set[AbsPath] = set()
 		for path in added_paths:
-			md5 = new[path]
+			mtime, size = current[path]
+			md5 = self.get_hash(path)
 			candidates = removed_by_hash.get(md5)
 			if candidates:
-				# content moved from old path to a new path -> rename, keep locations
+				# содержимое переехало -> переименование, локации сохраняем
 				old_path = candidates.pop()
 				renamed_sources.add(old_path)
 				self.replace_locs(old_path, path)
-				self.replace_qsps_file(old_path, path)
+				self._files[path] = {'mtime': mtime, 'size': size, 'md5': md5}
+				self._files.pop(old_path, None)
 			else:
-				# brand-new file -> parse its locations
 				self._reparse_locs(path)
-				self.add_qsps_file(path, md5)
+				self._files[path] = {'mtime': mtime, 'size': size, 'md5': md5}
 
-		for path in modified:
-			# existing file, content changed -> re-derive its locations and refresh hash
-			self._reparse_locs(path)
-			self.refresh_md5(path)
+		for path in common_paths:
+			mtime, size = current[path]
+			meta = old_meta[path]
+			if meta['mtime'] == mtime and meta['size'] == size:
+				continue # не менялся — не хэшируем и не парсим (4.7)
+			md5 = self.get_hash(path)
+			if md5 != meta['md5']:
+				self._reparse_locs(path)
+			# md5 тот же -> локации актуальны, обновляем только метаданные
+			self._files[path] = {'mtime': mtime, 'size': size, 'md5': md5}
 
 		for path in removed_paths:
-			# files that disappeared and were not consumed by a rename -> deleted
-			if path in renamed_sources: continue
+			if path in renamed_sources:
+				continue
 			self.del_all_locs_by_place(FilePlace(path))
-			self.del_qsps_file(path)
+			self._files.pop(path, None)
 
-	def refresh_md5(self, qsps_file_path:str) -> None:
-		""" Refreshing md5 of file by path """
-		if qsps_file_path in self._qsps_files['pathes']:
-			i = self._qsps_files['pathes'].index(qsps_file_path)
-			self._qsps_files['hashes'][i] = self.get_hash(qsps_file_path)
+		# к этому моменту индекс построен/обновлён для identity
+		self._built = True
 
-	def qsps_file_is_exist(self, qsps_file_path:str) -> bool:
-		""" Prove qsps-file is exist in WS """
-		return qsps_file_path in self._qsps_files['pathes']
+# ----------------------------------- файлы и кэш (R3/R4, 4.7) -----------------------------------
 
-	def qsps_files_number(self) -> int:
-		"""
-			Return number of qsps-files in WS.
-		"""
-		return len(self._qsps_files['pathes'])
+# ---------------------------------------- WS: диск (R3/R4/R6) ----------------------------------------
 
-# ----------------------------------- qsps-files mb functions -----------------------------------
-
-# ---------------------------------------- WS functions ----------------------------------------
-
-	def extract_from_file(self, ws_file_path:str) -> None:
-		"""
-			Extract data from file to WS. ws_file_path - is abspath to ws-json file.
-			WARNING!!! All proves of project folder and exist of
-			ws-file must be done prev call this function!
-			Broken or structurally wrong file is tolerated: WS data is kept as is.
-		"""
+	def load_from_cache(self) -> bool:
+		""" Загрузка v2-кэша из cache_path по identity (R3/R4). Возвращает True, если
+			кэш принят (индекс восстановлен). Иначе WS остаётся пустым/без built — вызывающий
+			должен выполнить полное сканирование (И4). Старый кэш уводится в .bak (R6). """
+		_migrate_legacy_cache(self._scope)
+		if not self._identity:
+			return False
+		path = cache_file_path(self._identity)
+		if not path or not os.path.isfile(path):
+			return False
 		try:
-			with open(ws_file_path, "r", encoding="utf-8") as fp:
-				ws_json = json.load(fp) # get json struct ws from file
-		except (OSError, ValueError) as e: # ValueError covers json.JSONDecodeError
-			qsp.write_error_log(f'[WS] Can not read workspace file "{ws_file_path}": {e}')
-			return
+			with open(path, 'r', encoding='utf-8') as fp:
+				data = cast(Dict[str, Any], json.load(fp))
+		except (OSError, ValueError) as e:
+			qsp.write_error_log(f'[WS] Can not read cache "{path}": {e}')
+			return False
+		if data.get('version') != WS_VERSION:
+			return False # несовпадение версии -> пересборка (R4/R6)
+		if not data.get('built'):
+			return False # кэш не отмечен построенным — не доверяем (R4)
 
-		if not isinstance(ws_json, dict) or 'locations' not in ws_json \
-										or 'files_paths' not in ws_json:
-			qsp.write_error_log(f'[WS] Workspace file has wrong structure: "{ws_file_path}"')
-			return
-
-		# structure validated -> treat the loaded data as the known WsJson shape
-		ws_json = cast(WsJson, ws_json)
-
-		if self._locs:
-			self.reset() # identity/scope живут на объекте, __init__ на себе больше не зовём (4.3)
-			qsp.write_error_log(const.QSP_ERROR_MSG.WS_ALREADY_INIT)
-
-		for place, qsp_locs in ws_json['locations'].items():
-			# ws_json['locations'] = dict[abs_path: qsp_locs]
-			# TODO: на данном этапе разработки все пути в файле абсолютные, однако абсолютные пути
-			# TODO: должны оставаться только у файлов, хранящихся на других дисках!!!
-			# qsp_locs = list[qsp_loc];
-			# qsp_loc = list[name, list[start_point, end_point]]
-			file_place = FilePlace(place) # кэш хранит только файловые места (R4)
-			for name, region in qsp_locs:
+		self.reset() # identity/scope не трогаем
+		# файлы: берём только существующие на диске (Д6: мёртвые пути отбрасываем)
+		raw_files = cast(Dict[Any, Any], data.get('files') or {})
+		for fpath, meta in raw_files.items():
+			if not isinstance(fpath, str) or not isinstance(meta, dict) or not os.path.isfile(fpath):
+				continue
+			meta_d = cast(Dict[str, Any], meta)
+			md5 = meta_d.get('md5')
+			if not isinstance(md5, str):
+				continue
+			mtime = meta_d.get('mtime')
+			size = meta_d.get('size')
+			self._files[fpath] = {
+				'mtime': float(mtime) if isinstance(mtime, (int, float)) else 0.0,
+				'size': int(size) if isinstance(size, (int, float)) else 0,
+				'md5': md5,
+			}
+		# локации: только для файлов, которые реально есть
+		raw_locs = cast(Dict[Any, Any], data.get('locations') or {})
+		for place, qsp_locs in raw_locs.items():
+			if not isinstance(place, str) or place not in self._files or not isinstance(qsp_locs, list):
+				continue
+			file_place = FilePlace(place)
+			for item in cast(List[Any], qsp_locs):
+				if not isinstance(item, (list, tuple)):
+					continue
+				item_s = cast(List[Any], item)
+				if len(item_s) != 2:
+					continue
+				name, region = item_s[0], item_s[1]
+				if not isinstance(name, str):
+					continue
 				self.add_loc(name, cast(ViewRegion, tuple(region)), file_place)
+		self._built = True
+		return True
 
-		for path, md5 in ws_json['files_paths'].items():
-			self._qsps_files['pathes'].append(path)
-			self._qsps_files['hashes'].append(md5)
-
-	def get_json_struct(self) -> WsJson:
-		qsp_ws_out:WsJson = { 'locations': {}, 'files_paths': {} }
-		qsp_locs_out = qsp_ws_out['locations']
-		qsp_files_out = qsp_ws_out['files_paths']
+	def cache_payload(self) -> CacheJson:
+		""" Готовый к записи payload v2 (R4). Содержит только файловые места. """
+		locations: Dict[Path, List[Tuple[LocName, ViewRegion]]] = {}
 		for loc in self._locs:
-			if not isinstance(loc.place, FilePlace): continue
-			place_path = loc.place.path
-			if place_path not in qsp_locs_out: qsp_locs_out[place_path] = []
-			qsp_locs_out[place_path].append((loc.name, loc.region))
-		for i, qsps_file_path in enumerate(self._qsps_files['pathes']):
-			# TODO: здесь часть путей должна преобразовываться в относительные
-			# перед возвращением в виде json-структуры.
-			qsp_files_out[qsps_file_path] = self._qsps_files['hashes'][i]
-		return qsp_ws_out
+			if not isinstance(loc.place, FilePlace):
+				continue
+			locations.setdefault(loc.place.path, []).append((loc.name, loc.region))
+		return cast(CacheJson, {
+			'version': WS_VERSION,
+			'identity': self._identity or '',
+			'scope': list(self._scope),
+			'built': bool(self._built),
+			'files': {p: dict(m) for p, m in self._files.items()},
+			'locations': locations,
+		})
 
-	def save_to_file(self, project_folder:Path='') -> None:
-		"""
-			Save WS in json-file. project_folder must be exist!
-		"""
-		if not project_folder: return
-		json_ws = self.get_json_struct()
-		if not 'locations' in json_ws or not json_ws['locations']: return
-		ws_json_path = os.path.join(project_folder, 'qsp-project-workspace.json')
-		with open(ws_json_path, "w", encoding="utf-8") as ws_fp:
-			json.dump(json_ws, ws_fp, indent=4, ensure_ascii=False)
+	def save_to_cache(self) -> Optional[str]:
+		""" Записать кэш v2 в cache_path (R3/R5). Возвращает путь или None, если писать нечего
+			(нет identity/окно без .sublime-project, либо WS не построен — R4). """
+		if not self._identity or not self._built or not self._cache_path:
+			return None
+		return _flush_payload(self._cache_path, self.cache_payload())
 
 	def refresh_from_views(self, windows_views:List[sublime.View], window_folders:List[AbsPath]) -> None:
 		"""
@@ -370,3 +421,29 @@ class QspWorkspace:
 		""" Prove QSP syntax! """
 		vs = view.syntax()
 		return (True if (vs is None or vs.name != 'QSP') else False)
+
+	def flush_on_exit(self) -> None:
+		""" Флаш этого WS на выходе (R5, Д20-Д22): чистый IO, без sublime-API. """
+		if self._cache_path and self._identity and self._built:
+			_flush_payload(self._cache_path, self.cache_payload())
+
+def _flush_payload(path: str, payload: CacheJson) -> Optional[str]:
+	""" Атомарная запись payload (чистый IO, без sublime-API — безопасно вызывать из on_exit, Д21). """
+	try:
+		os.makedirs(os.path.dirname(path), exist_ok=True)
+		tmp = path + '.tmp'
+		with open(tmp, 'w', encoding='utf-8') as fp:
+			json.dump(payload, fp, indent=4, ensure_ascii=False)
+		os.replace(tmp, path)
+	except OSError as e:
+		qsp.write_error_log(f'[WS] Can not write cache "{path}": {e}')
+		return None
+	return path
+
+def flush_workspaces_on_exit(workspaces: WorkspacesRegistry) -> None:
+	""" Флаш всех живых WS на выходе из ST (R5, Д20-Д22). Только чистый Python-IO, без
+		sublime-API (в on_exit оно недоступно). """
+	for qsp_ws in list(workspaces.values()):
+		qsp_ws.flush_on_exit()
+
+# ---------------------------------------- WS: диск (R3/R4/R6) ----------------------------------------

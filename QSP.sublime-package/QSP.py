@@ -13,7 +13,7 @@ from .qSpy.converter import (
 	QspToQspsBuiltinConv, QspsToQspBuiltinConv,
 	QspSplitter, FinderSplitter
 )
-from .qSpy.workspace import FilePlace, LocHash, QspWorkspace, ViewPlace, WorkspacesRegistry
+from .qSpy.workspace import FilePlace, LocHash, QspWorkspace, ViewPlace, WorkspacesRegistry, flush_workspaces_on_exit
 from .qSpy.vars_scanner import scan_vars
 from .qSpy import function as qsp
 from .qSpy.project import QspProject
@@ -588,18 +588,14 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 
 	def _refresh_ws(self, window:sublime.Window) -> None:
 		"""
-			Refresh workspace if it is exist.
-			Чтение диска — пока по-старому: qsp-project-workspace.json в folders[0] (v2-кэш — шаг 9).
+			Восстановить WS окна (R3/R4/R5, 4.7): загрузить v2-кэш из cache_path, затем
+			инкрементально сверить с диском по mtime/size/md5. Окно без папок пропускаем.
 		"""
 		folders = window.folders()
-		if not folders or len(folders) == 0: return None
-		ws_file_path = os.path.join(folders[0], 'qsp-project-workspace.json')
-		if not os.path.isfile(ws_file_path): return None
-		self._log('try extract WS from file')
+		if not folders: return None
 		qsp_ws = self.for_window(window)
-		qsp_ws.extract_from_file(ws_file_path)
-		self._log('extract fin!')
-		qsp_ws.refresh_qsps_files(folders)
+		qsp_ws.load_from_cache() # принимает кэш v2 (или остаётся пустым/не built)
+		qsp_ws.refresh_qsps_files(folders) # инкрементальный скан, выставляет built
 		qsp_ws.refresh_from_views(window.views(), folders)
 
 # ----------------------------------- Events of work with project -----------------------------------
@@ -618,18 +614,16 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 		self._refresh_ws(window)
 
-	# When project is closing, save the already-built WS to file and drop it from the registry.
+	# When project is closing, save the already-built WS to cache and drop it from the registry.
 	def on_pre_close_project(self, window:sublime.Window) -> None:
 		"""
 			Event of pre closing the project.
-			Флаш-точка (R5): сохраняем уже построенный WS окна и убираем запись из реестра.
-			Никогда НЕ создаёт WS (2.1); путь записи — из области WS, а не из окна: к моменту
-			закрытия window.folders() уже мог сузиться (Д9), а peek сверяет identity (Д11).
+			Флаш-точка (R5): сохраняем уже построенный WS окна в cache_path и убираем запись из реестра.
+			Никогда НЕ создаёт WS (2.1); путь берётся из identity WS (cache_path подготовлен заранее).
 		"""
 		qsp_ws = self.peek_for_window(window)
 		if qsp_ws is None: return None # живого WS этого окна нет — сохранять нечего, фантом не плодим
-		if not qsp_ws.scope: return None # на постройке папок не было — писать некуда
-		qsp_ws.save_to_file(qsp_ws.scope[0]) # запись диска пока по-старому (v2-кэш — шаг 9)
+		qsp_ws.save_to_cache() # v2 в cache_path; None для без identity/unbuilt — безопасно (И2/R4)
 		QSP_WORKSPACES.pop(window.id(), None) # убрать запись, иначе реестр течёт при закрытии (Д10)
 
 	# Closing the whole window. Для окна с проектом запись уже снята on_pre_close_project,
@@ -723,17 +717,17 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		window = view.window()
 		if not window: return None
 		current_qsps, project_folder = QspWorkspace.get_main_pathes(view)
-		if not project_folder: return None
-		if not current_qsps: return None
+		if not project_folder or not current_qsps: return None
 		if not qsp.is_path_in_project_folders(current_qsps, window.folders()):
 			return None # И1 (2.7): файл вне папок окна не индексируем, как в on_load_async
 		qsp_ws = self.for_window(window)
 		qsp_ws.refresh_qsplocs(view, current_qsps) # TODO: возможно стоит удалить
-		if qsp_ws.qsps_file_is_exist(current_qsps):
-			qsp_ws.refresh_md5(current_qsps)
-		else:
-			qsp_ws.add_qsps_file(current_qsps, qsp_ws.get_hash(current_qsps))
+		qsp_ws.touch_file(current_qsps) # 4.7: перечитать локации файла и обновить mtime/size/md5
 		qsp_ws.refresh_from_views(window.views(), window.folders())
+
+	def on_exit(self) -> None:
+		""" Выход из ST (4050): флаш всех живых WS чистым IO без sublime-API (R5, Д20-Д22). """
+		flush_workspaces_on_exit(QSP_WORKSPACES)
 
 	def on_associate_buffer_async(self, buffer:sublime.Buffer) -> None:
 		"""
