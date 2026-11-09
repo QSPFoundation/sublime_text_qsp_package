@@ -62,10 +62,11 @@
 > Статус: **2.1–2.10, 3.1–3.5, 4.2/4.3, 4.5–4.9, 4.7 (R3/R4/R5) — приёмка 09.11 пройдена, ошибок
 > не найдено, быстродействие повысилось, коммиты 6–9 + срез сделаны** (6: `bac61db`, 7:
 > `cc971eb`/`72dd1aa`, 8: `068dc52`, 8+: `f0aba62`, 9: `61c35f4`). Переклейка реестра (4.A–D, коммит
-> 5) закоммичена ранее. **Follow-up R3, шаг 1 (команды `qsp_show/reset_workspace_cache` +
-> `Default.sublime-commands`) — реализован в дереве, коммит/приёмка за автором.** Остались:
-> follow-up R3 шаг 2 (`index.json`, чистка сироток R6), хвост 4.1/4.4, замер дебаунса 2.8; техдолг —
-> типизация `load_from_cache` без `Any`, pre-existing `reportOptionalMemberAccess` в `vars_scanner`.
+> 5) закоммичена ранее. **Follow-up R3/R6 шаги 1–2 (команды show/reset + `Default.sublime-commands`,
+> `index.json` v1, чистка сироток) — реализованы в дереве, коммит/приёмка за автором.** Остались:
+> хвост 4.1/4.4, замер дебаунса 2.8; техдолг — типизация `load_from_cache` без `Any`, pre-existing
+> `reportOptionalMemberAccess` в `vars_scanner`; `PRUNE_INTERVAL_DAYS`/`ORPHAN_MAX_AGE_DAYS` — кандидаты
+> в настройки.
 
 ### 2.1 ✅ `on_pre_close_project` — фантомный WS и непоследовательный project_folder
 `QSP.py:609-616`. `project_folder` берётся из `extract_variables().get('folder','')` (пусто, если
@@ -226,10 +227,12 @@ on-demand; команды хайлайта (`QspLocalVarsHighlightCommand`/`QspG
 добавление/удаление/переименование (общий md5) сохраняют локации где возможно. Запись: атомарный
 флаш v2 (`payload` + `_cache_path` подготовлен заранее) на `on_pre_close_project` и на `on_exit()`
 (чистый IO без sublime-API, R5/Д20–Д22). Окно без `.sublime-project` на диск не пишет (И2). Старый
-`<scope[0]>/qsp-project-workspace.json` уводится в `.bak` (R6). **Follow-up R3 (шаг 1, в дереве, ждёт
-приёмки/коммита):** команды `qsp_show_workspace_cache`/`qsp_reset_workspace_cache` (`QSP.py`) + палитра
-`Default.sublime-commands`; `QspWorkspace.rebind`. **Не сделано (follow-up R3, шаг 2):** `index.json`,
-чистка сироток (R6).
+`<scope[0]>/qsp-project-workspace.json` уводится в `.bak` (R6). **Follow-up R3/R6 (шаги 1–2, в дереве,
+ждут приёмки/коммита):** команды `qsp_show/reset_workspace_cache` + `Default.sublime-commands`;
+`QspWorkspace.rebind`; `index.json` v1 (`cache_dir()/index.json`, справочник, не источник истины;
+обновление при записи кэша/`flush_on_exit`/reset) и `prune_orphan_caches()` — async на
+`on_pre_close_project`/`on_pre_close_window`, не чаще раза в 7 дней, сирота = identity не в
+`project_history()` и `!os.path.exists`, mtime файла кэша > 90 дней (константы).
 
 ### 4.8 ✅ Магические числа → константы Sublime
 `flags=256` → `sublime.DRAW_NO_OUTLINE`; `2048+256+32` → `DRAW_SQUIGGLY_UNDERLINE | DRAW_NO_OUTLINE |
@@ -259,7 +262,8 @@ DRAW_NO_FILL`; `return (…, 24)` → `INHIBIT_WORD_COMPLETIONS | INHIBIT_EXPLIC
 8. ✅ `qwen ref(ws): sublime constants for flags; drop hardcoded logging` (P3 4.8, 4.9) — `068dc52`, приёмка пройдена; попутно 3.3
 9. ✅ `qwen perf(ws): cache v2 in cache_path + incremental scan by mtime` (P3 4.7; R3, R4) — `61c35f4`, приёмка пройдена (ошибок не найдено, быстродействие выше)
 10. (follow-up R3, шаг 1) `qsp_show/reset_workspace_cache` + `Default.sublime-commands` (+ `rebind`) — **реализовано в дереве, коммит/приёмка за автором**
-11. (follow-up R3, шаг 2) `index.json`, чистка сироток (R6); затем хвост 4.1/4.4
+11. (follow-up R3/R6, шаг 2) `index.json` v1 + `prune_orphan_caches()` (async на закрытии, раз в 7 дн., сироты >90 дн., `project_history()`/`os.path.exists`) — **реализовано в дереве, коммит/приёмка за автором**
+12. хвост 4.1/4.4 (единая точка получения WS/идентичности)
 
 Регресс сверять по `_examples/.tests` (есть `_base test_.py`, golden-тесты). Каждый шаг —
 небольшой, приемка/коммит вручную.

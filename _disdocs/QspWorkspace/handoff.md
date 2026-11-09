@@ -33,17 +33,23 @@
     `<sublime.cache_path()>/QSP/workspaces/<base>-<hash8>.json` (`version:2, identity, scope, built,
     files{mtime,size,md5}, locations`), инкрементальный скан, `touch_file` на save, флаш на
     `on_pre_close_project`/`on_exit()` (чистый IO), Open Folder без файла (И2), legacy → `.bak` (R6).
-- **Фаза:** 2.1–2.10, 3.1–3.5, 4.2/4.3, 4.5–4.9, 4.7 закрыты и закоммичены. **Follow-up R3 (шаг 1) —
-  команды/палитра реализованы в рабочем дереве, коммит не делал автор, приёмка за автором:**
-  `QspShowWorkspaceCacheCommand`/`QspResetWorkspaceCacheCommand` в `QSP.py`,
-  `QspWorkspace.rebind(identity, scope)` в `qSpy/workspace.py`, `Default.sublime-commands` (новые + прочие
-  неслужебные команды). `index.json` и чистка сироток — отложены.
+- **Фаза:** 2.1–2.10, 3.1–3.5, 4.2/4.3, 4.5–4.9, 4.7 закрыты и закоммичены. **Follow-up R3 (шаг 1,
+  команды/палитра) — реализован в дереве, коммит/приёмка за автором. Follow-up R3/R6 (шаг 2, `index.json`
+  + чистка сироток) — реализован в дереве, коммит/приёмка за автором:**
+  - шаг 1: `QspShowWorkspaceCacheCommand`/`QspResetWorkspaceCacheCommand` в `QSP.py`,
+    `QspWorkspace.rebind(identity, scope)` в `qSpy/workspace.py`, `Default.sublime-commands`.
+  - шаг 2: `index.json` v1 в `cache_dir()` (справочник, не источник истины; битый → пересоздаётся;
+    обновляется при `save_to_cache()`/`flush_on_exit()`, запись снимается при reset кэша) и
+    `prune_orphan_caches()` (асинхронно, на `on_pre_close_project`/`on_pre_close_window`, не чаще раза в
+    `PRUNE_INTERVAL_DAYS=7`; сирота = identity не в `project_history()` и не существует на диске, возраст
+    файла кэша > `ORPHAN_MAX_AGE_DAYS=90` по mtime). `project_history()` недоступен/пуст → только
+    `os.path.exists(identity)`.
 - **Техдолг (не блокирует):** `workspace.load_from_cache` типизирован через `Any`/касты — перевести
   на `object`/`RawJson`+сужение без `Any`; в `vars_scanner.py` 6 pre-existing
-  `reportOptionalMemberAccess` по `sprtr_region`.
-- **Ближайшая цель:** принять/закоммитить follow-up R3 (шаг 1) после приёмки; затем follow-up R3 шаг 2 —
-  `index.json` + чистка сироток (R6, `project_history()`/возраст); затем хвост 4.1/4.4. Замер/подбор
-  дебаунса 2.8 — по необходимости.
+  `reportOptionalMemberAccess` по `sprtr_region`. Константы `PRUNE_INTERVAL_DAYS`/`ORPHAN_MAX_AGE_DAYS`
+  — кандидаты на вынос в настройки.
+- **Ближайшая цель:** принять/закоммитить follow-up R3/R6 (шаги 1–2) после приёмки; затем хвост 4.1/4.4
+  (единая точка получения WS/идентичности). Замер/подбор дебаунса 2.8 — по необходимости.
 
 ## 2. Каркас решений (детали и причины — по ссылкам)
 
@@ -51,10 +57,10 @@
 |---|---|---|
 | R1 | Два ключа вместо одного: RAM-реестр — `window.id()`, диск — `identity = normcase(abspath(project_file_name()))` | принято |
 | R2 | Область индекса — **все** папки окна; ничего за их пределами | принято |
-| R3 | Кэш в `<sublime.cache_path()>/QSP/workspaces/<base>-<hash8>.json`; окна «Open Folder» на диск не пишут | **реализовано (коммит 9, имена подтверждены)**; follow-up шаг 1 (команды show/reset + `Default.sublime-commands`) **реализован в дереве, ждёт приёмки/коммита**; follow-up: `index.json`, чистка сироток (R6) |
+| R3 | Кэш в `<sublime.cache_path()>/QSP/workspaces/<base>-<hash8>.json`; окна «Open Folder» на диск не пишут | **реализовано (коммит 9, имена подтверждены)**; follow-up шаг 1 (show/reset + `Default.sublime-commands`) и шаг 2 (`index.json` v1 + чистка сироток, R6) **реализованы в дереве, ждут приёмки/коммита** |
 | R4 | Схема `version: 2`: `identity`, `scope`, `built`, `files{mtime,size,md5}`, `locations` | принято (только локации) |
 | R5 | Живой индекс в RAM; файл — только закрытие/восстановление; pop + accessor без создания | **принято** (Э7–Э9, Э5 подтверждены, см. §2.3 арх. документа) |
-| R6 | Старый `qsp-project-workspace.json` → `.bak`, без импорта; сиротки по возрасту через `project_history()` | принято |
+| R6 | Старый `qsp-project-workspace.json` → `.bak`, без импорта; сиротки по возрасту через `project_history()` | **принято, реализовано в дереве** (legacy `.bak` — коммит 9; чистка сироток >90 дней, раз в 7 дней, async на закрытии, `project_history()` + `os.path.exists` — шаг 2, ждёт приёмки/коммита) |
 | R7 | WS = индекс сущностей. **Этап 1 — только названия локаций**; метки/глобальные/прочие — этап 2 | принято по этапу 1 |
 
 Инварианты И1–И4 (проверяются тестами): И1 — вне папок окна не индексируем, безымянные буферы с qsps-подсветкой индексируем в RAM; И2 — виртуальный WS есть у любого окна с ≥1 папкой, файл только при `.sublime-project`; И3 — индекс обновляется по изменению текста, а не только load/save; И4 —
@@ -101,7 +107,7 @@
    последним колбэком вью. `_LOCS_DEBOUNCE_MS = 250` — **кандидат**: на приёмке проверить, что при
    непрерывном наборе completion не блокируется, а после паузы индекс обновлён; при необходимости
    подобрать значение замером и поправить константу.
-4. **Мелочи к подтверждению**: имена файлов кэша и `index.json` (R3); состав полей схемы v2 (R4).
+4. **Мелочи к подтверждению**: состав полей схемы v2 (R4) — имена файлов кэша и `index.json` (R3 шаг 2) реализованы в дереве, ждут приёмки.
 
 ## 5. Как поднимался датчик (прогоны Э7–Э9) — **ВЫПОЛНЕНО, датчик удалён из кода**
 

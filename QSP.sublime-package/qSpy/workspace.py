@@ -17,6 +17,9 @@ WorkspacesRegistry = Dict[int, 'QspWorkspace'] # RAM-реестр: window.id() -
 WS_VERSION = 2
 CACHE_DIR_NAME = os.path.join('QSP', 'workspaces') # <sublime.cache_path()>/QSP/workspaces/
 LEGACY_WS_FILE = 'qsp-project-workspace.json'       # старый кэш в корне проекта (R6 -> .bak)
+INDEX_FILE = 'index.json'                            # справочник каталога кэша (R3/R6), не источник истины
+ORPHAN_MAX_AGE_DAYS = 90                             # сирота (identity не существует) удаляется после стольких дней (R6)
+PRUNE_INTERVAL_DAYS = 7                              # чистка сироток не чаще раза в N дней (константа; позже — настройка)
 
 class FilePlace(NamedTuple):
 	""" Место локации — файл на диске (2.6, tagged). """
@@ -49,6 +52,17 @@ class CacheJson(TypedDict, total=False):
 	built: bool
 	files: Dict[Path, FileMeta]
 	locations: Dict[Path, List[Tuple[LocName, ViewRegion]]]
+
+class IndexEntry(TypedDict, total=False):
+	file: str
+	scope: List[Path]
+	updated: float
+
+class IndexJson(TypedDict, total=False):
+	""" Минимальный справочник каталога кэша (R3/R6). Не источник истины; битый -> пересоздаётся. """
+	version: int
+	last_prune: float
+	entries: Dict[str, IndexEntry] # identity -> запись
 
 # ---- вспомогательные функции кэша (R3/R4) ----
 
@@ -355,7 +369,10 @@ class QspWorkspace:
 			(нет identity/окно без .sublime-project, либо WS не построен — R4). """
 		if not self._identity or not self._built or not self._cache_path:
 			return None
-		return _flush_payload(self._cache_path, self.cache_payload())
+		path = _flush_payload(self._cache_path, self.cache_payload())
+		if path:
+			update_index_entry(self._identity, path, self._scope)
+		return path
 
 	def refresh_from_views(self, windows_views:List[sublime.View], window_folders:List[AbsPath]) -> None:
 		"""
@@ -432,7 +449,9 @@ class QspWorkspace:
 	def flush_on_exit(self) -> None:
 		""" Флаш этого WS на выходе (R5, Д20-Д22): чистый IO, без sublime-API. """
 		if self._cache_path and self._identity and self._built:
-			_flush_payload(self._cache_path, self.cache_payload())
+			path = _flush_payload(self._cache_path, self.cache_payload())
+			if path:
+				update_index_entry(self._identity, path, self._scope)
 
 def _flush_payload(path: str, payload: CacheJson) -> Optional[str]:
 	""" Атомарная запись payload (чистый IO, без sublime-API — безопасно вызывать из on_exit, Д21). """
@@ -446,6 +465,163 @@ def _flush_payload(path: str, payload: CacheJson) -> Optional[str]:
 		qsp.write_error_log(f'[WS] Can not write cache "{path}": {e}')
 		return None
 	return path
+
+# ---------------------------------------- index.json (R3/R6) ----------------------------------------
+
+def index_path() -> str:
+	""" Путь к справочнику каталога кэша (R3/R6). """
+	return os.path.join(cache_dir(), INDEX_FILE)
+
+def _read_index() -> IndexJson:
+	""" Читает index.json. Битый/отсутствующий -> пустой (не источник истины, R3). """
+	path = index_path()
+	empty = cast(IndexJson, {'version': 1, 'entries': cast(Dict[str, IndexEntry], {})})
+	if not os.path.isfile(path):
+		return empty
+	try:
+		with open(path, 'r', encoding='utf-8') as fp:
+			data = cast(Dict[str, Any], json.load(fp))
+	except (OSError, ValueError):
+		return empty
+	entries = data.get('entries')
+	if data.get('version') != 1 or not isinstance(entries, dict):
+		return empty
+	last_prune = data.get('last_prune')
+	return cast(IndexJson, {
+		'version': 1,
+		'last_prune': last_prune if isinstance(last_prune, (int, float)) else 0.0,
+		'entries': cast(Dict[str, IndexEntry], entries),
+	})
+
+def _write_index(data: IndexJson) -> None:
+	""" Атомарная запись index.json (чистый IO). """
+	_flush_payload(index_path(), cast(CacheJson, data))
+
+def update_index_entry(identity: str, file_path: str, scope: List[Path]) -> None:
+	""" Обновить запись index.json для identity (R3/R6). Тихо игнорирует ошибки чтения индекса. """
+	if not identity:
+		return
+	idx = _read_index()
+	entries = idx.setdefault('entries', cast(Dict[str, IndexEntry], {}))
+	entries[identity] = cast(IndexEntry, {
+		'file': os.path.basename(file_path),
+		'scope': list(scope),
+		'updated': time.time(),
+	})
+	idx['version'] = 1
+	_write_index(idx)
+
+def remove_index_entry(identity: str) -> None:
+	""" Удалить запись identity из index.json (R3/R6). """
+	if not identity:
+		return
+	idx = _read_index()
+	entries = idx.get('entries')
+	if entries and identity in entries:
+		del entries[identity]
+		_write_index(idx)
+
+def _live_identities_from_history() -> Optional[Set[str]]:
+	""" Нормализованные identity живых проектов из sublime.project_history() (4147+).
+		None, если API недоступно — вызывающий полагается на os.path.exists(identity). """
+	getter = getattr(sublime, 'project_history', None)
+	if not callable(getter):
+		return None
+	try:
+		history = cast(List[Any], getter() or [])
+	except Exception:
+		return None
+	live:Set[str] = set()
+	# API возвращает последовательность записей; берём project_file/project/workspace_file.
+	for item in history:
+		pf:Optional[str] = None
+		if isinstance(item, dict):
+			item_d = cast(Dict[str, Any], item)
+			for key in ('project_file', 'project', 'file'):
+				val = item_d.get(key)
+				if isinstance(val, str) and val:
+					pf = val
+					break
+		elif isinstance(item, str):
+			pf = item
+		if pf:
+			try:
+				live.add(os.path.normcase(os.path.abspath(pf)))
+			except Exception:
+				pass
+	return live
+
+def _identity_is_live(identity: str, history_live: Optional[Set[str]]) -> bool:
+	""" Проект жив: identity есть в истории (если доступна) ИЛИ файл существует на диске. """
+	if history_live is not None and identity in history_live:
+		return True
+	try:
+		return os.path.isfile(identity)
+	except Exception:
+		return False
+
+def prune_orphan_caches(force: bool = False) -> None:
+	""" Чистка сироток каталога кэша (R3/R6). Чистый IO, без sublime-API, кроме project_history().
+		Удаляет файлы кэша (*.json, кроме index.json), чей identity не жив (нет на диске и не в
+		project_history) и чей возраст > ORPHAN_MAX_AGE_DAYS. Не чаще раза в PRUNE_INTERVAL_DAYS,
+		если force=False. Вызывать асинхронно (set_timeout_async). """
+	try:
+		cdir = cache_dir()
+	except Exception:
+		return
+	if not os.path.isdir(cdir):
+		return
+	idx = _read_index()
+	now = time.time()
+	if not force:
+		last = idx.get('last_prune')
+		if isinstance(last, (int, float)) and (now - float(last)) < PRUNE_INTERVAL_DAYS * 86400:
+			return
+	history_live = _live_identities_from_history()
+	entries = idx.setdefault('entries', cast(Dict[str, IndexEntry], {}))
+
+	# identity -> имя файла кэша из индекса (быстрый путь для обратного сопоставления не нужен;
+	# читаем сам кэш-файл, чтобы получить identity достоверно)
+	for name in os.listdir(cdir):
+		if name == INDEX_FILE or not name.endswith('.json') or name.endswith('.tmp'):
+			continue
+		path = os.path.join(cdir, name)
+		if not os.path.isfile(path):
+			continue
+		try:
+			age_days = (now - os.path.getmtime(path)) / 86400.0
+			with open(path, 'r', encoding='utf-8') as fp:
+				data = cast(Dict[str, Any], json.load(fp))
+		except (OSError, ValueError):
+			continue # битый/недоступный — не трогаем
+		identity = data.get('identity')
+		if not isinstance(identity, str) or not identity:
+			continue
+		if _identity_is_live(identity, history_live):
+			continue # живой проект — не сирота
+		if age_days <= ORPHAN_MAX_AGE_DAYS:
+			continue # сирота, но ещё не «протухла»
+		try:
+			os.remove(path)
+		except OSError:
+			continue
+		entries.pop(identity, None)
+
+	# подчистить записи индекса, указывающие на несуществующие файлы/мёртвые identity
+	for ident, entry in list(entries.items()):
+		entry_d = cast(Dict[str, Any], entry)
+		fname = entry_d.get('file')
+		if isinstance(fname, str) and fname and not os.path.isfile(os.path.join(cdir, fname)):
+			del entries[ident]
+			continue
+		if not _identity_is_live(str(ident), history_live):
+			# identity мёртв, но файл мог отсутствовать в переборе выше; оставим запись — файл (если есть)
+			# удалится по возрасту на следующем проходе. Не удаляем свежие записи принудительно.
+			pass
+
+	idx['last_prune'] = now
+	idx['version'] = 1
+	_write_index(idx)
 
 def flush_workspaces_on_exit(workspaces: WorkspacesRegistry) -> None:
 	""" Флаш всех живых WS на выходе из ST (R5, Д20-Д22). Только чистый Python-IO, без

@@ -13,7 +13,10 @@ from .qSpy.converter import (
 	QspToQspsBuiltinConv, QspsToQspBuiltinConv,
 	QspSplitter, FinderSplitter
 )
-from .qSpy.workspace import FilePlace, LocHash, QspWorkspace, ViewPlace, WorkspacesRegistry, cache_file_path, flush_workspaces_on_exit
+from .qSpy.workspace import (
+	FilePlace, LocHash, QspWorkspace, ViewPlace, WorkspacesRegistry,
+	cache_file_path, flush_workspaces_on_exit, prune_orphan_caches, remove_index_entry,
+)
 from .qSpy.vars_scanner import scan_vars
 from .qSpy import function as qsp
 from .qSpy.project import QspProject
@@ -579,6 +582,8 @@ class QspResetWorkspaceCacheCommand(sublime_plugin.WindowCommand):
 			except OSError as e:
 				sublime.status_message(f'[QSP] Не удалось удалить кэш: {e}')
 				return
+			if identity:
+				remove_index_entry(identity)
 		# Пересборка RAM-индекса тем же путём, что восстановление окна (R1/R4/R5, Д11).
 		qsp_ws = QspWorkspaceHandlers.for_window(window)
 		qsp_ws.rebind(identity, list(window.folders()))
@@ -672,6 +677,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		if qsp_ws is None: return None # живого WS этого окна нет — сохранять нечего, фантом не плодим
 		qsp_ws.save_to_cache() # v2 в cache_path; None для без identity/unbuilt — безопасно (И2/R4)
 		QSP_WORKSPACES.pop(window.id(), None) # убрать запись, иначе реестр течёт при закрытии (Д10)
+		sublime.set_timeout_async(prune_orphan_caches, 0) # R6: чистка сироток не чаще раза в 7 дней, async
 
 	# Closing the whole window. Для окна с проектом запись уже снята on_pre_close_project,
 	# которое приходит раньше (Д23); этот хук нужен лишь для безпроектных окон — к ним
@@ -681,6 +687,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			Event of pre closing the window (4050): чистка RAM-реестра по window.id().
 		"""
 		QSP_WORKSPACES.pop(window.id(), None)
+		sublime.set_timeout_async(prune_orphan_caches, 0) # R6: и при закрытии безпроектного окна
 
 # ----------------------------------- Events of work with project -----------------------------------
 
