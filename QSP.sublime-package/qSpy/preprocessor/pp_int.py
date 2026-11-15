@@ -18,10 +18,12 @@ class PpInt(stm.PpVisitor[AstNode]):
 
     def __init__(self,
                  stmts:List[stm.PpStmt[AstNode]],
-                 marked_lines:List[MarkedLine]) -> None:
+                 marked_lines:List[MarkedLine],
+                 pp_enabled:bool=False) -> None:
         self._stmts = stmts
         self._prepare_lines:List[QspsLine] = []
         self._marked_lines:List[MarkedLine] = marked_lines
+        self._pp_enabled:bool = pp_enabled
 
         self._temporary:List[str] = []
 
@@ -89,7 +91,7 @@ class PpInt(stm.PpVisitor[AstNode]):
             # сохранить; убираем разделитель «&» с обрамляющими пробелами, который его предварял
             self._strip_trailing_separator()
             self._temporary.append('\n')
-        if len(''.join(self._temporary).split()) == 0: return # пропускаем пустые строки
+        if self._pp_enabled and len(''.join(self._temporary).split()) == 0: return # пропускаем пустые строки только когда pp включён
         self._prepare_lines.extend(self._temporary)
         self._temporary.clear()
 

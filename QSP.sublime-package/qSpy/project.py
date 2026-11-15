@@ -1,7 +1,7 @@
 import os, json
 from typing import List
 from . import plugtypes as ts
-from .const import PROJECT_FILE_NAME, PLAYER_PATH, SCAN_FILES_LOCNAME
+from .const import PROJECT_FILE_NAME, CONVERTER, SCAN_FILES_LOCNAME
 
 class _SchemeProvingError(Exception):
 
@@ -11,7 +11,6 @@ class _SchemeProvingError(Exception):
 
     def __str__(self) -> str:
         return f"QspProject Error! {self._message}"
-# TODO: QspProject -> ProjectValidator????
 
 class QspProject:
     """ Prepare project to build """
@@ -27,6 +26,7 @@ class QspProject:
             'project': [],
             'start': '',
             'player': '',
+            'player_error': '',
             'converter': {
                 'capi': 'builtin',
                 'path': '',
@@ -138,7 +138,8 @@ class QspProject:
         self._root['preprocessor'] = self._json.get('preprocessor', 'Off')
 
         # Set converter path and params
-        self._set_converter()
+        if self._args.get('qsp_mode', '--br') != '--run':
+            self._set_converter()
         # Set player path and params
         self._set_player()
 
@@ -175,33 +176,69 @@ class QspProject:
         if 'assets' in self._json: self._set_assets()
 
     def _set_converter(self) -> None:
-        """Set converter path and params"""
-        raw_converter = self._json.get('converter', '')
-        c_path, c_param = '', ''
-        if isinstance(raw_converter, ts.Path): # ts.Path is str
-            c_path = raw_converter
-            c_param = ''
+        from_project = 'converter' in self._json
+        source = 'converter in qsp-project.json' if from_project else 'converter_path in QSP.sublime-settings'
+        raw_converter = self._json.get('converter', self._args.get('converter_path', ''))
+        c_param = ''
+        if from_project and isinstance(raw_converter, list):
+            if len(raw_converter) != 2:
+                raise _SchemeProvingError(f'{source}: expected [path, parameters] with two strings.')
+            c_path, c_param = raw_converter
+            if not isinstance(c_path, str) or not isinstance(c_param, str):
+                raise _SchemeProvingError(f'{source}: expected [path, parameters] with two strings.')
         else:
-            # Проверяем, что это список как минимум с двумя строковыми элементами
-            try:
-                if len(raw_converter) >= 2:
-                    try:
-                        c_path = str(raw_converter[0])
-                        c_param = str(raw_converter[1])
-                    except KeyError:
-                        raise _SchemeProvingError('Wrong define converter in qsp-projet.json')
-            except TypeError:
-                raise _SchemeProvingError('Wrong define converter in qsp-projet.json')
-        if os.path.isfile(c_path):
-            self._root['converter']['capi'] = 'outer'
-            self._root['converter']['path'] = os.path.abspath(c_path)
-            self._root['converter']['args'] = c_param
+            c_path = raw_converter
+        if raw_converter == CONVERTER:
+            return
+        path = self._resolve_executable(c_path, source, from_project)
+        if path:
+            self._root['converter'] = {'capi': 'outer', 'path': path, 'args': c_param}
 
     def _set_player(self) -> None:
-        """Set player path"""
-        player = self._json.get('player', PLAYER_PATH)
-        if not os.path.isfile(player): return # player not exist
-        self._root['player'] = os.path.abspath(player)
+        from_project = 'player' in self._json
+        source = 'player in qsp-project.json' if from_project else 'player_path in QSP.sublime-settings'
+        player = self._json.get('player', self._args.get('player_path', ''))
+        try:
+            self._root['player'] = self._resolve_executable(player, source, from_project)
+        except _SchemeProvingError as error:
+            self._root['player_error'] = str(error)
+
+    def _resolve_executable(self, value:object, source:str, from_project:bool) -> ts.Path:
+        if not isinstance(value, str):
+            raise _SchemeProvingError(f'{source}: expected a path string.')
+        if not value:
+            return ''
+        if '\x00' in value:
+            raise _SchemeProvingError(f'{source}: invalid path {value!r}.')
+        path = os.path.expanduser(value)
+        if os.path.isabs(path):
+            resolved = path
+        elif from_project and os.path.isfile(os.path.join(self._work_dir, path)):
+            resolved = os.path.join(self._work_dir, path)
+        elif os.path.dirname(path) or os.path.splitdrive(path)[0]:
+            if not from_project:
+                raise _SchemeProvingError(f'{source}: use an absolute path, ~ or a command from PATH: {value!r}.')
+            resolved = os.path.join(self._work_dir, path)
+        else:
+            resolved = self._find_executable_in_path(path)
+        if not resolved or not os.path.isfile(resolved) or not os.access(resolved, os.X_OK):
+            raise _SchemeProvingError(f'{source}: executable not found or not executable: {value!r}.')
+        return os.path.abspath(resolved)
+
+    @staticmethod
+    def _find_executable_in_path(name:str) -> ts.Path:
+        # shutil.which implicitly searches cwd on older Windows Python runtimes.
+        suffixes = ['']
+        if os.name == 'nt':
+            suffixes.extend(ext for ext in os.environ.get('PATHEXT', '.COM;.EXE;.BAT;.CMD').split(os.pathsep) if ext)
+        for folder in os.get_exec_path():
+            if not folder:
+                continue
+            for suffix in suffixes:
+                candidate = os.path.abspath(os.path.join(folder, name + suffix))
+                if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+                    return candidate
+        return ''
 
     def _abs_project_pathes(self, json_proj:List[ts.QspModule]) -> None:
         """ Absolutize pathes of project modules. """
@@ -225,7 +262,9 @@ class QspProject:
             r.append(rm)
             # Make folder paths absolute
             for folder in module.get('folders', []):
-                rm['folders'].append({'path': os.path.abspath(folder['path'])})
+                excl = folder.get('exclude_pathes') or []
+                abs_excl = [os.path.abspath(os.path.join(self._work_dir, p)) for p in excl]
+                rm['folders'].append({'path': os.path.abspath(folder['path']), 'exclude_pathes': abs_excl})
                 files_or_folders = True
             for file in module.get('files', []):
                 rm['files'].append({'path': os.path.abspath(file['path'])})

@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Sequence, Union
 
 from .tps import (
     QspsLine, MultilineDesc, Action, LocName, LocCode, BaseFindMode, ViewRegion)
@@ -112,7 +112,7 @@ class QspsLoc():
             # ошибка разбора/лексора на всей локации — фиксируем и уходим, не роняя сборку
             self._report_errors([e])
 
-    def _report_errors(self, errors) -> None:
+    def _report_errors(self, errors: Sequence[Union[ParserError, RuntimeIntError]]) -> None:
         """Печать-сток с контекстом локации + накопитель. Порядок потоков не важен."""
         for e in errors:
             msg = f'Локация "{self._name}": {e}'

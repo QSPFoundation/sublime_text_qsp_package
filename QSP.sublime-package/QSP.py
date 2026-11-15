@@ -6,6 +6,7 @@ import os
 import re
 import json
 from typing import Dict, Optional, Union, List, Tuple, cast
+import datetime
 
 # Importing my modules from qSpy package.
 from .qSpy.builder import BuildQSP
@@ -50,6 +51,10 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 		args['point_file'] = os.path.abspath(argv.get('file', '')) # - start point for search `qsp-project.json`
 		args['platform'] = sublime.platform()
 		args['packages_path'] = sublime.packages_path()
+		args['qsp_mode'] = qsp_mode
+		settings = sublime.load_settings('QSP.sublime-settings')
+		args['player_path'] = settings.get('player_path', '')
+		args['converter_path'] = settings.get('converter_path', '')
 		# -----------------------------------------------------------------------
 
 		qsp_proj = QspProject(args, window_folders)
@@ -57,15 +62,42 @@ class QspBuildCommand(sublime_plugin.WindowCommand):
 			qsp.write_error_log(const.QSP_ERROR_MSG.EMPTY_PROJECT)
 			return None
 
-		# old_time = time.time()
+		# Если нет реального qsp-project.json (открыт отдельный .qsp-файл):
+		if not os.path.isfile(qsp_proj.get_project_file()):
+			if qsp_mode == '--build':
+				qsp.write_error_log(const.QSP_ERROR_MSG.BUILD_WITHOUT_PROJECT)
+				return None
+			# --run / --br: запустить открытый файл в плеере напрямую
+			scheme = qsp_proj.get_scheme()
+			player_error = scheme.get('player_error', '')
+			if player_error:
+				qsp.write_error_log(f'[106] {player_error}')
+				return None
+			player = scheme.get('player', '')
+			if not player or not os.path.isfile(player):
+				qsp.write_error_log('[106] Player is not configured or unavailable. Set player in qsp-project.json or player_path in QSP.sublime-settings.')
+				return None
+			file_to_run = argv.get('file', '')
+			if not file_to_run or not os.path.isfile(file_to_run):
+				qsp.write_error_log(const.QSP_ERROR_MSG.NEED_SAVE_FILE)
+				return None
+			try:
+				subprocess.Popen([player, file_to_run])
+			except OSError as error:
+				qsp.write_error_log(f'[QSP] Run failed: {error}')
+				return
+			return None
+
 		builder = BuildQSP(qsp_proj.get_scheme()) # Initialise of Builder.
-		if (qsp_mode in ('--br', '--build')): builder.build_project()
-		if (qsp_mode in ('--br', '--run')): builder.run_game()
+		try:
+			if (qsp_mode in ('--br', '--build')): builder.build_project()
+			if (qsp_mode in ('--br', '--run')): builder.run_game()
+		except OSError as error:
+			qsp.write_error_log(f'[QSP] Build/run failed: {error}')
+			return
 
 		if not os.path.isfile(qsp_proj.get_project_file()):
 			qsp_proj.save_json()
-		# new_time = time.time()
-		# print(new_time - old_time)
 
 class QspToQspsCommand(sublime_plugin.WindowCommand):
 	""" Command to start converting QSP-Game to qsps """
@@ -94,7 +126,7 @@ class QspsToQspCommand(sublime_plugin.WindowCommand):
 
 		output_file = os.path.splitext(argv['file'])[0]+'.qsp'
 		qsps_to_qsp= QspsToQspBuiltinConv(output_file, False)
-		qsps_to_qsp.convert_file(argv['file'], output_file) # TODO: extras output_path
+		qsps_to_qsp.convert_file(argv['file'], output_file)
 
 class DecodeQspLineCommand(sublime_plugin.WindowCommand):
 	""" Comand of converting qsp-line to qsps-line """
@@ -156,11 +188,6 @@ class QspNewProjectCommand(sublime_plugin.WindowCommand):
 		_jont = os.path.join
 		os.makedirs(_jont(first_folder,'_disdocs'), exist_ok=True)
 		os.makedirs(_jont(first_folder,'_output_game'), exist_ok=True)
-		# assets_folder = _jont(first_folder, '_output_game', 'assets')
-		# os.makedirs(_jont(assets_folder, 'img'), exist_ok=True)
-		# os.makedirs(_jont(assets_folder, 'snd'), exist_ok=True)
-		# os.makedirs(_jont(assets_folder, 'vid'), exist_ok=True)
-		# os.makedirs(_jont(first_folder, '_output_game', 'lib'), exist_ok=True)
 		os.makedirs(_jont(first_folder, '_src'), exist_ok=True)
 		# crete qsp-project.json
 		project_json_path = _jont(first_folder, 'qsp-project.json')
@@ -200,88 +227,15 @@ class QspNewGameCommand(sublime_plugin.WindowCommand):
 		self.window.focus_view(new_view)
 		self.window.run_command('qsp_new_game_head')
 
-class QspAnalyzerCommand(sublime_plugin.WindowCommand):
-	""" Analyse of code, and search errors, locations names, varnames etc. """
-	def run(self) -> None:
-		# window = self.window
-		# view = window.active_view()
-		# if view is None: return None
-		# if QspWorkspace.view_syntax_is_wrong(view): return None
-		# text = view.substr(sublime.Region(0, view.size()))
-		# masked = _mask_strings_and_braces(text)
-		# g = _read_grammar_keywords()
-		# print(g)
-		# # Extract locations and labels (by convention and grammar respectively)
-		# loc_names = []
-		# for m in re.finditer(r'(?mi)^\#\s*([^\r\n]+?)\s*$', text):
-		# 	loc_names.append(m.group(1))
-		# labels = []
-		# for m in re.finditer(r'(?mi)^\:\s*([^\r\n&]+?)\s*$', masked):
-		# 	labels.append(m.group(1))
-		# # User calls
-		# user_statements = re.findall(r'(?mi)@@([A-Za-z_][A-Za-z0-9_]*)', masked)
-		# user_functions = re.findall(r'(?mi)(?<!@)@([A-Za-z_][A-Za-z0-9_]*)', masked)
-		# # Statements and functions
-		# stmts = {}
-		# if len(g['statements']) > 0:
-		# 	stmts_alt = '|'.join(sorted(map(re.escape, g['statements']), key=len, reverse=True))
-		# 	pattern_stmt = re.compile(rf'(?mi)(?<![\w])(?:{stmts_alt})(?=(?:\s|[&\'\"\(\)\[\]=!<>+\-\/*:,\{{\}}]|$))')
-		# 	for m in pattern_stmt.finditer(masked):
-		# 		name = m.group(0).lower()
-		# 		stmts[name] = stmts.get(name, 0) + 1
-		# funcs = {}
-		# if len(g['functions']) > 0:
-		# 	funcs_alt = '|'.join(sorted(map(re.escape, g['functions']), key=len, reverse=True))
-		# 	pattern_func = re.compile(rf'(?mi)(?<![\w])[#\$%]?((?:{funcs_alt}))\b')
-		# 	for m in pattern_func.finditer(masked):
-		# 		name = m.group(1).lower()
-		# 		funcs[name] = funcs.get(name, 0) + 1
-		# # Variables (rough extraction: identifiers not in keywords)
-		# keywords = set().union(g['functions'], g['statements'], g['markers'])
-		# vars_found = set()
-		# for m in re.finditer(r'(?mi)(?<![\w])[#\$%]?[A-Za-z_][\w\.]*', masked):
-		# 	name = m.group(0)
-		# 	root = name.lstrip('#$%').split('.')[0].lower()
-		# 	if root not in keywords and not root.startswith('_'):
-		# 		vars_found.add(name)
-		# # Blocks: if/act/loop ... end (approximate)
-		# line_starts = _pos_to_line_index_map(text)
-		# blocks = []
-		# stack = []
-		# for m in re.finditer(r'(?mi)(?<![\w])(if|act|loop|end)\b', masked):
-		# 	tok = m.group(1).lower()
-		# 	ln = _line_number_at(m.start(), line_starts)
-		# 	if tok in ('if', 'act', 'loop'):
-		# 		stack.append((tok, ln))
-		# 	elif tok == 'end' and len(stack) > 0:
-		# 		start_tok, start_ln = stack.pop()
-		# 		blocks.append({'type': start_tok, 'start_line': start_ln, 'end_line': ln})
-		# # Prepare output
-		# data = {
-		# 	'file': (view.file_name() or f'untitled:{view.id()}'),
-		# 	'locations': sorted(loc_names),
-		# 	'labels': sorted(labels),
-		# 	'user_calls': {
-		# 		'statements': sorted(user_statements),
-		# 		'functions': sorted(user_functions)
-		# 	},
-		# 	'counts': {
-		# 		'statements': stmts,
-		# 		'functions': funcs
-		# 	},
-		# 	'variables': sorted(vars_found),
-		# 	'blocks': blocks
-		# }
-		# panel = window.create_output_panel('qsp_analyzer')
-		# panel.set_syntax_file('Packages/JavaScript/JSON.sublime-syntax')
-		# panel.run_command('append', {'characters': json.dumps(data, indent=2, ensure_ascii=False)})
-		# window.run_command('show_panel', {'panel': 'output.qsp_analyzer'})
-		...
-
-class QspReplicStructCommand(sublime_plugin.WindowCommand):
-	""" Generate folder with md-files as links structure """
-	def run(self) -> None:
-		...
+# class QspAnalyzerCommand(sublime_plugin.WindowCommand):
+# 	""" Analyse of code, and search errors, locations names, varnames etc. """
+# 	#
+# 	# Заглушка: анализатор кода не реализован. НЕ УДАЛЯТЬ ПРИ ЧИСТКЕ КОММЕНТОВ!!!
+# 	# Класс закомментирован, чтобы команда qsp_analyzer не регистрировалась в Sublime Text.
+# 	# Команда убрана из Default.sublime-commands.
+# 	# При реализации — раскомментировать класс и восстановить логику из истории git.
+# 	# def run(self) -> None:
+# 	#     pass
 
 class QspLocalVarsHighlightCommand(sublime_plugin.TextCommand):
 	""" Find and highlight local variables command """
@@ -372,6 +326,7 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 					point = current_view.text_point(int(line)-1, 0) # 1-based line -> 0-based row
 					current_view.sel().clear()
 					current_view.sel().add(sublime.Region(point, point))
+					current_view.show(sublime.Region(point, point))
 			elif line:
 				window.run_command('open_file', {'file': f'{path}:{line}', 'encoded_position': True})
 			else:
@@ -394,7 +349,7 @@ class QspShowDuplLocsCommand(sublime_plugin.TextCommand):
 						v.sel().add(sublime.Region(region_begin, region_begin))
 						break
 
-class QspHideHightlight(sublime_plugin.EventListener):
+class QspHideHighlight(sublime_plugin.EventListener):
 	"""
 		Where entering the text, hide all temp hightlights of QSP-regions.
 	"""
@@ -450,8 +405,38 @@ class QspInvalidInput(sublime_plugin.EventListener):
 					annotations=[content],
 					flags=sublime.DRAW_SQUIGGLY_UNDERLINE | sublime.DRAW_NO_OUTLINE | sublime.DRAW_NO_FILL)
 
+# Тело новой локации для автодополнения между локациями (зеркало Snippets/newloc*.sublime-snippet).
+_NEWLOC_BODY = (
+	'${1:название_локации}\n'
+	'${2:!@ Код, выполняемый при посещении локации}\n'
+	'--- $1 ---------------------------------\n'
+	'$0'
+)
+
 class QspAutocomplete(sublime_plugin.EventListener):
 	""" Autocomplete and helptips. """
+
+	def on_load(self, view:sublime.View) -> None:
+		self._tune_gametext_autocomplete(view)
+
+	def on_activated(self, view:sublime.View) -> None:
+		self._tune_gametext_autocomplete(view)
+
+	def _tune_gametext_autocomplete(self, view:sublime.View) -> None:
+		# Дефолтный auto_complete_selector исключает comment-скоупы: расширяем его
+		# и триггерим меню на '#' (не словесный символ) — только для QSP-вью.
+		if QspWorkspace.view_syntax_is_wrong(view): return None
+		settings = view.settings()
+		selector = settings.get('auto_complete_selector', '')
+		if isinstance(selector, str) and 'meta.gametext.qsp' not in selector:
+			settings.set('auto_complete_selector',
+				(selector + ', meta.gametext.qsp') if selector else 'meta.gametext.qsp')
+		triggers:ts.RawJson = settings.get('auto_complete_triggers', [])
+		if isinstance(triggers, list) and not any(
+				isinstance(t, dict) and t.get('selector') == 'meta.gametext.qsp'
+				for t in triggers):
+			settings.set('auto_complete_triggers',
+				triggers + [{'selector': 'meta.gametext.qsp', 'characters': '#'}])
 
 	def on_query_completions(self,
 			view:sublime.View,
@@ -461,6 +446,8 @@ class QspAutocomplete(sublime_plugin.EventListener):
 		""" Append completions in editor."""
 		if locations[0]-1 < 0: return None
 		if QspWorkspace.view_syntax_is_wrong(view):	return None
+		if view.match_selector(locations[0]-1, 'meta.gametext.qsp'):
+			return self._gametext_completions(view, locations[0])
 		window = view.window()
 		if not window: return
 		project_folders = window.folders()
@@ -518,6 +505,28 @@ class QspAutocomplete(sublime_plugin.EventListener):
 		else:
 			return None
 
+	def _gametext_completions(self, view:sublime.View, pt:int
+		) -> Tuple[List[sublime.CompletionItem], sublime.AutoCompleteFlags]:
+		""" Новая локация в начале строки между локациями: `new…` или `#`/`# `. """
+		flags = sublime.INHIBIT_WORD_COMPLETIONS | sublime.INHIBIT_EXPLICIT_COMPLETIONS
+		line_prefix = view.substr(sublime.Region(view.line(pt).begin(), pt))
+		if line_prefix in ('#', '# '):
+			trigger = '#'
+			# набранный '#' остаётся в тексте: дополнение лишь достраивает блок
+			completion = _NEWLOC_BODY if line_prefix == '# ' else ' ' + _NEWLOC_BODY
+		elif line_prefix and 'newloc'.startswith(line_prefix):
+			trigger = 'newloc'
+			completion = '# ' + _NEWLOC_BODY
+		else:
+			return ([], flags) # прочий текст между локациями — без дополнений
+		return ([sublime.CompletionItem(
+			trigger,
+			annotation='Новая локация',
+			completion=completion,
+			completion_format=sublime.COMPLETION_FORMAT_SNIPPET,
+			kind=sublime.KIND_SNIPPET
+		)], flags)
+
 class QspTips(sublime_plugin.EventListener):
 	""" Listener of stand caret to keyword of QSP-syntax """
 	def on_selection_modified(self, view:sublime.View) -> None:
@@ -545,7 +554,7 @@ class QspTips(sublime_plugin.EventListener):
 
 
 class QspShowWorkspaceCacheCommand(sublime_plugin.WindowCommand):
-	""" Показать файл кэша воркспейса активного окна (R3). """
+	""" Показать файл кэша воркспейса активного окна. """
 
 	def run(self) -> None:
 		identity = identity_of(self.window)
@@ -561,7 +570,7 @@ class QspShowWorkspaceCacheCommand(sublime_plugin.WindowCommand):
 
 
 class QspResetWorkspaceCacheCommand(sublime_plugin.WindowCommand):
-	""" Сбросить кэш воркспейса активного окна и пересобрать индекс (R3). """
+	""" Сбросить кэш воркспейса активного окна и пересобрать индекс. """
 
 	def run(self) -> None:
 		window = self.window
@@ -575,7 +584,7 @@ class QspResetWorkspaceCacheCommand(sublime_plugin.WindowCommand):
 				return
 			if identity:
 				remove_index_entry(identity)
-		# Пересборка RAM-индекса тем же путём, что восстановление окна (R1/R4/R5, Д11).
+		# Пересборка RAM-индекса тем же путём, что восстановление окна.
 		qsp_ws = for_window(window)
 		qsp_ws.rebind(identity, list(window.folders()))
 		qsp_ws.reset()
@@ -598,7 +607,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 
 	_log_it = False
 
-	# Живой индекс локаций (2.8, R5/И3): дебаунс per-view счётчиком поколений таймеров.
+	# Живой индекс локаций: дебаунс per-view счётчиком поколений таймеров.
 	# Задержка — кандидат, подтвердить замером при ручной приёмке (handoff §4.3).
 	_LOCS_DEBOUNCE_MS = 250
 	_locs_gen:Dict[int, int] = {} # view.id() -> поколение последнего таймера; чистится его же колбэком
@@ -609,7 +618,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 
 	def _refresh_ws(self, window:sublime.Window) -> None:
 		"""
-			Восстановить WS окна (R3/R4/R5, 4.7): загрузить v2-кэш из cache_path, затем
+			Восстановить WS окна: загрузить v2-кэш из cache_path, затем
 			инкрементально сверить с диском по mtime/size/md5. Окно без папок пропускаем.
 		"""
 		folders = window.folders()
@@ -626,31 +635,37 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		"""
 			Event of init the plugin (start programm, or reload plugin).
 		"""
+		old = datetime.datetime.now()
 		for window in sublime.windows(): # many windows may be open
 			self._refresh_ws(window)
+		new = datetime.datetime.now()
+		print(f'QSP-plugin: on_init time {new-old}')
 
 	def on_load_project_async(self, window:sublime.Window) -> None:
 		"""
 			Event of loading the project.
 		"""
+		old = datetime.datetime.now()
 		self._refresh_ws(window)
+		new = datetime.datetime.now()
+		print(f'QSP-plugin: on_load_project_async time {new-old}')
 
 	# When project is closing, save the already-built WS to cache and drop it from the registry.
 	def on_pre_close_project(self, window:sublime.Window) -> None:
 		"""
 			Event of pre closing the project.
-			Флаш-точка (R5): сохраняем уже построенный WS окна в cache_path и убираем запись из реестра.
-			Никогда НЕ создаёт WS (2.1); путь берётся из identity WS (cache_path подготовлен заранее).
+			Флаш-точка: сохраняем уже построенный WS окна в cache_path и убираем запись из реестра.
+			Никогда НЕ создаёт WS; путь берётся из identity WS (cache_path подготовлен заранее).
 		"""
 		qsp_ws = peek_for_window(window)
 		if qsp_ws is None: return None # живого WS этого окна нет — сохранять нечего, фантом не плодим
 		qsp_ws.save_to_cache() # v2 в cache_path; None для без identity/unbuilt — безопасно (И2/R4)
-		QSP_WORKSPACES.pop(window.id(), None) # убрать запись, иначе реестр течёт при закрытии (Д10)
-		sublime.set_timeout_async(prune_orphan_caches, 0) # R6: чистка сироток не чаще раза в 7 дней, async
+		QSP_WORKSPACES.pop(window.id(), None) # TODO: убрать запись, иначе реестр течёт при закрытии
+		sublime.set_timeout_async(prune_orphan_caches, 0)
 
 	# Closing the whole window. Для окна с проектом запись уже снята on_pre_close_project,
-	# которое приходит раньше (Д23); этот хук нужен лишь для безпроектных окон — к ним
-	# приходит только он (Д24). На диск ничего не пишется: файл кэша таким окнам не положен (И2).
+	# которое приходит раньше; этот хук нужен лишь для безпроектных окон — к ним
+	# приходит только он. На диск ничего не пишется: файл кэша таким окнам не положен (И2).
 	def on_pre_close_window(self, window:sublime.Window) -> None:
 		"""
 			Event of pre closing the window (4050): чистка RAM-реестра по window.id().
@@ -669,6 +684,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			Event of load file (view).
 			When file is loading, refresh locs in ws (vars — on-demand через scan_vars, 2.4/4.5).
 		"""
+		old = datetime.datetime.now()
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		window = view.window()
 		if not window: return
@@ -679,9 +695,11 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			return None
 		qsp_ws = for_window(window)
 		qsp_ws.refresh_qsplocs(view, current_qsps)
+		new = datetime.datetime.now()
+		print(f'QSP-plugin: on_load_async time {new-old}')
 
 	def on_modified_async(self, view:sublime.View) -> None:
-		""" Живой индекс локаций (2.8, R5/И3): изменение текста сдвигает срок перескана этого вью.
+		""" Живой индекс локаций: изменение текста сдвигает срок перескана этого вью.
 			Дебаунс per-view счётчиком поколений: каждая правка планирует свой таймер, устаревшие
 			гасятся в колбэке (отмены таймеров API не даёт). Пересканируется только этот вью. """
 		if QspWorkspace.view_syntax_is_wrong(view): return None
@@ -697,9 +715,9 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		self._locs_gen.pop(vid, None) # последний таймер вью: чистим, чтобы словарь не рос
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		window = view.window()
-		if not window: return None # вью/окно уже закрыто (Д15)
+		if not window: return None # вью/окно уже закрыто
 		qsp_ws = peek_for_window(window)
-		if qsp_ws is None: return None # accessor без создания (R5): WS этого окна ещё не строили
+		if qsp_ws is None: return None # accessor без создания: WS этого окна ещё не строили
 		current_qsps = view.file_name()
 		# И1: именованный файл вне папок окна не индексируем; безымянный буфер — в RAM (place=view.id())
 		if current_qsps is not None and not qsp.is_path_in_project_folders(current_qsps, window.folders()):
@@ -711,8 +729,8 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			Event of pre close the view.
 			Runed before closing the window, if you close window!
 		"""
-		# Д15: при закрытии окна с проектом хук приходит после on_pre_close_project,
-		# и view.window() уже None; pop уже снят — peek не воссоздаёт фантом (2.5).
+		# при закрытии окна с проектом хук приходит после on_pre_close_project,
+		# и view.window() уже None; pop уже снят — peek не воссоздаёт фантом.
 		if QspWorkspace.view_syntax_is_wrong(view): return None
 		window = view.window()
 		if not window: return
@@ -744,14 +762,14 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 		folders = window.folders()
 		if not folders or not current_qsps: return None
 		if not qsp.is_path_in_project_folders(current_qsps, folders):
-			return None # И1 (2.7): файл вне папок окна не индексируем, как в on_load_async
+			return None # файл вне папок окна не индексируем, как в on_load_async
 		qsp_ws = for_window(window)
 		qsp_ws.refresh_qsplocs(view, current_qsps) # TODO: возможно стоит удалить
 		qsp_ws.touch_file(current_qsps) # 4.7: перечитать локации файла и обновить mtime/size/md5
 		qsp_ws.refresh_from_views(window.views(), folders)
 
 	def on_exit(self) -> None:
-		""" Выход из ST (4050): флаш всех живых WS чистым IO без sublime-API (R5, Д20-Д22). """
+		""" Выход из ST (4050): флаш всех живых WS чистым IO без sublime-API. """
 		flush_workspaces_on_exit(QSP_WORKSPACES)
 
 	def on_associate_buffer_async(self, buffer:sublime.Buffer) -> None:
@@ -763,7 +781,7 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 			window = buffer.primary_view().window()
 			if not window: return
 			folders = window.folders()
-			if not folders: return # окно без папок (2.2): folders[0] недоступен
+			if not folders: return # окно без папок: folders[0] недоступен
 			qsp_ws = for_window(window)
 			qsp_ws.refresh_from_views(window.views(), folders)
 			qsp_ws.refresh_qsps_files(folders)
@@ -784,24 +802,10 @@ class QspWorkspaceHandlers(sublime_plugin.EventListener):
 
 
 # variables
-# RAM-реестр (4.1/4.4): QSP_WORKSPACES в qSpy.workspace; доступ только через for_window/peek_for_window.
+# RAM-реестр: QSP_WORKSPACES в qSpy.workspace; доступ только через for_window/peek_for_window.
 QSP_MARKERS:ts.QspPluginCommandMarkers = {
 	# editing files commands and events
 	'rename_path': False,
 	'delete_files': [],
 	'save_log_file': False
 }
-
-def foo():
-
-	w = sublime.active_window()
-	print("win_id", w.id())
-	print("folders", w.folders())
-	print("project", w.project_file_name())
-	print("keys", list(QSP_WORKSPACES.keys()))
-	ws = QSP_WORKSPACES.get(w.id())
-	if ws:
-		print("identity", ws.identity)
-		print("scope", ws.scope)
-	else:
-		print("no WS for this window")

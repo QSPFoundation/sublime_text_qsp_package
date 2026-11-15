@@ -6,7 +6,6 @@ __all__ = [
 	'QSP_MSG',
 	'QSP_ERROR_MSG',
 	'PROJECT_FILE_NAME',
-	'PLAYER_PATH',
 	'CONVERTER',
 	'SCAN_FILES_LOCNAME']
 import os
@@ -14,9 +13,6 @@ from types import MappingProxyType
 from .plugtypes import JsonScheme
 
 PROJECT_FILE_NAME = 'qsp-project.json'
-
-# TODO: player-path only for windows. Make for other OS.
-PLAYER_PATH = os.path.join("C:\\", "Program Files", "QSP Classic 5.9.5", "bin", "qspgui.exe")
 
 CONVERTER = 'qsps_to_qsp'
 
@@ -214,8 +210,7 @@ _j:JsonScheme = {
 			]
 		}
 	],
-	"start": os.path.join(".", "_output_game", "game_start.qsp"),
-	"player": PLAYER_PATH
+	"start": os.path.join(".", "_output_game", "game_start.qsp")
 }
 
 QSP_PROJECT_JSON = MappingProxyType(_j)
@@ -256,6 +251,7 @@ class _Qsp_Errors_Message:
 		self._ws_init = '[4] QSP WORKSPACE already initialised!!!'
 		self._empty_project = "[5] The project is empty, or not exist!"
 		self._not_choosing_file = "[6] Choose file with '.qsp' extension before converting."
+		self._build_without_project = "[7] Build skipped: no qsp-project.json for opened file."
 
 	@property
 	def NEED_SAVE_FILE(self):
@@ -284,5 +280,9 @@ class _Qsp_Errors_Message:
 	@property
 	def NOT_CHOOSING_FILE(self):
 		return self._not_choosing_file
+
+	@property
+	def BUILD_WITHOUT_PROJECT(self):
+		return self._build_without_project
 
 QSP_ERROR_MSG = _Qsp_Errors_Message()

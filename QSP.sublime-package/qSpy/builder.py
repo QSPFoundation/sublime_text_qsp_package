@@ -1,6 +1,6 @@
-import os#, json
+import os
 import shutil
-import subprocess
+import subprocess, time
 from typing import Callable, List, Optional
 
 # Importing my modules.
@@ -10,9 +10,6 @@ from .preprocessor import QspsPP
 from .converter import QspsToQspBuiltinConv, QspsToQspOuterConv, QspsFile
 from .const import SCAN_FILES_LOCNAME
 from . import plugtypes as ts
-
-# from .preprocessor.pp_ast_printer import AstPrinter
-import time
 
 Path = ts.Path
 
@@ -69,13 +66,16 @@ class BuildQSP():
 	def run_game(self) -> None:
 		print('Run file in player.')
 		# Run Start QSP-file.
-		# TODO: proving the player is exist
 		self._run_qsp_file()
 
 	def _run_qsp_file(self) -> None:
-		player = self._root.get('player', '')
+		player_error = self._root['player_error']
+		if player_error:
+			qsp.write_error_log(f'[106] {player_error}')
+			return
+		player = self._root['player']
 		if not os.path.isfile(player):
-			qsp.write_error_log(f'[106] Path at player is wrong.')
+			qsp.write_error_log('[106] Player is not configured or unavailable. Set player in qsp-project.json or player_path in QSP.sublime-settings.')
 			return
 
 		if not os.path.isfile(self._start_module):

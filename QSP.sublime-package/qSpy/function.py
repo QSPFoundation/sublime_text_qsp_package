@@ -74,12 +74,27 @@ def is_path_in_project_folders(path:Optional[Path],
 	for folder in project_folders:
 		try:
 			abs_folder = os.path.normcase(os.path.abspath(folder))
-			# Д27: вложенность — это commonpath == сама папка. Просто непустой commonpath
-			# есть у любых путей одного диска (общий корень) — это не проверка вложенности.
 			if os.path.commonpath([abs_path, abs_folder]) == abs_folder:
 				return True
 		except ValueError as e: # если файлы лежат на разных дисках. TODO: убрать вывод в консоль
 			write_error_log(f'[203] Different pathes of folder and file. Error "{str(e)}". path: {path}. folder: {folder}.')
+			continue
+	return False
+
+def is_path_excluded(file_path:Path, exclude_pathes:Optional[List[Path]]=None) -> bool:
+	"""
+		Prove that file_path is excluded by exclude_pathes.
+		exclude_pathes — absolute paths of folders/files to skip.
+		Returns True if file_path equals one of excludes or lies inside an exclude folder.
+	"""
+	if not exclude_pathes: return False
+	abs_file = os.path.normcase(os.path.abspath(file_path))
+	for excl in exclude_pathes:
+		abs_excl = os.path.normcase(os.path.abspath(excl))
+		try:
+			if abs_file == abs_excl or os.path.commonpath([abs_file, abs_excl]) == abs_excl:
+				return True
+		except ValueError: # разные диски — не вложенность
 			continue
 	return False
 

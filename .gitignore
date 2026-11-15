@@ -5,8 +5,11 @@
 /node_modules/
 *.sublime-workspace
 *.sublime-project
-*/__pycache__/
-/**/__pycache__
+__pycache__/
+*.py[cod]
+*$py.class
+**/.tests/
+**/.test/
 */install.QSP.sublime-package.*.exe
 /.obsidian/*
 qsp-project-workspace.json

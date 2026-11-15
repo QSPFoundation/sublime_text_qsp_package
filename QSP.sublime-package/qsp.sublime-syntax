@@ -28,14 +28,14 @@ contexts:
     # Подсветка заголовка файла, только если он идёт первой строкой.
     - include: qspgame_header
     - match: ''
-      set: diff
+      set: gametext
 
-  diff:
+  gametext:
     - include: preprocessor
     - include: qspdocs
     - include: location_def
     - match: '.*' # любое множество символов между локациями подсвечивается как комментарий
-      scope: meta.diff meta.gametext.qsp # TODO: заменить meta.diff на comment.block, когда сделаю сниппеты в плагинах
+      scope: comment.block meta.gametext.qsp
 
   location_def:
     # Маркер `#` — строго колонка 0, как и `--` ниже (границы локаций не привязаны

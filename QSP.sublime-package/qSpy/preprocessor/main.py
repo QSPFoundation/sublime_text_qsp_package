@@ -119,7 +119,7 @@ class QspsPP:
 
         # 6. Interpret by Stmts and markers
         try:
-            self._pp_int = PpInt(pp_stmts, marked_lines)
+            self._pp_int = PpInt(pp_stmts, marked_lines, self._pp)
             self._pp_int.run()
             output_lines = self._pp_int.get_output()
             if not output_lines:

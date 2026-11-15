@@ -1,11 +1,12 @@
 import sublime  # type: ignore
 
-from typing import List, Literal, Tuple, TypedDict, cast
+from typing import List, Literal, Optional, Tuple, TypedDict
 
 Point = int
+SeparatorName = Literal['assign', 'while', 'brace']
 
 class FindOverlapMb(TypedDict):
-	separator_name: List[Literal['assign', 'while', 'brace']]
+	separator_name: List[SeparatorName]
 	separator_region: List[sublime.Region]
 	separator_instr: List[Point]
 
@@ -13,7 +14,7 @@ class FindOverlapMb(TypedDict):
 def scan_vars(view: sublime.View) -> Tuple[List[sublime.Region], List[sublime.Region]]:
 	""" Скан регионов локальных/глобальных пользовательских переменных в одном вью (4.5).
 		Чистая функция без состояния: регионы не хранятся в WS (2.4). """
-	def _find_overlap_main(start_find: int):
+	def _find_overlap_main(start_find: int) -> Optional[Tuple[SeparatorName, sublime.Region]]:
 		maximal = view.size() + 1
 		mini_data_base: FindOverlapMb = {
 			"separator_name": [
@@ -41,7 +42,7 @@ def scan_vars(view: sublime.View) -> Tuple[List[sublime.Region], List[sublime.Re
 			sprtr_region = mini_data_base['separator_region'][i]
 			return sprtr_type, sprtr_region
 		else:
-			return None, None
+			return None
 
 	def _safe_f(x: str, y: sublime.Region, z: Point) -> bool:
 		""" Selector, """
@@ -59,28 +60,29 @@ def scan_vars(view: sublime.View) -> Tuple[List[sublime.Region], List[sublime.Re
 		end_region = end_line
 		start_find = start_region
 		while start_find < end_line:
-			sprtr_type, sprtr_region = _find_overlap_main(start_find)
+			found = _find_overlap_main(start_find)
+			if found is None:
+				end_region = end_line
+				break
+			sprtr_type, sprtr_region = found
 			if sprtr_type == 'assign':
-				if _safe_f('keyword.operator.one-sign.qsp', cast(sublime.Region, sprtr_region), end_line):
+				if _safe_f('keyword.operator.one-sign.qsp', sprtr_region, end_line):
 					end_region = sprtr_region.begin() - 1
 					break
 				else:
 					start_find = sprtr_region.end()
 			elif sprtr_type == 'while':
-				if _safe_f('keyword.control.qsp', cast(sublime.Region, sprtr_region), end_line):
+				if _safe_f('keyword.control.qsp', sprtr_region, end_line):
 					end_region = sprtr_region.begin() - 1
 					break
 				else:
 					start_find = sprtr_region.end()
 			elif sprtr_type == 'brace':
-				if _safe_f('avs_brace_end', cast(sublime.Region, sprtr_region), end_line):
+				if _safe_f('avs_brace_end', sprtr_region, end_line):
 					end_region = sprtr_region.begin() - 1
 					break
 				else:
 					start_find = sprtr_region.end()
-			else:
-				end_region = end_line
-				break
 		vars_regions.append(sublime.Region(start_region, end_region))
 	if len(vars_regions) == 0:
 		return [], []

@@ -13,12 +13,23 @@ HashMD5 = str
 PpMode = Literal['Hard-off', 'Off', 'On']
 QspMode = Literal['--br', '--build', '--run']
 
+# Сырой JSON после json.load: граница данных с диска — сужать через isinstance, не кастовать
+RawJson = Union[None, bool, int, float, str, List['RawJson'], Dict[str, 'RawJson']]
+
 class SchemeArgs(TypedDict, total=False):
 	point_file: Path
 	platform: Literal['windows', 'linux', 'osx']
 	packages_path: Path
+	qsp_mode: QspMode
+	player_path: RawJson
+	converter_path: RawJson
 
-FolderPath = Dict[Literal['path'], Path]
+class _FolderPathBase(TypedDict):
+	path: Path
+
+class FolderPath(_FolderPathBase, total=False):
+	exclude_pathes: List[Path]
+
 FilePath = Dict[Literal['path'], Path]
 
 class QspModule(TypedDict, total=False):
@@ -59,6 +70,7 @@ class ProjectScheme(TypedDict):
 	start: Path
 	converter: ConverterConfig
 	player: Path
+	player_error: str
 	save_temp_files: bool
 	preprocessor: PpMode
 	assets: List[AssetsConfig]

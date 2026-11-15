@@ -11,6 +11,7 @@ from .qsps_file import QspsFile
 from .qsp_location import QspsLoc
 
 from .tools import del_first_pref, QSP_CODREMOV
+from ..function import write_error_log
 
 AppPath = Path
 AppParam = str
@@ -178,7 +179,14 @@ class QspsToQspOuterConv(QspsToQspConverter):
             file.writelines(qsps_lines)
         _run = [self._conv_path, self._temp_file_path, self._module_path]
         if self._conv_args: _run.append(self._conv_args)
-        subprocess.run(_run, stdout=subprocess.PIPE)
+        result = subprocess.run(_run, capture_output=True, text=True)
+        if result.returncode != 0:
+            msg = f'[QSP] Outer converter failed (rc={result.returncode}): {self._conv_path}'
+            if result.stderr:
+                msg += f' | stderr: {result.stderr.strip()}'
+            if result.stdout:
+                msg += f' | stdout: {result.stdout.strip()}'
+            write_error_log(msg)
         # Возврат [] — осознанно: внешний конвертер пишет .qsp сам,
         # in-memory game-строк не производит (product — файл на диске); builder возврат игнорирует.
         return []
@@ -189,7 +197,14 @@ class QspsToQspOuterConv(QspsToQspConverter):
         # Пустой conv_args в argv не уходит (консистентно с convert_lines).
         _run = [self._conv_path, input_file, output_file]
         if self._conv_args: _run.append(self._conv_args)
-        subprocess.run(_run, stdout=subprocess.PIPE)
+        result = subprocess.run(_run, capture_output=True, text=True)
+        if result.returncode != 0:
+            msg = f'[QSP] Outer converter failed (rc={result.returncode}): {self._conv_path}'
+            if result.stderr:
+                msg += f' | stderr: {result.stderr.strip()}'
+            if result.stdout:
+                msg += f' | stdout: {result.stdout.strip()}'
+            write_error_log(msg)
 
     def handle_temp_file(self) -> None:
         # temp-файл здесь — рабочий ВХОД txt2gam (в отличие от builtin, где handle_temp_file пишет

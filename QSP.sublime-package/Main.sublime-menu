@@ -77,5 +77,30 @@
 				]
 			}
 		]
+	},
+	{
+		"id": "preferences",
+		"children": [
+			{
+				"id": "package-settings",
+				"caption": "Package Settings",
+				"children": [
+					{
+						"id": "qsp_settings",
+						"caption": "QSP",
+						"children": [
+							{
+								"caption": "Settings",
+								"command": "edit_settings",
+								"args": {
+									"base_file": "${packages}/QSP/QSP.sublime-settings",
+									"default": "{\n\t$0\n}\n"
+								}
+							}
+						]
+					}
+				]
+			}
+		]
 	}
 ]

@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional
 
 from . import function as qsp
 from .converter.qsps_file import QspsFile
@@ -47,12 +47,13 @@ class ModuleQSP():
         else:
             qsp.write_error_log(f'[ModuleQSP:001] File don\'t exist. Prove path {file_path}.')
 
-    def extend_by_folder(self, folder_path:str) -> None:
+    def extend_by_folder(self, folder_path:str, exclude_pathes:Optional[List[Path]]=None) -> None:
         """ Add SrcQspsFile-objs by folder-path """
         if not os.path.isdir(folder_path):
             qsp.write_error_log(f'[ModuleQSP:002] Folder don\'t exist. Prove path {folder_path}.')
             return None
         for el in qsp.get_files_list(folder_path):
+            if qsp.is_path_excluded(el, exclude_pathes): continue
             self.extend_by_file(el)
 
     def extend_by_src(self, qsps_lines:List[QspsLine]) -> None:
@@ -84,7 +85,7 @@ class ModuleQSP():
         for file in self._scheme.get('files', []):
             self.extend_by_file(file['path'])
         for path in self._scheme.get('folders', []):
-            self.extend_by_folder(path['path'])
+            self.extend_by_folder(path['path'], path.get('exclude_pathes'))
 
     def qsps_files(self) -> List[QspsFile]:
         """ Return list of all Qsps-Files. """

@@ -29,7 +29,7 @@
 
 ```text
 LocName  = str
-ViewRegion = Tuple[int, int]         # (begin, end), границы view.symbol_regions()
+ViewRegion = Tuple[int, int]         # (begin, end), границы региона символа
 FilePlace(path: str) | ViewPlace(vid: int)  # место локации (NamedTuple)
 LocRecord(name, region, place)       # NamedTuple — запись микробазы локаций
 FileMeta = {mtime, size, md5}        # метаданные индексированного файла (R4)
@@ -46,7 +46,7 @@ FileMeta = {mtime, size, md5}        # метаданные индексиров
 - `replace_locs(old_path, new_path)` — перепривязать локации файла (переименование/ассоциация буфера);
 - `del_loc_by_index(i)`, `del_all_locs_by_place(place)`;
 - `get_locs()`, `get_locs_names()`;
-- `refresh_qsplocs(view, current_qsps)` — перескан локаций одного вью по `view.symbol_regions()` (символы `Локация: …`); место — `FilePlace(path)` или `ViewPlace(view.id())` для untitled;
+- `refresh_qsplocs(view, current_qsps)` — перескан локаций одного вью по `view.find_by_selector('entity.name.location.qsp')`; место — `FilePlace(path)` или `ViewPlace(view.id())` для untitled;
 - `clear_old_qsplocs(views)` — удалить локации `ViewPlace`, чьих вью больше нет;
 - `locs_dupl() -> List[LocRecord]` — записи имён локаций, встречающихся >1 раза (плоский список по группам, порядок групп по первому появлению, 4.6).
 
@@ -61,10 +61,10 @@ FileMeta = {mtime, size, md5}        # метаданные индексиров
 Каталог кэша: `<sublime.cache_path()>/QSP/workspaces/`.
 
 - **Файл кэша v2** (`cache_file_path(identity) -> <base>-<hash8>.json`): `CacheJson {version=2, identity, scope, built, files{path: FileMeta}, locations{file_path: [[name,(begin,end)], ...]}}`. Записываются только локации из файлов (`FilePlace`); untitled/view-локации не персистятся. Атомарная запись `.tmp` + `os.replace` (`_flush_payload`), чистый IO (без `sublime.*`) — безопасно для `on_exit`.
-- `cache_payload()`, `save_to_cache()` (пишет только если есть identity, `_built` и cache_path; обновляет `index.json`), `load_from_cache()` (валидирует identity/scope и метаданные файлов на диске; несовпадение/ошибка → отклонён, индекс не принят). `rebind(identity, scope)` перепривязывает WS к окну без сброса индекса.
+- `cache_payload()`, `save_to_cache()` (пишет только если есть identity, `_built` и cache_path; обновляет `index.json`), `load_from_cache()` (проверяет версию, флаг `built` и структуру JSON через `RawJson`+`isinstance` без `Any`/кастов; мёртвые пути файлов отбрасываются, мусорные записи локаций пропускаются; ошибка/несовпадение → `False`, индекс не принят — вызывающий делает полный скан). `rebind(identity, scope)` перепривязывает WS к окну без сброса индекса.
 - **Legacy** `<scope[0]>/qsp-project-workspace.json` (v1, у `folders[0]`): одноразовая миграция при первом `refresh_qsps_files` при отсутствии v2 — переименование в `.bak` (`_migrate_legacy_cache`).
-- **`index.json` v1** (неавторитативный, `index_file_path()`): `entries{identity: {file, scope, ts}}`, обновляется `update_index_entry/remove_index_entry` при save/flush/reset. Повреждённый/чужой формат игнорируется и пересоздаётся по факту записей.
-- **`prune_orphan_caches(force=False)`**: async на close (throttled `PRUNE_INTERVAL_DAYS=7`), удаляет сиротки `*.json` (кроме `index.json`), чей identity отсутствует в `sublime.project_history()` и на диске, при возрасте кэша > `ORPHAN_MAX_AGE_DAYS=90`.
+- **`index.json` v1** (неавторитативный, `index_path()`): `entries{identity: {file, scope, ts}}`, обновляется `update_index_entry/remove_index_entry` при save/flush/reset. Повреждённый/чужой формат игнорируется и пересоздаётся по факту записей.
+- **`prune_orphan_caches(force=False)`**: async на close, читает `prune_interval_days` (по умолчанию 7) и `orphan_max_age_days` (90) из `QSP.sublime-settings`. Удаляет сиротки `*.json` (кроме `index.json`), чей identity отсутствует в `sublime.project_history()` и на диске, при возрасте кэша по mtime строго больше `orphan_max_age_days`; повторная очистка — не раньше чем через `prune_interval_days`. Значения — положительные конечные числа, иначе используются дефолты `PRUNE_INTERVAL_DAYS`/`ORPHAN_MAX_AGE_DAYS`. `force=True` пропускает только проверку интервала, сохраняя проверки возраста и живого проекта. Настройки перечитываются при вызове; отдельного таймера нет. См. [настройки пакета](../techdoc/readme.md#настройки-пакета).
 - **`flush_workspaces_on_exit(workspaces)`** / `QspWorkspace.flush_on_exit()`: флаш всех живых WS на выходе ST — только чистый IO (`_flush_payload` + `update_index_entry`), без `sublime.*` (Д20–Д22).
 
 ## Интеграция с плагином (`QSP.py`)
@@ -79,12 +79,12 @@ FileMeta = {mtime, size, md5}        # метаданные индексиров
 ### Команды и потребители
 - `QspShowWorkspaceCacheCommand` — открыть v2-кэш активного окна; при отсутствии identity сообщает, что кэш не ведётся (И2).
 - `QspResetWorkspaceCacheCommand` — `rebind`+сброс RAM, удаление файла кэша и записи index, перестроение как `_refresh_ws`, немедленный `save_to_cache` при наличии `.sublime-project`.
-- `QspShowDuplLocsCommand` — `peek_for_window` → `locs_dupl()`, вывод в output panel.
+- `QspShowDuplLocsCommand` — `peek_for_window` → `locs_dupl()`, попап со ссылками; переход (`on_navigate`) открывает файл на строке заголовка локации, ставит курсор и скроллит (`show`).
 - Автодополнение имён локаций (`QspAutocomplete`) — `peek_for_window` → `get_locs_names()` в scope `meta.start_location.qsp`.
 - Валидация ввода (`QspInvalidInput`) — сверка имени локации с `get_locs_names()`.
 - Подсветка переменных (`QspLocalVarsHighlightCommand`, `QspGlobalVarsHighlightCommand`) — on-demand `scan_vars(view)`, WS не используется.
 
 ## Ограничения stage 1 / техдолг
 - В индексе и кэше только локации (R7). Метки/глобалы/прочие символы — stage 2.
-- Типизация `load_from_cache` без `Any` — техдолг.
-- `PRUNE_INTERVAL_DAYS`/`ORPHAN_MAX_AGE_DAYS` — константы, кандидаты в настройки.
+- Типизация `load_from_cache` без `Any` — сделано 2026-11-10 (этап 4 шаг 2): `RawJson` + сужение `isinstance`.
+- Настройки очистки кэша — сделано 2026-11-11: `prune_interval_days`/`orphan_max_age_days` в `QSP.sublime-settings`; константы `PRUNE_INTERVAL_DAYS`/`ORPHAN_MAX_AGE_DAYS` оставлены как резервные дефолты.
