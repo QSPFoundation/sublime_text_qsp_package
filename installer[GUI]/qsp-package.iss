@@ -2,9 +2,9 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "QSP Sublime-Package"
-#define MyAppVersion "0.18"
+#define MyAppVersion "0.19"
 #define MyAppPublisher "Aleks Versus'GAM'RUS"
-#define MyAppURL "https://github.com/AleksVersus/JAD_for_QSP"
+#define MyAppURL "https://github.com/QSPFoundation/sublime_text_qsp_package"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -24,9 +24,9 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=D:\my\GameDev\QuestSoftPlayer\projects\JAD\installer[GUI]
+OutputDir=.
 OutputBaseFilename=install.QSP.sublime-package.{#MyAppVersion}
-SetupIconFile=D:\my\run\sc\st_qsp.ico
+SetupIconFile=..\_assets\_QSP_ST_logo.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -37,21 +37,23 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
 [Files]
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\.python-version"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\Comment Intendation.tmPreferences"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\Default.sublime-keymap"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\Indentation Rules.tmPreferences"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\Location in Goto-List.tmPreferences"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\Main.sublime-menu"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\Markup in Goto-List.tmPreferences"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\QSP.py"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\QSP.sublime-build"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\qsp.sublime-syntax"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\qsp_locations.sublime-syntax"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\syntax_test_qsp.qsps"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\qSpy\*"; DestDir: "{app}\qSpy"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\qgc\*"; DestDir: "{app}\qgc"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\Snippets\*"; DestDir: "{app}\Snippets"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\my\GameDev\QuestSoftPlayer\projects\JAD\QSP.sublime-package\Completions\*"; DestDir: "{app}\Completions"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\QSP.sublime-package\.python-version"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\Comment Intendation.tmPreferences"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\Default.sublime-commands"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\Default.sublime-keymap"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\Fold.tmPreferences"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\Indentation Rules.tmPreferences"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\Location in Goto-List.tmPreferences"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\Main.sublime-menu"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\Markup in Goto-List.tmPreferences"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\QSP.py"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\QSP.sublime-build"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\QSP.sublime-settings"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\qsp.sublime-syntax"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\qsp.qloc.sublime-syntax"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\qsp_base.sublime-syntax"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\QSP.sublime-package\qSpy\*"; DestDir: "{app}\qSpy"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\QSP.sublime-package\Snippets\*"; DestDir: "{app}\Snippets"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\QSP.sublime-package\Completions\*"; DestDir: "{app}\Completions"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
